@@ -9,12 +9,13 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstati
 
 // --- FIREBASE YAPILANDIRMASI ---
 const firebaseConfig = {
-    apiKey: "AIzaSyDaZ3eZsoAKW3ZazFPebAd-b147KaW5wOA",
-    authDomain: "voice2post-9e8ca.firebaseapp.com",
-    projectId: "voice2post-9e8ca",
-    storageBucket: "voice2post-9e8ca.firebasestorage.app",
-    messagingSenderId: "511446656614",
-    appId: "1:511446656614:web:32101ee70299543c716fa7"
+    apiKey: "AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
+    authDomain: "uniloop-app.firebaseapp.com",
+    projectId: "uniloop-app",
+    storageBucket: "uniloop-app.firebasestorage.app",
+    messagingSenderId: "272654005890",
+    appId: "1:272654005890:web:0b1dd388364e86d22f269b",
+    measurementId: "G-PJ0XE1PXH5"
 };
 
 // Firebase Servislerini Başlat
