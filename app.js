@@ -1298,4 +1298,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         <select><option>Aydınlık Mod</option><option>Karanlık Mod (Yakında)</option></select>
                     </div>
                 </div>
-                <button class="btn-danger" onclick="logout()">🚪 Güvenli Çıkış Yap</bu
+                <button class="btn-danger" onclick="logout()">🚪 Güvenli Çıkış Yap</button>
+            </div>
+        `;
+    }
+});
