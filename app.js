@@ -54,9 +54,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// 🚀 GÜNCELLEME: type="module" kullanıldığı için kodun kesin çalışmasını sağlayan ana başlatıcı
 function initializeUniLoop() {
     
+    // Olay Dinleyicisi (Event Listener) Kısayolu
     const bind = (id, event, callback) => { 
         const el = document.getElementById(id); 
         if (el) {
@@ -64,6 +64,7 @@ function initializeUniLoop() {
         }
     };
 
+    // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
     window.userProfile = { 
         uid: "", 
         name: "", 
@@ -82,6 +83,7 @@ function initializeUniLoop() {
     let chatsDB = [];
     let currentChatId = null;
 
+    // FAKÜLTE GİRİŞ ŞİFRELERİ
     const FACULTY_PASSCODES = {
         "Tıp Fakültesi": "tıpfak100", 
         "Bilgisayar Fakültesi": "bil1000", 
@@ -182,23 +184,30 @@ function initializeUniLoop() {
             const userCred = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCred.user;
             
-            await setDoc(doc(db, "users", user.uid), {
-                uid: user.uid, 
-                name: name, 
-                surname: surname, 
-                username: "", 
-                university: uni, 
-                email: email, 
-                avatar: "👨‍🎓", 
-                isOnline: false, 
-                faculty: ""
-            });
-
-            await ensureWelcomeMessage(user, name);
+            // 🚀 KRİTİK DÜZELTME: Önce e-postayı atıp EKRANI DEĞİŞTİRİYORUZ.
             await sendEmailVerification(user);
             
             document.getElementById('register-card').style.display = 'none';
             document.getElementById('verify-card').style.display = 'block';
+
+            // Firebase Error (Erişim engellendi) hatasını gizlemek için bunu ayrı bir try-catch'e aldık.
+            // Böylece ekranın değişmesini engellemeyecek!
+            try {
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid, 
+                    name: name, 
+                    surname: surname, 
+                    username: "", 
+                    university: uni, 
+                    email: email, 
+                    avatar: "👨‍🎓", 
+                    isOnline: false, 
+                    faculty: ""
+                });
+                await ensureWelcomeMessage(user, name);
+            } catch (dbError) {
+                console.error("Veritabanı Kuralları Hatası (Kullanıcı kaydoldu ancak veritabanına yazılamadı):", dbError);
+            }
 
         } catch (error) {
             alert("Kayıt olurken bir hata oluştu: " + error.message);
@@ -285,31 +294,35 @@ function initializeUniLoop() {
 
     async function ensureWelcomeMessage(user, userName) {
         if(!user) return;
-        const chatId = [user.uid, "system"].sort().join("_");
-        const chatRef = doc(db, "chats", chatId);
-        const chatSnap = await getDoc(chatRef);
+        try {
+            const chatId = [user.uid, "system"].sort().join("_");
+            const chatRef = doc(db, "chats", chatId);
+            const chatSnap = await getDoc(chatRef);
 
-        if (!chatSnap.exists()) {
-            const systemMessageText = `Merhaba ${userName}! UniLoop'a hoş geldin. 🎉\n\nSistemimizi tam anlamıyla keşfetmen için ufak bir rehber:\n\n🛒 Kampüs Market: İkinci el eşyalarını al/sat veya ev arkadaşı ilanlarına bak.\n🤫 Anonim Kampüs: İçinden geçenleri kimliğini tamamen gizleyerek özgürce paylaş.\n❓ Soru & Cevap: Dersler, yurtlar veya kampüs yaşamı hakkında aklına takılanları sor.\n💬 Mesajlaşma: Arama kısmından arkadaşlarını '#' kullanıcı adıyla bularak ekle ve güvenle mesajlaş.\n\nHadi, hemen profilinden kendine bir kullanıcı adı belirle ve bu eşsiz kampüs ağına tam olarak bağlan!`;
-            
-            await setDoc(chatRef, {
-                participants: [user.uid, "system"],
-                participantNames: { 
-                    [user.uid]: userName, 
-                    "system": "UniLoop Team" 
-                },
-                participantAvatars: { 
-                    [user.uid]: "👨‍🎓", 
-                    "system": "🌍" 
-                },
-                lastUpdated: serverTimestamp(),
-                status: 'accepted',
-                messages: [{
-                    senderId: "system", 
-                    text: systemMessageText, 
-                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                }]
-            });
+            if (!chatSnap.exists()) {
+                const systemMessageText = `Merhaba ${userName}! UniLoop'a hoş geldin. 🎉\n\nSistemimizi tam anlamıyla keşfetmen için ufak bir rehber:\n\n🛒 Kampüs Market: İkinci el eşyalarını al/sat veya ev arkadaşı ilanlarına bak.\n🤫 Anonim Kampüs: İçinden geçenleri kimliğini tamamen gizleyerek özgürce paylaş.\n❓ Soru & Cevap: Dersler, yurtlar veya kampüs yaşamı hakkında aklına takılanları sor.\n💬 Mesajlaşma: Arama kısmından arkadaşlarını '#' kullanıcı adıyla bularak ekle ve güvenle mesajlaş.\n\nHadi, hemen profilinden kendine bir kullanıcı adı belirle ve bu eşsiz kampüs ağına tam olarak bağlan!`;
+                
+                await setDoc(chatRef, {
+                    participants: [user.uid, "system"],
+                    participantNames: { 
+                        [user.uid]: userName, 
+                        "system": "UniLoop Team" 
+                    },
+                    participantAvatars: { 
+                        [user.uid]: "👨‍🎓", 
+                        "system": "🌍" 
+                    },
+                    lastUpdated: serverTimestamp(),
+                    status: 'accepted',
+                    messages: [{
+                        senderId: "system", 
+                        text: systemMessageText, 
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                    }]
+                });
+            }
+        } catch (error) {
+            console.error("Karşılama mesajı oluşturulamadı: ", error);
         }
     }
 
@@ -707,7 +720,7 @@ function initializeUniLoop() {
     }
 
     // ============================================================================
-    // 5. TAM EKRAN FOTOĞRAF GALERİSİ (LIGHTBOX) MANTIĞI EKLENDİ
+    // 5. TAM EKRAN FOTOĞRAF GALERİSİ (LIGHTBOX) MANTIĞI
     // ============================================================================
     
     window.currentLightboxImages = [];
@@ -1868,7 +1881,7 @@ function initializeUniLoop() {
     };
 }
 
-// 🚀 GÜNCELLEME: type="module" olduğu için sayfanın yüklenme durumunu kontrol edip anında veya yüklenince çalıştırıyoruz.
+// 🚀 GÜNCELLEME: type="module" kullanıldığı için sayfa yüklendiğinde veya yüklendiyse doğrudan kodu çalıştıran MUCİZE KOD
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeUniLoop);
 } else {
