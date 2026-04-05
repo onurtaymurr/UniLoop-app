@@ -56,7 +56,7 @@ const storage = getStorage(app);
 
 function initializeUniLoop() {
     
-    // 🎨 DINAMIK CSS ENJEKSIYONU: Ekran kaymaları, kaydırma hassasiyetleri ve sabit görünümler için
+    // 🎨 DINAMIK CSS ENJEKSIYONU: Ekran kaymaları, kaydırma hassasiyetleri, sabit görünümler ve yeni akış için
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         /* Genel sayfa uzamasını ve sekme (bounce) efektini engeller */
@@ -69,14 +69,27 @@ function initializeUniLoop() {
         #chat-layout-container { height: calc(100vh - 120px) !important; max-height: 800px; overflow: hidden !important; display: flex; flex-direction: row; }
         .chat-sidebar { overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; flex-shrink: 0; }
         .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; }
-        #chat-messages-scroll { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; }
+        #chat-messages-scroll { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; scroll-behavior: smooth; }
         
-        /* Soru Cevap, İtiraflar ve Market İçin Liste Scroll Fix (Sayfa uzamaz, liste kendi içinde kayar) */
+        /* Soru Cevap, İtiraflar ve Market İçin Liste Scroll Fix */
         #qa-feed, #conf-feed, #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; padding-right: 8px; }
         
-        /* Detaylardaki Yorumlar: En fazla ~3 tane görünür, sonrası kutu içinde kaydırılır */
+        /* Detaylardaki Yorumlar */
         .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; padding-right: 8px; }
         
+        /* 📱 YENİ: Instagram / Twitter Tarzı Akış (Feed) Stilleri */
+        .feed-post { background: #fff; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .feed-post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .feed-post-avatar { font-size: 24px; width: 42px; height: 42px; background: #F3F4F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0; }
+        .feed-post-meta { display: flex; flex-direction: column; }
+        .feed-post-author { font-weight: bold; font-size: 15px; color: var(--text-dark); }
+        .feed-post-time { font-size: 12px; color: var(--text-gray); }
+        .feed-post-text { font-size: 15px; margin-bottom: 12px; line-height: 1.5; color: var(--text-dark); word-break: break-word; }
+        .feed-post-img { width: 100%; border-radius: 12px; margin-bottom: 12px; max-height: 400px; object-fit: cover; cursor: pointer; border: 1px solid #f3f4f6; }
+        .feed-post-actions { display: flex; border-top: 1px solid var(--border-color); padding-top: 12px; gap: 16px; }
+        .feed-action-btn { background: none; border: none; color: var(--text-gray); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 0; outline: none; transition: 0.2s; }
+        .feed-action-btn:hover { color: var(--primary); }
+
         @media (max-width: 1024px) {
             #chat-layout-container { height: calc(100vh - 160px) !important; }
             .chat-sidebar { width: 100%; display: block; }
@@ -207,7 +220,6 @@ function initializeUniLoop() {
         });
     }
 
-    // 🚀 TAKILMA VE DONMA SORUNU ÇÖZÜLMÜŞ KAYIT FONKSİYONU
     bind('register-btn', 'click', async (e) => {
         if(e) e.preventDefault(); 
         
@@ -231,7 +243,7 @@ function initializeUniLoop() {
             const userCred = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCred.user;
             
-            // 2. KULLANICIYI BEKLETMEDEN EKRANI ANINDA GEÇİR (Takılma Fixi)
+            // 2. KULLANICIYI BEKLETMEDEN EKRANI ANINDA GEÇİR
             document.getElementById('register-card').style.display = 'none';
             document.getElementById('verify-card').style.display = 'block';
             
@@ -359,7 +371,7 @@ function initializeUniLoop() {
             const chatSnap = await getDoc(chatRef);
 
             if (!chatSnap.exists()) {
-                const systemMessageText = `Merhaba ${userName}! Dünyanın en yenilikçi kampüs ağı UniLoop'a hoş geldin. 🎓✨<br><br>Bu platform senin dijital kampüsün! Neler mi yapabilirsin?<br><br>🛒 <b>Kampüs Market:</b> İhtiyacın olmayan eşyaları sat veya diğer öğrencilerin ilanlarına göz at. İlanlara tıklayıp direkt mesaj atarak güvenle iletişime geç.<br><br>🤫 <b>Anonim Kampüs:</b> Kimliğini tamamen gizleyerek itiraflarını veya içinden geçenleri özgürce paylaş.<br><br>❓ <b>Soru & Cevap:</b> Dersler veya kampüs yaşamı hakkında aklına takılan her şeyi sor.<br><br>🤝 <b>Bağlantı Kur:</b> Ana sayfadaki arama çubuğuna arkadaşlarının '#' kullanıcı adını yazarak onlara istek gönder. Bildirimler (🔔) kısmından gelen istekleri kabul et ve hemen mesajlaşmaya başla.<br><br>Burası senin alanın. Hemen "Profilim" sekmesine giderek kendine unutulmaz bir kullanıcı adı belirle ve döngüye katıl! Seni aramızda gördüğümüz için çok mutluyuz.`;
+                const systemMessageText = `Merhaba ${userName}! Dünyanın en yenilikçi kampüs ağı UniLoop'a hoş geldin. 🎓✨<br><br>Bu platform senin dijital kampüsün! Neler mi yapabilirsin?<br><br>🛒 <b>Kampüs Market:</b> İhtiyacın olmayan eşyaları sat veya diğer öğrencilerin ilanlarına göz at. İlanlara tıklayıp direkt mesaj atarak güvenle iletişime geç.<br><br>📸 <b>Kampüs Akışı:</b> İstersen tamamen anonim olarak, istersen kullanıcı adınla fotoğraf ve düşüncelerini özgürce paylaş.<br><br>❓ <b>Soru & Cevap:</b> Dersler veya kampüs yaşamı hakkında aklına takılan her şeyi sor.<br><br>🤝 <b>Bağlantı Kur:</b> Ana sayfadaki arama çubuğuna arkadaşlarının '#' kullanıcı adını yazarak onlara istek gönder. Bildirimler (🔔) kısmından gelen istekleri kabul et ve hemen mesajlaşmaya başla.<br><br>Burası senin alanın. Hemen "Profilim" sekmesine giderek kendine unutulmaz bir kullanıcı adı belirle ve döngüye katıl! Seni aramızda gördüğümüz için çok mutluyuz.`;
                 
                 await setDoc(chatRef, {
                     participants: [user.uid, "system"],
@@ -378,7 +390,7 @@ function initializeUniLoop() {
                         senderId: "system", 
                         text: systemMessageText, 
                         time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                        read: false // Okunmadı olarak işaretle
+                        read: false
                     }]
                 });
             }
@@ -515,6 +527,7 @@ function initializeUniLoop() {
         
         const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
 
+        // Pazar Yeri Dinleyicisi
         onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc")), (snapshot) => {
             marketDB = [];
             snapshot.forEach(doc => {
@@ -531,6 +544,7 @@ function initializeUniLoop() {
             }
         });
 
+        // 🌟 KAMPÜS AKIŞI (FEED) DİNLEYİCİSİ
         onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc")), (snapshot) => {
             confessionsDB = [];
             snapshot.forEach(doc => {
@@ -540,10 +554,19 @@ function initializeUniLoop() {
             
             const activeTab = document.querySelector('.menu-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'confessions') {
-                window.drawConfessionsGrid();
+                window.drawConfessionsFeed();
+            }
+
+            // Eğer yorum yapma modalı açıksa onu da canlı güncelle
+            if(document.getElementById('app-modal').classList.contains('active') && document.getElementById('active-post-id')) {
+                const activePostId = document.getElementById('active-post-id').value;
+                if(activePostId) {
+                    window.updateConfessionDetailLive(activePostId);
+                }
             }
         });
 
+        // Soru/Cevap Dinleyicisi
         onSnapshot(query(collection(db, "qa"), orderBy("createdAt", "desc")), (snapshot) => {
             qaDB = [];
             snapshot.forEach(doc => {
@@ -559,7 +582,7 @@ function initializeUniLoop() {
         });
 
         // ====================================================================
-        // 🛡️ CHATS LİSTENER: CANLI GÜNCELLEMELER VE ODAK KORUMA
+        // 🛡️ CHATS LİSTENER: CANLI GÜNCELLEMELER VE KESİNTİSİZ ODAK FIXI
         // ====================================================================
         onSnapshot(query(collection(db, "chats"), where("participants", "array-contains", currentUid)), (snapshot) => {
             chatsDB = [];
@@ -623,9 +646,11 @@ function initializeUniLoop() {
                 const isFocused = inputField && inputField === document.activeElement;
                 const currentText = inputField ? inputField.value : '';
 
-                window.renderMessages();
-
                 if (currentChatId) {
+                    // Ana ekranı yok etmeden SADECE mesaj listesini ve yan paneli günceller!
+                    window.renderMessagesSidebarOnly();
+                    window.updateChatMessagesOnly(currentChatId);
+                    
                     const newInputField = document.getElementById('chat-input-field');
                     if(newInputField) {
                         newInputField.value = currentText;
@@ -634,7 +659,11 @@ function initializeUniLoop() {
                             newInputField.selectionStart = newInputField.selectionEnd = newInputField.value.length;
                         }
                     }
+                } else {
+                    // Eğer hiçbir sohbete girilmediyse komple listeyi çiz
+                    window.renderMessages();
                 }
+
             } else if (activeTab && activeTab.getAttribute('data-target') === 'notifications') {
                 window.renderNotifications();
             }
@@ -826,7 +855,7 @@ function initializeUniLoop() {
             <div class="card" style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; border:none;">
                 <h2 style="font-size:24px; margin-bottom:8px;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
                 <p style="opacity:0.9; font-size:15px;">
-                    <strong style="color:#D9FDD3;">${window.userProfile.university}</strong> ağındasın. Kendi kampüsünün ilanlarını ve itiraflarını keşfet.
+                    <strong style="color:#D9FDD3;">${window.userProfile.university}</strong> ağındasın. Kendi kampüsünün ilanlarını ve akışını keşfet.
                 </p>
             </div>
             
@@ -1256,7 +1285,7 @@ function initializeUniLoop() {
     };
 
     // ============================================================================
-    // 7. MESAJLAŞMA VE BİLDİRİMLER (KABUL / RED / MARKET İLANI)
+    // 7. MESAJLAŞMA VE BİLDİRİMLER (KABUL / RED / ANLIK FIX)
     // ============================================================================
 
     window.startMarketChat = async function(targetUserId, targetUserName, autoText) {
@@ -1372,16 +1401,14 @@ function initializeUniLoop() {
         }
     };
 
-    // 💬 MESAJLARIM (Kabul Edilenler ve Kendi Gönderdiğimiz İstekler)
-    window.renderMessages = function() {
+    // YENİ EKLENEN FONKSİYON: SADECE SİDEBAR'I YENİLE (GİR ÇIK YAPMAYI ENGELLEYEN YAPI)
+    window.renderMessagesSidebarOnly = function() {
+        const sidebar = document.querySelector('.chat-sidebar');
+        if(!sidebar) return;
+        
         const visibleChats = chatsDB.filter(c => c.status === 'accepted' || (c.status === 'pending' && c.initiator === window.userProfile.uid));
-
-        let html = `
-            <div class="card" style="padding:0; border:none; background:transparent;">
-                <div class="chat-layout" id="chat-layout-container">
-                    <div class="chat-sidebar">
-                        <div class="chat-sidebar-header" style="position:sticky; top:0; background:white; z-index:10;">Mesajlarım</div>
-        `;
+        
+        let html = `<div class="chat-sidebar-header" style="position:sticky; top:0; background:white; z-index:10;">Mesajlarım</div>`;
         
         if (visibleChats.length === 0) {
             html += `<p style="text-align:center; padding:20px; color:var(--text-gray); font-size:13px;">Aktif mesajınız bulunmuyor.</p>`;
@@ -1390,7 +1417,6 @@ function initializeUniLoop() {
         visibleChats.forEach(chat => {
             const lastMsgObj = chat.messages[chat.messages.length - 1];
             let rawLastMsg = lastMsgObj && lastMsgObj.text ? String(lastMsgObj.text) : "Sohbet başladı.";
-            const time = lastMsgObj ? lastMsgObj.time : "";
             const isActive = chat.id === currentChatId ? 'active' : '';
             
             if (chat.status === 'pending' && chat.initiator === window.userProfile.uid) {
@@ -1405,7 +1431,7 @@ function initializeUniLoop() {
                     <div class="chat-contact-info">
                         <div class="chat-contact-top">
                             <span class="chat-contact-name">${chat.name}</span>
-                            <span class="chat-contact-time">${time}</span>
+                            <span class="chat-contact-time">${lastMsgObj ? lastMsgObj.time : ""}</span>
                         </div>
                         <div class="chat-contact-last">${previewMsg}</div>
                     </div>
@@ -1413,7 +1439,51 @@ function initializeUniLoop() {
             `;
         });
         
-        html += `
+        sidebar.innerHTML = html;
+    };
+
+    // YENİ EKLENEN FONKSİYON: SADECE MESAJLARI YENİLE (INPUT VE KLAVYE KAYBOLMASINI ENGELLEYEN YAPI)
+    window.updateChatMessagesOnly = function(chatId) {
+        const activeChat = chatsDB.find(c => c.id === chatId);
+        if(!activeChat) return;
+        
+        const scrollBox = document.getElementById('chat-messages-scroll');
+        if(!scrollBox) return; 
+        
+        let chatHTML = '';
+        
+        activeChat.messages.forEach(msg => { 
+            const type = msg.senderId === window.userProfile.uid ? 'sent' : 'received';
+            
+            let ticks = '';
+            if (type === 'sent') {
+                if (msg.read) {
+                    ticks = '<span class="ticks" title="Okundu" style="color:#3B82F6; font-weight:bold; margin-left:6px; font-size:12px;">✓✓</span>';
+                } else {
+                    ticks = '<span class="ticks" title="İletildi" style="color:#9CA3AF; font-weight:bold; margin-left:6px; font-size:12px;">✓</span>';
+                }
+            }
+            
+            chatHTML += `
+                <div class="bubble ${type}">
+                    <div class="msg-text">${msg.text}</div>
+                    <div class="msg-time" style="display:flex; align-items:center; justify-content:flex-end;">${msg.time} ${ticks}</div>
+                </div>
+            `; 
+        });
+        
+        scrollBox.innerHTML = chatHTML;
+        scrollBox.scrollTop = scrollBox.scrollHeight;
+    };
+
+    // TÜM EKRANI İLK KEZ ÇİZEN ANA FONKSİYON
+    window.renderMessages = function() {
+        const visibleChats = chatsDB.filter(c => c.status === 'accepted' || (c.status === 'pending' && c.initiator === window.userProfile.uid));
+
+        let html = `
+            <div class="card" style="padding:0; border:none; background:transparent;">
+                <div class="chat-layout" id="chat-layout-container">
+                    <div class="chat-sidebar" id="sidebar-container">
                     </div>
                     <div class="chat-main" id="chat-main-view">
                         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-gray); opacity:0.7;">
@@ -1426,6 +1496,7 @@ function initializeUniLoop() {
         `;
         
         mainContent.innerHTML = html;
+        window.renderMessagesSidebarOnly(); // Sidebar'ı yeni fonksiyonla çizdir
         
         if(currentChatId && visibleChats.find(c => c.id === currentChatId)) {
             window.openChatView(currentChatId);
@@ -1454,9 +1525,10 @@ function initializeUniLoop() {
             activeChat.messages = updatedMessages; 
         }
 
+        window.renderMessagesSidebarOnly(); // Sidebar'ı update et
+
         const container = document.getElementById('chat-main-view');
-        const layoutContainer = document.getElementById('chat-layout-container');
-        layoutContainer.classList.add('chat-active');
+        document.getElementById('chat-layout-container').classList.add('chat-active');
 
         let chatHTML = `
             <div class="chat-header">
@@ -1468,33 +1540,9 @@ function initializeUniLoop() {
                 </div>
             </div>
             <div class="chat-messages" id="chat-messages-scroll">
-        `;
-        
-        activeChat.messages.forEach(msg => { 
-            const type = msg.senderId === window.userProfile.uid ? 'sent' : 'received';
-            
-            // Tik kontrolü
-            let ticks = '';
-            if (type === 'sent') {
-                if (msg.read) {
-                    ticks = '<span class="ticks" title="Okundu" style="color:#3B82F6; font-weight:bold; margin-left:6px; font-size:12px;">✓✓</span>';
-                } else {
-                    ticks = '<span class="ticks" title="İletildi" style="color:#9CA3AF; font-weight:bold; margin-left:6px; font-size:12px;">✓</span>';
-                }
-            }
-            
-            chatHTML += `
-                <div class="bubble ${type}">
-                    <div class="msg-text">${msg.text}</div>
-                    <div class="msg-time" style="display:flex; align-items:center; justify-content:flex-end;">${msg.time} ${ticks}</div>
-                </div>
-            `; 
-        });
-        
-        chatHTML += `
             </div>
         `;
-
+        
         if (activeChat.status === 'pending' && activeChat.initiator === window.userProfile.uid) {
              chatHTML += `
                 <div style="padding: 20px; text-align: center; color: var(--text-gray); background: #F9FAFB; border-top: 1px solid var(--border-color); font-weight:bold;">
@@ -1514,10 +1562,7 @@ function initializeUniLoop() {
         
         container.innerHTML = chatHTML;
         
-        const scrollBox = document.getElementById('chat-messages-scroll');
-        if(scrollBox) {
-            scrollBox.scrollTop = scrollBox.scrollHeight;
-        }
+        window.updateChatMessagesOnly(chatId); // Sadece mesajları çizdir
 
         const inputField = document.getElementById('chat-input-field');
         if(inputField) {
@@ -1526,6 +1571,11 @@ function initializeUniLoop() {
                     window.sendMsg(chatId); 
                 }
             });
+            
+            // Kullanıcı kolaylığı için input alanına odaklan (masaüstünde)
+            if(window.innerWidth > 1024) {
+                inputField.focus();
+            }
         }
     };
 
@@ -1550,113 +1600,286 @@ function initializeUniLoop() {
     };
 
     // ============================================================================
-    // 8. İTİRAFLAR (ANONİM KAMPÜS)
+    // 8. YENİ KAMPÜS AKIŞI / SOSYAL FEED (ESKİ ANONİM KAMPÜS)
     // ============================================================================
 
     window.renderConfessions = function() {
         let html = `
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                    <h2 style="margin:0;">🤫 Anonim Kampüs</h2>
+                    <h2 style="margin:0;">📸 Kampüs Akışı</h2>
                     <button class="btn-primary" style="width:auto;" onclick="window.openConfessionForm()">
-                        + İtiraf Yaz
+                        + Yeni Gönderi
                     </button>
                 </div>
                 <div class="confessions-feed" id="conf-feed"></div>
             </div>
         `;
+        
         mainContent.innerHTML = html;
         
         if(confessionsDB) {
-            window.drawConfessionsGrid();
+            window.drawConfessionsFeed();
         }
     };
 
     window.openConfessionForm = function() {
-        window.openModal('Yeni Anonim Gönderi', `
+        window.openModal('Yeni Gönderi Oluştur', `
             <div class="form-group">
-                <input type="text" id="new-conf-tag" placeholder="Örn: 📍 Kütüphane">
+                <label style="font-weight:bold; margin-bottom:8px; display:block;">Kimliğinizi Seçin</label>
+                <select id="new-conf-identity" style="width:100%; padding:12px; border-radius:12px; border:1px solid #d1d5db; outline:none; font-size:15px; background:#f9fafb;">
+                    <option value="anon">🤫 Tamamen Anonim Olarak Paylaş</option>
+                    <option value="real">👤 Kullanıcı Adımla Paylaş (${window.userProfile.username || window.userProfile.name})</option>
+                </select>
             </div>
-            <textarea id="new-conf-text" class="form-group" style="width:100%; height:120px; border-radius:12px; padding:15px; font-size:16px;" placeholder="Aklından ne geçiyor?"></textarea>
-            <button class="btn-primary" id="publish-conf-btn" onclick="window.submitConfession()">Kampüse Gönder</button>
+            
+            <textarea id="new-conf-text" class="form-group" style="width:100%; height:120px; border-radius:12px; padding:15px; font-size:16px; margin-top:10px;" placeholder="Aklından ne geçiyor? İnsanlarla paylaş..."></textarea>
+            
+            <div class="upload-btn-wrapper" style="margin-bottom: 15px;">
+                <button class="action-btn" id="conf-photo-trigger-btn" style="width:100%; justify-content:center; font-size:15px; border:1px dashed var(--primary); background:#F3F4F6;">
+                    📷 Fotoğraf Ekle (İsteğe Bağlı)
+                </button>
+                <input type="file" id="new-conf-photo" accept="image/*" style="display:none;" />
+            </div>
+            
+            <div id="conf-preview-container" class="preview-container"></div>
+            
+            <button class="btn-primary" id="publish-conf-btn" onclick="window.submitConfession()" style="padding:12px; font-size:16px;">Gönderiyi Yayınla</button>
+            <p id="conf-upload-status" style="font-size:13px; color:var(--primary); text-align:center; margin-top:10px; display:none; font-weight:bold;">
+                Yükleniyor, lütfen bekleyin...
+            </p>
         `);
+
+        setTimeout(() => {
+            const photoBtn = document.getElementById('conf-photo-trigger-btn');
+            const photoInput = document.getElementById('new-conf-photo');
+            
+            if(photoBtn && photoInput) {
+                photoBtn.addEventListener('click', () => { 
+                    photoInput.click(); 
+                });
+                
+                photoInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if(file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) { 
+                            document.getElementById('conf-preview-container').innerHTML = `
+                                <div class="preview-box" style="width:100%; height:auto; padding:0; border:none;">
+                                    <img src="${event.target.result}" style="width:100%; max-height:200px; object-fit:contain; border-radius:8px;">
+                                </div>
+                            `; 
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        }, 100);
     };
 
     window.submitConfession = async function() {
         const textEl = document.getElementById('new-conf-text');
-        const tagEl = document.getElementById('new-conf-tag');
+        const identityEl = document.getElementById('new-conf-identity');
+        const photoInput = document.getElementById('new-conf-photo');
         const btn = document.getElementById('publish-conf-btn');
+        const statusEl = document.getElementById('conf-upload-status');
         
-        if(!textEl || textEl.value.trim() === '') return;
+        if(!textEl || textEl.value.trim() === '') {
+            return alert("Lütfen bir şeyler yazın.");
+        }
         
         btn.disabled = true;
+        let imgUrl = "";
 
-        const themes = ["theme-midnight", "theme-love", "theme-drama"];
-        const tagVal = tagEl && tagEl.value ? tagEl.value : "📍 Kampüs";
-        
+        if(photoInput && photoInput.files && photoInput.files.length > 0) {
+            statusEl.style.display = 'block';
+            statusEl.innerText = "Fotoğraf yükleniyor, kısa bir süre alabilir...";
+            
+            try {
+                const file = photoInput.files[0];
+                const fileName = Date.now() + '_' + file.name.replace(/\s/g, '');
+                const storageRef = ref(storage, 'confessions/' + window.userProfile.uid + '/' + fileName);
+                
+                await uploadBytes(storageRef, file);
+                imgUrl = await getDownloadURL(storageRef);
+            } catch(err) {
+                alert("Fotoğraf yüklenemedi. Lütfen tekrar deneyin. Hata: " + err.message);
+                btn.disabled = false;
+                statusEl.style.display = 'none';
+                return;
+            }
+        }
+
+        const isAnon = identityEl.value === 'anon';
+        const authorName = isAnon ? "Anonim Kullanıcı" : (window.userProfile.username || window.userProfile.name);
+        const authorAvatar = isAnon ? ["👻","👽","🤖","🦊","🎭"][Math.floor(Math.random()*5)] : window.userProfile.avatar;
+
         try {
             await addDoc(collection(db, "confessions"), {
-                avatar: ["👻","👽","🤖","🦊","🎭"][Math.floor(Math.random()*5)], 
-                theme: themes[Math.floor(Math.random()*3)], 
-                user: "Anonim #" + Math.floor(Math.random()*9999), 
-                time: "Şimdi", 
-                tag: tagVal, 
-                text: textEl.value, 
-                likes: 0, 
-                comments: 0, 
+                avatar: authorAvatar, 
+                user: authorName, 
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+                text: textEl.value.trim(), 
+                imgUrl: imgUrl,
+                comments: [], 
                 createdAt: serverTimestamp()
             });
             window.closeModal();
         } catch(e) { 
-            alert("Hata: Firebase kurallarını kontrol edin."); 
+            alert("Hata: Firebase kurallarını kontrol edin. Mesaj: " + e.message); 
             btn.disabled = false; 
         }
     };
 
-    window.drawConfessionsGrid = function() {
+    window.drawConfessionsFeed = function() {
         const feed = document.getElementById('conf-feed');
         if(!feed) return;
         
-        let html = '';
-        confessionsDB.forEach((post, index) => {
+        if(confessionsDB.length === 0) {
+            feed.innerHTML = `
+                <p style="text-align:center; color:var(--text-gray); padding: 40px 0;">
+                    Henüz hiçbir paylaşım yok. İlk gönderiyi sen paylaş!
+                </p>
+            `;
+            return;
+        }
+
+        let html = '<div style="display:flex; flex-direction:column; gap:0;">';
+        
+        confessionsDB.forEach((post) => {
+            let imgHtml = '';
+            if(post.imgUrl) {
+                imgHtml = `
+                    <img src="${post.imgUrl}" class="feed-post-img" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">
+                `;
+            }
+            
+            const commentCount = post.comments ? post.comments.length : 0;
+            
             html += `
-            <div class="confess-card ${post.theme}" onclick="window.openConfessionDetail('${post.id}')">
-                <div class="cc-header">
-                    <div class="cc-avatar">${post.avatar}</div>
-                    <div class="cc-meta">
-                        <span class="cc-author">${post.user}</span>
-                        <span class="cc-time">${post.time}</span>
-                        <span class="cc-tag">${post.tag}</span>
+            <div class="feed-post">
+                <div class="feed-post-header">
+                    <div class="feed-post-avatar">${post.avatar}</div>
+                    <div class="feed-post-meta">
+                        <span class="feed-post-author">${post.user}</span>
+                        <span class="feed-post-time">${post.time || 'Az önce'}</span>
                     </div>
                 </div>
-                <div class="cc-body">"${post.text}"</div>
-                <div class="cc-footer">
-                    <div class="cc-action-btn">🔥 (${post.likes})</div>
-                    <div class="cc-action-btn">💬 (${post.comments})</div>
+                
+                <div class="feed-post-text">${post.text.replace(/\n/g, '<br>')}</div>
+                
+                ${imgHtml}
+                
+                <div class="feed-post-actions">
+                    <button class="feed-action-btn" onclick="window.openConfessionDetail('${post.id}')">
+                        💬 Yorum Yap veya Görüntüle (${commentCount})
+                    </button>
                 </div>
             </div>`;
         });
         
+        html += '</div>';
         feed.innerHTML = html;
     };
 
+    // Detay görünümü ve canlı yorumlar için
     window.openConfessionDetail = function(docId) {
-        const post = confessionsDB.find(p => p.id === docId);
-        if(!post) return;
+        window.openModal('Gönderi', `<div id="confession-detail-container">Yükleniyor...</div>`);
+        window.updateConfessionDetailLive(docId);
         
-        let bgStyle = post.theme === "theme-midnight" ? "linear-gradient(135deg, #111827, #374151)" : 
-                      post.theme === "theme-love" ? "linear-gradient(135deg, #4c1d95, #be185d)" : 
-                      "linear-gradient(135deg, #7f1d1d, #ea580c)";
+        // Modalın içine post ID'sini gizli atıyoruz ki snapshot onu canlı güncellesin
+        const container = document.getElementById('confession-detail-container');
+        if(container) {
+            container.insertAdjacentHTML('afterend', `<input type="hidden" id="active-post-id" value="${docId}">`);
+        }
+    };
 
-        window.openModal(post.user + ' Diyor ki:', `
-            <div style="background:${bgStyle}; color:white; padding: 30px; border-radius: 16px; font-size: 18px; line-height: 1.6; margin-bottom: 24px; font-style:italic;">
-                <div style="font-size:12px; margin-bottom:10px; opacity:0.8;">${post.tag}</div>
-                "${post.text}"
+    window.updateConfessionDetailLive = function(docId) {
+        const container = document.getElementById('confession-detail-container');
+        if(!container) return;
+
+        const post = confessionsDB.find(p => p.id === docId);
+        if(!post) { 
+            container.innerHTML = "Gönderi bulunamadı veya silinmiş."; 
+            return; 
+        }
+        
+        let imgHtml = '';
+        if(post.imgUrl) {
+            imgHtml = `
+                <img src="${post.imgUrl}" style="width:100%; border-radius:12px; margin-bottom:16px; max-height:300px; object-fit:contain; background:#f3f4f6; cursor:pointer;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">
+            `;
+        }
+        
+        let commentsHtml = '';
+        const commentsArray = post.comments || [];
+        
+        if(commentsArray.length === 0) {
+            commentsHtml = '<p style="text-align:center; padding:15px; color:var(--text-gray); font-size:14px;">Henüz yorum yok. İlk yorumu sen yap!</p>';
+        } else {
+            commentsArray.forEach(c => {
+                commentsHtml += `
+                    <div style="background:#F9FAFB; padding:14px; border-radius:12px; margin-bottom:10px; border:1px solid var(--border-color);">
+                        <div style="font-weight:800; color:var(--text-dark); margin-bottom:6px; font-size:14px;">${c.user}</div>
+                        <div style="font-size:14px; color:var(--text-dark); line-height:1.4;">${c.text}</div>
+                    </div>
+                `;
+            });
+        }
+
+        container.innerHTML = `
+            <div style="margin-bottom:20px;">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                    <div class="feed-post-avatar" style="width:48px; height:48px; font-size:28px;">${post.avatar}</div>
+                    <div>
+                        <div style="font-weight:bold; font-size:16px;">${post.user}</div>
+                        <div style="font-size:12px; color:var(--text-gray);">${post.time}</div>
+                    </div>
+                </div>
+                
+                <div style="font-size:16px; margin-bottom:16px; line-height:1.6; color:var(--text-dark);">
+                    ${post.text.replace(/\n/g, '<br>')}
+                </div>
+                
+                ${imgHtml}
             </div>
-            <div style="display:flex; gap:12px;">
-                <button class="action-btn" style="flex:1;" onclick="alert('Beğenildi!')">🔥 Yanıyor</button>
+            
+            <div style="border-top:1px solid var(--border-color); padding-top:16px; margin-bottom:16px;">
+                <h4 style="margin-bottom:12px; font-size:15px; font-weight:bold;">Yorumlar (${commentsArray.length})</h4>
+                <div class="answers-container" style="max-height: 250px; overflow-y: auto; padding-right:5px;" id="conf-comments-scroll">
+                    ${commentsHtml}
+                </div>
             </div>
-        `);
+            
+            <div style="display:flex; gap:10px; align-items:center; background:#f9fafb; padding:10px; border-radius:12px; border:1px solid var(--border-color);">
+                <input type="text" id="new-conf-comment" style="flex:1; border:none; outline:none; background:transparent; font-size:15px;" placeholder="Yorum yaz..." onkeypress="if(event.key==='Enter') window.submitConfessionComment('${post.id}')">
+                <button class="btn-primary" style="width:auto; padding:8px 16px; border-radius:8px;" onclick="window.submitConfessionComment('${post.id}')">Gönder</button>
+            </div>
+        `;
+
+        // Yorum scroll'unu en alta çek
+        const scrollBox = document.getElementById('conf-comments-scroll');
+        if(scrollBox) {
+            scrollBox.scrollTop = scrollBox.scrollHeight;
+        }
+    };
+
+    window.submitConfessionComment = async function(docId) {
+        const input = document.getElementById('new-conf-comment');
+        
+        if(input && input.value.trim() !== '') {
+            try {
+                // Sadece Firestore'a ekliyoruz, arayüz canlı listener (onSnapshot) ile anında güncelleniyor!
+                await updateDoc(doc(db, "confessions", docId), {
+                    comments: arrayUnion({ 
+                        user: window.userProfile.username || window.userProfile.name, 
+                        text: input.value.trim() 
+                    })
+                });
+            } catch(e) {
+                alert("Yorum gönderilemedi: " + e.message);
+            }
+        }
     };
 
     // ============================================================================
