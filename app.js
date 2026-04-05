@@ -72,11 +72,17 @@ function initializeUniLoop() {
             z-index: 10; 
         }
         
-        /* Mobilde Sidebar Kaydırma Fix - Dışarı Taşmayı Engeller */
+        /* Mobilde Sidebar Kaydırma Fix - Dışarı Taşmayı ve Kesilmeyi Engeller */
         #sidebar { 
             overflow-y: auto !important; 
             -webkit-overflow-scrolling: touch !important; 
             overscroll-behavior: contain; 
+            /* YENI FIX: İçeriğin en üstten başlamasını ve kesilmemesini sağlar */
+            justify-content: flex-start !important; 
+            align-items: stretch !important;
+            max-height: 100vh !important;
+            top: 0 !important;
+            padding-bottom: 40px !important;
         }
         
         /* Mesajlar: Sayfanın kaymamasını sağlayan Fix */
