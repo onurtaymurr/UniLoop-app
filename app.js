@@ -172,9 +172,6 @@ function initializeUniLoop() {
         if(!name || !surname || !uni || !email || !password) {
             return alert("Lütfen tüm alanları eksiksiz doldurun.");
         }
-        if(!email.includes(".edu")) {
-            return alert("Güvenlik nedeniyle sadece onaylı .edu uzantılı üniversite e-postaları kabul edilmektedir.");
-        }
 
         const btn = document.getElementById('register-btn');
         btn.innerText = "Hesap Oluşturuluyor...";
