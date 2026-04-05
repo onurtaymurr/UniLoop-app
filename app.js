@@ -56,6 +56,7 @@ const storage = getStorage(app);
 
 document.addEventListener("DOMContentLoaded", () => {
     
+    // Olay Dinleyicisi (Event Listener) Kısayolu
     const bind = (id, event, callback) => { 
         const el = document.getElementById(id); 
         if (el) {
@@ -63,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // YENİ: Kullanıcı adı sistemi eklendi
+    // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
     window.userProfile = { 
         uid: "", 
         name: "", 
@@ -82,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let chatsDB = [];
     let currentChatId = null;
 
+    // FAKÜLTE GİRİŞ ŞİFRELERİ
     const FACULTY_PASSCODES = {
         "Tıp Fakültesi": "tıpfak100", 
         "Bilgisayar Fakültesi": "bil1000", 
@@ -92,9 +94,18 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const globalUniversities = [
-        "Yakın Doğu Üniversitesi (NEU)", "Doğu Akdeniz Üniversitesi (EMU)", "Girne Amerikan Üniversitesi (GAU)", "Uluslararası Kıbrıs Üniversitesi (CIU)",
-        "Orta Doğu Teknik Üniversitesi (ODTÜ)", "Boğaziçi Üniversitesi", "İstanbul Teknik Üniversitesi (İTÜ)", "Bilkent Üniversitesi", "Koç Üniversitesi",
-        "Stanford University", "Massachusetts Institute of Technology (MIT)", "Harvard University"
+        "Yakın Doğu Üniversitesi (NEU)", 
+        "Doğu Akdeniz Üniversitesi (EMU)", 
+        "Girne Amerikan Üniversitesi (GAU)", 
+        "Uluslararası Kıbrıs Üniversitesi (CIU)",
+        "Orta Doğu Teknik Üniversitesi (ODTÜ)", 
+        "Boğaziçi Üniversitesi", 
+        "İstanbul Teknik Üniversitesi (İTÜ)", 
+        "Bilkent Üniversitesi", 
+        "Koç Üniversitesi",
+        "Stanford University", 
+        "Massachusetts Institute of Technology (MIT)", 
+        "Harvard University"
     ];
 
     const authScreen = document.getElementById('auth-screen');
@@ -173,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 uid: user.uid, 
                 name: name, 
                 surname: surname, 
-                username: "", // YENİ: Hesap açıldığında boş kullanıcı adı atanır
+                username: "", // Kullanıcı adı başlangıçta boş atanır
                 university: uni, 
                 email: email, 
                 avatar: "👨‍🎓", 
@@ -183,8 +194,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             await addDoc(collection(db, "chats"), {
                 participants: [user.uid, "system"],
-                participantNames: { [user.uid]: name, "system": "UniLoop Ekibi" },
-                participantAvatars: { [user.uid]: "👨‍🎓", "system": "🌍" },
+                participantNames: { 
+                    [user.uid]: name, 
+                    "system": "UniLoop Ekibi" 
+                },
+                participantAvatars: { 
+                    [user.uid]: "👨‍🎓", 
+                    "system": "🌍" 
+                },
                 lastUpdated: serverTimestamp(),
                 messages: [{
                     senderId: "system", 
@@ -262,6 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     bind('forgot-password-btn', 'click', async () => {
         const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:");
+        
         if(!email) return;
         
         try {
@@ -359,10 +377,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } catch(error) { 
                 window.userProfile = { 
-                    uid: user.uid, name: "Misafir", surname: "", username: "", email: user.email, 
-                    university: "Lütfen Firestore'u Test Moduna Alın", avatar: "⚠️", faculty: "", isOnline: true 
+                    uid: user.uid, 
+                    name: "Misafir", 
+                    surname: "", 
+                    username: "", 
+                    email: user.email, 
+                    university: "Lütfen Firestore'u Test Moduna Alın", 
+                    avatar: "⚠️", 
+                    faculty: "", 
+                    isOnline: true 
                 };
-                if(typeof window.loadPage === 'function') window.loadPage('home'); 
+                if(typeof window.loadPage === 'function') {
+                    window.loadPage('home'); 
+                }
             }
         }
     });
@@ -374,6 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     function initRealtimeListeners(currentUid) {
+        
         const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
 
         onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc")), (snapshot) => {
@@ -462,7 +490,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.goToMessages = function() {
         const msgTab = document.querySelector('[data-target="messages"]');
-        if(msgTab) msgTab.click();
+        if(msgTab) {
+            msgTab.click();
+        }
     };
 
     window.openModal = function(title, contentHTML) { 
@@ -483,7 +513,9 @@ document.addEventListener("DOMContentLoaded", () => {
     bind('modal-close', 'click', window.closeModal);
     
     window.addEventListener('click', (e) => { 
-        if (e.target === modal) window.closeModal(); 
+        if (e.target === modal) {
+            window.closeModal(); 
+        }
     });
 
     bind('mobile-menu-btn', 'click', () => { 
@@ -524,17 +556,23 @@ document.addEventListener("DOMContentLoaded", () => {
     setupShowMore('mobile-show-more-btn', 'mobile-more-faculties');
 
     // ============================================================================
-    // YENİ: ARKADAŞ ARAMA MOTORU EKLENDİ VE KULLANICI UYARISI EKLENDİ
+    // YENİ: İNCE ARKADAŞ ARAMA MOTORU VE EKSİKSİZ KULLANICI UYARISI
     // ============================================================================
 
     window.searchAndAddFriend = async function() {
         const searchInput = document.getElementById('friend-search-input');
         if(!searchInput) return;
         
-        const searchVal = searchInput.value.trim().toLowerCase();
+        let rawSearch = searchInput.value.trim().toLowerCase();
+        if(!rawSearch) return alert("Lütfen bir kullanıcı adı yazın.");
         
-        if(!searchVal) return alert("Lütfen bir kullanıcı adı yazın.");
-        if(searchVal === window.userProfile.username) return alert("Kendinizi arkadaş olarak ekleyemezsiniz :)");
+        // Kullanıcı '#' yazmışsa temizle, biz ekleyeceğiz
+        rawSearch = rawSearch.replace(/^#/, '');
+        const searchVal = '#' + rawSearch;
+        
+        if(searchVal === window.userProfile.username) {
+            return alert("Kendinizi arkadaş olarak ekleyemezsiniz :)");
+        }
 
         const btn = document.getElementById('friend-search-btn');
         const origText = btn.innerText;
@@ -573,19 +611,20 @@ document.addEventListener("DOMContentLoaded", () => {
         return `
             ${usernameWarning}
             
-            <div class="card" style="margin-bottom: 20px;">
-                <h2 style="font-size:18px; margin-bottom:12px;">🔍 Arkadaş Ara & Ekle</h2>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="friend-search-input" class="form-group" style="flex:1; margin:0;" placeholder="Arkadaşının kullanıcı adını yaz (@ olmadan)...">
-                    <button class="btn-primary" id="friend-search-btn" style="width:auto;" onclick="window.searchAndAddFriend()">Bul ve Mesaj At</button>
-                </div>
-            </div>
-
             <div class="card" style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; border:none;">
                 <h2 style="font-size:24px; margin-bottom:8px;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
                 <p style="opacity:0.9; font-size:15px;">
                     <strong style="color:#D9FDD3;">${window.userProfile.university}</strong> ağındasın. Kendi kampüsünün ilanlarını ve itiraflarını keşfet.
                 </p>
+            </div>
+            
+            <div class="card" style="padding: 12px 20px; display:flex; align-items:center; gap:12px; margin-bottom: 24px; border-radius: 16px;">
+                <div style="font-size:18px;">🔍</div>
+                <div style="display:flex; flex:1; align-items:center; background:#F3F4F6; border-radius:12px; padding:0 12px; border:1px solid transparent; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='transparent'; this.style.background='#F3F4F6';">
+                    <span style="color:var(--primary); font-weight:800; font-size:16px;">#</span>
+                    <input type="text" id="friend-search-input" style="border:none; background:transparent; width:100%; padding:10px 8px; outline:none; font-size:15px; font-weight:600; color:var(--text-dark);" placeholder="arkadasini_bul">
+                </div>
+                <button class="btn-primary" id="friend-search-btn" style="width:auto; padding:10px 18px; border-radius:12px;" onclick="window.searchAndAddFriend()">Ekle</button>
             </div>
             
             <div class="card">
@@ -609,7 +648,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ============================================================================
-    // YENİ: TAM EKRAN FOTOĞRAF GALERİSİ (LIGHTBOX) MANTIĞI EKLENDİ
+    // TAM EKRAN FOTOĞRAF GALERİSİ (LIGHTBOX) MANTIĞI EKLENDİ
     // ============================================================================
     
     window.currentLightboxImages = [];
@@ -625,7 +664,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.closeLightbox = function() {
         document.getElementById('lightbox').classList.remove('active');
-        // Eğer arkadaki detay penceresi açık değilse sitenin kaymasını serbest bırak
         if(!document.getElementById('app-modal').classList.contains('active')) {
             document.body.style.overflow = 'auto';
         }
@@ -651,13 +689,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Parmakla Kaydırma (Swipe) Desteği
     let touchstartX = 0;
     let touchendX = 0;
     
     function handleSwipe() {
-        if (touchendX < touchstartX - 40) window.changeLightboxImage(1); // Sola Kaydır
-        if (touchendX > touchstartX + 40) window.changeLightboxImage(-1); // Sağa Kaydır
+        if (touchendX < touchstartX - 40) window.changeLightboxImage(1); 
+        if (touchendX > touchstartX + 40) window.changeLightboxImage(-1); 
     }
 
     const lb = document.getElementById('lightbox');
@@ -751,7 +788,6 @@ document.addEventListener("DOMContentLoaded", () => {
         let indicatorsHtml = '';
         const displayCurrency = item.currency || '₺';
 
-        // Lightbox Entegrasyonu: Fotoğraflara tıklayınca tam ekran galeri açılır
         if (item.imgUrls && item.imgUrls.length > 0) {
             imgHtml += '<div class="image-gallery" style="height:250px; border-radius:12px; margin-bottom:16px;">';
             
@@ -769,7 +805,11 @@ document.addEventListener("DOMContentLoaded", () => {
             imgHtml += '</div>';
             
             if(item.imgUrls.length > 1) { 
-                imgHtml += `<div class="gallery-indicators" style="bottom: 25px;">${indicatorsHtml}</div>`; 
+                imgHtml += `
+                    <div class="gallery-indicators" style="bottom: 25px;">
+                        ${indicatorsHtml}
+                    </div>
+                `; 
             }
         } else if (item.imgUrl) { 
             const singleImgStr = encodeURIComponent(JSON.stringify([item.imgUrl]));
@@ -1006,7 +1046,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.startChat = async function(targetUserId, targetUserName) {
         if(targetUserId === window.userProfile.uid) {
-            return alert("Kendi ilanınıza mesaj atamazsınız!");
+            return alert("Kendinize mesaj atamazsınız!");
         }
 
         const existingChat = chatsDB.find(chat => chat.otherUid === targetUserId);
@@ -1604,7 +1644,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.loadPage('profile'); 
     });
 
-    // YENİ: Profil alanına Kullanıcı Adı kutusu eklendi
+    // YENİ: Profil alanına GÜNCELLENMİŞ, sabit "#" simgeli Kullanıcı Adı kutusu eklendi
     window.renderProfile = function() {
         mainContent.innerHTML = `
             <div class="card">
@@ -1622,8 +1662,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     
                     <div class="form-group">
-                        <label>Kullanıcı Adı (@)</label>
-                        <input type="text" id="prof-username" value="${window.userProfile.username || ''}" placeholder="Eşsiz bir kullanıcı adı belirle">
+                        <label>Kullanıcı Adı</label>
+                        <div style="display:flex; align-items:center; background:#F9FAFB; border:1px solid #D1D5DB; border-radius:10px; overflow:hidden; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.1)'; this.style.background='white';" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
+                            <span style="padding-left:12px; color:var(--primary); font-weight:800; font-size:16px;">#</span>
+                            <input type="text" id="prof-username" value="${(window.userProfile.username || '').replace('#', '')}" placeholder="kullaniciadi" style="border:none; background:transparent; width:100%; padding:12px 8px; outline:none; font-size:15px; box-shadow:none; font-weight:600; color:var(--text-dark);">
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -1646,15 +1689,17 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     };
 
-    // YENİ: Kullanıcı Adı Benzersizlik (Unique) Kontrolü
     window.saveProfile = async function() {
         const name = document.getElementById('prof-name').value; 
         const surname = document.getElementById('prof-surname').value;
-        const username = document.getElementById('prof-username').value.trim().toLowerCase();
+        let rawUsername = document.getElementById('prof-username').value.trim().toLowerCase();
         
-        if(!username) return alert("Kullanıcı adı boş bırakılamaz!");
+        if(!rawUsername) return alert("Kullanıcı adı boş bırakılamaz!");
         
-        // Eğer kullanıcı adını değiştirdiyse, benzersiz olup olmadığını kontrol et
+        // Kullanıcı yanlışlıkla kendi # yazmışsa temizle ve bizimkini ekle
+        rawUsername = rawUsername.replace(/^#/, '');
+        const username = '#' + rawUsername;
+        
         if(username !== window.userProfile.username) {
             try {
                 const q = query(collection(db, "users"), where("username", "==", username));
