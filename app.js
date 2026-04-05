@@ -56,7 +56,6 @@ const storage = getStorage(app);
 
 document.addEventListener("DOMContentLoaded", () => {
     
-    // Olay Dinleyicisi (Event Listener) Kısayolu
     const bind = (id, event, callback) => { 
         const el = document.getElementById(id); 
         if (el) {
@@ -64,11 +63,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
+    // YENİ: Kullanıcı adı sistemi eklendi
     window.userProfile = { 
         uid: "", 
         name: "", 
         surname: "", 
+        username: "",
         email: "", 
         university: "", 
         avatar: "👨‍🎓", 
@@ -76,14 +76,12 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     
     window.joinedFaculties = [];
-    
     let marketDB = [];
     let confessionsDB = [];
     let qaDB = [];
     let chatsDB = [];
     let currentChatId = null;
 
-    // FAKÜLTE GİRİŞ ŞİFRELERİ
     const FACULTY_PASSCODES = {
         "Tıp Fakültesi": "tıpfak100", 
         "Bilgisayar Fakültesi": "bil1000", 
@@ -94,18 +92,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const globalUniversities = [
-        "Yakın Doğu Üniversitesi (NEU)", 
-        "Doğu Akdeniz Üniversitesi (EMU)", 
-        "Girne Amerikan Üniversitesi (GAU)", 
-        "Uluslararası Kıbrıs Üniversitesi (CIU)",
-        "Orta Doğu Teknik Üniversitesi (ODTÜ)", 
-        "Boğaziçi Üniversitesi", 
-        "İstanbul Teknik Üniversitesi (İTÜ)", 
-        "Bilkent Üniversitesi", 
-        "Koç Üniversitesi",
-        "Stanford University", 
-        "Massachusetts Institute of Technology (MIT)", 
-        "Harvard University"
+        "Yakın Doğu Üniversitesi (NEU)", "Doğu Akdeniz Üniversitesi (EMU)", "Girne Amerikan Üniversitesi (GAU)", "Uluslararası Kıbrıs Üniversitesi (CIU)",
+        "Orta Doğu Teknik Üniversitesi (ODTÜ)", "Boğaziçi Üniversitesi", "İstanbul Teknik Üniversitesi (İTÜ)", "Bilkent Üniversitesi", "Koç Üniversitesi",
+        "Stanford University", "Massachusetts Institute of Technology (MIT)", "Harvard University"
     ];
 
     const authScreen = document.getElementById('auth-screen');
@@ -184,6 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 uid: user.uid, 
                 name: name, 
                 surname: surname, 
+                username: "", // YENİ: Hesap açıldığında boş kullanıcı adı atanır
                 university: uni, 
                 email: email, 
                 avatar: "👨‍🎓", 
@@ -193,18 +183,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             await addDoc(collection(db, "chats"), {
                 participants: [user.uid, "system"],
-                participantNames: { 
-                    [user.uid]: name, 
-                    "system": "UniLoop Ekibi" 
-                },
-                participantAvatars: { 
-                    [user.uid]: "👨‍🎓", 
-                    "system": "🌍" 
-                },
+                participantNames: { [user.uid]: name, "system": "UniLoop Ekibi" },
+                participantAvatars: { [user.uid]: "👨‍🎓", "system": "🌍" },
                 lastUpdated: serverTimestamp(),
                 messages: [{
                     senderId: "system", 
-                    text: `Merhaba ${name}! UniLoop'a hoş geldin. Burası tüm kampüsün dijital merkezi. İlan verebilir, itirafları okuyabilir ve kampüsün nabzını tutabilirsin.`, 
+                    text: `Merhaba ${name}! UniLoop'a hoş geldin. Burası tüm kampüsün dijital merkezi. Lütfen profiline giderek kendine bir kullanıcı adı belirle.`, 
                     time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
                 }]
             });
@@ -239,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Tebrikler! Hesabınız başarıyla aktifleştirildi. Sisteme yönlendiriliyorsunuz.");
             window.location.reload(); 
         } else {
-            alert("Hesabınız henüz onaylanmamış! Lütfen e-postanıza gelen linke tıklayın veya özel kod sisteminizi bağladıysanız bekleyin. Linke tıkladıktan sonra bu butona tekrar basabilirsiniz.");
+            alert("Hesabınız henüz onaylanmamış! Lütfen e-postanıza gelen linke tıklayın. Linke tıkladıktan sonra bu butona tekrar basabilirsiniz.");
             btn.innerText = originalText;
             btn.disabled = false;
         }
@@ -278,7 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     bind('forgot-password-btn', 'click', async () => {
         const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:");
-        
         if(!email) return;
         
         try {
@@ -336,6 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         uid: user.uid, 
                         name: "Öğrenci", 
                         surname: "", 
+                        username: "",
                         email: user.email, 
                         university: "UniLoop Kampüsü", 
                         avatar: "👨‍🎓", 
@@ -345,12 +329,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     await setDoc(userDocRef, window.userProfile);
                 }
                 
-                if(!window.userProfile.email) {
-                    window.userProfile.email = user.email;
-                }
-                if(!window.userProfile.university) {
-                    window.userProfile.university = "UniLoop Kampüsü";
-                }
+                if(!window.userProfile.email) window.userProfile.email = user.email;
+                if(!window.userProfile.university) window.userProfile.university = "UniLoop Kampüsü";
+                if(window.userProfile.username === undefined) window.userProfile.username = "";
 
                 await updateDoc(userDocRef, { isOnline: true });
                 
@@ -378,18 +359,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } catch(error) { 
                 window.userProfile = { 
-                    uid: user.uid, 
-                    name: "Misafir", 
-                    surname: "", 
-                    email: user.email, 
-                    university: "Lütfen Firestore'u Test Moduna Alın", 
-                    avatar: "⚠️", 
-                    faculty: "", 
-                    isOnline: true 
+                    uid: user.uid, name: "Misafir", surname: "", username: "", email: user.email, 
+                    university: "Lütfen Firestore'u Test Moduna Alın", avatar: "⚠️", faculty: "", isOnline: true 
                 };
-                if(typeof window.loadPage === 'function') {
-                    window.loadPage('home'); 
-                }
+                if(typeof window.loadPage === 'function') window.loadPage('home'); 
             }
         }
     });
@@ -401,7 +374,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     function initRealtimeListeners(currentUid) {
-        
         const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
 
         onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc")), (snapshot) => {
@@ -485,14 +457,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ============================================================================
-    // 3. AÇILIR PENCERELER (MODALS) VE ARKA PLAN KAYMASINI ÖNLEME
+    // 3. AÇILIR PENCERELER VE ARKA PLAN KAYMASINI ÖNLEME
     // ============================================================================
 
     window.goToMessages = function() {
         const msgTab = document.querySelector('[data-target="messages"]');
-        if(msgTab) {
-            msgTab.click();
-        }
+        if(msgTab) msgTab.click();
     };
 
     window.openModal = function(title, contentHTML) { 
@@ -505,15 +475,15 @@ document.addEventListener("DOMContentLoaded", () => {
     window.closeModal = function() { 
         modal.classList.remove('active'); 
         document.getElementById('modal-body').innerHTML = ''; 
-        document.body.style.overflow = 'auto'; 
+        if (!document.getElementById('lightbox').classList.contains('active')) {
+            document.body.style.overflow = 'auto'; 
+        }
     };
     
     bind('modal-close', 'click', window.closeModal);
     
     window.addEventListener('click', (e) => { 
-        if (e.target === modal) {
-            window.closeModal(); 
-        }
+        if (e.target === modal) window.closeModal(); 
     });
 
     bind('mobile-menu-btn', 'click', () => { 
@@ -553,8 +523,64 @@ document.addEventListener("DOMContentLoaded", () => {
     setupShowMore('desktop-show-more-btn', 'desktop-more-faculties');
     setupShowMore('mobile-show-more-btn', 'mobile-more-faculties');
 
+    // ============================================================================
+    // YENİ: ARKADAŞ ARAMA MOTORU EKLENDİ VE KULLANICI UYARISI EKLENDİ
+    // ============================================================================
+
+    window.searchAndAddFriend = async function() {
+        const searchInput = document.getElementById('friend-search-input');
+        if(!searchInput) return;
+        
+        const searchVal = searchInput.value.trim().toLowerCase();
+        
+        if(!searchVal) return alert("Lütfen bir kullanıcı adı yazın.");
+        if(searchVal === window.userProfile.username) return alert("Kendinizi arkadaş olarak ekleyemezsiniz :)");
+
+        const btn = document.getElementById('friend-search-btn');
+        const origText = btn.innerText;
+        btn.innerText = "Aranıyor...";
+        btn.disabled = true;
+
+        try {
+            const q = query(collection(db, "users"), where("username", "==", searchVal));
+            const snapshot = await getDocs(q);
+            
+            if(snapshot.empty) {
+                alert("Bu kullanıcı adına sahip kimse bulunamadı!");
+            } else {
+                const targetUser = snapshot.docs[0].data();
+                window.startChat(targetUser.uid, targetUser.name + " " + targetUser.surname);
+            }
+        } catch(e) {
+            console.error(e);
+            alert("Arama sırasında hata oluştu.");
+        } finally {
+            btn.innerText = origText;
+            btn.disabled = false;
+        }
+    };
+
     function getHomeContent() {
+        let usernameWarning = '';
+        if (!window.userProfile.username) {
+            usernameWarning = `
+                <div style="background: #FEF2F2; color: #DC2626; padding: 15px; border-radius: 12px; border: 1px solid #FCA5A5; margin-bottom: 20px; font-weight: bold; text-align: center; cursor:pointer;" onclick="window.loadPage('profile')">
+                    ⚠️ Lütfen profilinden bir kullanıcı adı belirle! Arkadaşlarının seni bulabilmesi için bu zorunludur. (Tıkla ve Belirle)
+                </div>
+            `;
+        }
+
         return `
+            ${usernameWarning}
+            
+            <div class="card" style="margin-bottom: 20px;">
+                <h2 style="font-size:18px; margin-bottom:12px;">🔍 Arkadaş Ara & Ekle</h2>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="friend-search-input" class="form-group" style="flex:1; margin:0;" placeholder="Arkadaşının kullanıcı adını yaz (@ olmadan)...">
+                    <button class="btn-primary" id="friend-search-btn" style="width:auto;" onclick="window.searchAndAddFriend()">Bul ve Mesaj At</button>
+                </div>
+            </div>
+
             <div class="card" style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; border:none;">
                 <h2 style="font-size:24px; margin-bottom:8px;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
                 <p style="opacity:0.9; font-size:15px;">
@@ -569,13 +595,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="avatar">👨‍💻</div>
                         <h4>John D.</h4>
                         <p>Bilgisayar Müh.</p>
-                        <button class="action-btn" onclick="openModal('Bağlantı Kur', '<p>İstek gönderildi!</p>')">Bağlan</button>
+                        <button class="action-btn" onclick="window.openModal('Bağlantı Kur', '<p>İstek gönderildi!</p>')">Bağlan</button>
                     </div>
                     <div class="match-card">
                         <div class="avatar">👩‍⚕️</div>
                         <h4>Sarah B.</h4>
                         <p>Tıp Fakültesi</p>
-                        <button class="action-btn" onclick="goToMessages()">Mesaj At</button>
+                        <button class="action-btn" onclick="window.goToMessages()">Mesaj At</button>
                     </div>
                 </div>
             </div>
@@ -583,7 +609,65 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ============================================================================
-    // 4. İLAN YÖNETİMİ (YENİ SADE VİTRİN VE DETAY EKRANI SİSTEMİ)
+    // YENİ: TAM EKRAN FOTOĞRAF GALERİSİ (LIGHTBOX) MANTIĞI EKLENDİ
+    // ============================================================================
+    
+    window.currentLightboxImages = [];
+    window.currentLightboxIndex = 0;
+
+    window.openLightbox = function(imagesJsonStr, index) {
+        window.currentLightboxImages = JSON.parse(decodeURIComponent(imagesJsonStr));
+        window.currentLightboxIndex = index;
+        window.updateLightboxView();
+        document.getElementById('lightbox').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeLightbox = function() {
+        document.getElementById('lightbox').classList.remove('active');
+        // Eğer arkadaki detay penceresi açık değilse sitenin kaymasını serbest bırak
+        if(!document.getElementById('app-modal').classList.contains('active')) {
+            document.body.style.overflow = 'auto';
+        }
+    };
+
+    window.changeLightboxImage = function(step) {
+        window.currentLightboxIndex += step;
+        if(window.currentLightboxIndex < 0) {
+            window.currentLightboxIndex = window.currentLightboxImages.length - 1;
+        }
+        if(window.currentLightboxIndex >= window.currentLightboxImages.length) {
+            window.currentLightboxIndex = 0;
+        }
+        window.updateLightboxView();
+    };
+
+    window.updateLightboxView = function() {
+        const imgEl = document.getElementById('lightbox-img');
+        const counterEl = document.getElementById('lightbox-counter');
+        if(imgEl && counterEl) {
+            imgEl.src = window.currentLightboxImages[window.currentLightboxIndex];
+            counterEl.innerText = (window.currentLightboxIndex + 1) + " / " + window.currentLightboxImages.length;
+        }
+    };
+
+    // Parmakla Kaydırma (Swipe) Desteği
+    let touchstartX = 0;
+    let touchendX = 0;
+    
+    function handleSwipe() {
+        if (touchendX < touchstartX - 40) window.changeLightboxImage(1); // Sola Kaydır
+        if (touchendX > touchstartX + 40) window.changeLightboxImage(-1); // Sağa Kaydır
+    }
+
+    const lb = document.getElementById('lightbox');
+    if(lb) {
+        lb.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
+        lb.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleSwipe(); });
+    }
+
+    // ============================================================================
+    // 4. İLAN YÖNETİMİ (MARKET VE LIGHTBOX ENTEGRASYONU)
     // ============================================================================
 
     window.renderListings = function(type, title, buttonTextType) {
@@ -591,7 +675,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
                     <h2 style="margin:0;">${title}</h2>
-                    <button class="btn-primary" style="width:auto; padding: 10px 24px;" onclick="openListingForm('${type}')">
+                    <button class="btn-primary" style="width:auto; padding: 10px 24px;" onclick="window.openListingForm('${type}')">
                         + Yeni İlan Ekle
                     </button>
                 </div>
@@ -646,7 +730,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             gridHtml += `
-                <div class="item-card" onclick="openListingDetail('${item.id}', '${buttonTextType}')">
+                <div class="item-card" onclick="window.openListingDetail('${item.id}', '${buttonTextType}')">
                     <div class="item-img-large">${imgHtml}</div>
                     <div class="item-details">
                         <div class="item-title">${item.title}</div>
@@ -661,19 +745,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.openListingDetail = function(docId, type) {
         const item = marketDB.find(i => i.id === docId);
-        
         if(!item) return;
 
         let imgHtml = '';
         let indicatorsHtml = '';
         const displayCurrency = item.currency || '₺';
 
+        // Lightbox Entegrasyonu: Fotoğraflara tıklayınca tam ekran galeri açılır
         if (item.imgUrls && item.imgUrls.length > 0) {
             imgHtml += '<div class="image-gallery" style="height:250px; border-radius:12px; margin-bottom:16px;">';
             
+            const imgArrayStr = encodeURIComponent(JSON.stringify(item.imgUrls));
+            
             item.imgUrls.forEach((url, i) => {
                 imgHtml += `
-                    <div class="gallery-item">
+                    <div class="gallery-item" onclick="window.openLightbox('${imgArrayStr}', ${i})" style="cursor:pointer;">
                         <img src="${url}" alt="İlan" style="border-radius:12px;">
                     </div>
                 `;
@@ -683,15 +769,12 @@ document.addEventListener("DOMContentLoaded", () => {
             imgHtml += '</div>';
             
             if(item.imgUrls.length > 1) { 
-                imgHtml += `
-                    <div class="gallery-indicators" style="bottom: 25px;">
-                        ${indicatorsHtml}
-                    </div>
-                `; 
+                imgHtml += `<div class="gallery-indicators" style="bottom: 25px;">${indicatorsHtml}</div>`; 
             }
         } else if (item.imgUrl) { 
+            const singleImgStr = encodeURIComponent(JSON.stringify([item.imgUrl]));
             imgHtml = `
-                <img src="${item.imgUrl}" style="width:100%; height:250px; object-fit:cover; border-radius:12px; margin-bottom:16px;">
+                <img src="${item.imgUrl}" onclick="window.openLightbox('${singleImgStr}', 0)" style="width:100%; height:250px; object-fit:cover; border-radius:12px; margin-bottom:16px; cursor:pointer;">
             `;
         }
 
@@ -701,17 +784,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (item.sellerId === window.userProfile.uid) {
              actionButtonsHtml = `
                 <div style="display:flex; gap:10px; margin-top: 20px;">
-                    <button class="action-btn" style="flex:1; padding:12px;" onclick="editListing('${item.id}', '${item.title}', '${item.price}')">
+                    <button class="action-btn" style="flex:1; padding:12px;" onclick="window.editListing('${item.id}', '${item.title}', '${item.price}')">
                         ✏️ Fiyatı Güncelle
                     </button>
-                    <button class="btn-danger" style="flex:1; padding:12px;" onclick="deleteListing('${item.id}'); closeModal();">
+                    <button class="btn-danger" style="flex:1; padding:12px;" onclick="window.deleteListing('${item.id}'); window.closeModal();">
                         🗑️ Sil
                     </button>
                 </div>
              `;
         } else {
              actionButtonsHtml = `
-                <button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="startChat('${item.sellerId}', '${item.sellerName}'); closeModal();">
+                <button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="window.startChat('${item.sellerId}', '${item.sellerName}'); window.closeModal();">
                     💬 ${btnText}
                 </button>
              `;
@@ -797,7 +880,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             <div id="preview-container" class="preview-container"></div>
             
-            <button class="btn-primary" id="publish-listing-btn" onclick="submitListing('${type}')">İlanı Yayınla</button>
+            <button class="btn-primary" id="publish-listing-btn" onclick="window.submitListing('${type}')">İlanı Yayınla</button>
             <p id="upload-status" style="font-size:12px; color:var(--primary); text-align:center; margin-top:10px; display:none; font-weight:bold;">
                 Fotoğraflar Yükleniyor, lütfen bekleyin...
             </p>
@@ -970,7 +1053,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const isActive = chat.id === currentChatId ? 'active' : '';
             
             html += `
-                <div class="chat-contact ${isActive}" data-id="${chat.id}" onclick="openChatView('${chat.id}')">
+                <div class="chat-contact ${isActive}" data-id="${chat.id}" onclick="window.openChatView('${chat.id}')">
                     <div class="avatar">${chat.avatar}</div>
                     <div class="chat-contact-info">
                         <div class="chat-contact-top">
@@ -1014,7 +1097,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let chatHTML = `
             <div class="chat-header">
-                <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); currentChatId=null;">←</button>
+                <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); window.currentChatId=null;">←</button>
                 <div class="avatar" style="width:42px; height:42px; font-size:20px; margin:0;">${activeChat.avatar}</div>
                 <div class="chat-header-info">
                     <div class="chat-header-name">${activeChat.name}</div>
@@ -1042,7 +1125,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="chat-input-wrapper">
                     <input type="text" id="chat-input-field" placeholder="Bir mesaj yazın...">
                 </div>
-                <button class="chat-send-btn" onclick="sendMsg('${chatId}')">➤</button>
+                <button class="chat-send-btn" onclick="window.sendMsg('${chatId}')">➤</button>
             </div>
         `;
         
@@ -1087,7 +1170,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
                     <h2 style="margin:0;">🤫 Anonim Kampüs</h2>
-                    <button class="btn-primary" style="width:auto;" onclick="openConfessionForm()">
+                    <button class="btn-primary" style="width:auto;" onclick="window.openConfessionForm()">
                         + İtiraf Yaz
                     </button>
                 </div>
@@ -1107,7 +1190,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <input type="text" id="new-conf-tag" placeholder="Örn: 📍 Kütüphane">
             </div>
             <textarea id="new-conf-text" class="form-group" style="width:100%; height:120px; border-radius:12px; padding:15px; font-size:16px;" placeholder="Aklından ne geçiyor?"></textarea>
-            <button class="btn-primary" id="publish-conf-btn" onclick="submitConfession()">Kampüse Gönder</button>
+            <button class="btn-primary" id="publish-conf-btn" onclick="window.submitConfession()">Kampüse Gönder</button>
         `);
     };
 
@@ -1149,7 +1232,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let html = '';
         confessionsDB.forEach((post, index) => {
             html += `
-            <div class="confess-card ${post.theme}" onclick="openConfessionDetail('${post.id}')">
+            <div class="confess-card ${post.theme}" onclick="window.openConfessionDetail('${post.id}')">
                 <div class="cc-header">
                     <div class="cc-avatar">${post.avatar}</div>
                     <div class="cc-meta">
@@ -1197,15 +1280,15 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; flex-wrap:wrap; gap:10px;">
                     <h2 style="margin:0;">❓ Kampüs Soru & Cevap</h2>
-                    <button class="btn-primary" style="width:auto; padding: 10px 24px;" onclick="openQAForm()">
+                    <button class="btn-primary" style="width:auto; padding: 10px 24px;" onclick="window.openQAForm()">
                         + Soru Sor
                     </button>
                 </div>
                 <div class="qa-filters" id="qa-filters-container">
-                    <button class="qa-filter-btn active" data-filter="Genel" onclick="filterQA(this, 'Genel')">Genel</button>
-                    <button class="qa-filter-btn" data-filter="Yurtlar" onclick="filterQA(this, 'Yurtlar')">Yurtlar</button>
-                    <button class="qa-filter-btn" data-filter="Ders" onclick="filterQA(this, 'Ders')">Ders</button>
-                    <button class="qa-filter-btn" data-filter="Kampüs Yaşamı" onclick="filterQA(this, 'Kampüs Yaşamı')">Kampüs Yaşamı</button>
+                    <button class="qa-filter-btn active" data-filter="Genel" onclick="window.filterQA(this, 'Genel')">Genel</button>
+                    <button class="qa-filter-btn" data-filter="Yurtlar" onclick="window.filterQA(this, 'Yurtlar')">Yurtlar</button>
+                    <button class="qa-filter-btn" data-filter="Ders" onclick="window.filterQA(this, 'Ders')">Ders</button>
+                    <button class="qa-filter-btn" data-filter="Kampüs Yaşamı" onclick="window.filterQA(this, 'Kampüs Yaşamı')">Kampüs Yaşamı</button>
                 </div>
                 <div id="qa-feed"></div>
             </div>
@@ -1232,7 +1315,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </select>
             </div>
             <textarea id="new-qa-text" class="form-group" style="width:100%; height:120px; border-radius:12px; padding:15px; font-size:15px;" placeholder="Sorunuzu detaylı yazın..."></textarea>
-            <button class="btn-primary" id="publish-qa-btn" onclick="submitQA()">Soruyu Yayınla</button>
+            <button class="btn-primary" id="publish-qa-btn" onclick="window.submitQA()">Soruyu Yayınla</button>
         `);
     };
 
@@ -1283,7 +1366,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const statusClass = q.answers.length > 0 ? 'answered' : '';
             
             html += `
-                <div class="qa-card" onclick="openQADetail('${q.id}')">
+                <div class="qa-card" onclick="window.openQADetail('${q.id}')">
                     <div class="qa-left-stats">
                         <div class="qa-stat-box ${statusClass}">
                             <div style="font-size:18px;">${q.answers.length}</div>
@@ -1331,7 +1414,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             <div style="display:flex; gap:10px;">
                 <input type="text" id="new-answer-input" class="form-group" style="flex:1; margin:0;" placeholder="Cevabını yaz...">
-                <button class="btn-primary" style="width:auto;" onclick="submitAnswer('${q.id}')">Gönder</button>
+                <button class="btn-primary" style="width:auto;" onclick="window.submitAnswer('${q.id}')">Gönder</button>
             </div>
         `);
     };
@@ -1363,7 +1446,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         window.joinedFaculties.forEach(fac => { 
             html += `
-                <div class="menu-item community-link" data-name="${fac.name}" data-icon="${fac.icon}" data-color="${fac.color}" onclick="handleFacultyClick('${fac.name}', '${fac.icon}', '${fac.color}')">
+                <div class="menu-item community-link" data-name="${fac.name}" data-icon="${fac.icon}" data-color="${fac.color}" onclick="window.handleFacultyClick('${fac.name}', '${fac.icon}', '${fac.color}')">
                     ${fac.icon} ${fac.name}
                 </div>
             `; 
@@ -1394,7 +1477,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <input type="text" id="faculty-passcode-input" class="form-group" style="width: 100%; text-align:center; font-size:18px; font-weight:bold; letter-spacing:2px; padding: 15px; border: 2px solid var(--border-color); border-radius: 12px; outline:none;" placeholder="Giriş Kodunu Yazın">
                     </div>
                     
-                    <button class="btn-primary" style="max-width:250px; font-size:16px; padding:12px;" onclick="verifyFacultyCode('${name}', '${icon}', '${bgColor}')">
+                    <button class="btn-primary" style="max-width:250px; font-size:16px; padding:12px;" onclick="window.verifyFacultyCode('${name}', '${icon}', '${bgColor}')">
                         Ağa Katıl
                     </button>
                 </div>
@@ -1521,6 +1604,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.loadPage('profile'); 
     });
 
+    // YENİ: Profil alanına Kullanıcı Adı kutusu eklendi
     window.renderProfile = function() {
         mainContent.innerHTML = `
             <div class="card">
@@ -1536,6 +1620,12 @@ document.addEventListener("DOMContentLoaded", () => {
                             <input type="text" id="prof-surname" value="${window.userProfile.surname}">
                         </div>
                     </div>
+                    
+                    <div class="form-group">
+                        <label>Kullanıcı Adı (@)</label>
+                        <input type="text" id="prof-username" value="${window.userProfile.username || ''}" placeholder="Eşsiz bir kullanıcı adı belirle">
+                    </div>
+                    
                     <div class="form-group">
                         <label>Üniversite</label>
                         <input type="text" disabled value="${window.userProfile.university}" style="background:#E5E7EB; cursor:not-allowed;">
@@ -1545,10 +1635,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         <input type="email" disabled value="${window.userProfile.email}" style="background:#E5E7EB; cursor:not-allowed;">
                     </div>
                     
-                    <button class="btn-primary" onclick="saveProfile()" style="padding:12px; margin-bottom: 15px;">
+                    <button class="btn-primary" onclick="window.saveProfile()" style="padding:12px; margin-bottom: 15px;">
                         Profilimi Kaydet
                     </button>
-                    <button class="btn-danger" onclick="logout()">
+                    <button class="btn-danger" onclick="window.logout()">
                         🚪 Güvenli Çıkış Yap
                     </button>
                 </div>
@@ -1556,16 +1646,37 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     };
 
+    // YENİ: Kullanıcı Adı Benzersizlik (Unique) Kontrolü
     window.saveProfile = async function() {
         const name = document.getElementById('prof-name').value; 
         const surname = document.getElementById('prof-surname').value;
+        const username = document.getElementById('prof-username').value.trim().toLowerCase();
+        
+        if(!username) return alert("Kullanıcı adı boş bırakılamaz!");
+        
+        // Eğer kullanıcı adını değiştirdiyse, benzersiz olup olmadığını kontrol et
+        if(username !== window.userProfile.username) {
+            try {
+                const q = query(collection(db, "users"), where("username", "==", username));
+                const snapshot = await getDocs(q);
+                
+                if(!snapshot.empty) {
+                    return alert("Bu kullanıcı adı başkası tarafından alınmış. Lütfen başka bir tane deneyin.");
+                }
+            } catch(e) {
+                console.error(e);
+                return alert("Bir hata oluştu, lütfen tekrar deneyin.");
+            }
+        }
         
         window.userProfile.name = name; 
         window.userProfile.surname = surname;
+        window.userProfile.username = username;
         
         await updateDoc(doc(db, "users", window.userProfile.uid), { 
             name: name, 
-            surname: surname 
+            surname: surname,
+            username: username
         });
         
         window.openModal('Başarılı', `
@@ -1596,7 +1707,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         </select>
                     </div>
                 </div>
-                <button class="btn-danger" onclick="logout()">🚪 Güvenli Çıkış Yap</button>
+                <button class="btn-danger" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
             </div>
         `;
     };
