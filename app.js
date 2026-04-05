@@ -54,9 +54,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-document.addEventListener("DOMContentLoaded", () => {
+// 🚀 GÜNCELLEME: type="module" kullanıldığı için kodun kesin çalışmasını sağlayan ana başlatıcı
+function initializeUniLoop() {
     
-    // Olay Dinleyicisi (Event Listener) Kısayolu
     const bind = (id, event, callback) => { 
         const el = document.getElementById(id); 
         if (el) {
@@ -64,7 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
     window.userProfile = { 
         uid: "", 
         name: "", 
@@ -83,7 +82,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let chatsDB = [];
     let currentChatId = null;
 
-    // FAKÜLTE GİRİŞ ŞİFRELERİ
     const FACULTY_PASSCODES = {
         "Tıp Fakültesi": "tıpfak100", 
         "Bilgisayar Fakültesi": "bil1000", 
@@ -160,43 +158,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 🚀 SİSTEM MESAJINI GARANTİLEYEN BAĞIMSIZ FONKSİYON
-    async function ensureWelcomeMessage(user, userName) {
-        if(!user || !user.uid) return;
-        const chatId = [user.uid, "system"].sort().join("_");
-        const chatRef = doc(db, "chats", chatId);
-        
-        try {
-            const chatSnap = await getDoc(chatRef);
-            if (!chatSnap.exists()) {
-                const systemMessageText = `Merhaba ${userName || 'Öğrenci'}! UniLoop'a hoş geldin. 🎉\n\nSistemimizi tam anlamıyla keşfetmen için ufak bir rehber:\n\n🛒 Kampüs Market: İkinci el eşyalarını al/sat veya ev arkadaşı ilanlarına bak.\n🤫 Anonim Kampüs: İçinden geçenleri kimliğini tamamen gizleyerek özgürce paylaş.\n❓ Soru & Cevap: Dersler, yurtlar veya kampüs yaşamı hakkında aklına takılanları sor.\n💬 Mesajlaşma: Arama kısmından arkadaşlarını '#' kullanıcı adıyla bularak ekle ve güvenle mesajlaş.\n\nHadi, hemen profilinden kendine bir kullanıcı adı belirle ve bu eşsiz kampüs ağına tam olarak bağlan!`;
-                
-                await setDoc(chatRef, {
-                    participants: [user.uid, "system"],
-                    participantNames: { 
-                        [user.uid]: userName || 'Öğrenci', 
-                        "system": "UniLoop Team" 
-                    },
-                    participantAvatars: { 
-                        [user.uid]: "👨‍🎓", 
-                        "system": "🌍" 
-                    },
-                    lastUpdated: serverTimestamp(),
-                    status: 'accepted',
-                    messages: [{
-                        senderId: "system", 
-                        text: systemMessageText, 
-                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                    }]
-                });
-            }
-        } catch(e) {
-            console.error("Sistem mesajı hatası:", e);
-        }
-    }
-
     bind('register-btn', 'click', async (e) => {
-        if(e) e.preventDefault();
+        if(e) e.preventDefault(); 
         
         const name = document.getElementById('reg-name').value.trim();
         const surname = document.getElementById('reg-surname').value.trim();
@@ -231,7 +194,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 faculty: ""
             });
 
-            // Güvenli hoş geldin fonksiyonunu çağır
             await ensureWelcomeMessage(user, name);
             await sendEmailVerification(user);
             
@@ -250,9 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const user = auth.currentUser;
         if(!user) {
-            alert("Oturum zaman aşımına uğradı. Lütfen sayfayı yenileyip giriş yap kısmından hesabınıza bağlanın.");
-            window.location.reload();
-            return;
+            return alert("Oturum zaman aşımına uğradı. Lütfen sayfayı yenileyip tekrar giriş yapın ve doğrulayın.");
         }
 
         const btn = document.getElementById('verify-code-btn');
@@ -260,25 +220,20 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.innerText = "Kontrol Ediliyor...";
         btn.disabled = true;
 
-        try {
-            await user.reload();
-            if(user.emailVerified) {
-                alert("Tebrikler! Hesabınız başarıyla aktifleştirildi. Sisteme yönlendiriliyorsunuz.");
-                window.location.reload(); 
-            } else {
-                alert("Hesabınız henüz onaylanmamış! Lütfen e-postanıza gelen linke tıklayın. Tıkladıysanız tekrar bu butona basın.");
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
-        } catch (err) {
-            alert("Hata: " + err.message);
+        await user.reload();
+
+        if(user.emailVerified) {
+            alert("Tebrikler! Hesabınız başarıyla aktifleştirildi. Sisteme yönlendiriliyorsunuz.");
+            window.location.reload(); 
+        } else {
+            alert("Hesabınız henüz onaylanmamış! Lütfen e-postanıza gelen linke tıklayın. Linke tıkladıktan sonra bu butona tekrar basabilirsiniz.");
             btn.innerText = originalText;
             btn.disabled = false;
         }
     });
 
     bind('login-btn', 'click', async (e) => {
-        if(e) e.preventDefault();
+        if(e) e.preventDefault(); 
 
         const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value;
@@ -304,7 +259,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Onaylı kullanıcı giriş yapınca sistem mesajını kontrol et
             await ensureWelcomeMessage(userCred.user, userCred.user.displayName || "Öğrenci");
 
         } catch (error) {
@@ -328,6 +282,36 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Hata: " + error.message);
         }
     });
+
+    async function ensureWelcomeMessage(user, userName) {
+        if(!user) return;
+        const chatId = [user.uid, "system"].sort().join("_");
+        const chatRef = doc(db, "chats", chatId);
+        const chatSnap = await getDoc(chatRef);
+
+        if (!chatSnap.exists()) {
+            const systemMessageText = `Merhaba ${userName}! UniLoop'a hoş geldin. 🎉\n\nSistemimizi tam anlamıyla keşfetmen için ufak bir rehber:\n\n🛒 Kampüs Market: İkinci el eşyalarını al/sat veya ev arkadaşı ilanlarına bak.\n🤫 Anonim Kampüs: İçinden geçenleri kimliğini tamamen gizleyerek özgürce paylaş.\n❓ Soru & Cevap: Dersler, yurtlar veya kampüs yaşamı hakkında aklına takılanları sor.\n💬 Mesajlaşma: Arama kısmından arkadaşlarını '#' kullanıcı adıyla bularak ekle ve güvenle mesajlaş.\n\nHadi, hemen profilinden kendine bir kullanıcı adı belirle ve bu eşsiz kampüs ağına tam olarak bağlan!`;
+            
+            await setDoc(chatRef, {
+                participants: [user.uid, "system"],
+                participantNames: { 
+                    [user.uid]: userName, 
+                    "system": "UniLoop Team" 
+                },
+                participantAvatars: { 
+                    [user.uid]: "👨‍🎓", 
+                    "system": "🌍" 
+                },
+                lastUpdated: serverTimestamp(),
+                status: 'accepted',
+                messages: [{
+                    senderId: "system", 
+                    text: systemMessageText, 
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                }]
+            });
+        }
+    }
 
     window.logout = async function() {
         try {
@@ -390,7 +374,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 if(!window.userProfile.university) window.userProfile.university = "UniLoop Kampüsü";
                 if(window.userProfile.username === undefined) window.userProfile.username = "";
 
-                // Ekstra güvenlik: Tarayıcıyı yenileyen eski hesaplara mesajı sağlar
                 await ensureWelcomeMessage(user, window.userProfile.name);
                 await updateDoc(userDocRef, { isOnline: true });
                 
@@ -599,7 +582,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupShowMore('mobile-show-more-btn', 'mobile-more-faculties');
 
     // ============================================================================
-    // 🚀 ÖZELLİK 2: İNCE ARKADAŞ ARAMA MOTORU VE ARKADAŞLIK İSTEĞİ (KABUL/RED) SİSTEMİ
+    // 4. İNCE ARKADAŞ ARAMA MOTORU VE ARKADAŞLIK İSTEĞİ (KABUL/RED) SİSTEMİ
     // ============================================================================
 
     window.searchAndAddFriend = async function() {
@@ -657,7 +640,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     [targetUserId]: "👤" 
                 },
                 lastUpdated: serverTimestamp(), 
-                status: 'pending',
+                status: 'pending', 
                 initiator: window.userProfile.uid,
                 messages: [{
                     senderId: "system",
@@ -724,7 +707,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ============================================================================
-    // TAM EKRAN FOTOĞRAF GALERİSİ (LIGHTBOX) MANTIĞI EKLENDİ
+    // 5. TAM EKRAN FOTOĞRAF GALERİSİ (LIGHTBOX) MANTIĞI EKLENDİ
     // ============================================================================
     
     window.currentLightboxImages = [];
@@ -780,7 +763,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ============================================================================
-    // 4. İLAN YÖNETİMİ (MARKET VE LIGHTBOX ENTEGRASYONU)
+    // 6. İLAN YÖNETİMİ (MARKET VE LIGHTBOX ENTEGRASYONU)
     // ============================================================================
 
     window.renderListings = function(type, title, buttonTextType) {
@@ -896,8 +879,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let actionButtonsHtml = '';
         const btnText = type === 'market' ? 'Satıcıya Yaz' : 'İletişime Geç';
-
-        // 🚀 ÖZELLİK 3: ÇİFT GÜVENLİK KONTROLÜ İLE SAHİP VE ALICI AYRIMI
         const currentUid = window.userProfile.uid || (auth.currentUser ? auth.currentUser.uid : null);
         const safeTitle = item.title.replace(/'/g, "\\'"); 
 
@@ -1121,7 +1102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ============================================================================
-    // 5. MESAJLAŞMA SİSTEMİ (KABUL / RED VE İLAN BAĞLANTISI GÜNCELLENDİ)
+    // 7. MESAJLAŞMA SİSTEMİ (KABUL / RED VE İLAN BAĞLANTISI GÜNCELLENDİ)
     // ============================================================================
 
     window.startMarketChat = async function(targetUserId, targetUserName, autoText) {
@@ -1146,7 +1127,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     [targetUserId]: "👤" 
                 },
                 lastUpdated: serverTimestamp(), 
-                status: 'accepted',
+                status: 'accepted', 
                 messages: [{ senderId: window.userProfile.uid, text: autoText, time: timeStr }]
             });
         } else {
@@ -1305,7 +1286,7 @@ document.addEventListener("DOMContentLoaded", () => {
             status: 'accepted',
             messages: arrayUnion({ senderId: "system", text: "Arkadaşlık isteği kabul edildi. Artık mesajlaşabilirsiniz!", time: timeStr })
         });
-        window.openChatView(chatId); 
+        window.openChatView(chatId);
     };
 
     window.rejectRequest = async function(chatId) {
@@ -1333,7 +1314,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ============================================================================
-    // 6. İTİRAFLAR (ANONİM KAMPÜS)
+    // 8. İTİRAFLAR (ANONİM KAMPÜS)
     // ============================================================================
 
     window.renderConfessions = function() {
@@ -1443,7 +1424,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ============================================================================
-    // 7. SORU VE CEVAP (Q&A)
+    // 9. SORU VE CEVAP (Q&A)
     // ============================================================================
 
     window.renderQA = function() {
@@ -1606,7 +1587,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ============================================================================
-    // 8. FAKÜLTE SİSTEMİ
+    // 10. FAKÜLTE SİSTEMİ
     // ============================================================================
 
     window.updateMyFacultiesSidebar = function() {
@@ -1726,7 +1707,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ============================================================================
-    // 9. SAYFA YÖNLENDİRME (ROUTING) VE PROFİL YÖNETİMİ
+    // 11. SAYFA YÖNLENDİRME (ROUTING) VE PROFİL YÖNETİMİ
     // ============================================================================
 
     window.loadPage = function(pageName) {
@@ -1765,4 +1746,131 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     bind('logo-btn', 'click', () => { 
-        document.querySelectorAll
+        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
+        document.querySelector('[data-target="home"]').classList.add('active'); 
+        window.loadPage('home'); 
+    });
+    
+    bind('profile-btn', 'click', () => { 
+        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
+        window.loadPage('profile'); 
+    });
+
+    window.renderProfile = function() {
+        mainContent.innerHTML = `
+            <div class="card">
+                <h2>👤 Profil Bilgilerim</h2>
+                <div style="background: #F9FAFB; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color);">
+                    <div class="grid-2col" style="margin-top:0;">
+                        <div class="form-group">
+                            <label>Ad</label>
+                            <input type="text" id="prof-name" value="${window.userProfile.name}">
+                        </div>
+                        <div class="form-group">
+                            <label>Soyad</label>
+                            <input type="text" id="prof-surname" value="${window.userProfile.surname}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Kullanıcı Adı</label>
+                        <div style="display:flex; align-items:center; background:#F9FAFB; border:1px solid #D1D5DB; border-radius:10px; overflow:hidden; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.1)'; this.style.background='white';" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
+                            <span style="padding-left:12px; color:var(--primary); font-weight:800; font-size:16px;">#</span>
+                            <input type="text" id="prof-username" value="${(window.userProfile.username || '').replace('#', '')}" placeholder="kullaniciadi" style="border:none; background:transparent; width:100%; padding:12px 8px; outline:none; font-size:15px; box-shadow:none; font-weight:600; color:var(--text-dark);">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Üniversite</label>
+                        <input type="text" disabled value="${window.userProfile.university}" style="background:#E5E7EB; cursor:not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label>E-posta</label>
+                        <input type="email" disabled value="${window.userProfile.email}" style="background:#E5E7EB; cursor:not-allowed;">
+                    </div>
+                    
+                    <button class="btn-primary" onclick="window.saveProfile()" style="padding:12px; margin-bottom: 15px;">
+                        Profilimi Kaydet
+                    </button>
+                    <button class="btn-danger" onclick="window.logout()">
+                        🚪 Güvenli Çıkış Yap
+                    </button>
+                </div>
+            </div>
+        `;
+    };
+
+    window.saveProfile = async function() {
+        const name = document.getElementById('prof-name').value; 
+        const surname = document.getElementById('prof-surname').value;
+        let rawUsername = document.getElementById('prof-username').value.trim().toLowerCase();
+        
+        if(!rawUsername) return alert("Kullanıcı adı boş bırakılamaz!");
+        
+        rawUsername = rawUsername.replace(/^#/, '');
+        const username = '#' + rawUsername;
+        
+        if(username !== window.userProfile.username) {
+            try {
+                const q = query(collection(db, "users"), where("username", "==", username));
+                const snapshot = await getDocs(q);
+                
+                if(!snapshot.empty) {
+                    return alert("Bu kullanıcı adı başkası tarafından alınmış. Lütfen başka bir tane deneyin.");
+                }
+            } catch(e) {
+                console.error(e);
+                return alert("Bir hata oluştu, lütfen tekrar deneyin.");
+            }
+        }
+        
+        window.userProfile.name = name; 
+        window.userProfile.surname = surname;
+        window.userProfile.username = username;
+        
+        await updateDoc(doc(db, "users", window.userProfile.uid), { 
+            name: name, 
+            surname: surname,
+            username: username
+        });
+        
+        window.openModal('Başarılı', `
+            <div style="text-align:center;">
+                <p style="font-size:40px; margin:0;">✅</p>
+                <p>Profil güncellendi!</p>
+            </div>
+        `);
+    };
+
+    window.renderSettings = function() {
+        mainContent.innerHTML = `
+            <div class="card">
+                <h2>⚙️ Uygulama Ayarları</h2>
+                <div style="background: #F9FAFB; padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 1px solid var(--border-color);">
+                    <div class="form-group">
+                        <label>Dil Seçimi</label>
+                        <select>
+                            <option>Türkçe</option>
+                            <option>English</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tema</label>
+                        <select>
+                            <option>Aydınlık Mod</option>
+                            <option>Karanlık Mod (Yakında)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-danger" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
+            </div>
+        `;
+    };
+}
+
+// 🚀 GÜNCELLEME: type="module" olduğu için sayfanın yüklenme durumunu kontrol edip anında veya yüklenince çalıştırıyoruz.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeUniLoop);
+} else {
+    initializeUniLoop();
+}
