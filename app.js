@@ -117,12 +117,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. GİRİŞ, KAYIT, ONAY VE ŞİFREMİ UNUTTUM
     // ============================================================================
     
-    bind('show-register-btn', 'click', () => {
+    bind('show-register-btn', 'click', (e) => {
+        if(e) e.preventDefault();
         document.getElementById('login-card').style.display = 'none'; 
         document.getElementById('register-card').style.display = 'block';
     });
     
-    bind('show-login-btn', 'click', () => {
+    bind('show-login-btn', 'click', (e) => {
+        if(e) e.preventDefault();
         document.getElementById('register-card').style.display = 'none'; 
         document.getElementById('login-card').style.display = 'block';
     });
@@ -158,7 +160,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    bind('register-btn', 'click', async () => {
+    bind('register-btn', 'click', async (e) => {
+        if(e) e.preventDefault(); // Sayfa yenilenmesini engeller
+        
         const name = document.getElementById('reg-name').value.trim();
         const surname = document.getElementById('reg-surname').value.trim();
         const uni = document.getElementById('reg-uni').value.trim();
@@ -192,28 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 faculty: ""
             });
 
-            // 🚀 ÖZELLİK 1: DETAYLI SİSTEM HOŞ GELDİN MESAJI EKLENDİ
-            const systemMessageText = `Merhaba ${name}! UniLoop'a hoş geldin. 🎉\n\nSistemimizi tam anlamıyla keşfetmen için ufak bir rehber:\n\n🛒 Kampüs Market: İkinci el eşyalarını al/sat veya ev arkadaşı ilanlarına bak.\n🤫 Anonim Kampüs: İçinden geçenleri kimliğini tamamen gizleyerek özgürce paylaş.\n❓ Soru & Cevap: Dersler, yurtlar veya kampüs yaşamı hakkında aklına takılanları sor.\n💬 Mesajlaşma: Arama kısmından arkadaşlarını '#' kullanıcı adıyla bularak ekle ve güvenle mesajlaş.\n\nHadi, hemen profilinden kendine bir kullanıcı adı belirle ve bu eşsiz kampüs ağına tam olarak bağlan!`;
-
-            await setDoc(doc(db, "chats", [user.uid, "system"].sort().join("_")), {
-                participants: [user.uid, "system"],
-                participantNames: { 
-                    [user.uid]: name, 
-                    "system": "UniLoop Team" 
-                },
-                participantAvatars: { 
-                    [user.uid]: "👨‍🎓", 
-                    "system": "🌍" 
-                },
-                lastUpdated: serverTimestamp(),
-                status: 'accepted', // Sistem mesajları otomatik kabul edilir
-                messages: [{
-                    senderId: "system", 
-                    text: systemMessageText, 
-                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                }]
-            });
-
+            await ensureWelcomeMessage(user, name);
             await sendEmailVerification(user);
             
             document.getElementById('register-card').style.display = 'none';
@@ -226,9 +209,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    bind('verify-code-btn', 'click', async () => {
-        const user = auth.currentUser;
+    bind('verify-code-btn', 'click', async (e) => {
+        if(e) e.preventDefault();
         
+        const user = auth.currentUser;
         if(!user) {
             return alert("Oturum zaman aşımına uğradı. Lütfen sayfayı yenileyip tekrar giriş yapın ve doğrulayın.");
         }
@@ -250,7 +234,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    bind('login-btn', 'click', async () => {
+    bind('login-btn', 'click', async (e) => {
+        if(e) e.preventDefault(); // Sayfa yenilenmesini engeller
+
         const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value;
         const btn = document.getElementById('login-btn');
@@ -270,8 +256,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("Hesabınız henüz onaylanmamış. Lütfen e-postanızı kontrol edin.");
                 document.getElementById('login-card').style.display = 'none';
                 document.getElementById('verify-card').style.display = 'block';
+                btn.innerText = originalText;
+                btn.disabled = false;
                 return;
             }
+
+            // Doğrulanmış kullanıcı ise hoş geldin mesajını garantile
+            await ensureWelcomeMessage(userCred.user, userCred.user.displayName || "Öğrenci");
 
         } catch (error) {
             console.error("Giriş Hatası:", error);
@@ -281,7 +272,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } 
     });
 
-    bind('forgot-password-btn', 'click', async () => {
+    bind('forgot-password-btn', 'click', async (e) => {
+        if(e) e.preventDefault();
         const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:");
         
         if(!email) return;
@@ -293,6 +285,37 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Hata: " + error.message);
         }
     });
+
+    // 🚀 SİSTEM MESAJINI GARANTİLEYEN FONKSİYON (Girişte ve kayıtta çağrılır)
+    async function ensureWelcomeMessage(user, userName) {
+        if(!user) return;
+        const chatId = [user.uid, "system"].sort().join("_");
+        const chatRef = doc(db, "chats", chatId);
+        const chatSnap = await getDoc(chatRef);
+
+        if (!chatSnap.exists()) {
+            const systemMessageText = `Merhaba ${userName}! UniLoop'a hoş geldin. 🎉\n\nSistemimizi tam anlamıyla keşfetmen için ufak bir rehber:\n\n🛒 Kampüs Market: İkinci el eşyalarını al/sat veya ev arkadaşı ilanlarına bak.\n🤫 Anonim Kampüs: İçinden geçenleri kimliğini tamamen gizleyerek özgürce paylaş.\n❓ Soru & Cevap: Dersler, yurtlar veya kampüs yaşamı hakkında aklına takılanları sor.\n💬 Mesajlaşma: Arama kısmından arkadaşlarını '#' kullanıcı adıyla bularak ekle ve güvenle mesajlaş.\n\nHadi, hemen profilinden kendine bir kullanıcı adı belirle ve bu eşsiz kampüs ağına tam olarak bağlan!`;
+            
+            await setDoc(chatRef, {
+                participants: [user.uid, "system"],
+                participantNames: { 
+                    [user.uid]: userName, 
+                    "system": "UniLoop Team" 
+                },
+                participantAvatars: { 
+                    [user.uid]: "👨‍🎓", 
+                    "system": "🌍" 
+                },
+                lastUpdated: serverTimestamp(),
+                status: 'accepted',
+                messages: [{
+                    senderId: "system", 
+                    text: systemMessageText, 
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                }]
+            });
+        }
+    }
 
     window.logout = async function() {
         try {
@@ -355,6 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if(!window.userProfile.university) window.userProfile.university = "UniLoop Kampüsü";
                 if(window.userProfile.username === undefined) window.userProfile.username = "";
 
+                await ensureWelcomeMessage(user, window.userProfile.name);
                 await updateDoc(userDocRef, { isOnline: true });
                 
                 initRealtimeListeners(user.uid);
@@ -461,14 +485,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const otherName = data.participantNames[otherUid] || "Bilinmeyen";
                 const otherAvatar = data.participantAvatars[otherUid] || "👤";
                 
-                // 🚀 GÜNCELLEME: İsteğin durumu (status) ve başlatan kişi (initiator) bilgisi çekiliyor
                 chatsDB.push({ 
                     id: doc.id, 
                     otherUid: otherUid, 
                     name: otherName, 
                     avatar: otherAvatar, 
                     messages: data.messages,
-                    status: data.status || 'accepted', // Eski mesajlar otomatik kabul edilmiş sayılır
+                    status: data.status || 'accepted', 
                     initiator: data.initiator || null
                 });
                 totalChats++; 
@@ -563,7 +586,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupShowMore('mobile-show-more-btn', 'mobile-more-faculties');
 
     // ============================================================================
-    // 🚀 ÖZELLİK 2: İNCE ARKADAŞ ARAMA MOTORU VE ARKADAŞLIK İSTEĞİ (KABUL/RED) SİSTEMİ
+    // YENİ: İNCE ARKADAŞ ARAMA MOTORU VE EKSİKSİZ KULLANICI UYARISI
     // ============================================================================
 
     window.searchAndAddFriend = async function() {
@@ -593,7 +616,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("Bu kullanıcı adına sahip kimse bulunamadı!");
             } else {
                 const targetUser = snapshot.docs[0].data();
-                // DİREKT MESAJ YERİNE İSTEK GÖNDERME FONKSİYONUNU ÇAĞIR
                 window.sendFriendRequest(targetUser.uid, targetUser.name + " " + targetUser.surname);
             }
         } catch(e) {
@@ -605,7 +627,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // YENİ: ARKADAŞLIK İSTEĞİ GÖNDERME FONKSİYONU
     window.sendFriendRequest = async function(targetUserId, targetUserName) {
         const chatId = [window.userProfile.uid, targetUserId].sort().join("_");
         const chatRef = doc(db, "chats", chatId);
@@ -623,8 +644,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     [targetUserId]: "👤" 
                 },
                 lastUpdated: serverTimestamp(), 
-                status: 'pending', // Kilit nokta: İstek beklemede
-                initiator: window.userProfile.uid, // İsteyi kim gönderdi?
+                status: 'pending',
+                initiator: window.userProfile.uid,
                 messages: [{
                     senderId: "system",
                     text: "Arkadaşlık isteği gönderildi.",
@@ -863,10 +884,11 @@ document.addEventListener("DOMContentLoaded", () => {
         let actionButtonsHtml = '';
         const btnText = type === 'market' ? 'Satıcıya Yaz' : 'İletişime Geç';
 
-        // 🚀 ÖZELLİK 3: İLAN ÜZERİNDEN MESAJLAŞMA (KABUL/RED PAS GEÇİLİR)
-        const safeTitle = item.title.replace(/'/g, "\\'"); // Tırnak işaretlerini güvenli hale getirir
+        // 🚀 ÖZELLİK 3: Güvenli eşleştirme kontrolü (Sadece senin ilanında "Sil/Düzenle" çıkar)
+        const currentUid = window.userProfile.uid || (auth.currentUser ? auth.currentUser.uid : null);
+        const safeTitle = item.title.replace(/'/g, "\\'"); 
 
-        if (item.sellerId === window.userProfile.uid) {
+        if (item.sellerId === currentUid) {
              actionButtonsHtml = `
                 <div style="display:flex; gap:10px; margin-top: 20px;">
                     <button class="action-btn" style="flex:1; padding:12px;" onclick="window.editListing('${item.id}', '${safeTitle}', '${item.price}')">
@@ -1089,7 +1111,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 5. MESAJLAŞMA SİSTEMİ (KABUL / RED VE İLAN BAĞLANTISI GÜNCELLENDİ)
     // ============================================================================
 
-    // YENİ: Market İlanlarından Otomatik Kabul Edilmiş Mesaj Başlatma
+    // 🚀 ÖZELLİK 3: Market İlanlarından Mesaj (Arkadaşlık isteğini pas geçer, direkt kabul edilmiş başlar)
     window.startMarketChat = async function(targetUserId, targetUserName, autoText) {
         if(targetUserId === window.userProfile.uid) {
             return alert("Kendi ilanınıza mesaj atamazsınız!");
@@ -1116,7 +1138,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 messages: [{ senderId: window.userProfile.uid, text: autoText, time: timeStr }]
             });
         } else {
-            // Zaten bir sohbet (veya istek) varsa onu kabul edilmiş sayıp mesajı ekleriz
+            // Zaten sohbet varsa onaylanmış say ve mesajı yolla
             await updateDoc(chatRef, {
                 status: 'accepted',
                 messages: arrayUnion({ senderId: window.userProfile.uid, text: autoText, time: timeStr }),
@@ -1128,7 +1150,6 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => window.openChatView(chatId), 500); 
     };
 
-    // Eski startChat artık sadece referans için duruyor veya iç bağlantılar için
     window.startChat = async function(targetUserId, targetUserName) {
         window.sendFriendRequest(targetUserId, targetUserName);
     };
@@ -1147,7 +1168,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const time = lastMsgObj ? lastMsgObj.time : "";
             const isActive = chat.id === currentChatId ? 'active' : '';
             
-            // İstek durumunda yazıyı değiştirme
             if (chat.status === 'pending') {
                 if (chat.initiator === window.userProfile.uid) {
                     lastMsg = "⏳ İstek gönderildi, bekleniyor...";
@@ -1272,17 +1292,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // İSTEK KABUL ETME
     window.acceptRequest = async function(chatId) {
         const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         await updateDoc(doc(db, "chats", chatId), {
             status: 'accepted',
             messages: arrayUnion({ senderId: "system", text: "Arkadaşlık isteği kabul edildi. Artık mesajlaşabilirsiniz!", time: timeStr })
         });
-        window.openChatView(chatId); // Ekranı tazele
+        window.openChatView(chatId);
     };
 
-    // İSTEK REDDETME
     window.rejectRequest = async function(chatId) {
         if(confirm("Bu arkadaşlık isteğini silmek istediğinize emin misiniz?")) {
             await deleteDoc(doc(db, "chats", chatId));
