@@ -8,7 +8,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, se
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, arrayUnion, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-// --- YENİ FIREBASE YAPILANDIRMASI ---
+// --- GÜNCEL FIREBASE YAPILANDIRMASI ---
 const firebaseConfig = {
     apiKey: "AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
     authDomain: "uniloop-app.firebaseapp.com",
@@ -19,23 +19,21 @@ const firebaseConfig = {
     measurementId: "G-PJ0XE1PXH5"
 };
 
-// Firebase Servislerini Başlat
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// DOM Yüklendikten Sonra Çalışacak Ana Blok
 document.addEventListener("DOMContentLoaded", () => {
     
-    // Olay Dinleyicisi (Event Listener) Kısayolu
     const bind = (id, event, callback) => { 
         const el = document.getElementById(id); 
-        if (el) el.addEventListener(event, callback); 
+        if (el) {
+            el.addEventListener(event, callback); 
+        }
     };
 
-    // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
     window.userProfile = { 
         uid: "", 
         name: "", 
@@ -54,28 +52,37 @@ document.addEventListener("DOMContentLoaded", () => {
     let chatsDB = [];
     let currentChatId = null;
 
-    // FAKÜLTE GİRİŞ ŞİFRELERİ
     const FACULTY_PASSCODES = {
-        "Tıp Fakültesi": "tıpfak100",
-        "Bilgisayar Fakültesi": "bil1000",
+        "Tıp Fakültesi": "tıpfak100", 
+        "Bilgisayar Fakültesi": "bil1000", 
         "Diş Hekimliği": "dis1000",
-        "Hukuk Fakültesi": "hukuk1000",
-        "Mimarlık Fakültesi": "mim1000",
+        "Hukuk Fakültesi": "hukuk1000", 
+        "Mimarlık Fakültesi": "mim1000", 
         "Eğitim Fakültesi": "egt1000"
     };
 
     const globalUniversities = [
-        "Yakın Doğu Üniversitesi (NEU)", "Doğu Akdeniz Üniversitesi (EMU)", "Girne Amerikan Üniversitesi (GAU)", "Uluslararası Kıbrıs Üniversitesi (CIU)",
-        "Orta Doğu Teknik Üniversitesi (ODTÜ)", "Boğaziçi Üniversitesi", "İstanbul Teknik Üniversitesi (İTÜ)", "Bilkent Üniversitesi", "Koç Üniversitesi",
-        "Stanford University", "Massachusetts Institute of Technology (MIT)", "Harvard University"
+        "Yakın Doğu Üniversitesi (NEU)", 
+        "Doğu Akdeniz Üniversitesi (EMU)", 
+        "Girne Amerikan Üniversitesi (GAU)", 
+        "Uluslararası Kıbrıs Üniversitesi (CIU)",
+        "Orta Doğu Teknik Üniversitesi (ODTÜ)", 
+        "Boğaziçi Üniversitesi", 
+        "İstanbul Teknik Üniversitesi (İTÜ)", 
+        "Bilkent Üniversitesi", 
+        "Koç Üniversitesi",
+        "Stanford University", 
+        "Massachusetts Institute of Technology (MIT)", 
+        "Harvard University"
     ];
 
     const authScreen = document.getElementById('auth-screen');
     const appScreen = document.getElementById('app-screen');
     const mainContent = document.getElementById('main-content');
+    const modal = document.getElementById('app-modal');
 
     // ============================================================================
-    // 1. GİRİŞ, KAYIT VE ŞİFREMİ UNUTTUM
+    // 1. GİRİŞ, KAYIT, ONAY VE ŞİFREMİ UNUTTUM
     // ============================================================================
     
     bind('show-register-btn', 'click', () => {
@@ -88,16 +95,18 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('login-card').style.display = 'block';
     });
 
-    // Otomatik Tamamlama (Üniversite Arama)
     const uniInput = document.getElementById('reg-uni');
     const uniList = document.getElementById('uni-autocomplete-list');
+    
     if (uniInput && uniList) {
         uniInput.addEventListener('input', function() {
             const val = this.value;
             uniList.innerHTML = '';
+            
             if (!val) return false;
             
             const matches = globalUniversities.filter(u => u.toLowerCase().includes(val.toLowerCase()));
+            
             matches.forEach(match => {
                 const div = document.createElement('div');
                 const regex = new RegExp(`(${val})`, "gi");
@@ -109,12 +118,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 uniList.appendChild(div);
             });
         });
+        
         document.addEventListener('click', (e) => { 
-            if(e.target !== uniInput) uniList.innerHTML = ''; 
+            if(e.target !== uniInput) {
+                uniList.innerHTML = ''; 
+            }
         });
     }
 
-    // KAYIT OLMA İŞLEMİ (ONAY EKRANI İLE GÜNCELLENDİ)
     bind('register-btn', 'click', async () => {
         const name = document.getElementById('reg-name').value.trim();
         const surname = document.getElementById('reg-surname').value.trim();
@@ -137,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const userCred = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCred.user;
             
-            // Veritabanına kullanıcıyı kaydet
             await setDoc(doc(db, "users", user.uid), {
                 uid: user.uid, 
                 name: name, 
@@ -149,7 +159,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 faculty: ""
             });
 
-            // Sistem Hoş Geldin Mesajını Oluştur
             await addDoc(collection(db, "chats"), {
                 participants: [user.uid, "system"],
                 participantNames: { [user.uid]: name, "system": "UniLoop Ekibi" },
@@ -162,12 +171,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }]
             });
 
-            // Doğrulama maili yolla ve onay ekranına at
             await sendEmailVerification(user);
             
             document.getElementById('register-card').style.display = 'none';
-            const verifyCard = document.getElementById('verify-card');
-            if(verifyCard) verifyCard.style.display = 'block';
+            document.getElementById('verify-card').style.display = 'block';
 
         } catch (error) {
             alert("Kayıt olurken bir hata oluştu: " + error.message);
@@ -176,10 +183,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ONAY KODU GİRİŞ İŞLEMİ
     bind('verify-code-btn', 'click', async () => {
         const user = auth.currentUser;
-        if(!user) return alert("Oturum zaman aşımına uğradı. Lütfen sayfayı yenileyip tekrar giriş yapın ve doğrulayın.");
+        
+        if(!user) {
+            return alert("Oturum zaman aşımına uğradı. Lütfen sayfayı yenileyip tekrar giriş yapın ve doğrulayın.");
+        }
 
         const btn = document.getElementById('verify-code-btn');
         const originalText = btn.innerText;
@@ -198,13 +207,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // GİRİŞ YAPMA İŞLEMİ (ONAY KONTROLÜ İLE GÜNCELLENDİ)
     bind('login-btn', 'click', async () => {
         const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value;
         const btn = document.getElementById('login-btn');
 
-        if(!email || !password) return alert("Lütfen e-posta ve şifrenizi girin.");
+        if(!email || !password) {
+            return alert("Lütfen e-posta ve şifrenizi girin.");
+        }
 
         const originalText = btn.innerText;
         btn.innerText = "Giriş Yapılıyor...";
@@ -216,10 +226,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if(!userCred.user.emailVerified) {
                 alert("Hesabınız henüz onaylanmamış. Lütfen e-postanızı kontrol edin.");
                 document.getElementById('login-card').style.display = 'none';
-                const verifyCard = document.getElementById('verify-card');
-                if(verifyCard) verifyCard.style.display = 'block';
+                document.getElementById('verify-card').style.display = 'block';
                 return;
             }
+
         } catch (error) {
             console.error("Giriş Hatası:", error);
             alert("Giriş başarısız! E-posta veya şifreniz yanlış.");
@@ -228,9 +238,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } 
     });
 
-    // ŞİFREMİ UNUTTUM İŞLEMİ
     bind('forgot-password-btn', 'click', async () => {
         const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:");
+        
         if(!email) return;
         
         try {
@@ -241,7 +251,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ÇIKIŞ YAPMA İŞLEMİ
     window.logout = async function() {
         try {
             if(window.userProfile.uid) {
@@ -254,9 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 authScreen.style.display = 'flex';
                 document.getElementById('login-card').style.display = 'block';
                 document.getElementById('register-card').style.display = 'none';
-                
-                const verifyCard = document.getElementById('verify-card');
-                if(verifyCard) verifyCard.style.display = 'none';
+                document.getElementById('verify-card').style.display = 'none';
                 
                 const btn = document.getElementById('login-btn');
                 if(btn) { 
@@ -294,14 +301,18 @@ document.addEventListener("DOMContentLoaded", () => {
                         email: user.email, 
                         university: "UniLoop Kampüsü", 
                         avatar: "👨‍🎓", 
-                        faculty: "",
+                        faculty: "", 
                         isOnline: true
                     };
                     await setDoc(userDocRef, window.userProfile);
                 }
                 
-                if(!window.userProfile.email) window.userProfile.email = user.email;
-                if(!window.userProfile.university) window.userProfile.university = "UniLoop Kampüsü";
+                if(!window.userProfile.email) {
+                    window.userProfile.email = user.email;
+                }
+                if(!window.userProfile.university) {
+                    window.userProfile.university = "UniLoop Kampüsü";
+                }
 
                 await updateDoc(userDocRef, { isOnline: true });
                 
@@ -313,10 +324,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 if(window.userProfile.faculty && typeof window.updateMyFacultiesSidebar === 'function') {
-                    window.joinedFaculties = [{
+                    window.joinedFaculties = [{ 
                         name: window.userProfile.faculty, 
                         icon: "🏢", 
-                        color: "linear-gradient(135deg, #1E3A8A, #4F46E5)"
+                        color: "linear-gradient(135deg, #1E3A8A, #4F46E5)" 
                     }];
                     window.updateMyFacultiesSidebar();
                 }
@@ -338,38 +349,45 @@ document.addEventListener("DOMContentLoaded", () => {
                     faculty: "", 
                     isOnline: true 
                 };
-                if(typeof window.loadPage === 'function') window.loadPage('home'); 
-                console.error("Firestore'a erişim reddedildi. Rules ayarlarını kontrol edin.");
+                if(typeof window.loadPage === 'function') {
+                    window.loadPage('home'); 
+                }
             }
         }
     });
 
     window.addEventListener("beforeunload", () => {
-        if(window.userProfile.uid) {
+        if(window.userProfile && window.userProfile.uid) {
             updateDoc(doc(db, "users", window.userProfile.uid), { isOnline: false });
         }
     });
 
     function initRealtimeListeners(currentUid) {
         
-        // 1. İLANLARI DİNLE (Sıralama Hatası: serverTimestamps estimate ile çözüldü)
+        const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
+
         onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc")), (snapshot) => {
             marketDB = [];
-            snapshot.forEach(doc => marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }));
+            snapshot.forEach(doc => {
+                marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) });
+            });
+            marketDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
             
             const activeTab = document.querySelector('.menu-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'market') {
-                window.renderListings('market', '🛒 Kampüs Market', 'Satıcıya Yaz');
+                window.renderListings('market', '🛒 Kampüs Market', 'market');
             }
             if(activeTab && activeTab.getAttribute('data-target') === 'housing') {
-                window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt', 'İletişime Geç');
+                window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt', 'housing');
             }
         });
 
-        // 2. İTİRAFLARI DİNLE
         onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc")), (snapshot) => {
             confessionsDB = [];
-            snapshot.forEach(doc => confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }));
+            snapshot.forEach(doc => {
+                confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) });
+            });
+            confessionsDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
             
             const activeTab = document.querySelector('.menu-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'confessions') {
@@ -377,10 +395,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // 3. S&C DİNLE
         onSnapshot(query(collection(db, "qa"), orderBy("createdAt", "desc")), (snapshot) => {
             qaDB = [];
-            snapshot.forEach(doc => qaDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }));
+            snapshot.forEach(doc => {
+                qaDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) });
+            });
+            qaDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
             
             const activeTab = document.querySelector('.menu-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'qa') {
@@ -389,7 +409,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // 4. MESAJLARI DİNLE
         onSnapshot(query(collection(db, "chats"), where("participants", "array-contains", currentUid), orderBy("lastUpdated", "desc")), (snapshot) => {
             chatsDB = [];
             let totalChats = 0;
@@ -402,7 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 chatsDB.push({ 
                     id: doc.id, 
-                    otherUid, 
+                    otherUid: otherUid, 
                     name: otherName, 
                     avatar: otherAvatar, 
                     messages: data.messages 
@@ -428,29 +447,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ============================================================================
-    // 3. AÇILIR PENCERELER (MODALS) VE MENÜ FONKSİYONLARI (ORİJİNAL)
+    // 3. AÇILIR PENCERELER (MODALS) VE ARKA PLAN KAYMASINI ÖNLEME
     // ============================================================================
 
     window.goToMessages = function() {
         const msgTab = document.querySelector('[data-target="messages"]');
-        if(msgTab) msgTab.click();
-    }
+        if(msgTab) {
+            msgTab.click();
+        }
+    };
 
-    const modal = document.getElementById('app-modal');
     window.openModal = function(title, contentHTML) { 
         document.getElementById('modal-title').innerText = title; 
         document.getElementById('modal-body').innerHTML = contentHTML; 
         modal.classList.add('active'); 
-    }
+        document.body.style.overflow = 'hidden'; 
+    };
     
     window.closeModal = function() { 
         modal.classList.remove('active'); 
         document.getElementById('modal-body').innerHTML = ''; 
-    }
+        document.body.style.overflow = 'auto'; 
+    };
     
     bind('modal-close', 'click', window.closeModal);
+    
     window.addEventListener('click', (e) => { 
-        if (e.target === modal) window.closeModal(); 
+        if (e.target === modal) {
+            window.closeModal(); 
+        }
     });
 
     bind('mobile-menu-btn', 'click', () => { 
@@ -463,6 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const name = link.getAttribute('data-name');
             const icon = link.getAttribute('data-icon');
             const color = link.getAttribute('data-color');
+            
             if(typeof window.handleFacultyClick === 'function') {
                 window.handleFacultyClick(name, icon, color);
             }
@@ -472,6 +498,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const setupShowMore = (btnId, containerId) => {
         const btn = document.getElementById(btnId);
         const container = document.getElementById(containerId);
+        
         if(btn && container) {
             btn.addEventListener('click', () => {
                 if(container.style.display === 'none') { 
@@ -483,7 +510,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
         }
-    }
+    };
+    
     setupShowMore('desktop-show-more-btn', 'desktop-more-faculties');
     setupShowMore('mobile-show-more-btn', 'mobile-more-faculties');
 
@@ -496,18 +524,28 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="card">
                 <h2>✨ AI Kampüs Eşleşmeleri</h2>
                 <div class="match-grid">
-                    <div class="match-card"><div class="avatar">👨‍💻</div><h4>John D.</h4><p>Bilgisayar Müh.</p><button class="action-btn" onclick="openModal('Bağlantı Kur', '<p>İstek gönderildi!</p>')">Bağlan</button></div>
-                    <div class="match-card"><div class="avatar">👩‍⚕️</div><h4>Sarah B.</h4><p>Tıp Fakültesi</p><button class="action-btn" onclick="goToMessages()">Mesaj At</button></div>
+                    <div class="match-card">
+                        <div class="avatar">👨‍💻</div>
+                        <h4>John D.</h4>
+                        <p>Bilgisayar Müh.</p>
+                        <button class="action-btn" onclick="openModal('Bağlantı Kur', '<p>İstek gönderildi!</p>')">Bağlan</button>
+                    </div>
+                    <div class="match-card">
+                        <div class="avatar">👩‍⚕️</div>
+                        <h4>Sarah B.</h4>
+                        <p>Tıp Fakültesi</p>
+                        <button class="action-btn" onclick="goToMessages()">Mesaj At</button>
+                    </div>
                 </div>
             </div>
         `;
     }
 
     // ============================================================================
-    // 4. İLAN YÖNETİMİ, PARA BİRİMİ VE ÇOKLU FOTOĞRAF YÜKLEME (ORİJİNAL)
+    // 4. İLAN YÖNETİMİ (YENİ SADE VİTRİN VE DETAY EKRANI SİSTEMİ)
     // ============================================================================
 
-    window.renderListings = function(type, title, buttonText) {
+    window.renderListings = function(type, title, buttonTextType) {
         let html = `
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
@@ -515,117 +553,146 @@ document.addEventListener("DOMContentLoaded", () => {
                     <button class="btn-primary" style="width:auto; padding: 10px 24px;" onclick="openListingForm('${type}')">+ Yeni İlan Ekle</button>
                 </div>
                 <input type="text" id="local-search-input" class="local-search-bar" placeholder="${title} içinde hızlıca ara...">
-                <div class="grid-2col" id="listings-grid-container"></div>
+                <div class="market-grid" id="listings-grid-container"></div>
             </div>
         `;
+        
         mainContent.innerHTML = html;
-        window.drawListingsGrid(type, buttonText, '');
+        window.drawListingsGrid(type, buttonTextType, '');
         
         const searchInput = document.getElementById('local-search-input');
         if(searchInput) {
-            searchInput.addEventListener('input', (e) => window.drawListingsGrid(type, buttonText, e.target.value.toLowerCase())); 
+            searchInput.addEventListener('input', (e) => {
+                window.drawListingsGrid(type, buttonTextType, e.target.value.toLowerCase());
+            }); 
         }
-    }
+    };
 
-    window.drawListingsGrid = function(type, buttonText, filterText) {
+    window.drawListingsGrid = function(type, buttonTextType, filterText) {
         const container = document.getElementById('listings-grid-container');
         if(!container) return;
 
         const filteredData = marketDB.filter(item => item.type === type && (item.title.toLowerCase().includes(filterText) || item.desc.toLowerCase().includes(filterText)));
         
         if(filteredData.length === 0) {
-            container.innerHTML = `<p style="grid-column: span 2; color: var(--text-gray); text-align:center; padding: 40px 0;">Henüz ilan yok veya bulunamadı.</p>`; 
+            container.innerHTML = `<p style="grid-column: 1 / -1; color: var(--text-gray); text-align:center; padding: 40px 0;">Henüz ilan yok veya bulunamadı.</p>`; 
             return;
         }
 
         let gridHtml = '';
+        
         filteredData.forEach(item => {
-            let imgHtml = '';
-            let indicatorsHtml = '';
-            
-            // Eski ilanlarda para birimi yoksa varsayılan olarak TL (₺) göster
+            let imgHtml = ''; 
             const displayCurrency = item.currency || '₺';
 
-            // Kaydırılabilir Çoklu Fotoğraf Galerisi
-            if (item.imgUrls && item.imgUrls.length > 0) {
-                imgHtml += '<div class="image-gallery">';
-                item.imgUrls.forEach((url, i) => {
-                    imgHtml += `<div class="gallery-item"><img src="${url}" alt="İlan"></div>`;
-                    indicatorsHtml += `<div class="gallery-dot ${i===0 ? 'active' : ''}"></div>`;
-                });
-                imgHtml += '</div>';
-                
-                if(item.imgUrls.length > 1) { 
-                    imgHtml += `<div class="gallery-indicators">${indicatorsHtml}</div>`; 
-                }
-            } else if (item.imgUrl) { 
+            if (item.imgUrl) { 
                 imgHtml = `<img src="${item.imgUrl}" alt="İlan" style="width:100%; height:100%; object-fit:cover;">`;
             } else {
                 imgHtml = `<div style="font-size:48px; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">📦</div>`;
             }
 
-            // Düzenle/Sil Butonları Sadece İlan Sahibine Görünür
-            let actionButtonsHtml = '';
-            if (item.sellerId === window.userProfile.uid) {
-                 actionButtonsHtml = `
-                    <div style="display:flex; gap:10px;">
-                        <button class="action-btn" style="flex:1; padding:8px; font-size:12px;" onclick="editListing('${item.id}', '${item.title}', '${item.price}')">✏️ Fiyatı Güncelle</button>
-                        <button class="btn-danger" style="flex:1; padding:8px; font-size:12px;" onclick="deleteListing('${item.id}')">🗑️ Sil</button>
-                    </div>
-                 `;
-            } else {
-                 actionButtonsHtml = `<button class="action-btn" style="width:auto;" onclick="startChat('${item.sellerId}', '${item.sellerName}')">${buttonText}</button>`;
-            }
-
             gridHtml += `
-                <div class="item-card">
-                    <div class="item-img-large" style="overflow:hidden; position:relative;">${imgHtml}</div>
+                <div class="item-card" onclick="openListingDetail('${item.id}', '${buttonTextType}')">
+                    <div class="item-img-large">${imgHtml}</div>
                     <div class="item-details">
                         <div class="item-title">${item.title}</div>
-                        <div class="item-desc">${item.desc}</div>
-                        <div style="font-size:11px; color:var(--text-gray); margin-bottom:10px;">Satıcı: <strong>${item.sellerName}</strong></div>
-                        <div class="item-footer">
-                            <span class="item-price-large">${item.price} ${displayCurrency}</span>
-                            ${actionButtonsHtml}
-                        </div>
+                        <div class="item-price-large">${item.price} ${displayCurrency}</div>
                     </div>
                 </div>`;
         });
+        
         container.innerHTML = gridHtml;
-    }
+    };
+
+    window.openListingDetail = function(docId, type) {
+        const item = marketDB.find(i => i.id === docId);
+        
+        if(!item) return;
+
+        let imgHtml = '';
+        let indicatorsHtml = '';
+        const displayCurrency = item.currency || '₺';
+
+        if (item.imgUrls && item.imgUrls.length > 0) {
+            imgHtml += '<div class="image-gallery" style="height:250px; border-radius:12px; margin-bottom:16px;">';
+            item.imgUrls.forEach((url, i) => {
+                imgHtml += `<div class="gallery-item"><img src="${url}" alt="İlan" style="border-radius:12px;"></div>`;
+                indicatorsHtml += `<div class="gallery-dot ${i === 0 ? 'active' : ''}"></div>`;
+            });
+            imgHtml += '</div>';
+            
+            if(item.imgUrls.length > 1) { 
+                imgHtml += `<div class="gallery-indicators" style="bottom: 25px;">${indicatorsHtml}</div>`; 
+            }
+        } else if (item.imgUrl) { 
+            imgHtml = `<img src="${item.imgUrl}" style="width:100%; height:250px; object-fit:cover; border-radius:12px; margin-bottom:16px;">`;
+        }
+
+        let actionButtonsHtml = '';
+        const btnText = type === 'market' ? 'Satıcıya Yaz' : 'İletişime Geç';
+
+        if (item.sellerId === window.userProfile.uid) {
+             actionButtonsHtml = `
+                <div style="display:flex; gap:10px; margin-top: 20px;">
+                    <button class="action-btn" style="flex:1; padding:12px;" onclick="editListing('${item.id}', '${item.title}', '${item.price}')">✏️ Fiyatı Güncelle</button>
+                    <button class="btn-danger" style="flex:1; padding:12px;" onclick="deleteListing('${item.id}'); closeModal();">🗑️ Sil</button>
+                </div>
+             `;
+        } else {
+             actionButtonsHtml = `<button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="startChat('${item.sellerId}', '${item.sellerName}'); closeModal();">💬 ${btnText}</button>`;
+        }
+
+        window.openModal(item.title, `
+            <div style="position:relative;">
+                ${imgHtml}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="font-size:24px; font-weight:800; color:#059669;">${item.price} ${displayCurrency}</div>
+                <div style="font-size:13px; color:var(--text-gray); background:#F3F4F6; padding:6px 12px; border-radius:20px;">Satıcı: <strong>${item.sellerName}</strong></div>
+            </div>
+            <div style="font-size:15px; line-height:1.6; color:var(--text-dark); background:#F9FAFB; padding:16px; border-radius:12px; border:1px solid var(--border-color);">
+                ${item.desc}
+            </div>
+            ${actionButtonsHtml}
+        `);
+    };
 
     window.deleteListing = async function(docId) {
         if(confirm("Bu ilanı tamamen silmek istediğinize emin misiniz?")) {
-            try {
-                await deleteDoc(doc(db, "listings", docId));
-                alert("İlan başarıyla silindi!");
-            } catch(e) {
-                console.error(e);
-                alert("Silinirken bir hata oluştu: " + e.message);
+            try { 
+                await deleteDoc(doc(db, "listings", docId)); 
+                alert("İlan başarıyla silindi!"); 
+            } catch(e) { 
+                console.error(e); 
+                alert("Silinirken bir hata oluştu: " + e.message); 
             }
         }
-    }
+    };
 
     window.editListing = function(docId, oldTitle, oldPrice) {
         let newPrice = prompt(`"${oldTitle}" için yeni fiyatı girin (Sadece rakam):`, oldPrice);
         if(newPrice !== null && newPrice.trim() !== "") {
-            try {
-                updateDoc(doc(db, "listings", docId), { price: newPrice.trim() });
-                alert("İlan fiyatı güncellendi!");
-            } catch(e) {
-                console.error(e);
+            try { 
+                updateDoc(doc(db, "listings", docId), { price: newPrice.trim() }); 
+                alert("İlan fiyatı güncellendi!"); 
+            } catch(e) { 
+                console.error(e); 
             }
         }
-    }
+    };
 
     window.openListingForm = function(type) {
-        window.openModal('Yeni İlan Oluştur', `
+        const formTitle = type === 'market' ? '🛒 Kampüs Market İlanı Ekle' : '🔑 Ev Arkadaşı & Yurt İlanı Ekle';
+        const titlePlaceholder = type === 'market' ? 'İlan Başlığı (Örn: Temiz Çalışma Masası)' : 'İlan Başlığı (Örn: Acil Ev Arkadaşı Aranıyor)';
+        const descPlaceholder = type === 'market' ? 'Ürünün durumu ve detayları...' : 'Evin kuralları, konumu ve aranan özellikler...';
+
+        window.openModal(formTitle, `
             <div class="form-group">
-                <input type="text" id="new-item-title" placeholder="İlan Başlığı (Örn: Temiz Çalışma Masası)">
+                <input type="text" id="new-item-title" placeholder="${titlePlaceholder}">
             </div>
             
             <div class="form-group" style="display: flex; gap: 10px;">
-                <input type="number" id="new-item-price" placeholder="Fiyat" style="flex: 2;">
+                <input type="number" id="new-item-price" placeholder="Fiyat / Kira Bedeli" style="flex: 2;">
                 <select id="new-item-currency" style="flex: 1;">
                     <option value="₺">TL (₺)</option>
                     <option value="$">Dolar ($)</option>
@@ -635,7 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             
             <div class="form-group">
-                <textarea id="new-item-desc" rows="3" placeholder="İlan detayları ve durumu..."></textarea>
+                <textarea id="new-item-desc" rows="3" placeholder="${descPlaceholder}"></textarea>
             </div>
             
             <div class="upload-btn-wrapper">
@@ -654,10 +721,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const photoInput = document.getElementById('new-item-photo');
             
             if(photoBtn && photoInput) {
-                photoBtn.addEventListener('click', () => {
-                    photoInput.click();
+                photoBtn.addEventListener('click', () => { 
+                    photoInput.click(); 
                 });
-
+                
                 photoInput.addEventListener('change', function(e) {
                     const files = Array.from(e.target.files).slice(0, 3);
                     const previewContainer = document.getElementById('preview-container');
@@ -665,15 +732,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     
                     files.forEach(file => {
                         const reader = new FileReader();
-                        reader.onload = function(event) {
-                            previewContainer.innerHTML += `<div class="preview-box"><img src="${event.target.result}"></div>`;
+                        reader.onload = function(event) { 
+                            previewContainer.innerHTML += `<div class="preview-box"><img src="${event.target.result}"></div>`; 
                         }
                         reader.readAsDataURL(file);
                     });
                 });
             }
         }, 100);
-    }
+    };
 
     window.submitListing = async function(type) {
         const titleEl = document.getElementById('new-item-title');
@@ -699,7 +766,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if(photoInput && photoInput.files && photoInput.files.length > 0) {
             files = Array.from(photoInput.files).slice(0, 3);
         }
-
+        
         if(files.length === 0) {
             return alert("Lütfen en az 1 fotoğraf seçin veya çekin.");
         }
@@ -712,7 +779,9 @@ document.addEventListener("DOMContentLoaded", () => {
         let imgUrlsArray = [];
 
         try {
-            const uploadTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Yükleme süresi doldu. Firebase Storage izinlerinizi (Rules) kontrol edin.")), 15000));
+            const uploadTimeout = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error("Yükleme süresi doldu. Firebase Storage izinlerinizi (Rules) kontrol edin.")), 15000);
+            });
 
             const uploadProcess = async () => {
                 for (let file of files) {
@@ -735,7 +804,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 imgUrls: imgUrlsArray, 
                 imgUrl: imgUrlsArray.length > 0 ? imgUrlsArray[0] : "", 
                 sellerId: window.userProfile.uid, 
-                sellerName: window.userProfile.name + " " + window.userProfile.surname,
+                sellerName: window.userProfile.name + " " + window.userProfile.surname, 
                 createdAt: serverTimestamp()
             });
 
@@ -744,7 +813,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (error) {
             console.error("İlan eklenirken hata:", error);
-            statusEl.innerText = "HATA: " + error.message;
+            statusEl.innerText = "HATA: " + error.message; 
             statusEl.style.color = "red";
             alert("İlan yayınlanamadı! Hata: " + error.message);
         } finally {
@@ -753,10 +822,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             btn.disabled = false;
         }
-    }
+    };
 
     // ============================================================================
-    // 5. MESAJLAŞMA (CHATS) (ORİJİNAL)
+    // 5. MESAJLAŞMA (CHATS)
     // ============================================================================
 
     window.startChat = async function(targetUserId, targetUserName) {
@@ -775,14 +844,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     participants: [window.userProfile.uid, targetUserId],
                     participantNames: { [window.userProfile.uid]: window.userProfile.name, [targetUserId]: targetUserName },
                     participantAvatars: { [window.userProfile.uid]: window.userProfile.avatar, [targetUserId]: "👤" },
-                    lastUpdated: serverTimestamp(),
+                    lastUpdated: serverTimestamp(), 
                     messages: []
                 });
+                
                 window.goToMessages();
                 setTimeout(() => window.openChatView(newChatRef.id), 500); 
-            } catch (error) { console.error(error); }
+            } catch (error) { 
+                console.error(error); 
+            }
         }
-    }
+    };
 
     window.renderMessages = function() {
         let html = `
@@ -825,14 +897,16 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         
         mainContent.innerHTML = html;
-        if(window.innerWidth > 1024 && currentChatId && chatsDB.find(c=>c.id===currentChatId)) {
+        
+        if(window.innerWidth > 1024 && currentChatId && chatsDB.find(c => c.id === currentChatId)) {
             window.openChatView(currentChatId);
         }
-    }
+    };
 
     window.openChatView = function(chatId) {
         currentChatId = chatId;
         const activeChat = chatsDB.find(c => c.id === chatId);
+        
         if(!activeChat) return;
 
         const container = document.getElementById('chat-main-view');
@@ -854,6 +928,7 @@ document.addEventListener("DOMContentLoaded", () => {
         activeChat.messages.forEach(msg => { 
             const type = msg.senderId === window.userProfile.uid ? 'sent' : 'received';
             const ticks = type === 'sent' ? '<span class="ticks">✓✓</span>' : '';
+            
             chatHTML += `
                 <div class="bubble ${type}">
                     <div class="msg-text">${msg.text}</div>
@@ -871,10 +946,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 <button class="chat-send-btn" onclick="sendMsg('${chatId}')">➤</button>
             </div>
         `;
+        
         container.innerHTML = chatHTML;
         
         const scrollBox = document.getElementById('chat-messages-scroll');
-        if(scrollBox) scrollBox.scrollTop = scrollBox.scrollHeight;
+        if(scrollBox) {
+            scrollBox.scrollTop = scrollBox.scrollHeight;
+        }
 
         const inputField = document.getElementById('chat-input-field');
         if(inputField) {
@@ -882,24 +960,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 if(e.key === 'Enter') window.sendMsg(chatId); 
             });
         }
-    }
+    };
 
     window.sendMsg = async function(chatId) {
         const input = document.getElementById('chat-input-field');
+        
         if(input && input.value.trim() !== '') {
             const text = input.value.trim();
             input.value = '';
             const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
             await updateDoc(doc(db, "chats", chatId), {
-                messages: arrayUnion({ senderId: window.userProfile.uid, text: text, time: timeStr }),
+                messages: arrayUnion({ senderId: window.userProfile.uid, text: text, time: timeStr }), 
                 lastUpdated: serverTimestamp()
             });
         }
     };
 
     // ============================================================================
-    // 6. İTİRAFLAR (ANONİM KAMPÜS) (ORİJİNAL)
+    // 6. İTİRAFLAR (ANONİM KAMPÜS)
     // ============================================================================
 
     window.renderConfessions = function() {
@@ -913,8 +992,10 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         `;
         mainContent.innerHTML = html;
-        if(confessionsDB) window.drawConfessionsGrid();
-    }
+        if(confessionsDB) {
+            window.drawConfessionsGrid();
+        }
+    };
 
     window.openConfessionForm = function() {
         window.openModal('Yeni Anonim Gönderi', `
@@ -924,7 +1005,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <textarea id="new-conf-text" class="form-group" style="width:100%; height:120px; border-radius:12px; padding:15px; font-size:16px;" placeholder="Aklından ne geçiyor?"></textarea>
             <button class="btn-primary" id="publish-conf-btn" onclick="submitConfession()">Kampüse Gönder</button>
         `);
-    }
+    };
 
     window.submitConfession = async function() {
         const textEl = document.getElementById('new-conf-text');
@@ -941,8 +1022,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             await addDoc(collection(db, "confessions"), {
                 avatar: ["👻","👽","🤖","🦊","🎭"][Math.floor(Math.random()*5)], 
-                theme: themes[Math.floor(Math.random()*3)],
-                user: "Anonim #"+Math.floor(Math.random()*9999), 
+                theme: themes[Math.floor(Math.random()*3)], 
+                user: "Anonim #" + Math.floor(Math.random()*9999), 
                 time: "Şimdi", 
                 tag: tagVal, 
                 text: textEl.value, 
@@ -953,13 +1034,14 @@ document.addEventListener("DOMContentLoaded", () => {
             window.closeModal();
         } catch(e) { 
             alert("Hata: Firebase kurallarını kontrol edin."); 
-            btn.disabled = false;
+            btn.disabled = false; 
         }
-    }
+    };
 
     window.drawConfessionsGrid = function() {
         const feed = document.getElementById('conf-feed');
         if(!feed) return;
+        
         let html = '';
         confessionsDB.forEach((post, index) => {
             html += `
@@ -980,7 +1062,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>`;
         });
         feed.innerHTML = html;
-    }
+    };
 
     window.openConfessionDetail = function(docId) {
         const post = confessionsDB.find(p => p.id === docId);
@@ -996,10 +1078,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 <button class="action-btn" style="flex:1;" onclick="alert('Beğenildi!')">🔥 Yanıyor</button>
             </div>
         `);
-    }
+    };
 
     // ============================================================================
-    // 7. SORU VE CEVAP (Q&A) (ORİJİNAL)
+    // 7. SORU VE CEVAP (Q&A)
     // ============================================================================
 
     window.renderQA = function() {
@@ -1020,13 +1102,13 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         mainContent.innerHTML = html;
         window.drawQAGrid('Genel'); 
-    }
+    };
 
     window.filterQA = function(btn, filterName) {
         document.querySelectorAll('.qa-filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         window.drawQAGrid(filterName);
-    }
+    };
 
     window.openQAForm = function() {
         window.openModal('Yeni Soru Sor', `
@@ -1042,15 +1124,17 @@ document.addEventListener("DOMContentLoaded", () => {
             <textarea id="new-qa-text" class="form-group" style="width:100%; height:120px; border-radius:12px; padding:15px; font-size:15px;" placeholder="Sorunuzu detaylı yazın..."></textarea>
             <button class="btn-primary" id="publish-qa-btn" onclick="submitQA()">Soruyu Yayınla</button>
         `);
-    }
+    };
 
     window.submitQA = async function() {
         const textEl = document.getElementById('new-qa-text');
         const tagEl = document.getElementById('new-qa-tag');
         const btn = document.getElementById('publish-qa-btn');
+        
         if(!textEl || textEl.value.trim() === '') return;
         
         btn.disabled = true;
+        
         try {
             await addDoc(collection(db, "qa"), {
                 avatar: window.userProfile.avatar, 
@@ -1064,9 +1148,9 @@ document.addEventListener("DOMContentLoaded", () => {
             window.closeModal();
         } catch(e) { 
             alert("Hata: Firebase kilitlerini kontrol edin."); 
-            btn.disabled = false;
+            btn.disabled = false; 
         }
-    }
+    };
 
     window.drawQAGrid = function(filterTag = 'Genel') {
         const feed = document.getElementById('qa-feed');
@@ -1082,6 +1166,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let html = '';
         filteredDB.forEach((q) => {
             const statusClass = q.answers.length > 0 ? 'answered' : '';
+            
             html += `
                 <div class="qa-card" onclick="openQADetail('${q.id}')">
                     <div class="qa-left-stats">
@@ -1099,16 +1184,22 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 </div>`;
         });
+        
         feed.innerHTML = html;
-    }
+    };
 
     window.openQADetail = function(docId) {
         const q = qaDB.find(item => item.id === docId);
         if(!q) return;
         
         let answersHtml = q.answers.length === 0 ? '<p style="text-align:center; padding:20px; color:var(--text-gray);">İlk cevap veren sen ol!</p>' : '';
+        
         q.answers.forEach(ans => { 
-            answersHtml += `<div style="background:#F9FAFB; padding:16px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border-color);"><div style="font-weight:bold; color:var(--primary); margin-bottom:6px;">${ans.user}</div><div style="font-size:15px;">${ans.text}</div></div>`; 
+            answersHtml += `
+                <div style="background:#F9FAFB; padding:16px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border-color);">
+                    <div style="font-weight:bold; color:var(--primary); margin-bottom:6px;">${ans.user}</div>
+                    <div style="font-size:15px;">${ans.text}</div>
+                </div>`; 
         });
 
         window.openModal('Soru Detayı', `
@@ -1125,24 +1216,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 <button class="btn-primary" style="width:auto;" onclick="submitAnswer('${q.id}')">Gönder</button>
             </div>
         `);
-    }
+    };
 
     window.submitAnswer = async function(docId) {
         const ansInput = document.getElementById('new-answer-input');
+        
         if(ansInput && ansInput.value.trim() !== '') {
-            try {
+            try { 
                 await updateDoc(doc(db, "qa", docId), { 
                     answers: arrayUnion({ user: window.userProfile.name, text: ansInput.value.trim() }) 
-                });
+                }); 
                 window.closeModal(); 
             } catch(e) { 
                 console.error(e); 
             }
         }
-    }
+    };
 
     // ============================================================================
-    // 8. FAKÜLTE SİSTEMİ (KALICI VE ESTETİK GEÇİŞ)
+    // 8. FAKÜLTE SİSTEMİ
     // ============================================================================
 
     window.updateMyFacultiesSidebar = function() {
@@ -1153,12 +1245,15 @@ document.addEventListener("DOMContentLoaded", () => {
         window.joinedFaculties.forEach(fac => { 
             html += `<div class="menu-item community-link" data-name="${fac.name}" data-icon="${fac.icon}" data-color="${fac.color}" onclick="handleFacultyClick('${fac.name}', '${fac.icon}', '${fac.color}')">${fac.icon} ${fac.name}</div>`; 
         });
+        
         container.innerHTML = html;
-    }
+    };
 
     window.handleFacultyClick = async function(name, icon, bgColor) {
         document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
-        if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
+        if(window.innerWidth <= 1024) {
+            document.getElementById('sidebar').classList.remove('open');
+        }
 
         const isJoined = window.joinedFaculties.some(f => f.name === name) || window.userProfile.faculty === name;
 
@@ -1178,26 +1273,23 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
             window.scrollTo(0,0);
         }
-    }
+    };
 
     window.verifyFacultyCode = async function(name, icon, bgColor) {
         const inputCode = document.getElementById('faculty-passcode-input').value.trim();
         
         if (inputCode.toLowerCase() === FACULTY_PASSCODES[name].toLowerCase()) {
-            // Profil Mühürleme
             window.userProfile.faculty = name; 
             window.joinedFaculties = [{name: name, icon: icon, color: bgColor}]; 
             window.updateMyFacultiesSidebar();
             
-            // Veritabanına Kalıcı Kayıt
             await updateDoc(doc(db, "users", window.userProfile.uid), { faculty: name });
             
-            // Ekranı Anında Çevir
             window.loadFacultyFeed(name, icon, bgColor);
         } else { 
             alert("Hatalı kod girdiniz. Lütfen tekrar deneyin."); 
         }
-    }
+    };
 
     window.loadFacultyFeed = async function(name, icon, bgColor) {
         let totalMembers = 0; 
@@ -1207,8 +1299,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const q = query(collection(db, "users"), where("faculty", "==", name));
             const querySnapshot = await getDocs(q);
             totalMembers = querySnapshot.size;
+            
             querySnapshot.forEach((doc) => { 
-                if(doc.data().isOnline) onlineMembers++; 
+                if(doc.data().isOnline) {
+                    onlineMembers++; 
+                }
             });
         } catch (e) { 
             console.error(e); 
@@ -1229,7 +1324,9 @@ document.addEventListener("DOMContentLoaded", () => {
                             <div class="avatar">👨‍💻</div>
                             <div class="avatar" style="background:white; color:var(--primary); font-size:11px; font-weight:bold;">+${totalMembers}</div>
                         </div>
-                        <div class="community-stats"><span class="online-dot"></span> Gerçek Çevrimiçi: ${onlineMembers}</div>
+                        <div class="community-stats">
+                            <span class="online-dot"></span> Gerçek Çevrimiçi: ${onlineMembers}
+                        </div>
                     </div>
                 </div>
                 <div class="create-post-box">
@@ -1240,46 +1337,55 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             </div>
         `;
-    }
+    };
 
     // ============================================================================
     // 9. SAYFA YÖNLENDİRME (ROUTING) VE PROFİL YÖNETİMİ
     // ============================================================================
 
     window.loadPage = function(pageName) {
-        if (pageName === 'home') mainContent.innerHTML = getHomeContent();
-        else if (pageName === 'market') window.renderListings('market', '🛒 Kampüs Market', 'Satıcıya Yaz');
-        else if (pageName === 'housing') window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt', 'İletişime Geç');
-        else if (pageName === 'confessions') window.renderConfessions();
-        else if (pageName === 'qa') window.renderQA(); 
-        else if (pageName === 'messages') window.renderMessages(); 
-        else if (pageName === 'settings') window.renderSettings();
-        else if (pageName === 'profile') window.renderProfile();
+        if (pageName === 'home') {
+            mainContent.innerHTML = getHomeContent();
+        } else if (pageName === 'market') {
+            window.renderListings('market', '🛒 Kampüs Market', 'market');
+        } else if (pageName === 'housing') {
+            window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt', 'housing');
+        } else if (pageName === 'confessions') {
+            window.renderConfessions();
+        } else if (pageName === 'qa') {
+            window.renderQA(); 
+        } else if (pageName === 'messages') {
+            window.renderMessages(); 
+        } else if (pageName === 'settings') {
+            window.renderSettings();
+        } else if (pageName === 'profile') {
+            window.renderProfile();
+        }
         
         if(window.innerWidth <= 1024 && document.getElementById('sidebar')) {
             document.getElementById('sidebar').classList.remove('open');
         }
         window.scrollTo(0,0);
-    }
+    };
 
     document.querySelectorAll('.menu-item[data-target]').forEach(item => {
         item.addEventListener('click', (e) => {
             if(e.currentTarget.getAttribute('data-target')) {
                 document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
-                e.currentTarget.classList.add('active');
+                e.currentTarget.classList.add('active'); 
                 window.loadPage(e.currentTarget.getAttribute('data-target'));
             }
         });
     });
 
     bind('logo-btn', 'click', () => { 
-        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
-        document.querySelector('[data-target="home"]').classList.add('active');
+        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
+        document.querySelector('[data-target="home"]').classList.add('active'); 
         window.loadPage('home'); 
     });
     
     bind('profile-btn', 'click', () => { 
-        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
+        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
         window.loadPage('profile'); 
     });
 
@@ -1289,8 +1395,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 <h2>👤 Profil Bilgilerim</h2>
                 <div style="background: #F9FAFB; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color);">
                     <div class="grid-2col" style="margin-top:0;">
-                        <div class="form-group"><label>Ad</label><input type="text" id="prof-name" value="${window.userProfile.name}"></div>
-                        <div class="form-group"><label>Soyad</label><input type="text" id="prof-surname" value="${window.userProfile.surname}"></div>
+                        <div class="form-group">
+                            <label>Ad</label>
+                            <input type="text" id="prof-name" value="${window.userProfile.name}">
+                        </div>
+                        <div class="form-group">
+                            <label>Soyad</label>
+                            <input type="text" id="prof-surname" value="${window.userProfile.surname}">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Üniversite</label>
@@ -1305,11 +1417,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             </div>
         `;
-    }
+    };
 
     window.saveProfile = async function() {
-        const name = document.getElementById('prof-name').value;
+        const name = document.getElementById('prof-name').value; 
         const surname = document.getElementById('prof-surname').value;
+        
         window.userProfile.name = name; 
         window.userProfile.surname = surname;
         
@@ -1319,7 +1432,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         
         window.openModal('Başarılı', '<div style="text-align:center;"><p style="font-size:40px; margin:0;">✅</p><p>Profil güncellendi!</p></div>');
-    }
+    };
 
     window.renderSettings = function() {
         mainContent.innerHTML = `
@@ -1328,15 +1441,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div style="background: #F9FAFB; padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 1px solid var(--border-color);">
                     <div class="form-group">
                         <label>Dil Seçimi</label>
-                        <select><option>Türkçe</option><option>English</option></select>
+                        <select>
+                            <option>Türkçe</option>
+                            <option>English</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Tema</label>
-                        <select><option>Aydınlık Mod</option><option>Karanlık Mod (Yakında)</option></select>
+                        <select>
+                            <option>Aydınlık Mod</option>
+                            <option>Karanlık Mod (Yakında)</option>
+                        </select>
                     </div>
                 </div>
                 <button class="btn-danger" onclick="logout()">🚪 Güvenli Çıkış Yap</button>
             </div>
         `;
-    }
+    };
 });
