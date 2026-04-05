@@ -56,39 +56,171 @@ const storage = getStorage(app);
 
 function initializeUniLoop() {
     
-    // 🎨 DINAMIK CSS ENJEKSIYONU: Ekran kaymaları, kaydırma hassasiyetleri, sabit görünümler ve yeni akış için
+    // 🎨 DINAMIK CSS ENJEKSIYONU: Yumuşak Kaydırma (Smooth Scroll) ve Yeni Akış Fixleri
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
-        /* Genel sayfa uzamasını ve sekme (bounce) efektini engeller */
-        html, body { overscroll-behavior-y: none; }
+        /* Sert kaydırmayı engeller ve estetik yumuşak kaydırma sağlar */
+        html, body { 
+            scroll-behavior: smooth !important; 
+            -webkit-overflow-scrolling: touch; 
+        }
         
-        /* Mobilde Sidebar Kaydırma ve Hassasiyet Fix */
-        #sidebar { overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; }
+        /* Buton tıklama sorunlarını gideren z-index ve pointer ayarları */
+        button, .menu-item, .chat-contact, .action-btn { 
+            cursor: pointer !important; 
+            position: relative; 
+            z-index: 10; 
+        }
         
-        /* Mesajlar: Sayfanın kaymamasını, sadece kişi listesi ve sohbetin kaymasını sağlayan Fix */
-        #chat-layout-container { height: calc(100vh - 120px) !important; max-height: 800px; overflow: hidden !important; display: flex; flex-direction: row; }
-        .chat-sidebar { overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; flex-shrink: 0; }
-        .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; }
-        #chat-messages-scroll { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; scroll-behavior: smooth; }
+        /* Mobilde Sidebar Kaydırma Fix */
+        #sidebar { 
+            overflow-y: auto !important; 
+            -webkit-overflow-scrolling: touch !important; 
+        }
         
-        /* Soru Cevap, İtiraflar ve Market İçin Liste Scroll Fix */
-        #qa-feed, #conf-feed, #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; padding-right: 8px; }
+        /* Mesajlar: Sayfanın kaymamasını sağlayan Fix */
+        #chat-layout-container { 
+            height: calc(100vh - 120px) !important; 
+            max-height: 800px; 
+            overflow: hidden !important; 
+            display: flex; 
+            flex-direction: row; 
+        }
+        .chat-sidebar { 
+            overflow-y: auto !important; 
+            height: 100% !important; 
+            -webkit-overflow-scrolling: touch !important; 
+            flex-shrink: 0; 
+        }
+        .chat-main { 
+            height: 100% !important; 
+            display: flex !important; 
+            flex-direction: column !important; 
+            overflow: hidden !important; 
+            flex: 1; 
+        }
+        #chat-messages-scroll { 
+            flex: 1 !important; 
+            overflow-y: auto !important; 
+            -webkit-overflow-scrolling: touch !important; 
+            scroll-behavior: smooth; 
+        }
+        
+        /* Soru Cevap ve Market İçin Liste Scroll Fix */
+        #qa-feed, #listings-grid-container { 
+            max-height: calc(100vh - 200px) !important; 
+            overflow-y: auto !important; 
+            -webkit-overflow-scrolling: touch !important; 
+            padding-right: 8px; 
+        }
         
         /* Detaylardaki Yorumlar */
-        .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; padding-right: 8px; }
+        .answers-container { 
+            max-height: 250px !important; 
+            overflow-y: auto !important; 
+            -webkit-overflow-scrolling: touch !important; 
+            padding-right: 8px; 
+            scroll-behavior: smooth; 
+        }
         
         /* 📱 YENİ: Instagram / Twitter Tarzı Akış (Feed) Stilleri */
-        .feed-post { background: #fff; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .feed-post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .feed-post-avatar { font-size: 24px; width: 42px; height: 42px; background: #F3F4F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0; }
-        .feed-post-meta { display: flex; flex-direction: column; }
-        .feed-post-author { font-weight: bold; font-size: 15px; color: var(--text-dark); }
-        .feed-post-time { font-size: 12px; color: var(--text-gray); }
-        .feed-post-text { font-size: 15px; margin-bottom: 12px; line-height: 1.5; color: var(--text-dark); word-break: break-word; }
-        .feed-post-img { width: 100%; border-radius: 12px; margin-bottom: 12px; max-height: 400px; object-fit: cover; cursor: pointer; border: 1px solid #f3f4f6; }
-        .feed-post-actions { display: flex; border-top: 1px solid var(--border-color); padding-top: 12px; gap: 16px; }
-        .feed-action-btn { background: none; border: none; color: var(--text-gray); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 0; outline: none; transition: 0.2s; }
-        .feed-action-btn:hover { color: var(--primary); }
+        .feed-layout-container { 
+            height: calc(100vh - 100px); 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            margin: -20px; 
+            background: #F3F4F6; 
+        }
+        #conf-feed { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 15px; 
+            scroll-behavior: smooth; 
+            -webkit-overflow-scrolling: touch; 
+        }
+        .feed-post { 
+            background: #fff; 
+            border: 1px solid #E5E7EB; 
+            border-radius: 16px; 
+            padding: 16px; 
+            margin-bottom: 16px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
+        }
+        .feed-post-header { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            margin-bottom: 12px; 
+        }
+        .feed-post-avatar { 
+            font-size: 24px; 
+            width: 44px; 
+            height: 44px; 
+            background: #F3F4F6; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 0; 
+            border: 1px solid #E5E7EB; 
+        }
+        .feed-post-meta { 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .feed-post-author { 
+            font-weight: 800; 
+            font-size: 15px; 
+            color: #111827; 
+        }
+        .feed-post-time { 
+            font-size: 12px; 
+            color: #6B7280; 
+            margin-top: 2px; 
+        }
+        .feed-post-text { 
+            font-size: 15px; 
+            margin-bottom: 12px; 
+            line-height: 1.5; 
+            color: #374151; 
+            word-break: break-word; 
+        }
+        .feed-post-img { 
+            width: 100%; 
+            border-radius: 12px; 
+            margin-bottom: 12px; 
+            max-height: 450px; 
+            object-fit: cover; 
+            cursor: pointer; 
+            border: 1px solid #E5E7EB; 
+        }
+        .feed-post-actions { 
+            display: flex; 
+            border-top: 1px solid #E5E7EB; 
+            padding-top: 12px; 
+            gap: 20px; 
+        }
+        .feed-action-btn { 
+            background: none; 
+            border: none; 
+            color: #6B7280; 
+            font-weight: 600; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            font-size: 14px; 
+            padding: 5px; 
+            outline: none; 
+            transition: 0.2s; 
+            border-radius: 8px; 
+            z-index: 10; 
+        }
+        .feed-action-btn:hover { 
+            color: var(--primary); 
+            background: #EEF2FF; 
+        }
 
         @media (max-width: 1024px) {
             #chat-layout-container { height: calc(100vh - 160px) !important; }
@@ -111,7 +243,6 @@ function initializeUniLoop() {
         }
     });
 
-    // Olay Dinleyicisi (Event Listener) Kısayolu
     const bind = (id, event, callback) => { 
         const el = document.getElementById(id); 
         if (el) {
@@ -138,12 +269,10 @@ function initializeUniLoop() {
     let chatsDB = [];
     let currentChatId = null;
 
-    // Mobil Chat'ten çıkıldığında id'yi sıfırlamak için global fonksiyon
     window.resetCurrentChatId = function() {
         currentChatId = null;
     };
 
-    // FAKÜLTE GİRİŞ ŞİFRELERİ
     const FACULTY_PASSCODES = {
         "Tıp Fakültesi": "tıpfak100", 
         "Bilgisayar Fakültesi": "bil1000", 
@@ -178,13 +307,17 @@ function initializeUniLoop() {
     // ============================================================================
     
     bind('show-register-btn', 'click', (e) => {
-        if(e) e.preventDefault();
+        if(e) {
+            e.preventDefault();
+        }
         document.getElementById('login-card').style.display = 'none'; 
         document.getElementById('register-card').style.display = 'block';
     });
     
     bind('show-login-btn', 'click', (e) => {
-        if(e) e.preventDefault();
+        if(e) {
+            e.preventDefault();
+        }
         document.getElementById('register-card').style.display = 'none'; 
         document.getElementById('login-card').style.display = 'block';
     });
@@ -197,7 +330,9 @@ function initializeUniLoop() {
             const val = this.value;
             uniList.innerHTML = '';
             
-            if (!val) return false;
+            if (!val) {
+                return false;
+            }
             
             const matches = globalUniversities.filter(u => u.toLowerCase().includes(val.toLowerCase()));
             
@@ -221,7 +356,9 @@ function initializeUniLoop() {
     }
 
     bind('register-btn', 'click', async (e) => {
-        if(e) e.preventDefault(); 
+        if(e) {
+            e.preventDefault(); 
+        }
         
         const name = document.getElementById('reg-name').value.trim();
         const surname = document.getElementById('reg-surname').value.trim();
@@ -230,7 +367,8 @@ function initializeUniLoop() {
         const password = document.getElementById('reg-password').value;
 
         if(!name || !surname || !uni || !email || !password) {
-            return alert("Lütfen tüm alanları eksiksiz doldurun.");
+            alert("Lütfen tüm alanları eksiksiz doldurun.");
+            return;
         }
 
         const btn = document.getElementById('register-btn');
@@ -239,21 +377,19 @@ function initializeUniLoop() {
         btn.disabled = true;
 
         try {
-            // 1. Hesap yaratma işlemi
             const userCred = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCred.user;
             
-            // 2. KULLANICIYI BEKLETMEDEN EKRANI ANINDA GEÇİR
             document.getElementById('register-card').style.display = 'none';
             document.getElementById('verify-card').style.display = 'block';
             
             btn.innerText = origText;
             btn.disabled = false;
 
-            // 3. Arka planda sessizce doğrulama maili yolla
-            sendEmailVerification(user).catch(err => console.error("Mail gönderilemedi:", err));
+            sendEmailVerification(user).catch(err => {
+                console.error("Mail gönderilemedi:", err);
+            });
 
-            // 4. Arka planda veritabanına kaydet
             setDoc(doc(db, "users", user.uid), {
                 uid: user.uid, 
                 name: name, 
@@ -271,18 +407,25 @@ function initializeUniLoop() {
             });
 
         } catch (error) {
-            alert("Kayıt olurken bir hata oluştu: " + (error.code === 'auth/email-already-in-use' ? 'Bu e-posta adresi zaten kullanımda.' : error.message));
+            if (error.code === 'auth/email-already-in-use') {
+                alert("Kayıt olurken bir hata oluştu: Bu e-posta adresi zaten kullanımda.");
+            } else {
+                alert("Kayıt olurken bir hata oluştu: " + error.message);
+            }
             btn.innerText = origText;
             btn.disabled = false;
         }
     });
 
     bind('verify-code-btn', 'click', async (e) => {
-        if(e) e.preventDefault();
+        if(e) {
+            e.preventDefault();
+        }
         
         const user = auth.currentUser;
         if(!user) {
-            return alert("Oturum zaman aşımına uğradı. Lütfen sayfayı yenileyip tekrar giriş yapın ve doğrulayın.");
+            alert("Oturum zaman aşımına uğradı. Lütfen sayfayı yenileyip tekrar giriş yapın ve doğrulayın.");
+            return;
         }
 
         const btn = document.getElementById('verify-code-btn');
@@ -310,14 +453,17 @@ function initializeUniLoop() {
     });
 
     bind('login-btn', 'click', async (e) => {
-        if(e) e.preventDefault(); 
+        if(e) {
+            e.preventDefault(); 
+        }
 
         const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value;
         const btn = document.getElementById('login-btn');
 
         if(!email || !password) {
-            return alert("Lütfen e-posta ve şifrenizi girin.");
+            alert("Lütfen e-posta ve şifrenizi girin.");
+            return;
         }
 
         const originalText = btn.innerText;
@@ -347,10 +493,15 @@ function initializeUniLoop() {
     });
 
     bind('forgot-password-btn', 'click', async (e) => {
-        if(e) e.preventDefault();
+        if(e) {
+            e.preventDefault();
+        }
+        
         const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:");
         
-        if(!email) return;
+        if(!email) {
+            return;
+        }
         
         try {
             await sendPasswordResetEmail(auth, email);
@@ -364,14 +515,24 @@ function initializeUniLoop() {
     // 🌍 SİSTEM MESAJI GARANTİSİ 
     // ============================================================================
     window.ensureWelcomeMessage = async function(user, userName) {
-        if(!user) return;
+        if(!user) {
+            return;
+        }
         try {
             const chatId = user.uid + "_system_welcome";
             const chatRef = doc(db, "chats", chatId);
             const chatSnap = await getDoc(chatRef);
 
             if (!chatSnap.exists()) {
-                const systemMessageText = `Merhaba ${userName}! Dünyanın en yenilikçi kampüs ağı UniLoop'a hoş geldin. 🎓✨<br><br>Bu platform senin dijital kampüsün! Neler mi yapabilirsin?<br><br>🛒 <b>Kampüs Market:</b> İhtiyacın olmayan eşyaları sat veya diğer öğrencilerin ilanlarına göz at. İlanlara tıklayıp direkt mesaj atarak güvenle iletişime geç.<br><br>📸 <b>Kampüs Akışı:</b> İstersen tamamen anonim olarak, istersen kullanıcı adınla fotoğraf ve düşüncelerini özgürce paylaş.<br><br>❓ <b>Soru & Cevap:</b> Dersler veya kampüs yaşamı hakkında aklına takılan her şeyi sor.<br><br>🤝 <b>Bağlantı Kur:</b> Ana sayfadaki arama çubuğuna arkadaşlarının '#' kullanıcı adını yazarak onlara istek gönder. Bildirimler (🔔) kısmından gelen istekleri kabul et ve hemen mesajlaşmaya başla.<br><br>Burası senin alanın. Hemen "Profilim" sekmesine giderek kendine unutulmaz bir kullanıcı adı belirle ve döngüye katıl! Seni aramızda gördüğümüz için çok mutluyuz.`;
+                const systemMessageText = `
+                    Merhaba ${userName}! Dünyanın en yenilikçi kampüs ağı UniLoop'a hoş geldin. 🎓✨<br><br>
+                    Bu platform senin dijital kampüsün! Neler mi yapabilirsin?<br><br>
+                    🛒 <b>Kampüs Market:</b> İhtiyacın olmayan eşyaları sat veya diğer öğrencilerin ilanlarına göz at. İlanlara tıklayıp direkt mesaj atarak güvenle iletişime geç.<br><br>
+                    📸 <b>Kampüs Akışı:</b> İstersen tamamen anonim olarak, istersen kullanıcı adınla fotoğraf ve düşüncelerini özgürce paylaş.<br><br>
+                    ❓ <b>Soru & Cevap:</b> Dersler veya kampüs yaşamı hakkında aklına takılan her şeyi sor.<br><br>
+                    🤝 <b>Bağlantı Kur:</b> Ana sayfadaki arama çubuğuna arkadaşlarının '#' kullanıcı adını yazarak onlara istek gönder. Bildirimler (🔔) kısmından gelen istekleri kabul et ve hemen mesajlaşmaya başla.<br><br>
+                    Burası senin alanın. Hemen "Profilim" sekmesine giderek kendine unutulmaz bir kullanıcı adı belirle ve döngüye katıl! Seni aramızda gördüğümüz için çok mutluyuz.
+                `;
                 
                 await setDoc(chatRef, {
                     participants: [user.uid, "system"],
@@ -435,7 +596,6 @@ function initializeUniLoop() {
                 appScreen.style.display = 'block';
             }
 
-            // 🔔 BİLDİRİMLER SEKMESİNİ DİNAMİK OLARAK MENÜYE EKLE
             if (!document.getElementById('nav-notifications-btn')) {
                 const msgBtn = document.getElementById('nav-messages-btn');
                 if (msgBtn) {
@@ -475,9 +635,15 @@ function initializeUniLoop() {
                     await setDoc(userDocRef, window.userProfile);
                 }
                 
-                if(!window.userProfile.email) window.userProfile.email = user.email;
-                if(!window.userProfile.university) window.userProfile.university = "UniLoop Kampüsü";
-                if(window.userProfile.username === undefined) window.userProfile.username = "";
+                if(!window.userProfile.email) {
+                    window.userProfile.email = user.email;
+                }
+                if(!window.userProfile.university) {
+                    window.userProfile.university = "UniLoop Kampüsü";
+                }
+                if(window.userProfile.username === undefined) {
+                    window.userProfile.username = "";
+                }
 
                 await window.ensureWelcomeMessage(user, window.userProfile.name);
                 await updateDoc(userDocRef, { isOnline: true });
@@ -557,7 +723,6 @@ function initializeUniLoop() {
                 window.drawConfessionsFeed();
             }
 
-            // Eğer yorum yapma modalı açıksa onu da canlı güncelle
             if(document.getElementById('app-modal').classList.contains('active') && document.getElementById('active-post-id')) {
                 const activePostId = document.getElementById('active-post-id').value;
                 if(activePostId) {
@@ -581,9 +746,7 @@ function initializeUniLoop() {
             }
         });
 
-        // ====================================================================
         // 🛡️ CHATS LİSTENER: CANLI GÜNCELLEMELER VE KESİNTİSİZ ODAK FIXI
-        // ====================================================================
         onSnapshot(query(collection(db, "chats"), where("participants", "array-contains", currentUid)), (snapshot) => {
             chatsDB = [];
             let pendingRequestsCount = 0;
@@ -592,7 +755,9 @@ function initializeUniLoop() {
                 try {
                     const data = doc.data({ serverTimestamps: 'estimate' }); 
                     
-                    if (!data.participants || !Array.isArray(data.participants)) return; 
+                    if (!data.participants || !Array.isArray(data.participants)) {
+                        return;
+                    } 
                     
                     const otherUid = data.participants.find(p => p !== currentUid) || "system";
                     const otherName = (data.participantNames && data.participantNames[otherUid]) ? data.participantNames[otherUid] : "UniLoop Team";
@@ -626,7 +791,6 @@ function initializeUniLoop() {
                 }
             });
 
-            // EN GÜNCEL MESAJ OTOMATİK EN ÜSTE ÇIKAR
             chatsDB.sort((a, b) => b.lastUpdatedTS - a.lastUpdatedTS);
 
             const notifBadge = document.getElementById('notif-badge');
@@ -641,13 +805,11 @@ function initializeUniLoop() {
 
             const activeTab = document.querySelector('.menu-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'messages') {
-                // SOHBET GÜNCELLENİRKEN KLAVYE ODAĞINI KORUMA (Canlı Mesajlaşma)
                 const inputField = document.getElementById('chat-input-field');
                 const isFocused = inputField && inputField === document.activeElement;
                 const currentText = inputField ? inputField.value : '';
 
                 if (currentChatId) {
-                    // Ana ekranı yok etmeden SADECE mesaj listesini ve yan paneli günceller!
                     window.renderMessagesSidebarOnly();
                     window.updateChatMessagesOnly(currentChatId);
                     
@@ -660,7 +822,6 @@ function initializeUniLoop() {
                         }
                     }
                 } else {
-                    // Eğer hiçbir sohbete girilmediyse komple listeyi çiz
                     window.renderMessages();
                 }
 
@@ -751,17 +912,22 @@ function initializeUniLoop() {
             if(!searchInput) return;
             
             let rawSearch = searchInput.value.trim().toLowerCase();
-            if(!rawSearch) return alert("Lütfen bir kullanıcı adı yazın.");
+            if(!rawSearch) {
+                alert("Lütfen bir kullanıcı adı yazın.");
+                return;
+            }
             
             if (!window.userProfile.username) {
-                return alert("Arkadaş eklemeden önce lütfen profilinizden bir kullanıcı adı belirleyin!");
+                alert("Arkadaş eklemeden önce lütfen profilinizden bir kullanıcı adı belirleyin!");
+                return;
             }
 
             rawSearch = rawSearch.replace(/^#/, '');
             const searchVal = '#' + rawSearch;
             
             if(searchVal === window.userProfile.username) {
-                return alert("Kendinizi arkadaş olarak ekleyemezsiniz :)");
+                alert("Kendinizi arkadaş olarak ekleyemezsiniz :)");
+                return;
             }
 
             const btn = document.getElementById('friend-search-btn');
@@ -934,14 +1100,23 @@ function initializeUniLoop() {
     let touchendX = 0;
     
     function handleSwipe() {
-        if (touchendX < touchstartX - 40) window.changeLightboxImage(1); 
-        if (touchendX > touchstartX + 40) window.changeLightboxImage(-1); 
+        if (touchendX < touchstartX - 40) {
+            window.changeLightboxImage(1); 
+        }
+        if (touchendX > touchstartX + 40) {
+            window.changeLightboxImage(-1); 
+        }
     }
 
     const lb = document.getElementById('lightbox');
     if(lb) {
-        lb.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
-        lb.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleSwipe(); });
+        lb.addEventListener('touchstart', e => { 
+            touchstartX = e.changedTouches[0].screenX; 
+        });
+        lb.addEventListener('touchend', e => { 
+            touchendX = e.changedTouches[0].screenX; 
+            handleSwipe(); 
+        });
     }
 
     // ============================================================================
@@ -975,7 +1150,9 @@ function initializeUniLoop() {
 
     window.drawListingsGrid = function(type, buttonTextType, filterText) {
         const container = document.getElementById('listings-grid-container');
-        if(!container) return;
+        if(!container) {
+            return;
+        }
 
         const filteredData = marketDB.filter(item => 
             item.type === type && 
@@ -1023,7 +1200,9 @@ function initializeUniLoop() {
 
     window.openListingDetail = function(docId, type) {
         const item = marketDB.find(i => i.id === docId);
-        if(!item) return;
+        if(!item) {
+            return;
+        }
 
         let imgHtml = '';
         let indicatorsHtml = '';
@@ -1209,7 +1388,9 @@ function initializeUniLoop() {
         const statusEl = document.getElementById('upload-status');
         const btn = document.getElementById('publish-listing-btn');
 
-        if (!titleEl || !priceEl || !descEl || !currencyEl) return;
+        if (!titleEl || !priceEl || !descEl || !currencyEl) {
+            return;
+        }
 
         const title = titleEl.value.trim();
         const price = priceEl.value.trim();
@@ -1217,7 +1398,8 @@ function initializeUniLoop() {
         const desc = descEl.value.trim();
 
         if (title === "" || price === "" || desc === "") {
-            return alert("Lütfen başlık, fiyat ve açıklama alanlarını eksiksiz doldurun.");
+            alert("Lütfen başlık, fiyat ve açıklama alanlarını eksiksiz doldurun.");
+            return;
         }
 
         let files = [];
@@ -1226,7 +1408,8 @@ function initializeUniLoop() {
         }
         
         if(files.length === 0) {
-            return alert("Lütfen en az 1 fotoğraf seçin veya çekin.");
+            alert("Lütfen en az 1 fotoğraf seçin veya çekin.");
+            return;
         }
 
         btn.disabled = true;
@@ -1238,7 +1421,7 @@ function initializeUniLoop() {
 
         try {
             const uploadTimeout = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error("Yükleme süresi doldu. Firebase Storage izinlerinizi (Rules) kontrol edin.")), 15000);
+                setTimeout(() => reject(new Error("Yükleme süresi doldu. Firebase Storage izinlerinizi kontrol edin.")), 15000);
             });
 
             const uploadProcess = async () => {
@@ -1285,7 +1468,7 @@ function initializeUniLoop() {
     };
 
     // ============================================================================
-    // 7. MESAJLAŞMA VE BİLDİRİMLER (KABUL / RED / ANLIK FIX)
+    // 7. MESAJLAŞMA VE BİLDİRİMLER
     // ============================================================================
 
     window.startMarketChat = async function(targetUserId, targetUserName, autoText) {
@@ -1317,7 +1500,7 @@ function initializeUniLoop() {
                     },
                     lastUpdated: serverTimestamp(), 
                     status: 'accepted', 
-                    messages: [{ senderId: myUid, text: autoText, time: timeStr, read: false }] // Tik kontrolü için read
+                    messages: [{ senderId: myUid, text: autoText, time: timeStr, read: false }] 
                 });
                 existingChatId = newDocRef.id;
             } else {
@@ -1335,7 +1518,6 @@ function initializeUniLoop() {
         }
     };
 
-    // 🔔 BİLDİRİMLER EKRANI (Bize gelen istekler)
     window.renderNotifications = function() {
         const incomingRequests = chatsDB.filter(c => c.status === 'pending' && c.initiator !== window.userProfile.uid);
         
@@ -1372,7 +1554,6 @@ function initializeUniLoop() {
         mainContent.innerHTML = html;
     };
 
-    // ✅ İSTEĞİ KABUL ET
     window.acceptRequest = async function(chatId) {
         try {
             const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -1388,7 +1569,6 @@ function initializeUniLoop() {
         }
     };
 
-    // ❌ İSTEĞİ REDDET
     window.rejectRequest = async function(chatId) {
         if(confirm("Bu arkadaşlık isteğini reddetmek istediğinize emin misiniz?")) {
             try {
@@ -1401,10 +1581,11 @@ function initializeUniLoop() {
         }
     };
 
-    // YENİ EKLENEN FONKSİYON: SADECE SİDEBAR'I YENİLE (GİR ÇIK YAPMAYI ENGELLEYEN YAPI)
     window.renderMessagesSidebarOnly = function() {
         const sidebar = document.querySelector('.chat-sidebar');
-        if(!sidebar) return;
+        if(!sidebar) {
+            return;
+        }
         
         const visibleChats = chatsDB.filter(c => c.status === 'accepted' || (c.status === 'pending' && c.initiator === window.userProfile.uid));
         
@@ -1442,13 +1623,16 @@ function initializeUniLoop() {
         sidebar.innerHTML = html;
     };
 
-    // YENİ EKLENEN FONKSİYON: SADECE MESAJLARI YENİLE (INPUT VE KLAVYE KAYBOLMASINI ENGELLEYEN YAPI)
     window.updateChatMessagesOnly = function(chatId) {
         const activeChat = chatsDB.find(c => c.id === chatId);
-        if(!activeChat) return;
+        if(!activeChat) {
+            return;
+        }
         
         const scrollBox = document.getElementById('chat-messages-scroll');
-        if(!scrollBox) return; 
+        if(!scrollBox) {
+            return; 
+        }
         
         let chatHTML = '';
         
@@ -1476,7 +1660,6 @@ function initializeUniLoop() {
         scrollBox.scrollTop = scrollBox.scrollHeight;
     };
 
-    // TÜM EKRANI İLK KEZ ÇİZEN ANA FONKSİYON
     window.renderMessages = function() {
         const visibleChats = chatsDB.filter(c => c.status === 'accepted' || (c.status === 'pending' && c.initiator === window.userProfile.uid));
 
@@ -1496,7 +1679,7 @@ function initializeUniLoop() {
         `;
         
         mainContent.innerHTML = html;
-        window.renderMessagesSidebarOnly(); // Sidebar'ı yeni fonksiyonla çizdir
+        window.renderMessagesSidebarOnly(); 
         
         if(currentChatId && visibleChats.find(c => c.id === currentChatId)) {
             window.openChatView(currentChatId);
@@ -1507,9 +1690,10 @@ function initializeUniLoop() {
         currentChatId = chatId;
         const activeChat = chatsDB.find(c => c.id === chatId);
         
-        if(!activeChat) return;
+        if(!activeChat) {
+            return;
+        }
 
-        // 1. TİK SİSTEMİ: Sohbet açıldığında, "Karşı Tarafın" henüz okumadığım mesajlarını Okundu (read: true) olarak işaretle
         let hasUnread = false;
         const updatedMessages = activeChat.messages.map(msg => {
             if (msg.senderId !== window.userProfile.uid && msg.read === false) {
@@ -1521,11 +1705,10 @@ function initializeUniLoop() {
 
         if (hasUnread) {
             updateDoc(doc(db, "chats", chatId), { messages: updatedMessages });
-            // Bu satırın ardından listener tetiklenir, DOM kendi kendini canlı tazeler.
             activeChat.messages = updatedMessages; 
         }
 
-        window.renderMessagesSidebarOnly(); // Sidebar'ı update et
+        window.renderMessagesSidebarOnly(); 
 
         const container = document.getElementById('chat-main-view');
         document.getElementById('chat-layout-container').classList.add('chat-active');
@@ -1562,7 +1745,7 @@ function initializeUniLoop() {
         
         container.innerHTML = chatHTML;
         
-        window.updateChatMessagesOnly(chatId); // Sadece mesajları çizdir
+        window.updateChatMessagesOnly(chatId); 
 
         const inputField = document.getElementById('chat-input-field');
         if(inputField) {
@@ -1572,7 +1755,6 @@ function initializeUniLoop() {
                 }
             });
             
-            // Kullanıcı kolaylığı için input alanına odaklan (masaüstünde)
             if(window.innerWidth > 1024) {
                 inputField.focus();
             }
@@ -1585,10 +1767,9 @@ function initializeUniLoop() {
         if(input && input.value.trim() !== '') {
             try {
                 const text = input.value.trim();
-                input.value = ''; // DOM'da anında temizlenir
+                input.value = ''; 
                 const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 
-                // Mesaj gönderilirken varsayılan olarak read: false durumunda yollanır
                 await updateDoc(doc(db, "chats", chatId), {
                     messages: arrayUnion({ senderId: window.userProfile.uid, text: text, time: timeStr, read: false }), 
                     lastUpdated: serverTimestamp() 
@@ -1600,19 +1781,20 @@ function initializeUniLoop() {
     };
 
     // ============================================================================
-    // 8. YENİ KAMPÜS AKIŞI / SOSYAL FEED (ESKİ ANONİM KAMPÜS)
+    // 8. 🌟 YENİ KAMPÜS AKIŞI (INSTAGRAM TARZI)
     // ============================================================================
 
     window.renderConfessions = function() {
         let html = `
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                    <h2 style="margin:0;">📸 Kampüs Akışı</h2>
-                    <button class="btn-primary" style="width:auto;" onclick="window.openConfessionForm()">
-                        + Yeni Gönderi
+            <div class="feed-layout-container">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding: 15px 20px; background: white; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 10;">
+                    <h2 style="margin:0; font-size: 18px; font-weight: 800;">📸 Kampüs Akışı</h2>
+                    <button class="btn-primary" style="width:auto; padding: 8px 16px; border-radius: 20px; font-size: 14px;" onclick="window.openConfessionForm()">
+                        + Gönderi
                     </button>
                 </div>
-                <div class="confessions-feed" id="conf-feed"></div>
+                <div class="confessions-feed" id="conf-feed">
+                </div>
             </div>
         `;
         
@@ -1685,7 +1867,8 @@ function initializeUniLoop() {
         const statusEl = document.getElementById('conf-upload-status');
         
         if(!textEl || textEl.value.trim() === '') {
-            return alert("Lütfen bir şeyler yazın.");
+            alert("Lütfen bir şeyler yazın.");
+            return;
         }
         
         btn.disabled = true;
@@ -1698,7 +1881,9 @@ function initializeUniLoop() {
             try {
                 const file = photoInput.files[0];
                 const fileName = Date.now() + '_' + file.name.replace(/\s/g, '');
-                const storageRef = ref(storage, 'confessions/' + window.userProfile.uid + '/' + fileName);
+                
+                // 🛑 CRITICAL FIX: Firebase kurallarını aşmak için 'listings/' klasörünün altına 'feed_images' klasörü açıyoruz.
+                const storageRef = ref(storage, 'listings/feed_images/' + window.userProfile.uid + '_' + fileName);
                 
                 await uploadBytes(storageRef, file);
                 imgUrl = await getDownloadURL(storageRef);
@@ -1733,13 +1918,16 @@ function initializeUniLoop() {
 
     window.drawConfessionsFeed = function() {
         const feed = document.getElementById('conf-feed');
-        if(!feed) return;
+        if(!feed) {
+            return;
+        }
         
         if(confessionsDB.length === 0) {
             feed.innerHTML = `
-                <p style="text-align:center; color:var(--text-gray); padding: 40px 0;">
+                <div style="text-align:center; color:var(--text-gray); padding: 40px 20px; background: white; border-radius: 12px; margin-top: 20px;">
+                    <div style="font-size:40px; margin-bottom: 10px;">📸</div>
                     Henüz hiçbir paylaşım yok. İlk gönderiyi sen paylaş!
-                </p>
+                </div>
             `;
             return;
         }
@@ -1782,12 +1970,10 @@ function initializeUniLoop() {
         feed.innerHTML = html;
     };
 
-    // Detay görünümü ve canlı yorumlar için
     window.openConfessionDetail = function(docId) {
         window.openModal('Gönderi', `<div id="confession-detail-container">Yükleniyor...</div>`);
         window.updateConfessionDetailLive(docId);
         
-        // Modalın içine post ID'sini gizli atıyoruz ki snapshot onu canlı güncellesin
         const container = document.getElementById('confession-detail-container');
         if(container) {
             container.insertAdjacentHTML('afterend', `<input type="hidden" id="active-post-id" value="${docId}">`);
@@ -1796,7 +1982,9 @@ function initializeUniLoop() {
 
     window.updateConfessionDetailLive = function(docId) {
         const container = document.getElementById('confession-detail-container');
-        if(!container) return;
+        if(!container) {
+            return;
+        }
 
         const post = confessionsDB.find(p => p.id === docId);
         if(!post) { 
@@ -1857,7 +2045,6 @@ function initializeUniLoop() {
             </div>
         `;
 
-        // Yorum scroll'unu en alta çek
         const scrollBox = document.getElementById('conf-comments-scroll');
         if(scrollBox) {
             scrollBox.scrollTop = scrollBox.scrollHeight;
@@ -1869,7 +2056,6 @@ function initializeUniLoop() {
         
         if(input && input.value.trim() !== '') {
             try {
-                // Sadece Firestore'a ekliyoruz, arayüz canlı listener (onSnapshot) ile anında güncelleniyor!
                 await updateDoc(doc(db, "confessions", docId), {
                     comments: arrayUnion({ 
                         user: window.userProfile.username || window.userProfile.name, 
@@ -1935,7 +2121,9 @@ function initializeUniLoop() {
         const tagEl = document.getElementById('new-qa-tag');
         const btn = document.getElementById('publish-qa-btn');
         
-        if(!textEl || textEl.value.trim() === '') return;
+        if(!textEl || textEl.value.trim() === '') {
+            return;
+        }
         
         btn.disabled = true;
         
@@ -1958,7 +2146,9 @@ function initializeUniLoop() {
 
     window.drawQAGrid = function(filterTag = 'Genel') {
         const feed = document.getElementById('qa-feed');
-        if(!feed) return;
+        if(!feed) {
+            return;
+        }
         
         let filteredDB = filterTag === 'Genel' ? qaDB : qaDB.filter(q => q.tag === filterTag);
         
@@ -1999,7 +2189,9 @@ function initializeUniLoop() {
 
     window.openQADetail = function(docId) {
         const q = qaDB.find(item => item.id === docId);
-        if(!q) return;
+        if(!q) {
+            return;
+        }
         
         let answersHtml = '';
         
@@ -2057,7 +2249,9 @@ function initializeUniLoop() {
 
     window.updateMyFacultiesSidebar = function() {
         const container = document.getElementById('my-joined-faculties');
-        if(!container) return;
+        if(!container) {
+            return;
+        }
         
         let html = '';
         
@@ -2272,7 +2466,10 @@ function initializeUniLoop() {
         const surname = document.getElementById('prof-surname').value;
         let rawUsername = document.getElementById('prof-username').value.trim().toLowerCase();
         
-        if(!rawUsername) return alert("Kullanıcı adı boş bırakılamaz!");
+        if(!rawUsername) {
+            alert("Kullanıcı adı boş bırakılamaz!");
+            return;
+        }
         
         rawUsername = rawUsername.replace(/^#/, '');
         const username = '#' + rawUsername;
@@ -2283,11 +2480,13 @@ function initializeUniLoop() {
                 const snapshot = await getDocs(q);
                 
                 if(!snapshot.empty) {
-                    return alert("Bu kullanıcı adı başkası tarafından alınmış. Lütfen başka bir tane deneyin.");
+                    alert("Bu kullanıcı adı başkası tarafından alınmış. Lütfen başka bir tane deneyin.");
+                    return;
                 }
             } catch(e) {
                 console.error(e);
-                return alert("Bir hata oluştu, lütfen tekrar deneyin.");
+                alert("Bir hata oluştu, lütfen tekrar deneyin.");
+                return;
             }
         }
         
