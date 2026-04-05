@@ -2,14 +2,13 @@
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
 // ============================================================================
 
-// Firebase Kütüphaneleri (Mevcut CDN altyapısı bozulmadan yeni Analytics eklendi)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, arrayUnion, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-// --- GÜNCEL FIREBASE YAPILANDIRMASI (EMREDİLDİĞİ GİBİ GÜNCELLENDİ) ---
+// --- GÜNCEL FIREBASE YAPILANDIRMASI ---
 const firebaseConfig = {
     apiKey: "AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
     authDomain: "uniloop-app.firebaseapp.com",
@@ -115,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // KAYIT OLMA İŞLEMİ (GÜNCELLENDİ: ARTIK KOD EKRANINA ATIYOR)
+    // KAYIT OLMA İŞLEMİ
     bind('register-btn', 'click', async () => {
         const name = document.getElementById('reg-name').value.trim();
         const surname = document.getElementById('reg-surname').value.trim();
@@ -138,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const userCred = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCred.user;
             
-            // Veritabanına kullanıcıyı kaydet
             await setDoc(doc(db, "users", user.uid), {
                 uid: user.uid, 
                 name: name, 
@@ -150,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 faculty: ""
             });
 
-            // Sistem Hoş Geldin Mesajını Oluştur
             await addDoc(collection(db, "chats"), {
                 participants: [user.uid, "system"],
                 participantNames: { [user.uid]: name, "system": "UniLoop Ekibi" },
@@ -163,10 +160,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 }]
             });
 
-            // Doğrulama maili yolla
             await sendEmailVerification(user);
             
-            // GÜNCELLEME: Çıkış yapmak yerine Onay Kod ekranına geçiş yap
             document.getElementById('register-card').style.display = 'none';
             document.getElementById('verify-card').style.display = 'block';
 
@@ -177,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // YENİ EKLENEN: HESAP ONAYLAMA İŞLEMİ
+    // HESAP ONAYLAMA İŞLEMİ
     bind('verify-code-btn', 'click', async () => {
         const user = auth.currentUser;
         if(!user) return alert("Oturum zaman aşımına uğradı. Lütfen sayfayı yenileyip tekrar giriş yapın ve doğrulayın.");
@@ -187,12 +182,10 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.innerText = "Kontrol Ediliyor...";
         btn.disabled = true;
 
-        // Firebase verilerini yenileyerek e-postadaki linke tıklanıp tıklanmadığını kontrol eder
         await user.reload();
 
         if(user.emailVerified) {
             alert("Tebrikler! Hesabınız başarıyla aktifleştirildi. Sisteme yönlendiriliyorsunuz.");
-            // Onay başarılıysa uygulamaya sok
             window.location.reload(); 
         } else {
             alert("Hesabınız henüz onaylanmamış! Lütfen e-postanıza gelen linke tıklayın veya özel kod sisteminizi bağladıysanız bekleyin. Linke tıkladıktan sonra bu butona tekrar basabilirsiniz.");
@@ -216,7 +209,6 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const userCred = await signInWithEmailAndPassword(auth, email, password);
             
-            // GÜNCELLEME: Kullanıcı giriş yaptığında e-postası onaylı değilse kod ekranına at
             if(!userCred.user.emailVerified) {
                 alert("Hesabınız henüz onaylanmamış. Lütfen e-postanızı kontrol edin.");
                 document.getElementById('login-card').style.display = 'none';
@@ -258,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 authScreen.style.display = 'flex';
                 document.getElementById('login-card').style.display = 'block';
                 document.getElementById('register-card').style.display = 'none';
-                document.getElementById('verify-card').style.display = 'none'; // Çıkışta kod ekranını da sıfırla
+                document.getElementById('verify-card').style.display = 'none';
                 
                 const btn = document.getElementById('login-btn');
                 if(btn) { 
@@ -276,7 +268,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // ============================================================================
 
     onAuthStateChanged(auth, async (user) => {
-        // GÜNCELLEME: Sadece e-postası onaylı olanlar içeri girebilir
         if (user && user.emailVerified) { 
             if(authScreen && appScreen) {
                 authScreen.style.display = 'none';
@@ -355,10 +346,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function initRealtimeListeners(currentUid) {
         
+        // ZAMAN HATASI ÇÖZÜMÜ: Yeni eklenenlerin alta düşmesini engelleyen güvenli sıralama fonksiyonu
+        const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
+
         // 1. İLANLARI DİNLE
         onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc")), (snapshot) => {
             marketDB = [];
-            snapshot.forEach(doc => marketDB.push({ id: doc.id, ...doc.data() }));
+            // serverTimestamps: 'estimate' ile null hatası önlenir
+            snapshot.forEach(doc => marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }));
+            marketDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
             
             const activeTab = document.querySelector('.menu-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'market') {
@@ -372,7 +368,8 @@ document.addEventListener("DOMContentLoaded", () => {
         // 2. İTİRAFLARI DİNLE
         onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc")), (snapshot) => {
             confessionsDB = [];
-            snapshot.forEach(doc => confessionsDB.push({ id: doc.id, ...doc.data() }));
+            snapshot.forEach(doc => confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }));
+            confessionsDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
             
             const activeTab = document.querySelector('.menu-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'confessions') {
@@ -383,7 +380,8 @@ document.addEventListener("DOMContentLoaded", () => {
         // 3. S&C DİNLE
         onSnapshot(query(collection(db, "qa"), orderBy("createdAt", "desc")), (snapshot) => {
             qaDB = [];
-            snapshot.forEach(doc => qaDB.push({ id: doc.id, ...doc.data() }));
+            snapshot.forEach(doc => qaDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }));
+            qaDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
             
             const activeTab = document.querySelector('.menu-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'qa') {
@@ -440,15 +438,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const modal = document.getElementById('app-modal');
+    
+    // KAYMA HATASI ÇÖZÜMÜ: Modal açıldığında arkadaki body elementinin kaymasını dondurur.
     window.openModal = function(title, contentHTML) { 
         document.getElementById('modal-title').innerText = title; 
         document.getElementById('modal-body').innerHTML = contentHTML; 
         modal.classList.add('active'); 
+        document.body.style.overflow = 'hidden'; 
     }
     
     window.closeModal = function() { 
         modal.classList.remove('active'); 
         document.getElementById('modal-body').innerHTML = ''; 
+        document.body.style.overflow = ''; 
     }
     
     bind('modal-close', 'click', window.closeModal);
@@ -546,10 +548,8 @@ document.addEventListener("DOMContentLoaded", () => {
             let imgHtml = '';
             let indicatorsHtml = '';
             
-            // Eski ilanlarda para birimi yoksa varsayılan olarak TL (₺) göster
             const displayCurrency = item.currency || '₺';
 
-            // Kaydırılabilir Çoklu Fotoğraf Galerisi
             if (item.imgUrls && item.imgUrls.length > 0) {
                 imgHtml += '<div class="image-gallery">';
                 item.imgUrls.forEach((url, i) => {
@@ -567,7 +567,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 imgHtml = `<div style="font-size:48px; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">📦</div>`;
             }
 
-            // Düzenle/Sil Butonları Sadece İlan Sahibine Görünür
             let actionButtonsHtml = '';
             if (item.sellerId === window.userProfile.uid) {
                  actionButtonsHtml = `
@@ -597,7 +596,6 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = gridHtml;
     }
 
-    // 🌟 İLAN SİLME VE DÜZENLEME 🌟
     window.deleteListing = async function(docId) {
         if(confirm("Bu ilanı tamamen silmek istediğinize emin misiniz?")) {
             try {
@@ -622,7 +620,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 🌟 PARA BİRİMİ SEÇİMİ VE FOTOĞRAF YÜKLEME ALANI 🌟
     window.openListingForm = function(type) {
         window.openModal('Yeni İlan Oluştur', `
             <div class="form-group">
@@ -680,7 +677,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 100);
     }
 
-    // İLANI FIREBASE'E KAYDETME VE YÜKLEME TAKILMA SORUNU ÇÖZÜMÜ
     window.submitListing = async function(type) {
         const titleEl = document.getElementById('new-item-title');
         const priceEl = document.getElementById('new-item-price');
@@ -718,10 +714,8 @@ document.addEventListener("DOMContentLoaded", () => {
         let imgUrlsArray = [];
 
         try {
-            // Promise.race ile güvenlik kalkanı (15 saniye içinde yüklenmezse iptal et)
             const uploadTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Yükleme süresi doldu. Firebase Storage izinlerinizi (Rules) kontrol edin.")), 15000));
 
-            // Fotoğrafları Storage'a Yükleme İşlemi
             const uploadProcess = async () => {
                 for (let file of files) {
                     const fileName = Date.now() + '_' + file.name.replace(/\s/g, ''); 
@@ -732,15 +726,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             };
 
-            // Yükleme veya Timeout'tan hangisi önce biterse
             await Promise.race([uploadProcess(), uploadTimeout]);
 
-            // Veritabanına Yaz
             await addDoc(collection(db, "listings"), {
                 type: type, 
                 title: title, 
                 price: price, 
-                currency: currency, // Para Birimi Eklendi
+                currency: currency, 
                 desc: desc, 
                 imgUrls: imgUrlsArray, 
                 imgUrl: imgUrlsArray.length > 0 ? imgUrlsArray[0] : "", 
@@ -1194,15 +1186,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const inputCode = document.getElementById('faculty-passcode-input').value.trim();
         
         if (inputCode.toLowerCase() === FACULTY_PASSCODES[name].toLowerCase()) {
-            // Profil Mühürleme
             window.userProfile.faculty = name; 
             window.joinedFaculties = [{name: name, icon: icon, color: bgColor}]; 
             window.updateMyFacultiesSidebar();
             
-            // Veritabanına Kalıcı Kayıt
             await updateDoc(doc(db, "users", window.userProfile.uid), { faculty: name });
             
-            // Ekranı Anında Çevir
             window.loadFacultyFeed(name, icon, bgColor);
         } else { 
             alert("Hatalı kod girdiniz. Lütfen tekrar deneyin."); 
