@@ -6,6 +6,9 @@
     --text-dark: #111827;
     --text-gray: #6B7280;
     --border-color: #E5E7EB;
+    /* YENİ EKLENEN RENKLER */
+    --success: #10B981;
+    --danger: #EF4444;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
@@ -51,10 +54,13 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .btn-primary, .action-btn, .btn-danger { display: inline-flex; justify-content: center; align-items: center; text-align: center; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%; transition: 0.2s; font-size: 14px; position: relative; z-index: 10; }
 .btn-primary { background: var(--primary); color: white; }
 .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+.btn-primary:active { transform: scale(0.98); } /* Tıklama efekti eklendi */
 .action-btn { background: #EEF2FF; color: var(--primary); }
 .action-btn:hover { background: #E0E7FF; transform: translateY(-1px); }
+.action-btn:active { transform: scale(0.98); } /* Tıklama efekti eklendi */
 .btn-danger { background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5; }
 .btn-danger:hover { background: #FEE2E2; }
+.btn-danger:active { transform: scale(0.98); } /* Tıklama efekti eklendi */
 .btn-primary *, .action-btn *, .btn-danger * { pointer-events: none; }
 
 .form-group { margin-bottom: 16px; text-align: left; width: 100%;}
@@ -234,4 +240,55 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     .community-banner { flex-direction: column; align-items: flex-start; gap: 15px; padding: 30px 20px;}
     .comm-banner-right { text-align: left; }
     .member-avatars { justify-content: flex-start; }
+}
+
+/* 🌟 YENİ: MESAJ BİLDİRİM BALONU (BADGE) VE OTP GİRİŞ ALANI 🌟 */
+.badge {
+    background: var(--danger);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-left: auto;
+    display: inline-block;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+#verify-code-input {
+    text-align: center;
+    font-size: 24px !important;
+    letter-spacing: 8px;
+    font-weight: 900;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+    background: #EEF2FF;
+    border-radius: 12px;
+    margin: 15px 0;
+}
+
+/* 💬 UNI-LOOP TEAM ÖZEL MESAJ STİLİ */
+.chat-contact[data-id*="system"] .avatar {
+    background: linear-gradient(135deg, #FFD700, #FFA500); 
+    border: 2px solid white;
+    box-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
+}
+
+.chat-contact[data-id*="system"] .chat-contact-name {
+    color: #B45309; 
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 5px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #D1D5DB;
+    border-radius: 10px;
 }
