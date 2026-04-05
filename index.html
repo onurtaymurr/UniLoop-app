@@ -149,12 +149,12 @@
         </div>
     </div>
 
-    <div id="fullscreen-img-modal" class="modal" style="background: rgba(0,0,0,0.95); z-index: 10000; display: none;">
-        <span class="close-btn" id="fullscreen-close" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; z-index: 10001;">&times;</span>
-        <div id="fullscreen-counter" style="position:absolute; top:30px; left:30px; color:white; font-size:16px; font-weight:bold; background: rgba(0,0,0,0.6); padding: 6px 16px; border-radius: 20px; z-index: 10001; letter-spacing: 2px;">1/3</div>
-        
-        <div id="fullscreen-content" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; position:relative;">
-            </div>
+    <div id="lightbox" class="lightbox" style="display: none;">
+        <span class="lightbox-close" onclick="window.closeLightbox()">&times;</span>
+        <span class="lightbox-counter" id="lightbox-counter">1/3</span>
+        <button class="lightbox-prev" onclick="window.changeLightboxImage(-1)">&#10094;</button>
+        <img class="lightbox-content" id="lightbox-img">
+        <button class="lightbox-next" onclick="window.changeLightboxImage(1)">&#10095;</button>
     </div>
 
     <script type="module" src="app.js"></script>
