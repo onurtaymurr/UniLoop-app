@@ -210,18 +210,31 @@ function initializeUniLoop() {
         }
 
         const btn = document.getElementById('register-btn');
+        const origText = btn.innerText || "Hesabımı Oluştur";
         btn.innerText = "Hesap Oluşturuluyor...";
         btn.disabled = true;
 
         try {
+            // 1. Kullanıcıyı oluştur (En kritik adım)
             const userCred = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCred.user;
             
-            await sendEmailVerification(user);
-            
+            // 2. İşlem başarılı olur olmaz ekranı HEMEN değiştir (Takılma hissini yok et)
             document.getElementById('register-card').style.display = 'none';
             document.getElementById('verify-card').style.display = 'block';
+            
+            // Butonu eski haline getir
+            btn.innerText = origText;
+            btn.disabled = false;
 
+            // 3. Arka planda mail gönder (UI'ı bekletmeden)
+            try {
+                await sendEmailVerification(user);
+            } catch(mailErr) {
+                console.error("Mail gönderimi başarısız:", mailErr);
+            }
+
+            // 4. Arka planda veritabanı kayıtlarını tamamla
             try {
                 await setDoc(doc(db, "users", user.uid), {
                     uid: user.uid, 
@@ -234,15 +247,15 @@ function initializeUniLoop() {
                     isOnline: false, 
                     faculty: ""
                 });
-                // Kullanıcı oluşturulur oluşturulmaz mesajı çak!
                 await window.ensureWelcomeMessage(user, name);
             } catch (dbError) {
                 console.error("Veritabanı Kayıt Hatası:", dbError);
             }
 
         } catch (error) {
-            alert("Kayıt olurken bir hata oluştu: " + error.message);
-            btn.innerText = "Hesabımı Oluştur";
+            console.error("Kayıt Hatası:", error);
+            alert("Kayıt olurken bir hata oluştu: " + (error.code === 'auth/email-already-in-use' ? 'Bu e-posta zaten kullanımda.' : error.message));
+            btn.innerText = origText;
             btn.disabled = false;
         }
     });
@@ -260,13 +273,20 @@ function initializeUniLoop() {
         btn.innerText = "Kontrol Ediliyor...";
         btn.disabled = true;
 
-        await user.reload();
+        try {
+            await user.reload();
 
-        if(user.emailVerified) {
-            alert("Tebrikler! Hesabınız başarıyla aktifleştirildi. Sisteme yönlendiriliyorsunuz.");
-            window.location.reload(); 
-        } else {
-            alert("Hesabınız henüz onaylanmamış! Lütfen e-postanıza gelen linke tıklayın. Linke tıkladıktan sonra bu butona tekrar basabilirsiniz.");
+            if(user.emailVerified) {
+                alert("Tebrikler! Hesabınız başarıyla aktifleştirildi. Sisteme yönlendiriliyorsunuz.");
+                window.location.reload(); 
+            } else {
+                alert("Hesabınız henüz onaylanmamış! Lütfen e-postanıza gelen linke tıklayın. Linke tıkladıktan sonra bu butona tekrar basabilirsiniz.");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Hata oluştu: " + err.message);
             btn.innerText = originalText;
             btn.disabled = false;
         }
