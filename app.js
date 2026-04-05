@@ -2,12 +2,14 @@
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
 // ============================================================================
 
+// Firebase Kütüphaneleri (Mevcut CDN altyapısı bozulmadan yeni Analytics eklendi)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, arrayUnion, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-// --- FIREBASE YAPILANDIRMASI ---
+// --- GÜNCEL FIREBASE YAPILANDIRMASI (EMREDİLDİĞİ GİBİ GÜNCELLENDİ) ---
 const firebaseConfig = {
     apiKey: "AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
     authDomain: "uniloop-app.firebaseapp.com",
@@ -20,6 +22,7 @@ const firebaseConfig = {
 
 // Firebase Servislerini Başlat
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -45,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     
     window.joinedFaculties = [];
-    window.currentVerificationUid = null;
     
     let marketDB = [];
     let confessionsDB = [];
@@ -74,25 +76,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const mainContent = document.getElementById('main-content');
 
     // ============================================================================
-    // 1. GİRİŞ, KAYIT VE ŞİFREMİ UNUTTUM
+    // 1. GİRİŞ, KAYIT, ONAY VE ŞİFREMİ UNUTTUM
     // ============================================================================
     
     bind('show-register-btn', 'click', () => {
         document.getElementById('login-card').style.display = 'none'; 
-        const vCard = document.getElementById('verification-card'); if(vCard) vCard.style.display = 'none';
         document.getElementById('register-card').style.display = 'block';
     });
     
     bind('show-login-btn', 'click', () => {
         document.getElementById('register-card').style.display = 'none'; 
-        const vCard = document.getElementById('verification-card'); if(vCard) vCard.style.display = 'none';
-        document.getElementById('login-card').style.display = 'block';
-    });
-
-    bind('cancel-verify-btn', 'click', async () => {
-        await signOut(auth);
-        window.currentVerificationUid = null;
-        const vCard = document.getElementById('verification-card'); if(vCard) vCard.style.display = 'none';
         document.getElementById('login-card').style.display = 'block';
     });
 
@@ -122,14 +115,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // KAYIT OLMA İŞLEMİ
+    // KAYIT OLMA İŞLEMİ (GÜNCELLENDİ: ARTIK KOD EKRANINA ATIYOR)
     bind('register-btn', 'click', async () => {
         const name = document.getElementById('reg-name').value.trim();
         const surname = document.getElementById('reg-surname').value.trim();
         const uni = document.getElementById('reg-uni').value.trim();
         const email = document.getElementById('reg-email').value.trim();
         const password = document.getElementById('reg-password').value;
-        const btn = document.getElementById('register-btn');
 
         if(!name || !surname || !uni || !email || !password) {
             return alert("Lütfen tüm alanları eksiksiz doldurun.");
@@ -138,14 +130,15 @@ document.addEventListener("DOMContentLoaded", () => {
             return alert("Güvenlik nedeniyle sadece onaylı .edu uzantılı üniversite e-postaları kabul edilmektedir.");
         }
 
-        const originalText = btn.innerText; btn.innerText = "Yükleniyor..."; btn.disabled = true;
+        const btn = document.getElementById('register-btn');
+        btn.innerText = "Hesap Oluşturuluyor...";
+        btn.disabled = true;
 
         try {
             const userCred = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCred.user;
             
-            const customCode = Math.floor(1000 + Math.random() * 9000).toString();
-            
+            // Veritabanına kullanıcıyı kaydet
             await setDoc(doc(db, "users", user.uid), {
                 uid: user.uid, 
                 name: name, 
@@ -154,17 +147,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 email: email, 
                 avatar: "👨‍🎓", 
                 isOnline: false, 
-                faculty: "",
-                isVerified: false
+                faculty: ""
             });
 
-            await addDoc(collection(db, "verificationCodes"), {
-                uid: user.uid,
-                email: email,
-                code: customCode,
-                createdAt: serverTimestamp()
-            });
-
+            // Sistem Hoş Geldin Mesajını Oluştur
             await addDoc(collection(db, "chats"), {
                 participants: [user.uid, "system"],
                 participantNames: { [user.uid]: name, "system": "UniLoop Ekibi" },
@@ -177,60 +163,41 @@ document.addEventListener("DOMContentLoaded", () => {
                 }]
             });
 
-            alert(`🎉 Kayıt başarılı!\n\n(TEST AŞAMASI) Lütfen şu kodu ekrana girin: ${customCode}`);
-            window.currentVerificationUid = user.uid;
+            // Doğrulama maili yolla
+            await sendEmailVerification(user);
             
+            // GÜNCELLEME: Çıkış yapmak yerine Onay Kod ekranına geçiş yap
             document.getElementById('register-card').style.display = 'none';
-            const vCard = document.getElementById('verification-card');
-            if(vCard) vCard.style.display = 'block';
+            document.getElementById('verify-card').style.display = 'block';
 
         } catch (error) {
             alert("Kayıt olurken bir hata oluştu: " + error.message);
-        } finally {
-            btn.innerText = originalText; btn.disabled = false;
+            btn.innerText = "Hesabımı Oluştur";
+            btn.disabled = false;
         }
     });
 
-    bind('verify-btn', 'click', async () => {
-        const inputEl = document.getElementById('verify-code-input');
-        if(!inputEl) return;
-        const inputCode = inputEl.value.trim();
-        const btn = document.getElementById('verify-btn');
-        const targetUid = window.currentVerificationUid || (auth.currentUser ? auth.currentUser.uid : null);
+    // YENİ EKLENEN: HESAP ONAYLAMA İŞLEMİ
+    bind('verify-code-btn', 'click', async () => {
+        const user = auth.currentUser;
+        if(!user) return alert("Oturum zaman aşımına uğradı. Lütfen sayfayı yenileyip tekrar giriş yapın ve doğrulayın.");
 
-        if(inputCode.length !== 4) return alert("Lütfen 4 haneli kodu eksiksiz girin.");
-        if(!targetUid) return alert("Oturum hatası oluştu. Sayfayı yenileyin.");
+        const btn = document.getElementById('verify-code-btn');
+        const originalText = btn.innerText;
+        btn.innerText = "Kontrol Ediliyor...";
+        btn.disabled = true;
 
-        btn.innerText = "Kontrol Ediliyor..."; btn.disabled = true;
+        // Firebase verilerini yenileyerek e-postadaki linke tıklanıp tıklanmadığını kontrol eder
+        await user.reload();
 
-        try {
-            const q = query(collection(db, "verificationCodes"), where("uid", "==", targetUid), where("code", "==", inputCode));
-            const querySnapshot = await getDocs(q);
-
-            if (!querySnapshot.empty) {
-                await updateDoc(doc(db, "users", targetUid), { isVerified: true });
-                alert("E-posta adresiniz başarıyla doğrulandı!");
-                
-                inputEl.value = "";
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('app-screen').style.display = 'block';
-                
-                const userDocRef = doc(db, "users", targetUid);
-                const docSnap = await getDoc(userDocRef);
-                if(docSnap.exists()) window.userProfile = docSnap.data();
-                
-                await updateDoc(userDocRef, { isOnline: true });
-                initRealtimeListeners(targetUid);
-                window.loadPage('home');
-                
-            } else {
-                alert("Girdiğiniz kod hatalı. Lütfen kontrol edin.");
-            }
-        } catch(error) {
-            console.error(error);
-            alert("Sistemde bir hata oluştu.");
-        } finally {
-            btn.innerText = "Kodu Onayla"; btn.disabled = false;
+        if(user.emailVerified) {
+            alert("Tebrikler! Hesabınız başarıyla aktifleştirildi. Sisteme yönlendiriliyorsunuz.");
+            // Onay başarılıysa uygulamaya sok
+            window.location.reload(); 
+        } else {
+            alert("Hesabınız henüz onaylanmamış! Lütfen e-postanıza gelen linke tıklayın veya özel kod sisteminizi bağladıysanız bekleyin. Linke tıkladıktan sonra bu butona tekrar basabilirsiniz.");
+            btn.innerText = originalText;
+            btn.disabled = false;
         }
     });
 
@@ -248,18 +215,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             const userCred = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCred.user;
             
-            const userDocRef = doc(db, "users", user.uid);
-            const docSnap = await getDoc(userDocRef);
-
-            if (docSnap.exists() && docSnap.data().isVerified === false) {
-                window.currentVerificationUid = user.uid;
+            // GÜNCELLEME: Kullanıcı giriş yaptığında e-postası onaylı değilse kod ekranına at
+            if(!userCred.user.emailVerified) {
+                alert("Hesabınız henüz onaylanmamış. Lütfen e-postanızı kontrol edin.");
                 document.getElementById('login-card').style.display = 'none';
-                const vCard = document.getElementById('verification-card');
-                if(vCard) vCard.style.display = 'block';
-                btn.innerText = originalText; btn.disabled = false;
-                return alert("Hesabınızı henüz kod ile onaylamadınız. Lütfen e-postanıza gönderilen kodu girin.");
+                document.getElementById('verify-card').style.display = 'block';
+                return;
             }
 
         } catch (error) {
@@ -290,14 +252,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isOnline: false });
             }
             await signOut(auth);
-            window.currentVerificationUid = null;
             
             if(authScreen && appScreen) {
                 appScreen.style.display = 'none';
                 authScreen.style.display = 'flex';
                 document.getElementById('login-card').style.display = 'block';
                 document.getElementById('register-card').style.display = 'none';
-                const vCard = document.getElementById('verification-card'); if(vCard) vCard.style.display = 'none';
+                document.getElementById('verify-card').style.display = 'none'; // Çıkışta kod ekranını da sıfırla
                 
                 const btn = document.getElementById('login-btn');
                 if(btn) { 
@@ -315,26 +276,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // ============================================================================
 
     onAuthStateChanged(auth, async (user) => {
-        if (user) { 
+        // GÜNCELLEME: Sadece e-postası onaylı olanlar içeri girebilir
+        if (user && user.emailVerified) { 
+            if(authScreen && appScreen) {
+                authScreen.style.display = 'none';
+                appScreen.style.display = 'block';
+            }
+
             try {
                 const userDocRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(userDocRef);
                 
-                if(docSnap.exists() && docSnap.data().isVerified === false) {
-                    window.currentVerificationUid = user.uid;
-                    if(authScreen) authScreen.style.display = 'flex';
-                    if(appScreen) appScreen.style.display = 'none';
-                    const lc = document.getElementById('login-card'); if(lc) lc.style.display = 'none';
-                    const rc = document.getElementById('register-card'); if(rc) rc.style.display = 'none';
-                    const vc = document.getElementById('verification-card'); if(vc) vc.style.display = 'block';
-                    return; 
-                }
-
-                if(authScreen && appScreen) {
-                    authScreen.style.display = 'none';
-                    appScreen.style.display = 'block';
-                }
-
                 if(docSnap.exists()) {
                     window.userProfile = docSnap.data();
                 } else {
@@ -346,8 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         university: "UniLoop Kampüsü", 
                         avatar: "👨‍🎓", 
                         faculty: "",
-                        isOnline: true,
-                        isVerified: true
+                        isOnline: true
                     };
                     await setDoc(userDocRef, window.userProfile);
                 }
@@ -397,7 +348,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     window.addEventListener("beforeunload", () => {
-        if(window.userProfile.uid) {
+        if(window.userProfile && window.userProfile.uid) {
             updateDoc(doc(db, "users", window.userProfile.uid), { isOnline: false });
         }
     });
@@ -1336,7 +1287,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelector('[data-target="home"]').classList.add('active');
         window.loadPage('home'); 
     });
-
+    
     bind('profile-btn', 'click', () => { 
         document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
         window.loadPage('profile'); 
