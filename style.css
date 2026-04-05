@@ -31,9 +31,10 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .logo { font-size: 24px; font-weight: 800; color: var(--primary); cursor: pointer; letter-spacing: -0.5px;}
 #mobile-menu-btn { display: none; font-size: 24px; cursor: pointer; color: var(--text-dark); padding: 5px; }
 
-.container { display: grid; grid-template-columns: 250px 1fr 300px; gap: 24px; padding: 24px 5%; max-width: 1400px; margin: 0 auto; position: relative; }
+/* 🌟 DÜZELTME 1: Container align-items: start eklendi. Sticky sidebar için hayati önem taşır. 🌟 */
+.container { display: grid; grid-template-columns: 250px 1fr 300px; gap: 24px; padding: 24px 5%; max-width: 1400px; margin: 0 auto; position: relative; align-items: start; }
 
-/* 🌟 DÜZELTİLEN KISIM: SIDEBAR (SOL MENÜ) KAYDIRMA SORUNU 🌟 */
+/* 🌟 DÜZELTME 2: SIDEBAR (SOL MENÜ) KAYDIRMA VE KESİLME SORUNU ÇÖZÜMÜ 🌟 */
 .sidebar { 
     background: var(--card-bg); 
     padding: 24px; 
@@ -41,9 +42,11 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     border: 1px solid var(--border-color); 
     position: sticky; 
     top: 95px; 
-    max-height: calc(100vh - 110px); /* Ekranın yüksekliğine göre menüyü sınırlar */
+    max-height: calc(100vh - 120px); /* Ekranın yüksekliğine göre menüyü sınırlar */
     overflow-y: auto; /* İçeriğe bağımsız kaydırma özelliği verir */
-    display: block; /* Flex'in içeriği kesmesini ve başlığı yok etmesini önler */
+    display: flex; 
+    flex-direction: column; 
+    justify-content: flex-start; /* İçeriğin yukarıdan aşağı dizilmesini garantiler, kesilmeyi önler */
 }
 .sidebar::-webkit-scrollbar { width: 5px; }
 .sidebar::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
@@ -236,7 +239,7 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .join-faculty-box h2 { font-size: 24px; margin-bottom: 10px; font-weight: 800;}
 .join-faculty-box p { color: var(--text-gray); margin-bottom: 25px; line-height: 1.6; font-size: 15px; max-width: 400px; margin-left: auto; margin-right: auto;}
 
-/* AÇILIR PENCERE (MODAL) ESTETİK DÜZELTMESİ */
+/* AÇILIR PENCERE (MODAL) ESTETİK DÜZELTMESİ (Kesik Çıkma Sorunu Çözümü) */
 .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background-color: rgba(17, 24, 39, 0.7); backdrop-filter: blur(4px); overflow-y: auto; padding: 20px; overscroll-behavior: contain; }
 .modal.active { display: flex; align-items: flex-start; justify-content: center; }
 .modal-content { margin: auto; background-color: #fff; padding: 30px; border-radius: 20px; width: 100%; max-width: 500px; animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; max-height: 90vh; overflow-y: auto; }
@@ -265,7 +268,7 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     header { gap: 15px; padding: 12px 16px;}
     #mobile-menu-btn { display: block; }
     
-    .sidebar { position: fixed; top: 0; left: 0; height: 100dvh; width: 85%; max-width: 320px; z-index: 999; transform: translateX(-100%); border-radius: 0; border:none; box-shadow: 4px 0 24px rgba(0,0,0,0.15); background: white; padding: 24px; padding-bottom: 80px; overflow-y: auto; transition: transform 0.3s ease; display: block; }
+    .sidebar { position: fixed; top: 0; left: 0; height: 100dvh; width: 85%; max-width: 320px; z-index: 999; transform: translateX(-100%); border-radius: 0; border:none; box-shadow: 4px 0 24px rgba(0,0,0,0.15); background: white; padding: 24px; padding-bottom: 80px; overflow-y: auto; transition: transform 0.3s ease; display: flex; flex-direction: column; justify-content: flex-start; max-height: none;}
     
     .sidebar.open { transform: translateX(0); }
     .grid-2col { grid-template-columns: 1fr; }
