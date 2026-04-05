@@ -132,7 +132,7 @@ function initializeUniLoop() {
             margin: -20px; 
             background: #F3F4F6; 
         }
-        #conf-feed { 
+        #feed-scroll-area { 
             flex: 1; 
             overflow-y: auto; 
             padding: 15px; 
@@ -1781,19 +1781,50 @@ function initializeUniLoop() {
     };
 
     // ============================================================================
-    // 8. 🌟 YENİ KAMPÜS AKIŞI (INSTAGRAM TARZI)
+    // 8. 🌟 YENİ KAMPÜS AKIŞI (TWITTER / INSTAGRAM TARZI INLINE FEED)
     // ============================================================================
 
     window.renderConfessions = function() {
+        // Yeni Inline (Aynı sayfada üstte kutu, altta kaydırılan akış) tasarımı
         let html = `
-            <div class="feed-layout-container">
-                <div style="display:flex; justify-content:space-between; align-items:center; padding: 15px 20px; background: white; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 10;">
-                    <h2 style="margin:0; font-size: 18px; font-weight: 800;">📸 Kampüs Akışı</h2>
-                    <button class="btn-primary" style="width:auto; padding: 8px 16px; border-radius: 20px; font-size: 14px;" onclick="window.openConfessionForm()">
-                        + Gönderi
-                    </button>
+            <div class="feed-layout-container" style="background:#F3F4F6; display:flex; flex-direction:column; height: calc(100vh - 80px); margin: -20px;">
+                <div style="background: white; padding: 15px 20px; border-bottom: 1px solid #E5E7EB; position: sticky; top: 0; z-index: 10;">
+                    <h2 style="margin:0; font-size: 20px; font-weight: 800;">📸 Kampüs Akışı</h2>
                 </div>
-                <div class="confessions-feed" id="conf-feed">
+
+                <div style="flex:1; overflow-y: auto; padding: 15px; -webkit-overflow-scrolling: touch;" id="feed-scroll-area">
+                    
+                    <div style="background: white; border-radius: 16px; padding: 16px; margin-bottom: 20px; border: 1px solid #E5E7EB; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                        <div style="display:flex; gap: 12px;">
+                            <div class="avatar" style="width:48px; height:48px; font-size:24px; margin:0; flex-shrink:0;">${window.userProfile.avatar}</div>
+                            <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                                <textarea id="inline-conf-text" placeholder="Aklından ne geçiyor? İnsanlarla paylaş..." style="width:100%; border:none; outline:none; resize:none; font-size:16px; min-height:60px; font-family:inherit;"></textarea>
+                                
+                                <div id="inline-conf-preview" style="display:none; position:relative; margin-bottom:10px;">
+                                    <img id="inline-conf-preview-img" src="" style="width:100%; max-height:300px; object-fit:contain; border-radius:12px; border:1px solid #E5E7EB; background:#f9fafb;">
+                                    <button onclick="document.getElementById('inline-conf-photo').value=''; document.getElementById('inline-conf-preview').style.display='none';" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer;">✕</button>
+                                </div>
+                                <p id="inline-conf-status" style="display:none; color:var(--primary); font-size:13px; font-weight:bold; margin:0;"></p>
+
+                                <hr style="border:0; border-top:1px solid #E5E7EB; margin: 5px 0;">
+                                
+                                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                                    <div style="display:flex; gap:10px; align-items:center;">
+                                        <button onclick="document.getElementById('inline-conf-photo').click()" style="background:transparent; border:none; color:var(--primary); font-size:20px; cursor:pointer; padding:5px; border-radius:50%; transition:0.2s;" onmouseover="this.style.background='#EEF2FF'" onmouseout="this.style.background='transparent'" title="Fotoğraf Ekle">🖼️</button>
+                                        <input type="file" id="inline-conf-photo" accept="image/*" style="display:none;" onchange="window.previewInlineConfPhoto(this)">
+                                        
+                                        <select id="inline-conf-identity" style="border:none; background:#F3F4F6; padding:8px 12px; border-radius:20px; outline:none; font-size:13px; color:#4B5563; cursor:pointer; font-weight:600;">
+                                            <option value="anon">🤫 Tamamen Anonim</option>
+                                            <option value="real">👤 ${window.userProfile.username || window.userProfile.name}</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn-primary" id="inline-publish-btn" onclick="window.submitInlineConfession()" style="width:auto; padding:8px 24px; border-radius:24px; font-weight:bold;">Gönder</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="confessions-feed" id="conf-feed"></div>
                 </div>
             </div>
         `;
@@ -1805,66 +1836,23 @@ function initializeUniLoop() {
         }
     };
 
-    window.openConfessionForm = function() {
-        window.openModal('Yeni Gönderi Oluştur', `
-            <div class="form-group">
-                <label style="font-weight:bold; margin-bottom:8px; display:block;">Kimliğinizi Seçin</label>
-                <select id="new-conf-identity" style="width:100%; padding:12px; border-radius:12px; border:1px solid #d1d5db; outline:none; font-size:15px; background:#f9fafb;">
-                    <option value="anon">🤫 Tamamen Anonim Olarak Paylaş</option>
-                    <option value="real">👤 Kullanıcı Adımla Paylaş (${window.userProfile.username || window.userProfile.name})</option>
-                </select>
-            </div>
-            
-            <textarea id="new-conf-text" class="form-group" style="width:100%; height:120px; border-radius:12px; padding:15px; font-size:16px; margin-top:10px;" placeholder="Aklından ne geçiyor? İnsanlarla paylaş..."></textarea>
-            
-            <div class="upload-btn-wrapper" style="margin-bottom: 15px;">
-                <button class="action-btn" id="conf-photo-trigger-btn" style="width:100%; justify-content:center; font-size:15px; border:1px dashed var(--primary); background:#F3F4F6;">
-                    📷 Fotoğraf Ekle (İsteğe Bağlı)
-                </button>
-                <input type="file" id="new-conf-photo" accept="image/*" style="display:none;" />
-            </div>
-            
-            <div id="conf-preview-container" class="preview-container"></div>
-            
-            <button class="btn-primary" id="publish-conf-btn" onclick="window.submitConfession()" style="padding:12px; font-size:16px;">Gönderiyi Yayınla</button>
-            <p id="conf-upload-status" style="font-size:13px; color:var(--primary); text-align:center; margin-top:10px; display:none; font-weight:bold;">
-                Yükleniyor, lütfen bekleyin...
-            </p>
-        `);
-
-        setTimeout(() => {
-            const photoBtn = document.getElementById('conf-photo-trigger-btn');
-            const photoInput = document.getElementById('new-conf-photo');
-            
-            if(photoBtn && photoInput) {
-                photoBtn.addEventListener('click', () => { 
-                    photoInput.click(); 
-                });
-                
-                photoInput.addEventListener('change', function(e) {
-                    const file = e.target.files[0];
-                    if(file) {
-                        const reader = new FileReader();
-                        reader.onload = function(event) { 
-                            document.getElementById('conf-preview-container').innerHTML = `
-                                <div class="preview-box" style="width:100%; height:auto; padding:0; border:none;">
-                                    <img src="${event.target.result}" style="width:100%; max-height:200px; object-fit:contain; border-radius:8px;">
-                                </div>
-                            `; 
-                        }
-                        reader.readAsDataURL(file);
-                    }
-                });
+    window.previewInlineConfPhoto = function(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('inline-conf-preview-img').src = e.target.result;
+                document.getElementById('inline-conf-preview').style.display = 'block';
             }
-        }, 100);
+            reader.readAsDataURL(input.files[0]);
+        }
     };
 
-    window.submitConfession = async function() {
-        const textEl = document.getElementById('new-conf-text');
-        const identityEl = document.getElementById('new-conf-identity');
-        const photoInput = document.getElementById('new-conf-photo');
-        const btn = document.getElementById('publish-conf-btn');
-        const statusEl = document.getElementById('conf-upload-status');
+    window.submitInlineConfession = async function() {
+        const textEl = document.getElementById('inline-conf-text');
+        const identityEl = document.getElementById('inline-conf-identity');
+        const photoInput = document.getElementById('inline-conf-photo');
+        const btn = document.getElementById('inline-publish-btn');
+        const statusEl = document.getElementById('inline-conf-status');
         
         if(!textEl || textEl.value.trim() === '') {
             alert("Lütfen bir şeyler yazın.");
@@ -1872,6 +1860,7 @@ function initializeUniLoop() {
         }
         
         btn.disabled = true;
+        btn.innerText = "Yükleniyor...";
         let imgUrl = "";
 
         if(photoInput && photoInput.files && photoInput.files.length > 0) {
@@ -1882,14 +1871,16 @@ function initializeUniLoop() {
                 const file = photoInput.files[0];
                 const fileName = Date.now() + '_' + file.name.replace(/\s/g, '');
                 
-                // 🛑 CRITICAL FIX: Firebase kurallarını aşmak için 'listings/' klasörünün altına 'feed_images' klasörü açıyoruz.
-                const storageRef = ref(storage, 'listings/feed_images/' + window.userProfile.uid + '_' + fileName);
+                // 🛑 CRITICAL FIX: Firebase kurallarına (match /listings/{userId}/{fileName}) uyması için
+                // Fotoğrafları kendi ID klasörüne kaydediyoruz.
+                const storageRef = ref(storage, 'listings/' + window.userProfile.uid + '/feed_' + fileName);
                 
                 await uploadBytes(storageRef, file);
                 imgUrl = await getDownloadURL(storageRef);
             } catch(err) {
                 alert("Fotoğraf yüklenemedi. Lütfen tekrar deneyin. Hata: " + err.message);
                 btn.disabled = false;
+                btn.innerText = "Gönder";
                 statusEl.style.display = 'none';
                 return;
             }
@@ -1909,10 +1900,18 @@ function initializeUniLoop() {
                 comments: [], 
                 createdAt: serverTimestamp()
             });
-            window.closeModal();
+            
+            // Başarılı olduğunda formu temizle
+            textEl.value = '';
+            if(photoInput) photoInput.value = '';
+            document.getElementById('inline-conf-preview').style.display = 'none';
+            statusEl.style.display = 'none';
+            
         } catch(e) { 
             alert("Hata: Firebase kurallarını kontrol edin. Mesaj: " + e.message); 
+        } finally {
             btn.disabled = false; 
+            btn.innerText = "Gönder";
         }
     };
 
