@@ -1840,3 +1840,178 @@ function initializeUniLoop() {
                             ${window.userProfile.avatar}
                         </div>
                         <input type="text" placeholder="${name} ağında paylaşım yap..." onclick="alert('Bu özellik premium sürüme (v2)
+        `;
+    };
+
+    // ============================================================================
+    // 11. SAYFA YÖNLENDİRME (ROUTING) VE PROFİL YÖNETİMİ
+    // ============================================================================
+
+    window.loadPage = function(pageName) {
+        if (pageName === 'home') {
+            mainContent.innerHTML = getHomeContent();
+        } else if (pageName === 'market') {
+            window.renderListings('market', '🛒 Kampüs Market', 'market');
+        } else if (pageName === 'housing') {
+            window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt', 'housing');
+        } else if (pageName === 'confessions') {
+            window.renderConfessions();
+        } else if (pageName === 'qa') {
+            window.renderQA(); 
+        } else if (pageName === 'messages') {
+            window.renderMessages(); 
+        } else if (pageName === 'notifications') {
+            window.renderNotifications();
+        } else if (pageName === 'settings') {
+            window.renderSettings();
+        } else if (pageName === 'profile') {
+            window.renderProfile();
+        }
+        
+        if(window.innerWidth <= 1024 && document.getElementById('sidebar')) {
+            document.getElementById('sidebar').classList.remove('open');
+        }
+        window.scrollTo(0,0);
+    };
+
+    document.querySelectorAll('.menu-item[data-target]').forEach(item => {
+        item.addEventListener('click', (e) => {
+            if(e.currentTarget.getAttribute('data-target')) {
+                document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
+                e.currentTarget.classList.add('active'); 
+                window.loadPage(e.currentTarget.getAttribute('data-target'));
+            }
+        });
+    });
+
+    bind('logo-btn', 'click', () => { 
+        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
+        document.querySelector('[data-target="home"]').classList.add('active'); 
+        window.loadPage('home'); 
+    });
+    
+    bind('profile-btn', 'click', () => { 
+        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
+        window.loadPage('profile'); 
+    });
+
+    window.renderProfile = function() {
+        mainContent.innerHTML = `
+            <div class="card">
+                <h2>👤 Profil Bilgilerim</h2>
+                <div style="background: #F9FAFB; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color);">
+                    <div class="grid-2col" style="margin-top:0;">
+                        <div class="form-group">
+                            <label>Ad</label>
+                            <input type="text" id="prof-name" value="${window.userProfile.name}">
+                        </div>
+                        <div class="form-group">
+                            <label>Soyad</label>
+                            <input type="text" id="prof-surname" value="${window.userProfile.surname}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Kullanıcı Adı</label>
+                        <div style="display:flex; align-items:center; background:#F9FAFB; border:1px solid #D1D5DB; border-radius:10px; overflow:hidden; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.1)'; this.style.background='white';" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
+                            <span style="padding-left:12px; color:var(--primary); font-weight:800; font-size:16px;">#</span>
+                            <input type="text" id="prof-username" value="${(window.userProfile.username || '').replace('#', '')}" placeholder="kullaniciadi" style="border:none; background:transparent; width:100%; padding:12px 8px; outline:none; font-size:15px; box-shadow:none; font-weight:600; color:var(--text-dark);">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Üniversite</label>
+                        <input type="text" disabled value="${window.userProfile.university}" style="background:#E5E7EB; cursor:not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label>E-posta</label>
+                        <input type="email" disabled value="${window.userProfile.email}" style="background:#E5E7EB; cursor:not-allowed;">
+                    </div>
+                    
+                    <button class="btn-primary" onclick="window.saveProfile()" style="padding:12px; margin-bottom: 15px;">
+                        Profilimi Kaydet
+                    </button>
+                    <button class="btn-danger" onclick="window.logout()">
+                        🚪 Güvenli Çıkış Yap
+                    </button>
+                </div>
+            </div>
+        `;
+    };
+
+    window.saveProfile = async function() {
+        const name = document.getElementById('prof-name').value; 
+        const surname = document.getElementById('prof-surname').value;
+        let rawUsername = document.getElementById('prof-username').value.trim().toLowerCase();
+        
+        if(!rawUsername) return alert("Kullanıcı adı boş bırakılamaz!");
+        
+        rawUsername = rawUsername.replace(/^#/, '');
+        const username = '#' + rawUsername;
+        
+        if(username !== window.userProfile.username) {
+            try {
+                const q = query(collection(db, "users"), where("username", "==", username));
+                const snapshot = await getDocs(q);
+                
+                if(!snapshot.empty) {
+                    return alert("Bu kullanıcı adı başkası tarafından alınmış. Lütfen başka bir tane deneyin.");
+                }
+            } catch(e) {
+                console.error(e);
+                return alert("Bir hata oluştu, lütfen tekrar deneyin.");
+            }
+        }
+        
+        window.userProfile.name = name; 
+        window.userProfile.surname = surname;
+        window.userProfile.username = username;
+        
+        try {
+            await updateDoc(doc(db, "users", window.userProfile.uid), { 
+                name: name, 
+                surname: surname,
+                username: username
+            });
+            window.openModal('Başarılı', `
+                <div style="text-align:center;">
+                    <p style="font-size:40px; margin:0;">✅</p>
+                    <p>Profil güncellendi!</p>
+                </div>
+            `);
+        } catch(e) {
+            alert("Profil kaydedilirken hata: " + e.message);
+        }
+    };
+
+    window.renderSettings = function() {
+        mainContent.innerHTML = `
+            <div class="card">
+                <h2>⚙️ Uygulama Ayarları</h2>
+                <div style="background: #F9FAFB; padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 1px solid var(--border-color);">
+                    <div class="form-group">
+                        <label>Dil Seçimi</label>
+                        <select>
+                            <option>Türkçe</option>
+                            <option>English</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tema</label>
+                        <select>
+                            <option>Aydınlık Mod</option>
+                            <option>Karanlık Mod (Yakında)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-danger" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
+            </div>
+        `;
+    };
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeUniLoop);
+} else {
+    initializeUniLoop();
+}
