@@ -4,9 +4,38 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, arrayUnion, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    sendEmailVerification, 
+    sendPasswordResetEmail, 
+    signOut, 
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    onSnapshot, 
+    query, 
+    orderBy, 
+    serverTimestamp, 
+    doc, 
+    setDoc, 
+    getDoc, 
+    updateDoc, 
+    arrayUnion, 
+    where, 
+    getDocs, 
+    deleteDoc 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { 
+    getStorage, 
+    ref, 
+    uploadBytes, 
+    getDownloadURL 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // --- GÜNCEL FIREBASE YAPILANDIRMASI ---
 const firebaseConfig = {
@@ -27,6 +56,7 @@ const storage = getStorage(app);
 
 document.addEventListener("DOMContentLoaded", () => {
     
+    // Olay Dinleyicisi (Event Listener) Kısayolu
     const bind = (id, event, callback) => { 
         const el = document.getElementById(id); 
         if (el) {
@@ -34,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
+    // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
     window.userProfile = { 
         uid: "", 
         name: "", 
@@ -52,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let chatsDB = [];
     let currentChatId = null;
 
+    // FAKÜLTE GİRİŞ ŞİFRELERİ
     const FACULTY_PASSCODES = {
         "Tıp Fakültesi": "tıpfak100", 
         "Bilgisayar Fakültesi": "bil1000", 
@@ -161,8 +193,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             await addDoc(collection(db, "chats"), {
                 participants: [user.uid, "system"],
-                participantNames: { [user.uid]: name, "system": "UniLoop Ekibi" },
-                participantAvatars: { [user.uid]: "👨‍🎓", "system": "🌍" },
+                participantNames: { 
+                    [user.uid]: name, 
+                    "system": "UniLoop Ekibi" 
+                },
+                participantAvatars: { 
+                    [user.uid]: "👨‍🎓", 
+                    "system": "🌍" 
+                },
                 lastUpdated: serverTimestamp(),
                 messages: [{
                     senderId: "system", 
@@ -519,8 +557,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return `
             <div class="card" style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; border:none;">
                 <h2 style="font-size:24px; margin-bottom:8px;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
-                <p style="opacity:0.9; font-size:15px;"><strong style="color:#D9FDD3;">${window.userProfile.university}</strong> ağındasın. Kendi kampüsünün ilanlarını ve itiraflarını keşfet.</p>
+                <p style="opacity:0.9; font-size:15px;">
+                    <strong style="color:#D9FDD3;">${window.userProfile.university}</strong> ağındasın. Kendi kampüsünün ilanlarını ve itiraflarını keşfet.
+                </p>
             </div>
+            
             <div class="card">
                 <h2>✨ AI Kampüs Eşleşmeleri</h2>
                 <div class="match-grid">
@@ -550,7 +591,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
                     <h2 style="margin:0;">${title}</h2>
-                    <button class="btn-primary" style="width:auto; padding: 10px 24px;" onclick="openListingForm('${type}')">+ Yeni İlan Ekle</button>
+                    <button class="btn-primary" style="width:auto; padding: 10px 24px;" onclick="openListingForm('${type}')">
+                        + Yeni İlan Ekle
+                    </button>
                 </div>
                 <input type="text" id="local-search-input" class="local-search-bar" placeholder="${title} içinde hızlıca ara...">
                 <div class="market-grid" id="listings-grid-container"></div>
@@ -572,10 +615,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const container = document.getElementById('listings-grid-container');
         if(!container) return;
 
-        const filteredData = marketDB.filter(item => item.type === type && (item.title.toLowerCase().includes(filterText) || item.desc.toLowerCase().includes(filterText)));
+        const filteredData = marketDB.filter(item => 
+            item.type === type && 
+            (item.title.toLowerCase().includes(filterText) || item.desc.toLowerCase().includes(filterText))
+        );
         
         if(filteredData.length === 0) {
-            container.innerHTML = `<p style="grid-column: 1 / -1; color: var(--text-gray); text-align:center; padding: 40px 0;">Henüz ilan yok veya bulunamadı.</p>`; 
+            container.innerHTML = `
+                <p style="grid-column: 1 / -1; color: var(--text-gray); text-align:center; padding: 40px 0;">
+                    Henüz ilan yok veya bulunamadı.
+                </p>
+            `; 
             return;
         }
 
@@ -588,7 +638,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (item.imgUrl) { 
                 imgHtml = `<img src="${item.imgUrl}" alt="İlan" style="width:100%; height:100%; object-fit:cover;">`;
             } else {
-                imgHtml = `<div style="font-size:48px; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">📦</div>`;
+                imgHtml = `
+                    <div style="font-size:48px; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                        📦
+                    </div>
+                `;
             }
 
             gridHtml += `
@@ -598,7 +652,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="item-title">${item.title}</div>
                         <div class="item-price-large">${item.price} ${displayCurrency}</div>
                     </div>
-                </div>`;
+                </div>
+            `;
         });
         
         container.innerHTML = gridHtml;
@@ -615,17 +670,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (item.imgUrls && item.imgUrls.length > 0) {
             imgHtml += '<div class="image-gallery" style="height:250px; border-radius:12px; margin-bottom:16px;">';
+            
             item.imgUrls.forEach((url, i) => {
-                imgHtml += `<div class="gallery-item"><img src="${url}" alt="İlan" style="border-radius:12px;"></div>`;
+                imgHtml += `
+                    <div class="gallery-item">
+                        <img src="${url}" alt="İlan" style="border-radius:12px;">
+                    </div>
+                `;
                 indicatorsHtml += `<div class="gallery-dot ${i === 0 ? 'active' : ''}"></div>`;
             });
+            
             imgHtml += '</div>';
             
             if(item.imgUrls.length > 1) { 
-                imgHtml += `<div class="gallery-indicators" style="bottom: 25px;">${indicatorsHtml}</div>`; 
+                imgHtml += `
+                    <div class="gallery-indicators" style="bottom: 25px;">
+                        ${indicatorsHtml}
+                    </div>
+                `; 
             }
         } else if (item.imgUrl) { 
-            imgHtml = `<img src="${item.imgUrl}" style="width:100%; height:250px; object-fit:cover; border-radius:12px; margin-bottom:16px;">`;
+            imgHtml = `
+                <img src="${item.imgUrl}" style="width:100%; height:250px; object-fit:cover; border-radius:12px; margin-bottom:16px;">
+            `;
         }
 
         let actionButtonsHtml = '';
@@ -634,25 +701,40 @@ document.addEventListener("DOMContentLoaded", () => {
         if (item.sellerId === window.userProfile.uid) {
              actionButtonsHtml = `
                 <div style="display:flex; gap:10px; margin-top: 20px;">
-                    <button class="action-btn" style="flex:1; padding:12px;" onclick="editListing('${item.id}', '${item.title}', '${item.price}')">✏️ Fiyatı Güncelle</button>
-                    <button class="btn-danger" style="flex:1; padding:12px;" onclick="deleteListing('${item.id}'); closeModal();">🗑️ Sil</button>
+                    <button class="action-btn" style="flex:1; padding:12px;" onclick="editListing('${item.id}', '${item.title}', '${item.price}')">
+                        ✏️ Fiyatı Güncelle
+                    </button>
+                    <button class="btn-danger" style="flex:1; padding:12px;" onclick="deleteListing('${item.id}'); closeModal();">
+                        🗑️ Sil
+                    </button>
                 </div>
              `;
         } else {
-             actionButtonsHtml = `<button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="startChat('${item.sellerId}', '${item.sellerName}'); closeModal();">💬 ${btnText}</button>`;
+             actionButtonsHtml = `
+                <button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="startChat('${item.sellerId}', '${item.sellerName}'); closeModal();">
+                    💬 ${btnText}
+                </button>
+             `;
         }
 
         window.openModal(item.title, `
             <div style="position:relative;">
                 ${imgHtml}
             </div>
+            
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <div style="font-size:24px; font-weight:800; color:#059669;">${item.price} ${displayCurrency}</div>
-                <div style="font-size:13px; color:var(--text-gray); background:#F3F4F6; padding:6px 12px; border-radius:20px;">Satıcı: <strong>${item.sellerName}</strong></div>
+                <div style="font-size:24px; font-weight:800; color:#059669;">
+                    ${item.price} ${displayCurrency}
+                </div>
+                <div style="font-size:13px; color:var(--text-gray); background:#F3F4F6; padding:6px 12px; border-radius:20px;">
+                    Satıcı: <strong>${item.sellerName}</strong>
+                </div>
             </div>
+            
             <div style="font-size:15px; line-height:1.6; color:var(--text-dark); background:#F9FAFB; padding:16px; border-radius:12px; border:1px solid var(--border-color);">
                 ${item.desc}
             </div>
+            
             ${actionButtonsHtml}
         `);
     };
@@ -671,6 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.editListing = function(docId, oldTitle, oldPrice) {
         let newPrice = prompt(`"${oldTitle}" için yeni fiyatı girin (Sadece rakam):`, oldPrice);
+        
         if(newPrice !== null && newPrice.trim() !== "") {
             try { 
                 updateDoc(doc(db, "listings", docId), { price: newPrice.trim() }); 
@@ -706,14 +789,18 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             
             <div class="upload-btn-wrapper">
-                <button class="action-btn" id="photo-trigger-btn" style="width:100%; justify-content:center;">📷 Fotoğraf Çek / Galeriden Seç (Max 3)</button>
+                <button class="action-btn" id="photo-trigger-btn" style="width:100%; justify-content:center;">
+                    📷 Fotoğraf Çek / Galeriden Seç (Max 3)
+                </button>
                 <input type="file" id="new-item-photo" accept="image/*" multiple style="display:none;" />
             </div>
             
             <div id="preview-container" class="preview-container"></div>
             
             <button class="btn-primary" id="publish-listing-btn" onclick="submitListing('${type}')">İlanı Yayınla</button>
-            <p id="upload-status" style="font-size:12px; color:var(--primary); text-align:center; margin-top:10px; display:none; font-weight:bold;">Fotoğraflar Yükleniyor, lütfen bekleyin...</p>
+            <p id="upload-status" style="font-size:12px; color:var(--primary); text-align:center; margin-top:10px; display:none; font-weight:bold;">
+                Fotoğraflar Yükleniyor, lütfen bekleyin...
+            </p>
         `);
 
         setTimeout(() => {
@@ -733,7 +820,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     files.forEach(file => {
                         const reader = new FileReader();
                         reader.onload = function(event) { 
-                            previewContainer.innerHTML += `<div class="preview-box"><img src="${event.target.result}"></div>`; 
+                            previewContainer.innerHTML += `
+                                <div class="preview-box">
+                                    <img src="${event.target.result}">
+                                </div>
+                            `; 
                         }
                         reader.readAsDataURL(file);
                     });
@@ -787,8 +878,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 for (let file of files) {
                     const fileName = Date.now() + '_' + file.name.replace(/\s/g, ''); 
                     const storageRef = ref(storage, 'listings/' + window.userProfile.uid + '/' + fileName);
+                    
                     await uploadBytes(storageRef, file);
                     const url = await getDownloadURL(storageRef);
+                    
                     imgUrlsArray.push(url);
                 }
             };
@@ -842,8 +935,14 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const newChatRef = await addDoc(collection(db, "chats"), {
                     participants: [window.userProfile.uid, targetUserId],
-                    participantNames: { [window.userProfile.uid]: window.userProfile.name, [targetUserId]: targetUserName },
-                    participantAvatars: { [window.userProfile.uid]: window.userProfile.avatar, [targetUserId]: "👤" },
+                    participantNames: { 
+                        [window.userProfile.uid]: window.userProfile.name, 
+                        [targetUserId]: targetUserName 
+                    },
+                    participantAvatars: { 
+                        [window.userProfile.uid]: window.userProfile.avatar, 
+                        [targetUserId]: "👤" 
+                    },
                     lastUpdated: serverTimestamp(), 
                     messages: []
                 });
@@ -957,7 +1056,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const inputField = document.getElementById('chat-input-field');
         if(inputField) {
             inputField.addEventListener('keypress', (e) => { 
-                if(e.key === 'Enter') window.sendMsg(chatId); 
+                if(e.key === 'Enter') {
+                    window.sendMsg(chatId); 
+                }
             });
         }
     };
@@ -986,12 +1087,15 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
                     <h2 style="margin:0;">🤫 Anonim Kampüs</h2>
-                    <button class="btn-primary" style="width:auto;" onclick="openConfessionForm()">+ İtiraf Yaz</button>
+                    <button class="btn-primary" style="width:auto;" onclick="openConfessionForm()">
+                        + İtiraf Yaz
+                    </button>
                 </div>
                 <div class="confessions-feed" id="conf-feed"></div>
             </div>
         `;
         mainContent.innerHTML = html;
+        
         if(confessionsDB) {
             window.drawConfessionsGrid();
         }
@@ -1061,6 +1165,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             </div>`;
         });
+        
         feed.innerHTML = html;
     };
 
@@ -1068,11 +1173,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const post = confessionsDB.find(p => p.id === docId);
         if(!post) return;
         
-        let bgStyle = post.theme === "theme-midnight" ? "linear-gradient(135deg, #111827, #374151)" : post.theme === "theme-love" ? "linear-gradient(135deg, #4c1d95, #be185d)" : "linear-gradient(135deg, #7f1d1d, #ea580c)";
+        let bgStyle = post.theme === "theme-midnight" ? "linear-gradient(135deg, #111827, #374151)" : 
+                      post.theme === "theme-love" ? "linear-gradient(135deg, #4c1d95, #be185d)" : 
+                      "linear-gradient(135deg, #7f1d1d, #ea580c)";
 
         window.openModal(post.user + ' Diyor ki:', `
             <div style="background:${bgStyle}; color:white; padding: 30px; border-radius: 16px; font-size: 18px; line-height: 1.6; margin-bottom: 24px; font-style:italic;">
-                <div style="font-size:12px; margin-bottom:10px; opacity:0.8;">${post.tag}</div>"${post.text}"
+                <div style="font-size:12px; margin-bottom:10px; opacity:0.8;">${post.tag}</div>
+                "${post.text}"
             </div>
             <div style="display:flex; gap:12px;">
                 <button class="action-btn" style="flex:1;" onclick="alert('Beğenildi!')">🔥 Yanıyor</button>
@@ -1089,7 +1197,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; flex-wrap:wrap; gap:10px;">
                     <h2 style="margin:0;">❓ Kampüs Soru & Cevap</h2>
-                    <button class="btn-primary" style="width:auto; padding: 10px 24px;" onclick="openQAForm()">+ Soru Sor</button>
+                    <button class="btn-primary" style="width:auto; padding: 10px 24px;" onclick="openQAForm()">
+                        + Soru Sor
+                    </button>
                 </div>
                 <div class="qa-filters" id="qa-filters-container">
                     <button class="qa-filter-btn active" data-filter="Genel" onclick="filterQA(this, 'Genel')">Genel</button>
@@ -1159,11 +1269,16 @@ document.addEventListener("DOMContentLoaded", () => {
         let filteredDB = filterTag === 'Genel' ? qaDB : qaDB.filter(q => q.tag === filterTag);
         
         if(filteredDB.length === 0) { 
-            feed.innerHTML = '<p style="text-align:center; padding: 30px 0; color:var(--text-gray);">Bu kategoride henüz soru yok.</p>'; 
+            feed.innerHTML = `
+                <p style="text-align:center; padding: 30px 0; color:var(--text-gray);">
+                    Bu kategoride henüz soru yok.
+                </p>
+            `; 
             return; 
         }
 
         let html = '';
+        
         filteredDB.forEach((q) => {
             const statusClass = q.answers.length > 0 ? 'answered' : '';
             
@@ -1199,7 +1314,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div style="background:#F9FAFB; padding:16px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border-color);">
                     <div style="font-weight:bold; color:var(--primary); margin-bottom:6px;">${ans.user}</div>
                     <div style="font-size:15px;">${ans.text}</div>
-                </div>`; 
+                </div>
+            `; 
         });
 
         window.openModal('Soru Detayı', `
@@ -1207,10 +1323,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="qa-tag" style="font-size:12px;">${q.tag}</span>
                 <div style="font-size:18px; font-weight:800; margin-top:12px;">${q.question}</div>
             </div>
+            
             <div style="border-top:1px solid var(--border-color); padding-top:24px; margin-bottom:24px;">
                 <h4>Cevaplar (${q.answers.length})</h4>
                 ${answersHtml}
             </div>
+            
             <div style="display:flex; gap:10px;">
                 <input type="text" id="new-answer-input" class="form-group" style="flex:1; margin:0;" placeholder="Cevabını yaz...">
                 <button class="btn-primary" style="width:auto;" onclick="submitAnswer('${q.id}')">Gönder</button>
@@ -1242,8 +1360,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if(!container) return;
         
         let html = '';
+        
         window.joinedFaculties.forEach(fac => { 
-            html += `<div class="menu-item community-link" data-name="${fac.name}" data-icon="${fac.icon}" data-color="${fac.color}" onclick="handleFacultyClick('${fac.name}', '${fac.icon}', '${fac.color}')">${fac.icon} ${fac.name}</div>`; 
+            html += `
+                <div class="menu-item community-link" data-name="${fac.name}" data-icon="${fac.icon}" data-color="${fac.color}" onclick="handleFacultyClick('${fac.name}', '${fac.icon}', '${fac.color}')">
+                    ${fac.icon} ${fac.name}
+                </div>
+            `; 
         });
         
         container.innerHTML = html;
@@ -1251,6 +1374,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.handleFacultyClick = async function(name, icon, bgColor) {
         document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
+        
         if(window.innerWidth <= 1024) {
             document.getElementById('sidebar').classList.remove('open');
         }
@@ -1265,10 +1389,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="icon">${icon}</div>
                     <h2>${name} Ağına Hoş Geldin</h2>
                     <p>Bu alan kapalı bir ağdır. Girmek için fakülte kodunu girmelisin.</p>
+                    
                     <div style="max-width: 300px; margin: 0 auto 20px auto;">
                         <input type="text" id="faculty-passcode-input" class="form-group" style="width: 100%; text-align:center; font-size:18px; font-weight:bold; letter-spacing:2px; padding: 15px; border: 2px solid var(--border-color); border-radius: 12px; outline:none;" placeholder="Giriş Kodunu Yazın">
                     </div>
-                    <button class="btn-primary" style="max-width:250px; font-size:16px; padding:12px;" onclick="verifyFacultyCode('${name}', '${icon}', '${bgColor}')">Ağa Katıl</button>
+                    
+                    <button class="btn-primary" style="max-width:250px; font-size:16px; padding:12px;" onclick="verifyFacultyCode('${name}', '${icon}', '${bgColor}')">
+                        Ağa Katıl
+                    </button>
                 </div>
             `;
             window.scrollTo(0,0);
@@ -1322,7 +1450,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="comm-banner-right">
                         <div class="member-avatars">
                             <div class="avatar">👨‍💻</div>
-                            <div class="avatar" style="background:white; color:var(--primary); font-size:11px; font-weight:bold;">+${totalMembers}</div>
+                            <div class="avatar" style="background:white; color:var(--primary); font-size:11px; font-weight:bold;">
+                                +${totalMembers}
+                            </div>
                         </div>
                         <div class="community-stats">
                             <span class="online-dot"></span> Gerçek Çevrimiçi: ${onlineMembers}
@@ -1331,7 +1461,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
                 <div class="create-post-box">
                     <div class="cp-top">
-                        <div class="avatar" style="background:#F3F4F6; font-size:20px;">${window.userProfile.avatar}</div>
+                        <div class="avatar" style="background:#F3F4F6; font-size:20px;">
+                            ${window.userProfile.avatar}
+                        </div>
                         <input type="text" placeholder="${name} ağında paylaşım yap..." onclick="alert('Bu özellik premium sürüme (v2) saklanmıştır.')">
                     </div>
                 </div>
@@ -1412,8 +1544,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         <label>E-posta</label>
                         <input type="email" disabled value="${window.userProfile.email}" style="background:#E5E7EB; cursor:not-allowed;">
                     </div>
-                    <button class="btn-primary" onclick="saveProfile()" style="padding:12px; margin-bottom: 15px;">Profilimi Kaydet</button>
-                    <button class="btn-danger" onclick="logout()">🚪 Güvenli Çıkış Yap</button>
+                    
+                    <button class="btn-primary" onclick="saveProfile()" style="padding:12px; margin-bottom: 15px;">
+                        Profilimi Kaydet
+                    </button>
+                    <button class="btn-danger" onclick="logout()">
+                        🚪 Güvenli Çıkış Yap
+                    </button>
                 </div>
             </div>
         `;
@@ -1431,7 +1568,12 @@ document.addEventListener("DOMContentLoaded", () => {
             surname: surname 
         });
         
-        window.openModal('Başarılı', '<div style="text-align:center;"><p style="font-size:40px; margin:0;">✅</p><p>Profil güncellendi!</p></div>');
+        window.openModal('Başarılı', `
+            <div style="text-align:center;">
+                <p style="font-size:40px; margin:0;">✅</p>
+                <p>Profil güncellendi!</p>
+            </div>
+        `);
     };
 
     window.renderSettings = function() {
