@@ -139,14 +139,19 @@ function initializeUniLoop() {
             padding: 15px; 
             scroll-behavior: smooth; 
             -webkit-overflow-scrolling: touch; 
+            /* YENİ: Akış sayfanın ortasına alındı (max 600px) */
+            max-width: 600px !important;
+            margin: 0 auto !important;
+            width: 100%;
         }
         .feed-post { 
             background: #fff; 
             border: 1px solid #E5E7EB; 
             border-radius: 16px; 
             padding: 16px; 
-            margin-bottom: 16px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
+            /* YENİ: Gönderiler arası daha belirgin boşluk ve modern gölge */
+            margin-bottom: 24px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.04); 
         }
         .feed-post-header { 
             display: flex; 
@@ -223,6 +228,23 @@ function initializeUniLoop() {
             background: #EEF2FF; 
         }
 
+        /* YENİ: GERÇEK ÇALIŞAN KARANLIK MOD (DARK MODE) DESTEĞİ */
+        body.dark-mode, .dark-mode #main-content { background-color: #121212 !important; color: #e5e7eb !important; }
+        .dark-mode .card, .dark-mode .feed-post, .dark-mode .item-card, .dark-mode .chat-sidebar-header { background-color: #1e1e1e !important; border-color: #374151 !important; color: #e5e7eb !important; }
+        .dark-mode .card > div { border-color: #374151 !important; }
+        .dark-mode .feed-post-author, .dark-mode .feed-post-text, .dark-mode h2, .dark-mode label, .dark-mode .item-title { color: #e5e7eb !important; }
+        .dark-mode .feed-layout-container, .dark-mode #conf-feed { background-color: #121212 !important; }
+        .dark-mode input, .dark-mode textarea, .dark-mode select { background-color: #374151 !important; color: #e5e7eb !important; border-color: #4b5563 !important; }
+        .dark-mode .feed-post-avatar, .dark-mode .avatar { background-color: #374151 !important; border-color: #4b5563 !important; }
+        .dark-mode .feed-action-btn:hover { background: #374151 !important; }
+        .dark-mode .chat-contact:hover { background: #374151 !important; }
+        .dark-mode .chat-input-wrapper input { background: #374151 !important; color: #e5e7eb !important; }
+        .dark-mode .modal-content { background-color: #1e1e1e !important; color: #e5e7eb !important; border-color: #374151 !important;}
+        .dark-mode .menu-item { color: #9ca3af; }
+        .dark-mode .menu-item.active { background: #374151 !important; color: var(--primary) !important; }
+        .dark-mode #app-header { background: #1e1e1e !important; border-bottom-color: #374151 !important; }
+        .dark-mode #sidebar { background: #1e1e1e !important; border-right-color: #374151 !important; }
+
         @media (max-width: 1024px) {
             #chat-layout-container { height: calc(100vh - 160px) !important; }
             .chat-sidebar { width: 100%; display: block; }
@@ -233,6 +255,31 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
     
+    // YENİ: DİL VE TEMA DESTEĞİ İÇİN GLOBAL SİSTEM FONKSİYONLARI
+    window.setLanguage = function(lang) {
+        localStorage.setItem('uniloop_lang', lang);
+        window.renderSettings(); 
+    };
+
+    window.toggleTheme = function(theme) {
+        localStorage.setItem('uniloop_theme', theme);
+        if(theme === 'dark') {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+    };
+
+    // YENİ: SİSTEM AÇILDIĞINDA KAYITLI TEMAYI YÜKLE
+    const savedTheme = localStorage.getItem('uniloop_theme') || 'light';
+    window.toggleTheme(savedTheme);
+
+    // YENİ: ÇEVİRİ SÖZLÜĞÜ (Ayarlar ve Temel Metinler İçin)
+    const TRANSLATIONS = {
+        'tr': { settingsTitle: '⚙️ Uygulama Ayarları', langLabel: 'Dil Seçimi', themeLabel: 'Tema', lightMode: 'Aydınlık Mod', darkMode: 'Karanlık Mod', logoutBtn: '🚪 Güvenli Çıkış Yap' },
+        'en': { settingsTitle: '⚙️ App Settings', langLabel: 'Language', themeLabel: 'Theme', lightMode: 'Light Mode', darkMode: 'Dark Mode', logoutBtn: '🚪 Secure Logout' }
+    };
+
     // 🔒 Mobilde Sidebar (Sol Menü) dışına tıklandığında menüyü kapatma garantisi (Mobil Uyumlu)
     const closeSidebarIfOutside = (e) => {
         const sidebar = document.getElementById('sidebar');
@@ -1788,17 +1835,16 @@ function initializeUniLoop() {
     // ============================================================================
 
     window.renderConfessions = function() {
-        // İstenilen temiz görünüm: Sağ üstte "Gönderi Oluştur" butonu, alt tarafta akış.
         let html = `
-            <div class="feed-layout-container" style="background:#F3F4F6; display:flex; flex-direction:column; height: calc(100vh - 80px); margin: -20px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; padding: 15px 20px; background: white; border-bottom: 1px solid #E5E7EB; position: sticky; top: 0; z-index: 10;">
+            <div class="feed-layout-container">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding: 15px 20px; background: inherit; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 10;">
                     <h2 style="margin:0; font-size: 20px; font-weight: 800;">📸 Kampüs Akışı</h2>
                     <button class="btn-primary" style="width:auto; padding: 8px 16px; border-radius: 20px; font-size: 14px; box-shadow: 0 2px 4px rgba(79,70,229,0.2);" onclick="window.openConfessionForm()">
                         + Gönderi Oluştur
                     </button>
                 </div>
 
-                <div class="confessions-feed" id="conf-feed" style="flex:1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch;">
+                <div class="confessions-feed" id="conf-feed">
                 </div>
             </div>
         `;
@@ -1814,7 +1860,7 @@ function initializeUniLoop() {
         window.openModal('Yeni Gönderi Oluştur', `
             <div class="form-group">
                 <label style="font-weight:bold; margin-bottom:8px; display:block;">Kimliğinizi Seçin</label>
-                <select id="new-conf-identity" style="width:100%; padding:12px; border-radius:12px; border:1px solid #d1d5db; outline:none; font-size:15px; background:#f9fafb; cursor:pointer;">
+                <select id="new-conf-identity" style="width:100%; padding:12px; border-radius:12px; border:1px solid #d1d5db; outline:none; font-size:15px; background:var(--bg-secondary); cursor:pointer;">
                     <option value="anon">🤫 Tamamen Anonim Olarak Paylaş</option>
                     <option value="real">👤 İsmimle Paylaş (${window.userProfile.username || window.userProfile.name})</option>
                 </select>
@@ -1823,7 +1869,7 @@ function initializeUniLoop() {
             <textarea id="new-conf-text" class="form-group" style="width:100%; height:120px; border-radius:12px; padding:15px; font-size:16px; margin-top:10px; resize:none; outline:none; border: 1px solid #E5E7EB;" placeholder="Aklından ne geçiyor? İnsanlarla paylaş..."></textarea>
             
             <div class="upload-btn-wrapper" style="margin-bottom: 15px;">
-                <button class="action-btn" id="conf-photo-trigger-btn" style="width:100%; justify-content:center; font-size:15px; border:1px dashed var(--primary); background:#F3F4F6; padding:12px; border-radius:12px;">
+                <button class="action-btn" id="conf-photo-trigger-btn" style="width:100%; justify-content:center; font-size:15px; border:1px dashed var(--primary); background:var(--bg-secondary); padding:12px; border-radius:12px;">
                     📷 Fotoğraf Ekle (İsteğe Bağlı)
                 </button>
                 <input type="file" id="new-conf-photo" accept="image/*" style="display:none;" />
@@ -1854,7 +1900,7 @@ function initializeUniLoop() {
                         reader.onload = function(event) { 
                             document.getElementById('conf-preview-container').innerHTML = `
                                 <div class="preview-box" style="width:100%; height:auto; padding:0; border:none; margin-bottom:15px;">
-                                    <img src="${event.target.result}" style="width:100%; max-height:200px; object-fit:contain; border-radius:12px; border:1px solid #E5E7EB; background:#f9fafb;">
+                                    <img src="${event.target.result}" style="width:100%; max-height:200px; object-fit:contain; border-radius:12px; border:1px solid #E5E7EB; background:var(--bg-secondary);">
                                 </div>
                             `; 
                         }
@@ -1888,7 +1934,6 @@ function initializeUniLoop() {
                 const file = photoInput.files[0];
                 const fileName = Date.now() + '_' + file.name.replace(/\s/g, '');
                 
-                // 🛑 GÜVENLİ FOTOĞRAF YOLU: Senin kurallarına uygun
                 const storageRef = ref(storage, 'listings/' + window.userProfile.uid + '/feed_' + fileName);
                 
                 await uploadBytes(storageRef, file);
@@ -1907,6 +1952,7 @@ function initializeUniLoop() {
 
         try {
             await addDoc(collection(db, "confessions"), {
+                authorId: window.userProfile.uid, // YENİ: Kendi gönderini silebilmen için arkaya UID eklendi
                 avatar: authorAvatar, 
                 user: authorName, 
                 time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
@@ -1915,10 +1961,25 @@ function initializeUniLoop() {
                 comments: [], 
                 createdAt: serverTimestamp()
             });
-            window.closeModal(); // Başarılıysa Modalı kapat
+            window.closeModal(); 
         } catch(e) { 
             alert("Hata: Firebase kurallarını kontrol edin. Mesaj: " + e.message); 
             btn.disabled = false; 
+        }
+    };
+
+    // YENİ: Gönderi Silme Fonksiyonu eklendi
+    window.deleteConfession = async function(docId) {
+        const lang = localStorage.getItem('uniloop_lang') || 'tr';
+        const msg = lang === 'en' ? 'Are you sure you want to delete this post?' : 'Bu gönderiyi silmek istediğinize emin misiniz?';
+        
+        if(confirm(msg)) {
+            try { 
+                await deleteDoc(doc(db, "confessions", docId)); 
+            } catch(e) { 
+                console.error(e); 
+                alert("Hata oluştu: " + e.message); 
+            }
         }
     };
 
@@ -1930,7 +1991,7 @@ function initializeUniLoop() {
         
         if(confessionsDB.length === 0) {
             feed.innerHTML = `
-                <div style="text-align:center; color:var(--text-gray); padding: 40px 20px; background: white; border-radius: 12px; margin-top: 20px;">
+                <div style="text-align:center; color:var(--text-gray); padding: 40px 20px; border-radius: 12px; margin-top: 20px;">
                     <div style="font-size:40px; margin-bottom: 10px;">📸</div>
                     Henüz hiçbir paylaşım yok. İlk gönderiyi sen paylaş!
                 </div>
@@ -1950,6 +2011,16 @@ function initializeUniLoop() {
             
             const commentCount = post.comments ? post.comments.length : 0;
             
+            // YENİ: Silme butonu sadece post.authorId ile kendi sistem uid'in eşleşiyorsa görünecek
+            let deleteBtnHtml = '';
+            if (post.authorId === window.userProfile.uid) {
+                deleteBtnHtml = `
+                    <button class="feed-action-btn" style="color: #ef4444; margin-left: auto;" onclick="window.deleteConfession('${post.id}')">
+                        🗑️ Sil
+                    </button>
+                `;
+            }
+
             html += `
             <div class="feed-post">
                 <div class="feed-post-header">
@@ -1968,6 +2039,7 @@ function initializeUniLoop() {
                     <button class="feed-action-btn" onclick="window.openConfessionDetail('${post.id}')">
                         💬 Yorum Yap veya Görüntüle (${commentCount})
                     </button>
+                    ${deleteBtnHtml}
                 </div>
             </div>`;
         });
@@ -2001,7 +2073,7 @@ function initializeUniLoop() {
         let imgHtml = '';
         if(post.imgUrl) {
             imgHtml = `
-                <img src="${post.imgUrl}" style="width:100%; border-radius:12px; margin-bottom:16px; max-height:300px; object-fit:contain; background:#f3f4f6; cursor:pointer;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">
+                <img src="${post.imgUrl}" style="width:100%; border-radius:12px; margin-bottom:16px; max-height:300px; object-fit:contain; background:inherit; cursor:pointer;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">
             `;
         }
         
@@ -2013,7 +2085,7 @@ function initializeUniLoop() {
         } else {
             commentsArray.forEach(c => {
                 commentsHtml += `
-                    <div style="background:#F9FAFB; padding:14px; border-radius:12px; margin-bottom:10px; border:1px solid var(--border-color);">
+                    <div style="padding:14px; border-radius:12px; margin-bottom:10px; border:1px solid var(--border-color);">
                         <div style="font-weight:800; color:var(--text-dark); margin-bottom:6px; font-size:14px;">${c.user}</div>
                         <div style="font-size:14px; color:var(--text-dark); line-height:1.4;">${c.text}</div>
                     </div>
@@ -2045,8 +2117,8 @@ function initializeUniLoop() {
                 </div>
             </div>
             
-            <div style="display:flex; gap:10px; align-items:center; background:#f9fafb; padding:10px; border-radius:12px; border:1px solid var(--border-color);">
-                <input type="text" id="new-conf-comment" style="flex:1; border:none; outline:none; background:transparent; font-size:15px;" placeholder="Yorum yaz..." onkeypress="if(event.key==='Enter') window.submitConfessionComment('${post.id}')">
+            <div style="display:flex; gap:10px; align-items:center; background:inherit; padding:10px; border-radius:12px; border:1px solid var(--border-color);">
+                <input type="text" id="new-conf-comment" style="flex:1; border:none; outline:none; background:transparent; font-size:15px; color:var(--text-dark);" placeholder="Yorum yaz..." onkeypress="if(event.key==='Enter') window.submitConfessionComment('${post.id}')">
                 <button class="btn-primary" style="width:auto; padding:8px 16px; border-radius:8px;" onclick="window.submitConfessionComment('${post.id}')">Gönder</button>
             </div>
         `;
@@ -2206,7 +2278,7 @@ function initializeUniLoop() {
         } else {
             q.answers.forEach(ans => { 
                 answersHtml += `
-                    <div style="background:#F9FAFB; padding:16px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border-color);">
+                    <div style="background:inherit; padding:16px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border-color);">
                         <div style="font-weight:bold; color:var(--primary); margin-bottom:6px;">${ans.user}</div>
                         <div style="font-size:15px;">${ans.text}</div>
                     </div>
@@ -2427,7 +2499,7 @@ function initializeUniLoop() {
         mainContent.innerHTML = `
             <div class="card">
                 <h2>👤 Profil Bilgilerim</h2>
-                <div style="background: #F9FAFB; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color);">
+                <div style="background: inherit; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color);">
                     <div class="grid-2col" style="margin-top:0;">
                         <div class="form-group">
                             <label>Ad</label>
@@ -2441,7 +2513,7 @@ function initializeUniLoop() {
                     
                     <div class="form-group">
                         <label>Kullanıcı Adı</label>
-                        <div style="display:flex; align-items:center; background:#F9FAFB; border:1px solid #D1D5DB; border-radius:10px; overflow:hidden; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.1)'; this.style.background='white';" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
+                        <div style="display:flex; align-items:center; background:inherit; border:1px solid #D1D5DB; border-radius:10px; overflow:hidden; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.1)';" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none';">
                             <span style="padding-left:12px; color:var(--primary); font-weight:800; font-size:16px;">#</span>
                             <input type="text" id="prof-username" value="${(window.userProfile.username || '').replace('#', '')}" placeholder="kullaniciadi" style="border:none; background:transparent; width:100%; padding:12px 8px; outline:none; font-size:15px; box-shadow:none; font-weight:600; color:var(--text-dark);">
                         </div>
@@ -2517,27 +2589,32 @@ function initializeUniLoop() {
         }
     };
 
+    // YENİ: DİNAMİK VE ÇALIŞAN AYARLAR (DİL VE KARANLIK MOD BAĞLANTILI)
     window.renderSettings = function() {
+        const currentLang = localStorage.getItem('uniloop_lang') || 'tr';
+        const currentTheme = localStorage.getItem('uniloop_theme') || 'light';
+        const t = TRANSLATIONS[currentLang];
+
         mainContent.innerHTML = `
             <div class="card">
-                <h2>⚙️ Uygulama Ayarları</h2>
-                <div style="background: #F9FAFB; padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 1px solid var(--border-color);">
+                <h2>${t.settingsTitle}</h2>
+                <div style="background: inherit; padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 1px solid var(--border-color);">
                     <div class="form-group">
-                        <label>Dil Seçimi</label>
-                        <select>
-                            <option>Türkçe</option>
-                            <option>English</option>
+                        <label>${t.langLabel}</label>
+                        <select onchange="window.setLanguage(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D1D5DB; background:transparent;">
+                            <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>Türkçe</option>
+                            <option value="en" ${currentLang === 'en' ? 'selected' : ''}>English</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Tema</label>
-                        <select>
-                            <option>Aydınlık Mod</option>
-                            <option>Karanlık Mod (Yakında)</option>
+                        <label>${t.themeLabel}</label>
+                        <select onchange="window.toggleTheme(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D1D5DB; background:transparent;">
+                            <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>${t.lightMode}</option>
+                            <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>${t.darkMode}</option>
                         </select>
                     </div>
                 </div>
-                <button class="btn-danger" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
+                <button class="btn-danger" onclick="window.logout()">${t.logoutBtn}</button>
             </div>
         `;
     };
