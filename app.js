@@ -83,6 +83,11 @@ function initializeUniLoop() {
     let chatsDB = [];
     let currentChatId = null;
 
+    // Mobil Chat'ten çıkıldığında id'yi sıfırlamak için global fonksiyon
+    window.resetCurrentChatId = function() {
+        currentChatId = null;
+    };
+
     // FAKÜLTE GİRİŞ ŞİFRELERİ
     const FACULTY_PASSCODES = {
         "Tıp Fakültesi": "tıpfak100", 
@@ -288,12 +293,11 @@ function initializeUniLoop() {
     });
 
     // ============================================================================
-    // 🌍 SİSTEM MESAJI GARANTİSİ (CSS BOZULMAMASI İÇİN ÖZEL ID EKLENDİ)
+    // 🌍 SİSTEM MESAJI GARANTİSİ 
     // ============================================================================
     window.ensureWelcomeMessage = async function(user, userName) {
         if(!user) return;
         try {
-            // 🚀 KRİTİK NOKTA: Belge adının içinde "system" geçmek zorunda! (CSS için)
             const chatId = user.uid + "_system_welcome";
             const chatRef = doc(db, "chats", chatId);
             const chatSnap = await getDoc(chatRef);
@@ -317,7 +321,8 @@ function initializeUniLoop() {
                     messages: [{
                         senderId: "system", 
                         text: systemMessageText, 
-                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        read: false // Okunmadı olarak işaretle
                     }]
                 });
             }
@@ -498,7 +503,7 @@ function initializeUniLoop() {
         });
 
         // ====================================================================
-        // 🛡️ DÜZELTME: Firebase Index Hatası önlendi. Bozuk dosya kalkanı eklendi.
+        // 🛡️ CHATS LİSTENER: CANLI GÜNCELLEMELER VE ODAK KORUMA
         // ====================================================================
         onSnapshot(query(collection(db, "chats"), where("participants", "array-contains", currentUid)), (snapshot) => {
             chatsDB = [];
@@ -508,14 +513,12 @@ function initializeUniLoop() {
                 try {
                     const data = doc.data({ serverTimestamps: 'estimate' }); 
                     
-                    // Eski bozuk verilerden korunma: Katılımcı listesi yoksa atla
                     if (!data.participants || !Array.isArray(data.participants)) return; 
                     
                     const otherUid = data.participants.find(p => p !== currentUid) || "system";
                     const otherName = (data.participantNames && data.participantNames[otherUid]) ? data.participantNames[otherUid] : "UniLoop Team";
                     const otherAvatar = (data.participantAvatars && data.participantAvatars[otherUid]) ? data.participantAvatars[otherUid] : "👤";
                     
-                    // Firebase zamanı dönmediğinde yerel saat ile çöküşü önle
                     let safeTimestamp = 0;
                     if (data.lastUpdated && typeof data.lastUpdated.toMillis === 'function') {
                         safeTimestamp = data.lastUpdated.toMillis();
@@ -536,7 +539,6 @@ function initializeUniLoop() {
 
                     chatsDB.push(chatItem);
 
-                    // Bildirim Sayacını Artır
                     if (chatItem.status === 'pending' && chatItem.initiator !== currentUid) {
                         pendingRequestsCount++;
                     }
@@ -545,10 +547,9 @@ function initializeUniLoop() {
                 }
             });
 
-            // ⏱️ JS İLE SIRALAMA: EN GÜNCEL MESAJ OTOMATİK EN ÜSTE ÇIKAR
+            // EN GÜNCEL MESAJ OTOMATİK EN ÜSTE ÇIKAR
             chatsDB.sort((a, b) => b.lastUpdatedTS - a.lastUpdatedTS);
 
-            // Bildirim Rozetini Güncelle
             const notifBadge = document.getElementById('notif-badge');
             if(notifBadge) {
                 if(pendingRequestsCount > 0) { 
@@ -561,7 +562,23 @@ function initializeUniLoop() {
 
             const activeTab = document.querySelector('.menu-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'messages') {
+                // SOHBET GÜNCELLENİRKEN KLAVYE ODAĞINI KORUMA (Canlı Mesajlaşma)
+                const inputField = document.getElementById('chat-input-field');
+                const isFocused = inputField && inputField === document.activeElement;
+                const currentText = inputField ? inputField.value : '';
+
                 window.renderMessages();
+
+                if (currentChatId) {
+                    const newInputField = document.getElementById('chat-input-field');
+                    if(newInputField) {
+                        newInputField.value = currentText;
+                        if(isFocused) {
+                            newInputField.focus();
+                            newInputField.selectionStart = newInputField.selectionEnd = newInputField.value.length;
+                        }
+                    }
+                }
             } else if (activeTab && activeTab.getAttribute('data-target') === 'notifications') {
                 window.renderNotifications();
             }
@@ -690,7 +707,6 @@ function initializeUniLoop() {
         try {
             const myUid = auth.currentUser.uid;
             
-            // Daha önce istek atılmış mı kontrol et
             const q = query(collection(db, "chats"), where("participants", "array-contains", myUid));
             const snap = await getDocs(q);
             
@@ -713,12 +729,13 @@ function initializeUniLoop() {
                         [targetUserId]: "👤" 
                     },
                     lastUpdated: serverTimestamp(), 
-                    status: 'pending', // ⏳ İSTEK BEKLEMEDE
+                    status: 'pending', 
                     initiator: myUid, 
                     messages: [{
                         senderId: "system",
                         text: "Arkadaşlık isteği gönderildi.",
-                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        read: false
                     }]
                 });
                 alert("Arkadaşlık isteği başarıyla gönderildi!");
@@ -1214,14 +1231,14 @@ function initializeUniLoop() {
                         [targetUserId]: "👤" 
                     },
                     lastUpdated: serverTimestamp(), 
-                    status: 'accepted', // Market ilanları isteği direkt pas geçer
-                    messages: [{ senderId: myUid, text: autoText, time: timeStr }]
+                    status: 'accepted', 
+                    messages: [{ senderId: myUid, text: autoText, time: timeStr, read: false }] // Tik kontrolü için read
                 });
                 existingChatId = newDocRef.id;
             } else {
                 await updateDoc(doc(db, "chats", existingChatId), {
                     status: 'accepted',
-                    messages: arrayUnion({ senderId: myUid, text: autoText, time: timeStr }),
+                    messages: arrayUnion({ senderId: myUid, text: autoText, time: timeStr, read: false }),
                     lastUpdated: serverTimestamp()
                 });
             }
@@ -1276,7 +1293,7 @@ function initializeUniLoop() {
             const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             await updateDoc(doc(db, "chats", chatId), {
                 status: 'accepted',
-                messages: arrayUnion({ senderId: "system", text: "Arkadaşlık isteği kabul edildi. Artık mesajlaşabilirsiniz! 🎉", time: timeStr }),
+                messages: arrayUnion({ senderId: "system", text: "Arkadaşlık isteği kabul edildi. Artık mesajlaşabilirsiniz! 🎉", time: timeStr, read: false }),
                 lastUpdated: serverTimestamp()
             });
             alert("İstek kabul edildi! Mesajlarım bölümünden yazışabilirsiniz.");
@@ -1301,6 +1318,7 @@ function initializeUniLoop() {
 
     // 💬 MESAJLARIM (Kabul Edilenler ve Kendi Gönderdiğimiz İstekler)
     window.renderMessages = function() {
+        // UniLoop Team "system" karşılama mesajı da 'accepted' olduğu için artık burada görünür
         const visibleChats = chatsDB.filter(c => c.status === 'accepted' || (c.status === 'pending' && c.initiator === window.userProfile.uid));
 
         let html = `
@@ -1354,7 +1372,8 @@ function initializeUniLoop() {
         
         mainContent.innerHTML = html;
         
-        if(window.innerWidth > 1024 && currentChatId && visibleChats.find(c => c.id === currentChatId)) {
+        // Cihaz ne olursa olsun açılmış bir sohbet varsa DOM'u ona göre hazırla (Anında güncelleme mekanizması)
+        if(currentChatId && visibleChats.find(c => c.id === currentChatId)) {
             window.openChatView(currentChatId);
         }
     };
@@ -1365,13 +1384,29 @@ function initializeUniLoop() {
         
         if(!activeChat) return;
 
+        // 1. TİK SİSTEMİ: Sohbet açıldığında, "Karşı Tarafın" henüz okumadığım mesajlarını Okundu (read: true) olarak işaretle
+        let hasUnread = false;
+        const updatedMessages = activeChat.messages.map(msg => {
+            if (msg.senderId !== window.userProfile.uid && msg.read === false) {
+                hasUnread = true;
+                return { ...msg, read: true };
+            }
+            return msg;
+        });
+
+        if (hasUnread) {
+            updateDoc(doc(db, "chats", chatId), { messages: updatedMessages });
+            // Bu satırın ardından listener tetiklenir, DOM kendi kendini canlı tazeler.
+            activeChat.messages = updatedMessages; 
+        }
+
         const container = document.getElementById('chat-main-view');
         const layoutContainer = document.getElementById('chat-layout-container');
         layoutContainer.classList.add('chat-active');
 
         let chatHTML = `
             <div class="chat-header">
-                <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); window.currentChatId=null;">←</button>
+                <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); window.resetCurrentChatId();">←</button>
                 <div class="avatar" style="width:42px; height:42px; font-size:20px; margin:0;">${activeChat.avatar}</div>
                 <div class="chat-header-info">
                     <div class="chat-header-name">${activeChat.name}</div>
@@ -1383,12 +1418,21 @@ function initializeUniLoop() {
         
         activeChat.messages.forEach(msg => { 
             const type = msg.senderId === window.userProfile.uid ? 'sent' : 'received';
-            const ticks = type === 'sent' ? '<span class="ticks">✓✓</span>' : '';
+            
+            // Tik kontrolü
+            let ticks = '';
+            if (type === 'sent') {
+                if (msg.read) {
+                    ticks = '<span class="ticks" title="Okundu" style="color:#3B82F6; font-weight:bold; margin-left:6px; font-size:12px;">✓✓</span>';
+                } else {
+                    ticks = '<span class="ticks" title="İletildi" style="color:#9CA3AF; font-weight:bold; margin-left:6px; font-size:12px;">✓</span>';
+                }
+            }
             
             chatHTML += `
                 <div class="bubble ${type}">
                     <div class="msg-text">${msg.text}</div>
-                    <div class="msg-time">${msg.time} ${ticks}</div>
+                    <div class="msg-time" style="display:flex; align-items:center; justify-content:flex-end;">${msg.time} ${ticks}</div>
                 </div>
             `; 
         });
@@ -1437,11 +1481,12 @@ function initializeUniLoop() {
         if(input && input.value.trim() !== '') {
             try {
                 const text = input.value.trim();
-                input.value = '';
+                input.value = ''; // DOM'da anında temizlenir
                 const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 
+                // Mesaj gönderilirken varsayılan olarak read: false durumunda yollanır
                 await updateDoc(doc(db, "chats", chatId), {
-                    messages: arrayUnion({ senderId: window.userProfile.uid, text: text, time: timeStr }), 
+                    messages: arrayUnion({ senderId: window.userProfile.uid, text: text, time: timeStr, read: false }), 
                     lastUpdated: serverTimestamp() 
                 });
             } catch(error) {
@@ -1836,7 +1881,10 @@ function initializeUniLoop() {
                         <div class="avatar" style="background:#F3F4F6; font-size:20px;">
                             ${window.userProfile.avatar}
                         </div>
-                        <input type="text" placeholder="${name} ağında paylaşım yap..." onclick="alert('Bu özellik premium sürüme (v2)
+                        <input type="text" placeholder="${name} ağında paylaşım yap..." onclick="alert('Bu özellik premium sürüme (v2) saklanmıştır.')">
+                    </div>
+                </div>
+            </div>
         `;
     };
 
