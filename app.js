@@ -54,7 +54,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Kodu garantili başlatmak için ana fonksiyon
 function initializeUniLoop() {
     
     // Olay Dinleyicisi (Event Listener) Kısayolu
@@ -202,6 +201,7 @@ function initializeUniLoop() {
                     isOnline: false, 
                     faculty: ""
                 });
+                // Kullanıcı oluşturulur oluşturulmaz mesajı çak!
                 await window.ensureWelcomeMessage(user, name);
             } catch (dbError) {
                 console.error("Veritabanı Kayıt Hatası:", dbError);
@@ -291,12 +291,13 @@ function initializeUniLoop() {
     });
 
     // ============================================================================
-    // 🌍 SİSTEM MESAJI GARANTİSİ (UNILOOP TEAM)
+    // 🌍 SİSTEM MESAJI GARANTİSİ (CSS BOZULMAMASI İÇİN ÖZEL ID EKLENDİ)
     // ============================================================================
     window.ensureWelcomeMessage = async function(user, userName) {
         if(!user) return;
         try {
-            const chatId = [user.uid, "system"].sort().join("_");
+            // 🚀 KRİTİK NOKTA: Belge adının içinde "system" geçmek zorunda! (CSS için)
+            const chatId = user.uid + "_system_welcome";
             const chatRef = doc(db, "chats", chatId);
             const chatSnap = await getDoc(chatRef);
 
@@ -315,6 +316,7 @@ function initializeUniLoop() {
                     },
                     lastUpdated: serverTimestamp(),
                     status: 'accepted',
+                    initiator: 'system',
                     messages: [{
                         senderId: "system", 
                         text: systemMessageText, 
@@ -499,8 +501,7 @@ function initializeUniLoop() {
         });
 
         // ====================================================================
-        // 🛡️ DÜZELTME: Firebase "Index Hatası" vermesin diye orderBy kaldırıldı. 
-        // Sıralamayı JavaScript anlık olarak yapacak, çökme yaşanmayacak!
+        // 🛡️ DÜZELTME: Firebase Index Hatası önlendi. Bozuk dosya kalkanı eklendi.
         // ====================================================================
         onSnapshot(query(collection(db, "chats"), where("participants", "array-contains", currentUid)), (snapshot) => {
             chatsDB = [];
@@ -509,13 +510,15 @@ function initializeUniLoop() {
             snapshot.forEach(doc => {
                 try {
                     const data = doc.data({ serverTimestamps: 'estimate' }); 
-                    if (!data.participants || !Array.isArray(data.participants)) return; // Bozuk veriyi atla, çökme
+                    
+                    // Eski bozuk verilerden korunma: Katılımcı listesi yoksa atla
+                    if (!data.participants || !Array.isArray(data.participants)) return; 
                     
                     const otherUid = data.participants.find(p => p !== currentUid) || "system";
-                    const otherName = (data.participantNames && data.participantNames[otherUid]) ? data.participantNames[otherUid] : "UniLoop";
+                    const otherName = (data.participantNames && data.participantNames[otherUid]) ? data.participantNames[otherUid] : "UniLoop Team";
                     const otherAvatar = (data.participantAvatars && data.participantAvatars[otherUid]) ? data.participantAvatars[otherUid] : "👤";
                     
-                    // Güvenli Timestamp (Eğer eski veride zaman yoksa bugünü kullan)
+                    // Firebase zamanı dönmediğinde yerel saat ile çöküşü önle
                     let safeTimestamp = 0;
                     if (data.lastUpdated && typeof data.lastUpdated.toMillis === 'function') {
                         safeTimestamp = data.lastUpdated.toMillis();
@@ -536,7 +539,7 @@ function initializeUniLoop() {
 
                     chatsDB.push(chatItem);
 
-                    // Eğer bize gelen ve beklemede olan bir istekse bildirim sayısını artır
+                    // Bildirim Sayacını Artır
                     if (chatItem.status === 'pending' && chatItem.initiator !== currentUid) {
                         pendingRequestsCount++;
                     }
@@ -559,7 +562,6 @@ function initializeUniLoop() {
                 }
             }
 
-            // Hangi ekrandaysak orayı tazeleyelim
             const activeTab = document.querySelector('.menu-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'messages') {
                 window.renderMessages();
@@ -690,12 +692,20 @@ function initializeUniLoop() {
     window.sendFriendRequest = async function(targetUserId, targetUserName) {
         try {
             const myUid = auth.currentUser.uid;
-            const chatId = [myUid, targetUserId].sort().join("_");
-            const chatRef = doc(db, "chats", chatId);
-            const chatSnap = await getDoc(chatRef);
+            
+            // Daha önce istek atılmış mı kontrol et
+            const q = query(collection(db, "chats"), where("participants", "array-contains", myUid));
+            const snap = await getDocs(q);
+            
+            let existingChat = null;
+            snap.forEach(doc => {
+                if (doc.data().participants && doc.data().participants.includes(targetUserId)) {
+                    existingChat = { id: doc.id, ...doc.data() };
+                }
+            });
 
-            if(!chatSnap.exists()) {
-                await setDoc(chatRef, {
+            if(!existingChat) {
+                await addDoc(collection(db, "chats"), {
                     participants: [myUid, targetUserId],
                     participantNames: { 
                         [myUid]: window.userProfile.name, 
@@ -717,13 +727,12 @@ function initializeUniLoop() {
                 alert("Arkadaşlık isteği başarıyla gönderildi!");
                 window.loadPage('messages');
             } else {
-                const data = chatSnap.data();
-                if(data.status === 'pending') {
+                if(existingChat.status === 'pending') {
                     alert("Bu kişiye zaten bir istek gönderilmiş veya ondan sana istek gelmiş. Lütfen Bildirimlerinizi kontrol edin.");
                 } else {
                     alert("Bu kişiyle zaten arkadaşsınız.");
                     window.loadPage('messages');
-                    setTimeout(() => window.openChatView(chatId), 500); 
+                    setTimeout(() => window.openChatView(existingChat.id), 500); 
                 }
             }
         } catch (error) {
@@ -1181,41 +1190,47 @@ function initializeUniLoop() {
     // ============================================================================
 
     window.startMarketChat = async function(targetUserId, targetUserName, autoText) {
-        if(targetUserId === window.userProfile.uid) {
-            return alert("Kendi ilanınıza mesaj atamazsınız!");
-        }
-
         try {
-            const chatId = [window.userProfile.uid, targetUserId].sort().join("_");
-            const chatRef = doc(db, "chats", chatId);
-            const chatSnap = await getDoc(chatRef);
+            const myUid = auth.currentUser.uid;
+            const q = query(collection(db, "chats"), where("participants", "array-contains", myUid));
+            const snap = await getDocs(q);
+            
+            let existingChatId = null;
+            snap.forEach(doc => {
+                const p = doc.data().participants || [];
+                if (p.includes(targetUserId)) {
+                    existingChatId = doc.id;
+                }
+            });
+
             const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-            if(!chatSnap.exists()) {
-                await setDoc(chatRef, {
-                    participants: [window.userProfile.uid, targetUserId],
+            if(!existingChatId) {
+                const newDocRef = await addDoc(collection(db, "chats"), {
+                    participants: [myUid, targetUserId],
                     participantNames: { 
-                        [window.userProfile.uid]: window.userProfile.name, 
+                        [myUid]: window.userProfile.name, 
                         [targetUserId]: targetUserName 
                     },
                     participantAvatars: { 
-                        [window.userProfile.uid]: window.userProfile.avatar, 
+                        [myUid]: window.userProfile.avatar || "👨‍🎓", 
                         [targetUserId]: "👤" 
                     },
                     lastUpdated: serverTimestamp(), 
-                    status: 'accepted', // İlan mesajları isteği pas geçer
-                    messages: [{ senderId: window.userProfile.uid, text: autoText, time: timeStr }]
+                    status: 'accepted', // Market ilanları isteği direkt pas geçer
+                    messages: [{ senderId: myUid, text: autoText, time: timeStr }]
                 });
+                existingChatId = newDocRef.id;
             } else {
-                await updateDoc(chatRef, {
+                await updateDoc(doc(db, "chats", existingChatId), {
                     status: 'accepted',
-                    messages: arrayUnion({ senderId: window.userProfile.uid, text: autoText, time: timeStr }),
+                    messages: arrayUnion({ senderId: myUid, text: autoText, time: timeStr }),
                     lastUpdated: serverTimestamp()
                 });
             }
             
             window.loadPage('messages');
-            setTimeout(() => window.openChatView(chatId), 500); 
+            setTimeout(() => window.openChatView(existingChatId), 500); 
         } catch (error) {
             alert("Mesaj başlatılırken hata oluştu: " + error.message);
         }
@@ -1333,7 +1348,7 @@ function initializeUniLoop() {
                     <div class="chat-main" id="chat-main-view">
                         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-gray); opacity:0.7;">
                             <div style="font-size:48px; margin-bottom:10px;">💬</div>
-                            <div>Mesajlaşmaya başlamak için sol taraftan bir kişi seçin.</div>
+                            <div>Mesajlaşmaya veya istekleri görüntülemeye başlamak için sol taraftan bir kişi seçin.</div>
                         </div>
                     </div>
                 </div>
@@ -1824,182 +1839,4 @@ function initializeUniLoop() {
                         <div class="avatar" style="background:#F3F4F6; font-size:20px;">
                             ${window.userProfile.avatar}
                         </div>
-                        <input type="text" placeholder="${name} ağında paylaşım yap..." onclick="alert('Bu özellik premium sürüme (v2) saklanmıştır.')">
-                    </div>
-                </div>
-            </div>
-        `;
-    };
-
-    // ============================================================================
-    // 11. SAYFA YÖNLENDİRME (ROUTING) VE PROFİL YÖNETİMİ
-    // ============================================================================
-
-    window.loadPage = function(pageName) {
-        if (pageName === 'home') {
-            mainContent.innerHTML = getHomeContent();
-        } else if (pageName === 'market') {
-            window.renderListings('market', '🛒 Kampüs Market', 'market');
-        } else if (pageName === 'housing') {
-            window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt', 'housing');
-        } else if (pageName === 'confessions') {
-            window.renderConfessions();
-        } else if (pageName === 'qa') {
-            window.renderQA(); 
-        } else if (pageName === 'messages') {
-            window.renderMessages(); 
-        } else if (pageName === 'notifications') {
-            window.renderNotifications();
-        } else if (pageName === 'settings') {
-            window.renderSettings();
-        } else if (pageName === 'profile') {
-            window.renderProfile();
-        }
-        
-        if(window.innerWidth <= 1024 && document.getElementById('sidebar')) {
-            document.getElementById('sidebar').classList.remove('open');
-        }
-        window.scrollTo(0,0);
-    };
-
-    document.querySelectorAll('.menu-item[data-target]').forEach(item => {
-        item.addEventListener('click', (e) => {
-            if(e.currentTarget.getAttribute('data-target')) {
-                document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
-                e.currentTarget.classList.add('active'); 
-                window.loadPage(e.currentTarget.getAttribute('data-target'));
-            }
-        });
-    });
-
-    bind('logo-btn', 'click', () => { 
-        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
-        document.querySelector('[data-target="home"]').classList.add('active'); 
-        window.loadPage('home'); 
-    });
-    
-    bind('profile-btn', 'click', () => { 
-        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
-        window.loadPage('profile'); 
-    });
-
-    window.renderProfile = function() {
-        mainContent.innerHTML = `
-            <div class="card">
-                <h2>👤 Profil Bilgilerim</h2>
-                <div style="background: #F9FAFB; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color);">
-                    <div class="grid-2col" style="margin-top:0;">
-                        <div class="form-group">
-                            <label>Ad</label>
-                            <input type="text" id="prof-name" value="${window.userProfile.name}">
-                        </div>
-                        <div class="form-group">
-                            <label>Soyad</label>
-                            <input type="text" id="prof-surname" value="${window.userProfile.surname}">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Kullanıcı Adı</label>
-                        <div style="display:flex; align-items:center; background:#F9FAFB; border:1px solid #D1D5DB; border-radius:10px; overflow:hidden; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.1)'; this.style.background='white';" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none'; this.style.background='#F9FAFB';">
-                            <span style="padding-left:12px; color:var(--primary); font-weight:800; font-size:16px;">#</span>
-                            <input type="text" id="prof-username" value="${(window.userProfile.username || '').replace('#', '')}" placeholder="kullaniciadi" style="border:none; background:transparent; width:100%; padding:12px 8px; outline:none; font-size:15px; box-shadow:none; font-weight:600; color:var(--text-dark);">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Üniversite</label>
-                        <input type="text" disabled value="${window.userProfile.university}" style="background:#E5E7EB; cursor:not-allowed;">
-                    </div>
-                    <div class="form-group">
-                        <label>E-posta</label>
-                        <input type="email" disabled value="${window.userProfile.email}" style="background:#E5E7EB; cursor:not-allowed;">
-                    </div>
-                    
-                    <button class="btn-primary" onclick="window.saveProfile()" style="padding:12px; margin-bottom: 15px;">
-                        Profilimi Kaydet
-                    </button>
-                    <button class="btn-danger" onclick="window.logout()">
-                        🚪 Güvenli Çıkış Yap
-                    </button>
-                </div>
-            </div>
-        `;
-    };
-
-    window.saveProfile = async function() {
-        const name = document.getElementById('prof-name').value; 
-        const surname = document.getElementById('prof-surname').value;
-        let rawUsername = document.getElementById('prof-username').value.trim().toLowerCase();
-        
-        if(!rawUsername) return alert("Kullanıcı adı boş bırakılamaz!");
-        
-        rawUsername = rawUsername.replace(/^#/, '');
-        const username = '#' + rawUsername;
-        
-        if(username !== window.userProfile.username) {
-            try {
-                const q = query(collection(db, "users"), where("username", "==", username));
-                const snapshot = await getDocs(q);
-                
-                if(!snapshot.empty) {
-                    return alert("Bu kullanıcı adı başkası tarafından alınmış. Lütfen başka bir tane deneyin.");
-                }
-            } catch(e) {
-                console.error(e);
-                return alert("Bir hata oluştu, lütfen tekrar deneyin.");
-            }
-        }
-        
-        window.userProfile.name = name; 
-        window.userProfile.surname = surname;
-        window.userProfile.username = username;
-        
-        try {
-            await updateDoc(doc(db, "users", window.userProfile.uid), { 
-                name: name, 
-                surname: surname,
-                username: username
-            });
-            window.openModal('Başarılı', `
-                <div style="text-align:center;">
-                    <p style="font-size:40px; margin:0;">✅</p>
-                    <p>Profil güncellendi!</p>
-                </div>
-            `);
-        } catch(e) {
-            alert("Profil kaydedilirken hata: " + e.message);
-        }
-    };
-
-    window.renderSettings = function() {
-        mainContent.innerHTML = `
-            <div class="card">
-                <h2>⚙️ Uygulama Ayarları</h2>
-                <div style="background: #F9FAFB; padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 1px solid var(--border-color);">
-                    <div class="form-group">
-                        <label>Dil Seçimi</label>
-                        <select>
-                            <option>Türkçe</option>
-                            <option>English</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Tema</label>
-                        <select>
-                            <option>Aydınlık Mod</option>
-                            <option>Karanlık Mod (Yakında)</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn-danger" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
-            </div>
-        `;
-    };
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeUniLoop);
-} else {
-    initializeUniLoop();
-}
+                        <input type="text" placeholder="${name} ağında paylaşım yap..." onclick="alert('Bu özellik premium sürüme (v2)
