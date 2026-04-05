@@ -28,7 +28,7 @@
             <button class="btn-primary" id="login-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Giriş Yap</button>
             <button class="action-btn" id="show-register-btn" style="padding: 12px; font-size: 16px;">Yeni Hesap Oluştur</button>
             
-            <p style="font-size: 12px; color: var(--text-gray); margin-top: 20px;">Sadece kod ile onaylanmış öğrenciler katılabilir.</p>
+            <p style="font-size: 12px; color: var(--text-gray); margin-top: 20px;">Sadece e-postasını onaylamış öğrenciler katılabilir.</p>
         </div>
 
         <div class="auth-card" id="register-card" style="display: none;">
@@ -52,20 +52,20 @@
                 <input type="password" id="reg-password" placeholder="Güçlü Bir Şifre Belirle">
             </div>
             
-            <button class="btn-primary" id="register-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Ücretsiz Kayıt Ol</button>
+            <button class="btn-primary" id="register-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Oluştur</button>
             <button class="action-btn" id="show-login-btn" style="padding: 12px; font-size: 16px; background: transparent; border: 1px solid var(--border-color);">Zaten hesabım var</button>
         </div>
 
-        <div class="auth-card" id="verification-card" style="display: none;">
-            <div class="auth-logo" style="font-size: 28px;">✉️ Doğrulama</div>
-            <p class="auth-subtitle" style="margin-bottom: 20px;">E-posta adresinize gönderilen 4 haneli kodu girin.</p>
+        <div class="auth-card" id="verify-card" style="display: none;">
+            <div class="auth-logo" style="font-size: 28px;">📧 Hesabı Doğrula</div>
+            <p class="auth-subtitle" style="margin-bottom: 20px;">E-posta adresinize gönderilen onay kodunu girin veya maildeki doğrulama linkine tıklayın.</p>
             
             <div class="form-group">
-                <input type="text" id="verify-code-input" placeholder="0000" maxlength="4" style="text-align: center; font-size: 32px; letter-spacing: 15px; font-weight: bold;">
+                <input type="text" id="verify-code-input" placeholder="Onay Kodu (Veya Linke Tıkla)" style="text-align: center; font-size: 16px; letter-spacing: 2px; font-weight: bold;">
             </div>
             
-            <button class="btn-primary" id="verify-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Kodu Onayla</button>
-            <button class="action-btn" id="cancel-verify-btn" style="padding: 12px; font-size: 16px; background: transparent; border: 1px solid var(--border-color);">Çıkış Yap</button>
+            <button class="btn-primary" id="verify-code-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Aktifleştir</button>
+            <p style="font-size: 12px; color: var(--text-gray); margin-top: 15px;">Maildeki linke tıkladıysanız doğrudan butona basabilirsiniz.</p>
         </div>
 
     </div>
@@ -149,6 +149,6 @@
         </div>
     </div>
 
-    <script type="module" src="App.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
