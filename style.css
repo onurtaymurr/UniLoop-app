@@ -108,9 +108,16 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .local-search-bar { width: 100%; padding: 14px 20px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 15px; outline: none; margin-bottom: 24px; transition: 0.2s; background: #F9FAFB; font-weight: 500;}
 .local-search-bar:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
 
-.confessions-feed { display: grid; gap: 12px; width: 100%; margin-top: 20px;}
-@media (max-width: 600px) { .confessions-feed { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 601px) { .confessions-feed { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
+/* 🌟 DÜZELTİLEN KISIM: KAMPÜS AKIŞI (TAM ORTADA TEK SÜTUN) 🌟 */
+.confessions-feed { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 24px; 
+    width: 100%; 
+    max-width: 600px; /* Akışı maksimum 600px ile sınırlar */
+    margin: 20px auto 0 auto; /* auto değeri sayfada tam ortaya hizalar */
+}
+/* Eskiden burada bulunan ve sola kaymasına sebep olan @media grid kodlarını kaldırdım */
 
 .confess-card { border-radius: 16px; padding: 16px; color: white; box-shadow: 0 4px 15px -5px rgba(0,0,0,0.3); position: relative; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; display: flex; flex-direction: column; }
 .confess-card:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.4); }
