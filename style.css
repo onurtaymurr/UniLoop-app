@@ -48,6 +48,7 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .card { background: var(--card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .card h2 { font-size: 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; flex-wrap: wrap; gap: 10px;}
 
+/* BUTONLAR VE DISABLED DURUMU */
 .btn-primary, .action-btn, .btn-danger { display: inline-flex; justify-content: center; align-items: center; text-align: center; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%; transition: 0.2s; font-size: 14px; position: relative; z-index: 10; }
 .btn-primary { background: var(--primary); color: white; }
 .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
@@ -56,6 +57,7 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .btn-danger { background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5; }
 .btn-danger:hover { background: #FEE2E2; }
 .btn-primary *, .action-btn *, .btn-danger * { pointer-events: none; }
+button:disabled { opacity: 0.6; cursor: not-allowed !important; pointer-events: none; transform: none !important; }
 
 .form-group { margin-bottom: 16px; text-align: left; width: 100%;}
 .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: var(--text-dark); }
