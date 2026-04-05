@@ -59,20 +59,31 @@ function initializeUniLoop() {
     // 🎨 DINAMIK CSS ENJEKSIYONU: Ekran kaymaları, kaydırma hassasiyetleri ve sabit görünümler için
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
+        /* Genel sayfa uzamasını ve sekme (bounce) efektini engeller */
+        html, body { overscroll-behavior-y: none; }
+        
         /* Mobilde Sidebar Kaydırma ve Hassasiyet Fix */
         #sidebar { overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; }
         
         /* Mesajlar: Sayfanın kaymamasını, sadece kişi listesi ve sohbetin kaymasını sağlayan Fix */
-        #chat-layout-container { height: calc(100vh - 180px) !important; max-height: 800px; overflow: hidden !important; display: flex; }
-        .chat-sidebar { overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; }
-        .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; }
+        #chat-layout-container { height: calc(100vh - 120px) !important; max-height: 800px; overflow: hidden !important; display: flex; flex-direction: row; }
+        .chat-sidebar { overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; flex-shrink: 0; }
+        .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; }
         #chat-messages-scroll { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; }
         
-        /* Soru Cevap ve İtiraflar İçin Liste Scroll Fix (Sayfa uzamaz, liste kendi içinde kayar) */
-        #qa-feed, #conf-feed, #listings-grid-container { max-height: calc(100vh - 270px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; padding-right: 8px; }
+        /* Soru Cevap, İtiraflar ve Market İçin Liste Scroll Fix (Sayfa uzamaz, liste kendi içinde kayar) */
+        #qa-feed, #conf-feed, #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; padding-right: 8px; }
         
         /* Detaylardaki Yorumlar: En fazla ~3 tane görünür, sonrası kutu içinde kaydırılır */
         .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; padding-right: 8px; }
+        
+        @media (max-width: 1024px) {
+            #chat-layout-container { height: calc(100vh - 160px) !important; }
+            .chat-sidebar { width: 100%; display: block; }
+            .chat-active .chat-sidebar { display: none !important; }
+            .chat-main { display: none !important; }
+            .chat-active .chat-main { display: flex !important; }
+        }
     `;
     document.head.appendChild(styleFix);
     
@@ -196,7 +207,7 @@ function initializeUniLoop() {
         });
     }
 
-    // 🔴 ESKİ ORİJİNAL ÇALIŞAN KAYIT FONKSİYONU (Edu kısıtlaması yok)
+    // 🚀 TAKILMA VE DONMA SORUNU ÇÖZÜLMÜŞ KAYIT FONKSİYONU
     bind('register-btn', 'click', async (e) => {
         if(e) e.preventDefault(); 
         
@@ -211,44 +222,49 @@ function initializeUniLoop() {
         }
 
         const btn = document.getElementById('register-btn');
+        const origText = btn.innerText || "Hesabımı Oluştur";
         btn.innerText = "Hesap Oluşturuluyor...";
         btn.disabled = true;
 
         try {
+            // 1. Hesap yaratma işlemi
             const userCred = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCred.user;
             
-            await sendEmailVerification(user);
-            
+            // 2. KULLANICIYI BEKLETMEDEN EKRANI ANINDA GEÇİR (Takılma Fixi)
             document.getElementById('register-card').style.display = 'none';
             document.getElementById('verify-card').style.display = 'block';
+            
+            btn.innerText = origText;
+            btn.disabled = false;
 
-            try {
-                await setDoc(doc(db, "users", user.uid), {
-                    uid: user.uid, 
-                    name: name, 
-                    surname: surname, 
-                    username: "", 
-                    university: uni, 
-                    email: email, 
-                    avatar: "👨‍🎓", 
-                    isOnline: false, 
-                    faculty: ""
-                });
-                // Kullanıcı oluşturulur oluşturulmaz mesajı çak!
-                await window.ensureWelcomeMessage(user, name);
-            } catch (dbError) {
+            // 3. Arka planda sessizce doğrulama maili yolla
+            sendEmailVerification(user).catch(err => console.error("Mail gönderilemedi:", err));
+
+            // 4. Arka planda veritabanına kaydet
+            setDoc(doc(db, "users", user.uid), {
+                uid: user.uid, 
+                name: name, 
+                surname: surname, 
+                username: "", 
+                university: uni, 
+                email: email, 
+                avatar: "👨‍🎓", 
+                isOnline: false, 
+                faculty: ""
+            }).then(() => {
+                window.ensureWelcomeMessage(user, name);
+            }).catch(dbError => {
                 console.error("Veritabanı Kayıt Hatası:", dbError);
-            }
+            });
 
         } catch (error) {
-            alert("Kayıt olurken bir hata oluştu: " + error.message);
-            btn.innerText = "Hesabımı Oluştur";
+            alert("Kayıt olurken bir hata oluştu: " + (error.code === 'auth/email-already-in-use' ? 'Bu e-posta adresi zaten kullanımda.' : error.message));
+            btn.innerText = origText;
             btn.disabled = false;
         }
     });
 
-    // 🔴 ESKİ ORİJİNAL ÇALIŞAN DOĞRULAMA FONKSİYONU
     bind('verify-code-btn', 'click', async (e) => {
         if(e) e.preventDefault();
         
@@ -262,13 +278,20 @@ function initializeUniLoop() {
         btn.innerText = "Kontrol Ediliyor...";
         btn.disabled = true;
 
-        await user.reload();
+        try {
+            await user.reload();
 
-        if(user.emailVerified) {
-            alert("Tebrikler! Hesabınız başarıyla aktifleştirildi. Sisteme yönlendiriliyorsunuz.");
-            window.location.reload(); 
-        } else {
-            alert("Hesabınız henüz onaylanmamış! Lütfen e-postanıza gelen linke tıklayın. Linke tıkladıktan sonra bu butona tekrar basabilirsiniz.");
+            if(user.emailVerified) {
+                alert("Tebrikler! Hesabınız başarıyla aktifleştirildi. Sisteme yönlendiriliyorsunuz.");
+                window.location.reload(); 
+            } else {
+                alert("Hesabınız henüz onaylanmamış! Lütfen e-postanıza gelen linke tıklayın. Linke tıkladıktan sonra bu butona tekrar basabilirsiniz.");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Hata oluştu: " + err.message);
             btn.innerText = originalText;
             btn.disabled = false;
         }
@@ -1404,7 +1427,6 @@ function initializeUniLoop() {
         
         mainContent.innerHTML = html;
         
-        // Cihaz ne olursa olsun açılmış bir sohbet varsa DOM'u ona göre hazırla (Anında güncelleme mekanizması)
         if(currentChatId && visibleChats.find(c => c.id === currentChatId)) {
             window.openChatView(currentChatId);
         }
