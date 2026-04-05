@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 uid: user.uid, 
                 name: name, 
                 surname: surname, 
-                username: "", // Kullanıcı adı başlangıçta boş atanır
+                username: "", 
                 university: uni, 
                 email: email, 
                 avatar: "👨‍🎓", 
@@ -192,20 +192,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 faculty: ""
             });
 
-            await addDoc(collection(db, "chats"), {
+            // 🚀 ÖZELLİK 1: DETAYLI SİSTEM HOŞ GELDİN MESAJI EKLENDİ
+            const systemMessageText = `Merhaba ${name}! UniLoop'a hoş geldin. 🎉\n\nSistemimizi tam anlamıyla keşfetmen için ufak bir rehber:\n\n🛒 Kampüs Market: İkinci el eşyalarını al/sat veya ev arkadaşı ilanlarına bak.\n🤫 Anonim Kampüs: İçinden geçenleri kimliğini tamamen gizleyerek özgürce paylaş.\n❓ Soru & Cevap: Dersler, yurtlar veya kampüs yaşamı hakkında aklına takılanları sor.\n💬 Mesajlaşma: Arama kısmından arkadaşlarını '#' kullanıcı adıyla bularak ekle ve güvenle mesajlaş.\n\nHadi, hemen profilinden kendine bir kullanıcı adı belirle ve bu eşsiz kampüs ağına tam olarak bağlan!`;
+
+            await setDoc(doc(db, "chats", [user.uid, "system"].sort().join("_")), {
                 participants: [user.uid, "system"],
                 participantNames: { 
                     [user.uid]: name, 
-                    "system": "UniLoop Ekibi" 
+                    "system": "UniLoop Team" 
                 },
                 participantAvatars: { 
                     [user.uid]: "👨‍🎓", 
                     "system": "🌍" 
                 },
                 lastUpdated: serverTimestamp(),
+                status: 'accepted', // Sistem mesajları otomatik kabul edilir
                 messages: [{
                     senderId: "system", 
-                    text: `Merhaba ${name}! UniLoop'a hoş geldin. Burası tüm kampüsün dijital merkezi. Lütfen profiline giderek kendine bir kullanıcı adı belirle.`, 
+                    text: systemMessageText, 
                     time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
                 }]
             });
@@ -457,12 +461,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 const otherName = data.participantNames[otherUid] || "Bilinmeyen";
                 const otherAvatar = data.participantAvatars[otherUid] || "👤";
                 
+                // 🚀 GÜNCELLEME: İsteğin durumu (status) ve başlatan kişi (initiator) bilgisi çekiliyor
                 chatsDB.push({ 
                     id: doc.id, 
                     otherUid: otherUid, 
                     name: otherName, 
                     avatar: otherAvatar, 
-                    messages: data.messages 
+                    messages: data.messages,
+                    status: data.status || 'accepted', // Eski mesajlar otomatik kabul edilmiş sayılır
+                    initiator: data.initiator || null
                 });
                 totalChats++; 
             });
@@ -556,7 +563,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupShowMore('mobile-show-more-btn', 'mobile-more-faculties');
 
     // ============================================================================
-    // YENİ: İNCE ARKADAŞ ARAMA MOTORU VE EKSİKSİZ KULLANICI UYARISI
+    // 🚀 ÖZELLİK 2: İNCE ARKADAŞ ARAMA MOTORU VE ARKADAŞLIK İSTEĞİ (KABUL/RED) SİSTEMİ
     // ============================================================================
 
     window.searchAndAddFriend = async function() {
@@ -566,7 +573,6 @@ document.addEventListener("DOMContentLoaded", () => {
         let rawSearch = searchInput.value.trim().toLowerCase();
         if(!rawSearch) return alert("Lütfen bir kullanıcı adı yazın.");
         
-        // Kullanıcı '#' yazmışsa temizle, biz ekleyeceğiz
         rawSearch = rawSearch.replace(/^#/, '');
         const searchVal = '#' + rawSearch;
         
@@ -587,7 +593,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("Bu kullanıcı adına sahip kimse bulunamadı!");
             } else {
                 const targetUser = snapshot.docs[0].data();
-                window.startChat(targetUser.uid, targetUser.name + " " + targetUser.surname);
+                // DİREKT MESAJ YERİNE İSTEK GÖNDERME FONKSİYONUNU ÇAĞIR
+                window.sendFriendRequest(targetUser.uid, targetUser.name + " " + targetUser.surname);
             }
         } catch(e) {
             console.error(e);
@@ -595,6 +602,41 @@ document.addEventListener("DOMContentLoaded", () => {
         } finally {
             btn.innerText = origText;
             btn.disabled = false;
+        }
+    };
+
+    // YENİ: ARKADAŞLIK İSTEĞİ GÖNDERME FONKSİYONU
+    window.sendFriendRequest = async function(targetUserId, targetUserName) {
+        const chatId = [window.userProfile.uid, targetUserId].sort().join("_");
+        const chatRef = doc(db, "chats", chatId);
+        const chatSnap = await getDoc(chatRef);
+
+        if(!chatSnap.exists()) {
+            await setDoc(chatRef, {
+                participants: [window.userProfile.uid, targetUserId],
+                participantNames: { 
+                    [window.userProfile.uid]: window.userProfile.name, 
+                    [targetUserId]: targetUserName 
+                },
+                participantAvatars: { 
+                    [window.userProfile.uid]: window.userProfile.avatar, 
+                    [targetUserId]: "👤" 
+                },
+                lastUpdated: serverTimestamp(), 
+                status: 'pending', // Kilit nokta: İstek beklemede
+                initiator: window.userProfile.uid, // İsteyi kim gönderdi?
+                messages: [{
+                    senderId: "system",
+                    text: "Arkadaşlık isteği gönderildi.",
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                }]
+            });
+            alert("Arkadaşlık isteği başarıyla gönderildi!");
+            window.goToMessages();
+        } else {
+            alert("Bu kişiyle zaten bir sohbetiniz veya devam eden bir isteğiniz bulunuyor.");
+            window.goToMessages();
+            setTimeout(() => window.openChatView(chatId), 500); 
         }
     };
 
@@ -634,7 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="avatar">👨‍💻</div>
                         <h4>John D.</h4>
                         <p>Bilgisayar Müh.</p>
-                        <button class="action-btn" onclick="window.openModal('Bağlantı Kur', '<p>İstek gönderildi!</p>')">Bağlan</button>
+                        <button class="action-btn" onclick="window.openModal('Bağlantı Kur', '<p>Sistem yakında aktif edilecek!</p>')">Bağlan</button>
                     </div>
                     <div class="match-card">
                         <div class="avatar">👩‍⚕️</div>
@@ -821,10 +863,13 @@ document.addEventListener("DOMContentLoaded", () => {
         let actionButtonsHtml = '';
         const btnText = type === 'market' ? 'Satıcıya Yaz' : 'İletişime Geç';
 
+        // 🚀 ÖZELLİK 3: İLAN ÜZERİNDEN MESAJLAŞMA (KABUL/RED PAS GEÇİLİR)
+        const safeTitle = item.title.replace(/'/g, "\\'"); // Tırnak işaretlerini güvenli hale getirir
+
         if (item.sellerId === window.userProfile.uid) {
              actionButtonsHtml = `
                 <div style="display:flex; gap:10px; margin-top: 20px;">
-                    <button class="action-btn" style="flex:1; padding:12px;" onclick="window.editListing('${item.id}', '${item.title}', '${item.price}')">
+                    <button class="action-btn" style="flex:1; padding:12px;" onclick="window.editListing('${item.id}', '${safeTitle}', '${item.price}')">
                         ✏️ Fiyatı Güncelle
                     </button>
                     <button class="btn-danger" style="flex:1; padding:12px;" onclick="window.deleteListing('${item.id}'); window.closeModal();">
@@ -834,7 +879,7 @@ document.addEventListener("DOMContentLoaded", () => {
              `;
         } else {
              actionButtonsHtml = `
-                <button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="window.startChat('${item.sellerId}', '${item.sellerName}'); window.closeModal();">
+                <button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="window.startMarketChat('${item.sellerId}', '${item.sellerName}', 'Merhaba, \\'${safeTitle}\\' ilanınızla ilgileniyorum.'); window.closeModal();">
                     💬 ${btnText}
                 </button>
              `;
@@ -1041,41 +1086,51 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ============================================================================
-    // 5. MESAJLAŞMA (CHATS)
+    // 5. MESAJLAŞMA SİSTEMİ (KABUL / RED VE İLAN BAĞLANTISI GÜNCELLENDİ)
     // ============================================================================
 
-    window.startChat = async function(targetUserId, targetUserName) {
+    // YENİ: Market İlanlarından Otomatik Kabul Edilmiş Mesaj Başlatma
+    window.startMarketChat = async function(targetUserId, targetUserName, autoText) {
         if(targetUserId === window.userProfile.uid) {
-            return alert("Kendinize mesaj atamazsınız!");
+            return alert("Kendi ilanınıza mesaj atamazsınız!");
         }
 
-        const existingChat = chatsDB.find(chat => chat.otherUid === targetUserId);
-        
-        if(existingChat) {
-            window.goToMessages();
-            setTimeout(() => window.openChatView(existingChat.id), 200);
+        const chatId = [window.userProfile.uid, targetUserId].sort().join("_");
+        const chatRef = doc(db, "chats", chatId);
+        const chatSnap = await getDoc(chatRef);
+        const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        if(!chatSnap.exists()) {
+            await setDoc(chatRef, {
+                participants: [window.userProfile.uid, targetUserId],
+                participantNames: { 
+                    [window.userProfile.uid]: window.userProfile.name, 
+                    [targetUserId]: targetUserName 
+                },
+                participantAvatars: { 
+                    [window.userProfile.uid]: window.userProfile.avatar, 
+                    [targetUserId]: "👤" 
+                },
+                lastUpdated: serverTimestamp(), 
+                status: 'accepted', // Market ilanları arkadaşlık isteğini pas geçer
+                messages: [{ senderId: window.userProfile.uid, text: autoText, time: timeStr }]
+            });
         } else {
-            try {
-                const newChatRef = await addDoc(collection(db, "chats"), {
-                    participants: [window.userProfile.uid, targetUserId],
-                    participantNames: { 
-                        [window.userProfile.uid]: window.userProfile.name, 
-                        [targetUserId]: targetUserName 
-                    },
-                    participantAvatars: { 
-                        [window.userProfile.uid]: window.userProfile.avatar, 
-                        [targetUserId]: "👤" 
-                    },
-                    lastUpdated: serverTimestamp(), 
-                    messages: []
-                });
-                
-                window.goToMessages();
-                setTimeout(() => window.openChatView(newChatRef.id), 500); 
-            } catch (error) { 
-                console.error(error); 
-            }
+            // Zaten bir sohbet (veya istek) varsa onu kabul edilmiş sayıp mesajı ekleriz
+            await updateDoc(chatRef, {
+                status: 'accepted',
+                messages: arrayUnion({ senderId: window.userProfile.uid, text: autoText, time: timeStr }),
+                lastUpdated: serverTimestamp()
+            });
         }
+        
+        window.goToMessages();
+        setTimeout(() => window.openChatView(chatId), 500); 
+    };
+
+    // Eski startChat artık sadece referans için duruyor veya iç bağlantılar için
+    window.startChat = async function(targetUserId, targetUserName) {
+        window.sendFriendRequest(targetUserId, targetUserName);
     };
 
     window.renderMessages = function() {
@@ -1088,9 +1143,18 @@ document.addEventListener("DOMContentLoaded", () => {
         
         chatsDB.forEach(chat => {
             const lastMsgObj = chat.messages[chat.messages.length - 1];
-            const lastMsg = lastMsgObj ? lastMsgObj.text : "Henüz mesaj yok.";
+            let lastMsg = lastMsgObj ? lastMsgObj.text : "Henüz mesaj yok.";
             const time = lastMsgObj ? lastMsgObj.time : "";
             const isActive = chat.id === currentChatId ? 'active' : '';
+            
+            // İstek durumunda yazıyı değiştirme
+            if (chat.status === 'pending') {
+                if (chat.initiator === window.userProfile.uid) {
+                    lastMsg = "⏳ İstek gönderildi, bekleniyor...";
+                } else {
+                    lastMsg = "🔔 Yeni arkadaşlık isteği!";
+                }
+            }
             
             html += `
                 <div class="chat-contact ${isActive}" data-id="${chat.id}" onclick="window.openChatView('${chat.id}')">
@@ -1100,7 +1164,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="chat-contact-name">${chat.name}</span>
                             <span class="chat-contact-time">${time}</span>
                         </div>
-                        <div class="chat-contact-last">${lastMsg}</div>
+                        <div class="chat-contact-last" style="${chat.status === 'pending' ? 'color:var(--primary); font-weight:bold;' : ''}">${lastMsg}</div>
                     </div>
                 </div>
             `;
@@ -1111,7 +1175,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="chat-main" id="chat-main-view">
                         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-gray); opacity:0.7;">
                             <div style="font-size:48px; margin-bottom:10px;">💬</div>
-                            <div>Mesajlaşmaya başlamak için sol taraftan bir kişi seçin.</div>
+                            <div>Mesajlaşmaya veya istekleri görüntülemeye başlamak için sol taraftan bir kişi seçin.</div>
                         </div>
                     </div>
                 </div>
@@ -1159,15 +1223,37 @@ document.addEventListener("DOMContentLoaded", () => {
             `; 
         });
         
-        chatHTML += `
-            </div>
-            <div class="chat-input-area">
-                <div class="chat-input-wrapper">
-                    <input type="text" id="chat-input-field" placeholder="Bir mesaj yazın...">
+        chatHTML += `</div>`;
+
+        // 🚀 ÖZELLİK 2: KABUL ET VEYA REDDET ALANI
+        if (activeChat.status === 'pending') {
+            if (activeChat.initiator === window.userProfile.uid) {
+                // Biz istek attıysak
+                chatHTML += `
+                    <div style="padding: 20px; text-align: center; color: var(--text-gray); background: #F9FAFB; border-top: 1px solid var(--border-color); font-weight:bold;">
+                        ⏳ Arkadaşlık isteğinizin karşı tarafça kabul edilmesi bekleniyor...
+                    </div>
+                `;
+            } else {
+                // Bize istek geldiyse
+                chatHTML += `
+                    <div style="padding: 16px 24px; background: #FFFFFF; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: center; z-index: 10; box-shadow: 0 -4px 10px rgba(0,0,0,0.05);">
+                        <button class="btn-primary" style="flex:1;" onclick="window.acceptRequest('${chatId}')">✅ İsteği Kabul Et</button>
+                        <button class="btn-danger" style="flex:1;" onclick="window.rejectRequest('${chatId}')">❌ Reddet</button>
+                    </div>
+                `;
+            }
+        } else {
+            // Normal (Kabul edilmiş) Mesajlaşma Alanı
+            chatHTML += `
+                <div class="chat-input-area">
+                    <div class="chat-input-wrapper">
+                        <input type="text" id="chat-input-field" placeholder="Bir mesaj yazın...">
+                    </div>
+                    <button class="chat-send-btn" onclick="window.sendMsg('${chatId}')">➤</button>
                 </div>
-                <button class="chat-send-btn" onclick="window.sendMsg('${chatId}')">➤</button>
-            </div>
-        `;
+            `;
+        }
         
         container.innerHTML = chatHTML;
         
@@ -1183,6 +1269,26 @@ document.addEventListener("DOMContentLoaded", () => {
                     window.sendMsg(chatId); 
                 }
             });
+        }
+    };
+
+    // İSTEK KABUL ETME
+    window.acceptRequest = async function(chatId) {
+        const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        await updateDoc(doc(db, "chats", chatId), {
+            status: 'accepted',
+            messages: arrayUnion({ senderId: "system", text: "Arkadaşlık isteği kabul edildi. Artık mesajlaşabilirsiniz!", time: timeStr })
+        });
+        window.openChatView(chatId); // Ekranı tazele
+    };
+
+    // İSTEK REDDETME
+    window.rejectRequest = async function(chatId) {
+        if(confirm("Bu arkadaşlık isteğini silmek istediğinize emin misiniz?")) {
+            await deleteDoc(doc(db, "chats", chatId));
+            document.getElementById('chat-layout-container').classList.remove('chat-active');
+            window.currentChatId = null;
+            window.renderMessages();
         }
     };
 
@@ -1644,7 +1750,6 @@ document.addEventListener("DOMContentLoaded", () => {
         window.loadPage('profile'); 
     });
 
-    // YENİ: Profil alanına GÜNCELLENMİŞ, sabit "#" simgeli Kullanıcı Adı kutusu eklendi
     window.renderProfile = function() {
         mainContent.innerHTML = `
             <div class="card">
@@ -1696,7 +1801,6 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if(!rawUsername) return alert("Kullanıcı adı boş bırakılamaz!");
         
-        // Kullanıcı yanlışlıkla kendi # yazmışsa temizle ve bizimkini ekle
         rawUsername = rawUsername.replace(/^#/, '');
         const username = '#' + rawUsername;
         
