@@ -54,6 +54,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// Kodu garantili başlatmak için ana fonksiyon
 function initializeUniLoop() {
     
     // Olay Dinleyicisi (Event Listener) Kısayolu
@@ -136,9 +137,11 @@ function initializeUniLoop() {
         uniInput.addEventListener('input', function() {
             const val = this.value;
             uniList.innerHTML = '';
+            
             if (!val) return false;
             
             const matches = globalUniversities.filter(u => u.toLowerCase().includes(val.toLowerCase()));
+            
             matches.forEach(match => {
                 const div = document.createElement('div');
                 const regex = new RegExp(`(${val})`, "gi");
@@ -150,8 +153,11 @@ function initializeUniLoop() {
                 uniList.appendChild(div);
             });
         });
+        
         document.addEventListener('click', (e) => { 
-            if(e.target !== uniInput) uniList.innerHTML = ''; 
+            if(e.target !== uniInput) {
+                uniList.innerHTML = ''; 
+            }
         });
     }
 
@@ -168,7 +174,7 @@ function initializeUniLoop() {
             return alert("Lütfen tüm alanları eksiksiz doldurun.");
         }
         if(!email.includes(".edu")) {
-            return alert("Sadece onaylı .edu uzantılı mailler kabul edilmektedir.");
+            return alert("Güvenlik nedeniyle sadece onaylı .edu uzantılı üniversite e-postaları kabul edilmektedir.");
         }
 
         const btn = document.getElementById('register-btn');
@@ -186,7 +192,15 @@ function initializeUniLoop() {
 
             try {
                 await setDoc(doc(db, "users", user.uid), {
-                    uid: user.uid, name: name, surname: surname, username: "", university: uni, email: email, avatar: "👨‍🎓", isOnline: false, faculty: ""
+                    uid: user.uid, 
+                    name: name, 
+                    surname: surname, 
+                    username: "", 
+                    university: uni, 
+                    email: email, 
+                    avatar: "👨‍🎓", 
+                    isOnline: false, 
+                    faculty: ""
                 });
                 await window.ensureWelcomeMessage(user, name);
             } catch (dbError) {
@@ -202,8 +216,11 @@ function initializeUniLoop() {
 
     bind('verify-code-btn', 'click', async (e) => {
         if(e) e.preventDefault();
+        
         const user = auth.currentUser;
-        if(!user) return alert("Oturum zaman aşımına uğradı. Lütfen sayfayı yenileyip tekrar giriş yapın.");
+        if(!user) {
+            return alert("Oturum zaman aşımına uğradı. Lütfen sayfayı yenileyip tekrar giriş yapın ve doğrulayın.");
+        }
 
         const btn = document.getElementById('verify-code-btn');
         const originalText = btn.innerText;
@@ -213,10 +230,10 @@ function initializeUniLoop() {
         await user.reload();
 
         if(user.emailVerified) {
-            alert("Tebrikler! Hesabınız başarıyla aktifleştirildi.");
+            alert("Tebrikler! Hesabınız başarıyla aktifleştirildi. Sisteme yönlendiriliyorsunuz.");
             window.location.reload(); 
         } else {
-            alert("Hesabınız henüz onaylanmamış! Lütfen e-postanıza gelen linke tıklayın.");
+            alert("Hesabınız henüz onaylanmamış! Lütfen e-postanıza gelen linke tıklayın. Linke tıkladıktan sonra bu butona tekrar basabilirsiniz.");
             btn.innerText = originalText;
             btn.disabled = false;
         }
@@ -224,11 +241,14 @@ function initializeUniLoop() {
 
     bind('login-btn', 'click', async (e) => {
         if(e) e.preventDefault(); 
+
         const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value;
         const btn = document.getElementById('login-btn');
 
-        if(!email || !password) return alert("Lütfen e-posta ve şifrenizi girin.");
+        if(!email || !password) {
+            return alert("Lütfen e-posta ve şifrenizi girin.");
+        }
 
         const originalText = btn.innerText;
         btn.innerText = "Giriş Yapılıyor...";
@@ -259,16 +279,20 @@ function initializeUniLoop() {
     bind('forgot-password-btn', 'click', async (e) => {
         if(e) e.preventDefault();
         const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:");
+        
         if(!email) return;
+        
         try {
             await sendPasswordResetEmail(auth, email);
-            alert("Şifre sıfırlama bağlantısı e-posta adresinize başarıyla gönderildi!");
+            alert("Şifre sıfırlama bağlantısı e-posta adresinize başarıyla gönderildi! Lütfen gelen kutunuzu (ve Spam klasörünü) kontrol edin.");
         } catch (error) {
             alert("Hata: " + error.message);
         }
     });
 
-    // 🌍 UNILOOP TEAM SİSTEM MESAJI
+    // ============================================================================
+    // 🌍 SİSTEM MESAJI GARANTİSİ (UNILOOP TEAM)
+    // ============================================================================
     window.ensureWelcomeMessage = async function(user, userName) {
         if(!user) return;
         try {
@@ -277,15 +301,25 @@ function initializeUniLoop() {
             const chatSnap = await getDoc(chatRef);
 
             if (!chatSnap.exists()) {
-                const systemMessageText = `Merhaba ${userName}! Dünyanın en yenilikçi kampüs ağı UniLoop'a hoş geldin. 🎓✨<br><br>Bu platform senin dijital kampüsün! Neler mi yapabilirsin?<br><br>🛒 <b>Kampüs Market:</b> İhtiyacın olmayan eşyaları sat veya diğer öğrencilerin ilanlarına göz at. İlanlara tıklayıp direkt mesaj atarak güvenle iletişime geç.<br><br>🤫 <b>Anonim Kampüs:</b> Kimliğini tamamen gizleyerek itiraflarını özgürce paylaş.<br><br>❓ <b>Soru & Cevap:</b> Dersler veya kampüs yaşamı hakkında aklına takılan her şeyi sor.<br><br>🤝 <b>Bağlantı Kur:</b> Ana sayfadaki arama çubuğuna arkadaşlarının '#' kullanıcı adını yazarak onlara istek gönder. Bildirimler (🔔) kısmından gelen istekleri kabul et ve hemen mesajlaşmaya başla.<br><br>Hemen "Profilim" sekmesine giderek kendine unutulmaz bir kullanıcı adı belirle!`;
+                const systemMessageText = `Merhaba ${userName}! Dünyanın en yenilikçi kampüs ağı UniLoop'a hoş geldin. 🎓✨<br><br>Bu platform senin dijital kampüsün! Neler mi yapabilirsin?<br><br>🛒 <b>Kampüs Market:</b> İhtiyacın olmayan eşyaları sat veya diğer öğrencilerin ilanlarına göz at. İlanlara tıklayıp direkt mesaj atarak güvenle iletişime geç.<br><br>🤫 <b>Anonim Kampüs:</b> Kimliğini tamamen gizleyerek itiraflarını veya içinden geçenleri özgürce paylaş.<br><br>❓ <b>Soru & Cevap:</b> Dersler veya kampüs yaşamı hakkında aklına takılan her şeyi sor.<br><br>🤝 <b>Bağlantı Kur:</b> Ana sayfadaki arama çubuğuna arkadaşlarının '#' kullanıcı adını yazarak onlara istek gönder. Bildirimler (🔔) kısmından gelen istekleri kabul et ve hemen mesajlaşmaya başla.<br><br>Burası senin alanın. Hemen "Profilim" sekmesine giderek kendine unutulmaz bir kullanıcı adı belirle ve döngüye katıl! Seni aramızda gördüğümüz için çok mutluyuz.`;
                 
                 await setDoc(chatRef, {
                     participants: [user.uid, "system"],
-                    participantNames: { [user.uid]: userName, "system": "UniLoop Team" },
-                    participantAvatars: { [user.uid]: "👨‍🎓", "system": "🌍" },
+                    participantNames: { 
+                        [user.uid]: userName, 
+                        "system": "UniLoop Team" 
+                    },
+                    participantAvatars: { 
+                        [user.uid]: "👨‍🎓", 
+                        "system": "🌍" 
+                    },
                     lastUpdated: serverTimestamp(),
                     status: 'accepted',
-                    messages: [{ senderId: "system", text: systemMessageText, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }]
+                    messages: [{
+                        senderId: "system", 
+                        text: systemMessageText, 
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                    }]
                 });
             }
         } catch (error) {
@@ -295,16 +329,23 @@ function initializeUniLoop() {
 
     window.logout = async function() {
         try {
-            if(window.userProfile.uid) await updateDoc(doc(db, "users", window.userProfile.uid), { isOnline: false });
+            if(window.userProfile.uid) {
+                await updateDoc(doc(db, "users", window.userProfile.uid), { isOnline: false });
+            }
             await signOut(auth);
+            
             if(authScreen && appScreen) {
                 appScreen.style.display = 'none';
                 authScreen.style.display = 'flex';
                 document.getElementById('login-card').style.display = 'block';
                 document.getElementById('register-card').style.display = 'none';
                 document.getElementById('verify-card').style.display = 'none';
+                
                 const btn = document.getElementById('login-btn');
-                if(btn) { btn.innerText = "Giriş Yap"; btn.disabled = false; }
+                if(btn) { 
+                    btn.innerText = "Giriş Yap"; 
+                    btn.disabled = false; 
+                }
             }
         } catch(error) {
             console.error("Çıkış hatası:", error);
@@ -329,7 +370,8 @@ function initializeUniLoop() {
                     const notifBtnHTML = `
                         <div class="menu-item" id="nav-notifications-btn" data-target="notifications">
                             🔔 Bildirimler <span id="notif-badge" class="badge" style="display:none; background:#EF4444; color:white; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:auto;">0</span>
-                        </div>`;
+                        </div>
+                    `;
                     msgBtn.insertAdjacentHTML('afterend', notifBtnHTML);
                     
                     document.getElementById('nav-notifications-btn').addEventListener('click', (e) => {
@@ -347,7 +389,17 @@ function initializeUniLoop() {
                 if(docSnap.exists()) {
                     window.userProfile = docSnap.data();
                 } else {
-                    window.userProfile = { uid: user.uid, name: "Öğrenci", surname: "", username: "", email: user.email, university: "UniLoop Kampüsü", avatar: "👨‍🎓", faculty: "", isOnline: true };
+                    window.userProfile = { 
+                        uid: user.uid, 
+                        name: "Öğrenci", 
+                        surname: "", 
+                        username: "",
+                        email: user.email, 
+                        university: "UniLoop Kampüsü", 
+                        avatar: "👨‍🎓", 
+                        faculty: "", 
+                        isOnline: true
+                    };
                     await setDoc(userDocRef, window.userProfile);
                 }
                 
@@ -361,16 +413,34 @@ function initializeUniLoop() {
                 initRealtimeListeners(user.uid);
 
                 const activeTab = document.querySelector('.menu-item.active');
-                if(typeof window.loadPage === 'function') window.loadPage(activeTab ? activeTab.getAttribute('data-target') : 'home'); 
+                if(typeof window.loadPage === 'function') {
+                    window.loadPage(activeTab ? activeTab.getAttribute('data-target') : 'home'); 
+                }
 
                 if(window.userProfile.faculty && typeof window.updateMyFacultiesSidebar === 'function') {
-                    window.joinedFaculties = [{ name: window.userProfile.faculty, icon: "🏢", color: "linear-gradient(135deg, #1E3A8A, #4F46E5)" }];
+                    window.joinedFaculties = [{ 
+                        name: window.userProfile.faculty, 
+                        icon: "🏢", 
+                        color: "linear-gradient(135deg, #1E3A8A, #4F46E5)" 
+                    }];
                     window.updateMyFacultiesSidebar();
                 }
 
             } catch(error) { 
-                window.userProfile = { uid: user.uid, name: "Misafir", surname: "", username: "", email: user.email, university: "Lütfen Firestore'u Test Moduna Alın", avatar: "⚠️", faculty: "", isOnline: true };
-                if(typeof window.loadPage === 'function') window.loadPage('home'); 
+                window.userProfile = { 
+                    uid: user.uid, 
+                    name: "Misafir", 
+                    surname: "", 
+                    username: "", 
+                    email: user.email, 
+                    university: "Lütfen Firestore'u Test Moduna Alın", 
+                    avatar: "⚠️", 
+                    faculty: "", 
+                    isOnline: true 
+                };
+                if(typeof window.loadPage === 'function') {
+                    window.loadPage('home'); 
+                }
             }
         }
     });
@@ -387,24 +457,40 @@ function initializeUniLoop() {
 
         onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc")), (snapshot) => {
             marketDB = [];
-            snapshot.forEach(doc => marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }));
+            snapshot.forEach(doc => {
+                marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) });
+            });
             marketDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
+            
             const activeTab = document.querySelector('.menu-item.active');
-            if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market', 'market');
-            if(activeTab && activeTab.getAttribute('data-target') === 'housing') window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt', 'housing');
+            if(activeTab && activeTab.getAttribute('data-target') === 'market') {
+                window.renderListings('market', '🛒 Kampüs Market', 'market');
+            }
+            if(activeTab && activeTab.getAttribute('data-target') === 'housing') {
+                window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt', 'housing');
+            }
         });
 
         onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc")), (snapshot) => {
             confessionsDB = [];
-            snapshot.forEach(doc => confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }));
+            snapshot.forEach(doc => {
+                confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) });
+            });
             confessionsDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
-            if(document.querySelector('.menu-item.active')?.getAttribute('data-target') === 'confessions') window.drawConfessionsGrid();
+            
+            const activeTab = document.querySelector('.menu-item.active');
+            if(activeTab && activeTab.getAttribute('data-target') === 'confessions') {
+                window.drawConfessionsGrid();
+            }
         });
 
         onSnapshot(query(collection(db, "qa"), orderBy("createdAt", "desc")), (snapshot) => {
             qaDB = [];
-            snapshot.forEach(doc => qaDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }));
+            snapshot.forEach(doc => {
+                qaDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) });
+            });
             qaDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
+            
             const activeTab = document.querySelector('.menu-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'qa') {
                 const activeFilter = document.querySelector('.qa-filter-btn.active');
@@ -412,7 +498,10 @@ function initializeUniLoop() {
             }
         });
 
-        // ⏱️ GÜNCELLEME: ÇÖKMEYİ ENGELLEYEN "ZIRHLI" MESAJ SORGUSU
+        // ====================================================================
+        // 🛡️ DÜZELTME: Firebase "Index Hatası" vermesin diye orderBy kaldırıldı. 
+        // Sıralamayı JavaScript anlık olarak yapacak, çökme yaşanmayacak!
+        // ====================================================================
         onSnapshot(query(collection(db, "chats"), where("participants", "array-contains", currentUid)), (snapshot) => {
             chatsDB = [];
             let pendingRequestsCount = 0;
@@ -420,21 +509,18 @@ function initializeUniLoop() {
             snapshot.forEach(doc => {
                 try {
                     const data = doc.data({ serverTimestamps: 'estimate' }); 
+                    if (!data.participants || !Array.isArray(data.participants)) return; // Bozuk veriyi atla, çökme
                     
-                    // Eski bozuk verilerden korunma (Fallback)
-                    const participantsArray = data.participants || [];
-                    const otherUid = participantsArray.find(p => p !== currentUid) || "Bilinmeyen";
+                    const otherUid = data.participants.find(p => p !== currentUid) || "system";
+                    const otherName = (data.participantNames && data.participantNames[otherUid]) ? data.participantNames[otherUid] : "UniLoop";
+                    const otherAvatar = (data.participantAvatars && data.participantAvatars[otherUid]) ? data.participantAvatars[otherUid] : "👤";
                     
-                    const pNames = data.participantNames || {};
-                    const otherName = pNames[otherUid] || "Kullanıcı";
-                    
-                    const pAvatars = data.participantAvatars || {};
-                    const otherAvatar = pAvatars[otherUid] || "👤";
-                    
-                    // lastUpdated boş ise sistemin o anki saatini alarak çökmesini engeller
+                    // Güvenli Timestamp (Eğer eski veride zaman yoksa bugünü kullan)
                     let safeTimestamp = 0;
-                    if (data.lastUpdated) {
-                        safeTimestamp = typeof data.lastUpdated.toMillis === 'function' ? data.lastUpdated.toMillis() : Date.now();
+                    if (data.lastUpdated && typeof data.lastUpdated.toMillis === 'function') {
+                        safeTimestamp = data.lastUpdated.toMillis();
+                    } else {
+                        safeTimestamp = Date.now();
                     }
                     
                     const chatItem = { 
@@ -450,17 +536,19 @@ function initializeUniLoop() {
 
                     chatsDB.push(chatItem);
 
+                    // Eğer bize gelen ve beklemede olan bir istekse bildirim sayısını artır
                     if (chatItem.status === 'pending' && chatItem.initiator !== currentUid) {
                         pendingRequestsCount++;
                     }
                 } catch(err) {
-                    console.error("Mesaj parse edilirken hata oldu (Eski belge olabilir), atlandı:", err);
+                    console.error("Hatalı bir mesaj belgesi es geçildi:", err);
                 }
             });
 
-            // ⏱️ EN GÜNCEL MESAJI EN ÜSTE ALIR
+            // ⏱️ JS İLE SIRALAMA: EN GÜNCEL MESAJ OTOMATİK EN ÜSTE ÇIKAR
             chatsDB.sort((a, b) => b.lastUpdatedTS - a.lastUpdatedTS);
 
+            // Bildirim Rozetini Güncelle
             const notifBadge = document.getElementById('notif-badge');
             if(notifBadge) {
                 if(pendingRequestsCount > 0) { 
@@ -471,6 +559,7 @@ function initializeUniLoop() {
                 }
             }
 
+            // Hangi ekrandaysak orayı tazeleyelim
             const activeTab = document.querySelector('.menu-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'messages') {
                 window.renderMessages();
@@ -509,7 +598,9 @@ function initializeUniLoop() {
     bind('modal-close', 'click', window.closeModal);
     
     window.addEventListener('click', (e) => { 
-        if (e.target === modal) window.closeModal(); 
+        if (e.target === modal) {
+            window.closeModal(); 
+        }
     });
 
     bind('mobile-menu-btn', 'click', () => { 
@@ -522,13 +613,17 @@ function initializeUniLoop() {
             const name = link.getAttribute('data-name');
             const icon = link.getAttribute('data-icon');
             const color = link.getAttribute('data-color');
-            if(typeof window.handleFacultyClick === 'function') window.handleFacultyClick(name, icon, color);
+            
+            if(typeof window.handleFacultyClick === 'function') {
+                window.handleFacultyClick(name, icon, color);
+            }
         }
     });
 
     const setupShowMore = (btnId, containerId) => {
         const btn = document.getElementById(btnId);
         const container = document.getElementById(containerId);
+        
         if(btn && container) {
             btn.addEventListener('click', () => {
                 if(container.style.display === 'none') { 
@@ -594,24 +689,25 @@ function initializeUniLoop() {
 
     window.sendFriendRequest = async function(targetUserId, targetUserName) {
         try {
-            const chatId = [window.userProfile.uid, targetUserId].sort().join("_");
+            const myUid = auth.currentUser.uid;
+            const chatId = [myUid, targetUserId].sort().join("_");
             const chatRef = doc(db, "chats", chatId);
             const chatSnap = await getDoc(chatRef);
 
             if(!chatSnap.exists()) {
                 await setDoc(chatRef, {
-                    participants: [window.userProfile.uid, targetUserId],
+                    participants: [myUid, targetUserId],
                     participantNames: { 
-                        [window.userProfile.uid]: window.userProfile.name, 
+                        [myUid]: window.userProfile.name, 
                         [targetUserId]: targetUserName 
                     },
                     participantAvatars: { 
-                        [window.userProfile.uid]: window.userProfile.avatar, 
+                        [myUid]: window.userProfile.avatar || "👨‍🎓", 
                         [targetUserId]: "👤" 
                     },
                     lastUpdated: serverTimestamp(), 
-                    status: 'pending', 
-                    initiator: window.userProfile.uid, 
+                    status: 'pending', // ⏳ İSTEK BEKLEMEDE
+                    initiator: myUid, 
                     messages: [{
                         senderId: "system",
                         text: "Arkadaşlık isteği gönderildi.",
@@ -677,7 +773,7 @@ function initializeUniLoop() {
                         <div class="avatar">👩‍⚕️</div>
                         <h4>Sarah B.</h4>
                         <p>Tıp Fakültesi</p>
-                        <button class="action-btn" onclick="window.loadPage('messages')">Mesaj At</button>
+                        <button class="action-btn" onclick="window.goToMessages()">Mesaj At</button>
                     </div>
                 </div>
             </div>
@@ -913,15 +1009,16 @@ function initializeUniLoop() {
         }
     };
 
-    window.editListing = function(docId, oldTitle, oldPrice) {
+    window.editListing = async function(docId, oldTitle, oldPrice) {
         let newPrice = prompt(`"${oldTitle}" için yeni fiyatı girin (Sadece rakam):`, oldPrice);
         
         if(newPrice !== null && newPrice.trim() !== "") {
             try { 
-                updateDoc(doc(db, "listings", docId), { price: newPrice.trim() }); 
+                await updateDoc(doc(db, "listings", docId), { price: newPrice.trim() }); 
                 alert("İlan fiyatı güncellendi!"); 
             } catch(e) { 
                 console.error(e); 
+                alert("Hata: " + e.message);
             }
         }
     };
@@ -1106,7 +1203,7 @@ function initializeUniLoop() {
                         [targetUserId]: "👤" 
                     },
                     lastUpdated: serverTimestamp(), 
-                    status: 'accepted', 
+                    status: 'accepted', // İlan mesajları isteği pas geçer
                     messages: [{ senderId: window.userProfile.uid, text: autoText, time: timeStr }]
                 });
             } else {
@@ -1124,7 +1221,7 @@ function initializeUniLoop() {
         }
     };
 
-    // 🔔 BİLDİRİMLER (İSTEKLERİ) EKRANA ÇİZDİR
+    // 🔔 BİLDİRİMLER EKRANI (Bize gelen istekler)
     window.renderNotifications = function() {
         const incomingRequests = chatsDB.filter(c => c.status === 'pending' && c.initiator !== window.userProfile.uid);
         
@@ -1177,7 +1274,7 @@ function initializeUniLoop() {
         }
     };
 
-    // ❌ İSTEĞİ REDDET VE SİL
+    // ❌ İSTEĞİ REDDET
     window.rejectRequest = async function(chatId) {
         if(confirm("Bu arkadaşlık isteğini reddetmek istediğinize emin misiniz?")) {
             try {
@@ -1190,7 +1287,7 @@ function initializeUniLoop() {
         }
     };
 
-    // 💬 MESAJLARIM (SADECE KABUL EDİLENLER VE BİZİM GÖNDERDİĞİMİZ BEKLEYEN İSTEKLER)
+    // 💬 MESAJLARIM (Kabul Edilenler ve Kendi Gönderdiğimiz İstekler)
     window.renderMessages = function() {
         const visibleChats = chatsDB.filter(c => c.status === 'accepted' || (c.status === 'pending' && c.initiator === window.userProfile.uid));
 
