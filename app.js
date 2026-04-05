@@ -56,6 +56,37 @@ const storage = getStorage(app);
 
 function initializeUniLoop() {
     
+    // 🎨 DINAMIK CSS ENJEKSIYONU: Ekran kaymaları, kaydırma hassasiyetleri ve sabit görünümler için
+    const styleFix = document.createElement('style');
+    styleFix.innerHTML = `
+        /* Mobilde Sidebar Kaydırma ve Hassasiyet Fix */
+        #sidebar { overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; }
+        
+        /* Mesajlar: Sayfanın kaymamasını, sadece kişi listesi ve sohbetin kaymasını sağlayan Fix */
+        #chat-layout-container { height: calc(100vh - 180px) !important; max-height: 800px; overflow: hidden !important; display: flex; }
+        .chat-sidebar { overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; }
+        .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; }
+        #chat-messages-scroll { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; }
+        
+        /* Soru Cevap ve İtiraflar İçin Liste Scroll Fix (Sayfa uzamaz, liste kendi içinde kayar) */
+        #qa-feed, #conf-feed, #listings-grid-container { max-height: calc(100vh - 270px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; padding-right: 8px; }
+        
+        /* Detaylardaki Yorumlar: En fazla ~3 tane görünür, sonrası kutu içinde kaydırılır */
+        .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; padding-right: 8px; }
+    `;
+    document.head.appendChild(styleFix);
+    
+    // 🔒 Mobilde Sidebar (Sol Menü) dışına tıklandığında menüyü kapatma garantisi
+    document.addEventListener('click', (e) => {
+        const sidebar = document.getElementById('sidebar');
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        if (window.innerWidth <= 1024 && sidebar && sidebar.classList.contains('open')) {
+            if (!sidebar.contains(e.target) && e.target !== mobileBtn && (!mobileBtn || !mobileBtn.contains(e.target))) {
+                sidebar.classList.remove('open');
+            }
+        }
+    });
+
     // Olay Dinleyicisi (Event Listener) Kısayolu
     const bind = (id, event, callback) => { 
         const el = document.getElementById(id); 
@@ -1318,14 +1349,13 @@ function initializeUniLoop() {
 
     // 💬 MESAJLARIM (Kabul Edilenler ve Kendi Gönderdiğimiz İstekler)
     window.renderMessages = function() {
-        // UniLoop Team "system" karşılama mesajı da 'accepted' olduğu için artık burada görünür
         const visibleChats = chatsDB.filter(c => c.status === 'accepted' || (c.status === 'pending' && c.initiator === window.userProfile.uid));
 
         let html = `
-            <div class="card" style="padding:0; border:none;">
+            <div class="card" style="padding:0; border:none; background:transparent;">
                 <div class="chat-layout" id="chat-layout-container">
                     <div class="chat-sidebar">
-                        <div class="chat-sidebar-header">Mesajlarım</div>
+                        <div class="chat-sidebar-header" style="position:sticky; top:0; background:white; z-index:10;">Mesajlarım</div>
         `;
         
         if (visibleChats.length === 0) {
@@ -1724,16 +1754,20 @@ function initializeUniLoop() {
         const q = qaDB.find(item => item.id === docId);
         if(!q) return;
         
-        let answersHtml = q.answers.length === 0 ? '<p style="text-align:center; padding:20px; color:var(--text-gray);">İlk cevap veren sen ol!</p>' : '';
+        let answersHtml = '';
         
-        q.answers.forEach(ans => { 
-            answersHtml += `
-                <div style="background:#F9FAFB; padding:16px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border-color);">
-                    <div style="font-weight:bold; color:var(--primary); margin-bottom:6px;">${ans.user}</div>
-                    <div style="font-size:15px;">${ans.text}</div>
-                </div>
-            `; 
-        });
+        if(q.answers.length === 0) {
+            answersHtml = '<p style="text-align:center; padding:20px; color:var(--text-gray);">İlk cevap veren sen ol!</p>';
+        } else {
+            q.answers.forEach(ans => { 
+                answersHtml += `
+                    <div style="background:#F9FAFB; padding:16px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border-color);">
+                        <div style="font-weight:bold; color:var(--primary); margin-bottom:6px;">${ans.user}</div>
+                        <div style="font-size:15px;">${ans.text}</div>
+                    </div>
+                `; 
+            });
+        }
 
         window.openModal('Soru Detayı', `
             <div style="margin-bottom: 24px;">
@@ -1743,7 +1777,9 @@ function initializeUniLoop() {
             
             <div style="border-top:1px solid var(--border-color); padding-top:24px; margin-bottom:24px;">
                 <h4>Cevaplar (${q.answers.length})</h4>
-                ${answersHtml}
+                <div class="answers-container">
+                    ${answersHtml}
+                </div>
             </div>
             
             <div style="display:flex; gap:10px;">
