@@ -103,6 +103,7 @@ function initializeUniLoop() {
             z-index: 10; 
         }
         
+        /* 🚨 NAVİGASYON YAZISI GİZLENME PROBLEMİ FIX (PADDING-TOP EKLENDİ) 🚨 */
         /* Mobilde Sidebar Kaydırma Fix - Dışarı Taşmayı ve Kesilmeyi Engeller */
         #sidebar { 
             overflow-y: auto !important; 
@@ -112,6 +113,7 @@ function initializeUniLoop() {
             align-items: stretch !important;
             max-height: 100vh !important;
             top: 0 !important;
+            padding-top: 75px !important; /* Header'ın altında kalmasını önler */
             padding-bottom: 40px !important;
         }
         
@@ -242,7 +244,7 @@ function initializeUniLoop() {
         .locked-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.8);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -250,6 +252,11 @@ function initializeUniLoop() {
             z-index: 5;
             text-align: center;
             padding: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .locked-overlay:hover {
+            background: rgba(255, 255, 255, 0.9);
         }
 
         /* GERÇEK ÇALIŞAN KARANLIK MOD (DARK MODE) DESTEĞİ */
@@ -268,7 +275,7 @@ function initializeUniLoop() {
         .dark-mode .menu-item.active { background: #374151 !important; color: var(--primary) !important; }
         .dark-mode #app-header { background: #1e1e1e !important; border-bottom-color: #374151 !important; }
         .dark-mode #sidebar { background: #1e1e1e !important; border-right-color: #374151 !important; }
-        .dark-mode .locked-overlay { background: rgba(30, 30, 30, 0.7); }
+        .dark-mode .locked-overlay { background: rgba(30, 30, 30, 0.8); }
 
         /* 🌟 GÖRSEL DÜZELTME: HEADER TEK SATIR & KÜÇÜLTÜLMÜŞ BUTONLAR */
         #app-header, header {
@@ -707,7 +714,7 @@ function initializeUniLoop() {
                     window.loadPage(activeTab ? activeTab.getAttribute('data-target') : 'home'); 
                 }
                 
-                // Menüye Premium Butonunu Dinamik Ekle (Profilimin yanına) - GÖRSEL FİX UYGULANDI (Profilin solunda)
+                // Menüye Premium Butonunu Dinamik Ekle (Profilimin yanına)
                 if (!document.getElementById('nav-premium-action') && !window.userProfile.isPremium) {
                     const profileBtn = document.getElementById('profile-btn');
                     if (profileBtn) {
@@ -1019,6 +1026,7 @@ function initializeUniLoop() {
         // 🌟 YENİ: PREMIUM'A GÖRE DEĞİŞEN YAPAY ZEKA RADARI
         let aiRadarContent = '';
         const isPremium = window.userProfile.isPremium;
+        const userFac = window.userProfile.faculty || "Kampüsünde"; // Dinamik fakülte çekici
 
         if (isPremium) {
             aiRadarContent = `
@@ -1031,14 +1039,14 @@ function initializeUniLoop() {
                         <div class="avatar">👨‍💻</div>
                         <h4 style="margin: 8px 0 2px 0;">John D.</h4>
                         <p style="color:#D97706; font-size:12px; font-weight:bold; margin-bottom:4px;">🟢 Şu an aktif (Kütüphanede)</p>
-                        <p style="font-size:13px;">Bilgisayar Müh. (Aynı Bölüm)</p>
+                        <p style="font-size:13px;">${userFac} (Aynı Bölüm)</p>
                         <button class="action-btn" onclick="window.goToMessages()" style="margin-top:10px; background:#FEF3C7; color:#D97706;">Super DM At 🚀</button>
                     </div>
                     <div class="match-card premium-match-card">
                         <div class="avatar">👩‍⚕️</div>
                         <h4 style="margin: 8px 0 2px 0;">Sarah B.</h4>
                         <p style="color:#D97706; font-size:12px; font-weight:bold; margin-bottom:4px;">🎧 Ortak İlgi: Müzik Kulübü</p>
-                        <p style="font-size:13px;">Tıp Fakültesi</p>
+                        <p style="font-size:13px;">${userFac}</p>
                         <button class="action-btn" onclick="window.goToMessages()" style="margin-top:10px; background:#FEF3C7; color:#D97706;">Super DM At 🚀</button>
                     </div>
                     <div class="match-card premium-match-card">
@@ -1055,23 +1063,45 @@ function initializeUniLoop() {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
                     <h2 style="margin:0;">✨ AI Kampüs Eşleşmeleri</h2>
                 </div>
+                <div style="background: #FEF3C7; color: #92400E; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-size: 13px; font-weight: bold; border: 1px solid #F59E0B;">
+                    Yapay Zeka radarımız <strong>${userFac}</strong> ağında seninle eşleşmek isteyen kişileri buldu!
+                </div>
                 <div class="match-grid">
-                    <div class="match-card">
-                        <div class="avatar">👨‍💻</div>
-                        <h4>John D.</h4>
-                        <p>Bilgisayar Müh.</p>
-                        <button class="action-btn" onclick="window.openModal('Bağlantı Kur', '<p>Sistem yakında aktif edilecek!</p>')">Bağlan</button>
+                    <div class="match-card locked-container">
+                        <div class="locked-overlay" onclick="window.openPremiumModal()">
+                            <span style="font-size:28px; margin-bottom:8px;">🔒</span>
+                            <span style="font-size:13px; font-weight:bold; color:#1F2937;">Kim Olduğunu Görmek İçin Tıkla</span>
+                        </div>
+                        <div class="locked-blur">
+                            <div class="avatar">👨‍🎓</div>
+                            <h4>A*** K***</h4>
+                            <p>${userFac} (Aynı Bölüm!)</p>
+                            <button class="action-btn">Mesaj At</button>
+                        </div>
                     </div>
                     
                     <div class="match-card locked-container">
-                        <div class="locked-overlay">
+                        <div class="locked-overlay" onclick="window.openPremiumModal()">
                             <span style="font-size:28px; margin-bottom:8px;">🔒</span>
-                            <span style="font-size:13px; font-weight:bold; color:#1F2937;">3 Yeni Kişi Seninle Eşleşmek İstiyor!</span>
+                            <span style="font-size:13px; font-weight:bold; color:#1F2937;">Kilidi Aç & Bağlan!</span>
                         </div>
                         <div class="locked-blur">
-                            <div class="avatar">👩‍⚕️</div>
-                            <h4>S**** B.</h4>
-                            <p>Tıp Fakültesi</p>
+                            <div class="avatar">👩‍🎓</div>
+                            <h4>B*** Y***</h4>
+                            <p>${userFac}</p>
+                            <button class="action-btn">Mesaj At</button>
+                        </div>
+                    </div>
+                    
+                    <div class="match-card locked-container">
+                        <div class="locked-overlay" onclick="window.openPremiumModal()">
+                            <span style="font-size:28px; margin-bottom:8px;">🔒</span>
+                            <span style="font-size:13px; font-weight:bold; color:#1F2937;">Seni İnceleyen Kişi</span>
+                        </div>
+                        <div class="locked-blur">
+                            <div class="avatar">👀</div>
+                            <h4>M*** E***</h4>
+                            <p>${userFac} (Ortak İlgi)</p>
                             <button class="action-btn">Mesaj At</button>
                         </div>
                     </div>
