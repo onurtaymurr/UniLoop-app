@@ -56,7 +56,7 @@ const storage = getStorage(app);
 
 function initializeUniLoop() {
     
-    // 🎨 DINAMIK CSS ENJEKSIYONU
+    // 🎨 DINAMIK CSS ENJEKSIYONU: Yumuşak Kaydırma, Yeni Akış, PREMIUM, BUTON FIX ve ACCORDION Stilleri
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         /* Sert kaydırmayı engeller ve estetik yumuşak kaydırma sağlar */
@@ -65,6 +65,7 @@ function initializeUniLoop() {
             -webkit-overflow-scrolling: touch; 
         }
         
+        /* 🚨 TIKLAMA VE BUTON ÇALIŞMAMA PROBLEMİ İÇİN KESİN ÇÖZÜM (OVERLAY FIX) 🚨 */
         /* Görünmez modalların tıklamaları sömürmesini engeller */
         #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) {
             opacity: 0 !important;
@@ -79,6 +80,7 @@ function initializeUniLoop() {
             z-index: 99999 !important;
         }
         
+        /* Auth Screen (Giriş/Kayıt) Ekranı Tıklama Garantisi */
         #auth-screen {
             position: relative;
             z-index: 1000 !important;
@@ -93,6 +95,7 @@ function initializeUniLoop() {
             z-index: 1001 !important;
         }
 
+        /* Butonların genel tıklanabilirliğini garanti eder */
         button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { 
             cursor: pointer !important; 
             position: relative; 
@@ -100,6 +103,8 @@ function initializeUniLoop() {
             z-index: 10; 
         }
         
+        /* 🚨 NAVİGASYON YAZISI GİZLENME PROBLEMİ FIX (PADDING-TOP EKLENDİ) 🚨 */
+        /* Mobilde Sidebar Kaydırma Fix - Dışarı Taşmayı ve Kesilmeyi Engeller */
         #sidebar { 
             overflow-y: auto !important; 
             -webkit-overflow-scrolling: touch !important; 
@@ -108,10 +113,11 @@ function initializeUniLoop() {
             align-items: stretch !important;
             max-height: 100vh !important;
             top: 0 !important;
-            padding-top: 75px !important; 
+            padding-top: 75px !important; /* Header'ın altında kalmasını önler */
             padding-bottom: 40px !important;
         }
         
+        /* Mesajlar: Sayfanın kaymamasını sağlayan Fix */
         #chat-layout-container { 
             height: calc(100vh - 120px) !important; 
             max-height: 800px; 
@@ -139,6 +145,7 @@ function initializeUniLoop() {
             scroll-behavior: smooth; 
         }
         
+        /* Soru Cevap ve Market İçin Liste Scroll Fix */
         #qa-feed, #listings-grid-container { 
             max-height: calc(100vh - 200px) !important; 
             overflow-y: auto !important; 
@@ -146,6 +153,7 @@ function initializeUniLoop() {
             padding-right: 8px; 
         }
         
+        /* Detaylardaki Yorumlar */
         .answers-container { 
             max-height: 250px !important; 
             overflow-y: auto !important; 
@@ -154,6 +162,7 @@ function initializeUniLoop() {
             scroll-behavior: smooth; 
         }
         
+        /* 📱 Instagram / Twitter Tarzı Akış (Feed) Stilleri */
         .feed-layout-container { 
             height: calc(100vh - 80px); 
             display: flex; 
@@ -191,6 +200,7 @@ function initializeUniLoop() {
         .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
         .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
 
+        /* 🌟 YENİ: PREMIUM BÖLÜMÜ VE KİLİTLİ İÇERİK STİLLERİ */
         .premium-glow {
             animation: glowPulse 2s infinite alternate;
         }
@@ -249,6 +259,7 @@ function initializeUniLoop() {
             background: rgba(255, 255, 255, 0.9);
         }
 
+        /* GERÇEK ÇALIŞAN KARANLIK MOD (DARK MODE) DESTEĞİ */
         body.dark-mode, .dark-mode #main-content { background-color: #121212 !important; color: #e5e7eb !important; }
         .dark-mode .card, .dark-mode .feed-post, .dark-mode .item-card, .dark-mode .chat-sidebar-header { background-color: #1e1e1e !important; border-color: #374151 !important; color: #e5e7eb !important; }
         .dark-mode .card > div { border-color: #374151 !important; }
@@ -266,6 +277,7 @@ function initializeUniLoop() {
         .dark-mode #sidebar { background: #1e1e1e !important; border-right-color: #374151 !important; }
         .dark-mode .locked-overlay { background: rgba(30, 30, 30, 0.8); }
 
+        /* 🌟 GÖRSEL DÜZELTME: HEADER TEK SATIR & KÜÇÜLTÜLMÜŞ BUTONLAR */
         #app-header, header {
             display: flex !important;
             align-items: center !important;
@@ -309,10 +321,12 @@ function initializeUniLoop() {
             .chat-active .chat-main { display: flex !important; }
         }
 
+        /* 🌟 YENİ: ACCORDION VE ORGANİZASYON STİLLERİ 🌟 */
         .accordion-section { margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: var(--card-bg); }
         .accordion-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 14px 16px; font-weight: bold; font-size: 15px; transition: 0.2s; color: var(--text-dark);}
         .accordion-header:hover { background: #EEF2FF; color: var(--primary); }
         
+        /* 🔥 PÜRÜZSÜZ AŞAĞI AÇILAN ACCORDION STİLİ 🔥 */
         .accordion-content { 
             max-height: 0; 
             overflow: hidden; 
@@ -322,7 +336,7 @@ function initializeUniLoop() {
             border-top: 1px solid transparent; 
         }
         .accordion-content.open { 
-            max-height: 2000px; 
+            max-height: 600px; 
             padding: 10px 16px; 
             border-top: 1px solid var(--border-color); 
         }
@@ -334,7 +348,7 @@ function initializeUniLoop() {
             color: var(--text-gray); 
         }
         
-        .org-link { padding: 10px 0; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--text-dark); transition: 0.2s; border-bottom: 1px solid #E5E7EB; pointer-events: auto; }
+        .org-link { padding: 10px 0; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--text-dark); transition: 0.2s; border-bottom: 1px solid #E5E7EB; }
         .org-link:last-child { border-bottom: none; }
         .org-link:hover { color: var(--primary); transform: translateX(5px); }
         
@@ -348,6 +362,7 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
     
+    // YENİ: DİL VE TEMA DESTEĞİ İÇİN GLOBAL SİSTEM FONKSİYONLARI
     window.setLanguage = function(lang) {
         localStorage.setItem('uniloop_lang', lang);
         window.renderSettings(); 
@@ -362,14 +377,17 @@ function initializeUniLoop() {
         }
     };
 
+    // YENİ: SİSTEM AÇILDIĞINDA KAYITLI TEMAYI YÜKLE
     const savedTheme = localStorage.getItem('uniloop_theme') || 'light';
     window.toggleTheme(savedTheme);
 
+    // YENİ: ÇEVİRİ SÖZLÜĞÜ (Ayarlar ve Temel Metinler İçin)
     const TRANSLATIONS = {
         'tr': { settingsTitle: '⚙️ Uygulama Ayarları', langLabel: 'Dil Seçimi', themeLabel: 'Tema', lightMode: 'Aydınlık Mod', darkMode: 'Karanlık Mod', logoutBtn: '🚪 Güvenli Çıkış Yap' },
         'en': { settingsTitle: '⚙️ App Settings', langLabel: 'Language', themeLabel: 'Theme', lightMode: 'Light Mode', darkMode: 'Dark Mode', logoutBtn: '🚪 Secure Logout' }
     };
 
+    // 🔒 Mobilde Sidebar dışına tıklandığında menüyü kapatma garantisi
     const closeSidebarIfOutside = (e) => {
         const sidebar = document.getElementById('sidebar');
         const mobileBtn = document.getElementById('mobile-menu-btn');
@@ -387,6 +405,7 @@ function initializeUniLoop() {
         if (el) { el.addEventListener(event, callback); }
     };
 
+    // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
     window.userProfile = { 
         uid: "", 
         name: "", 
@@ -397,7 +416,7 @@ function initializeUniLoop() {
         avatar: "👨‍🎓", 
         faculty: "",
         organization: "",
-        isPremium: false 
+        isPremium: false // 🌟 YENİ: PREMIUM KONTROLÜ
     };
     
     window.joinedFaculties = [];
@@ -445,32 +464,32 @@ function initializeUniLoop() {
     const mainContent = document.getElementById('main-content');
     const modal = document.getElementById('app-modal');
 
-    // 🌟 MOBİLDE TIKLANABİLİRLİK İÇİN DOĞRUDAN ONCLICK KULLANILDI (Sorun Kesin Çözüm)
+    // 🌟 YENİ: ACCORDION MENÜLERİ RENDER ETME 🌟
     window.renderSidebarAccordions = function() {
         const accordionHTML = `
             <div class="accordion-section">
-                <div class="accordion-header" onclick="this.nextElementSibling.classList.toggle('open'); const icon = this.querySelector('.accordion-icon'); if(this.nextElementSibling.classList.contains('open')) { icon.style.transform = 'rotate(90deg)'; } else { icon.style.transform = 'rotate(0deg)'; }">
+                <div class="accordion-header">
                     <span>🏢 Fakülteler</span>
                     <span class="accordion-icon">▶</span>
                 </div>
                 <div class="accordion-content">
-                    <div class="menu-item community-link" onclick="window.handleFacultyClick('Tıp Fakültesi', '🩺', 'linear-gradient(135deg, #EF4444, #B91C1C)')">🩺 Tıp Fakültesi</div>
-                    <div class="menu-item community-link" onclick="window.handleFacultyClick('Bilgisayar Fakültesi', '💻', 'linear-gradient(135deg, #3B82F6, #2563EB)')">💻 Bilgisayar Fakültesi</div>
-                    <div class="menu-item community-link" onclick="window.handleFacultyClick('Diş Hekimliği', '🦷', 'linear-gradient(135deg, #06B6D4, #0891B2)')">🦷 Diş Hekimliği</div>
-                    <div class="menu-item community-link" onclick="window.handleFacultyClick('Hukuk Fakültesi', '⚖️', 'linear-gradient(135deg, #8B5CF6, #6D28D9)')">⚖️ Hukuk Fakültesi</div>
-                    <div class="menu-item community-link" onclick="window.handleFacultyClick('Mimarlık Fakültesi', '📐', 'linear-gradient(135deg, #F59E0B, #D97706)')">📐 Mimarlık Fakültesi</div>
-                    <div class="menu-item community-link" onclick="window.handleFacultyClick('Eğitim Fakültesi', '📖', 'linear-gradient(135deg, #10B981, #059669)')">📖 Eğitim Fakültesi</div>
+                    <div class="menu-item community-link" data-name="Tıp Fakültesi" data-icon="🩺" data-color="linear-gradient(135deg, #EF4444, #B91C1C)">🩺 Tıp Fakültesi</div>
+                    <div class="menu-item community-link" data-name="Bilgisayar Fakültesi" data-icon="💻" data-color="linear-gradient(135deg, #3B82F6, #2563EB)">💻 Bilgisayar Fakültesi</div>
+                    <div class="menu-item community-link" data-name="Diş Hekimliği" data-icon="🦷" data-color="linear-gradient(135deg, #06B6D4, #0891B2)">🦷 Diş Hekimliği</div>
+                    <div class="menu-item community-link" data-name="Hukuk Fakültesi" data-icon="⚖️" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">⚖️ Hukuk Fakültesi</div>
+                    <div class="menu-item community-link" data-name="Mimarlık Fakültesi" data-icon="📐" data-color="linear-gradient(135deg, #F59E0B, #D97706)">📐 Mimarlık Fakültesi</div>
+                    <div class="menu-item community-link" data-name="Eğitim Fakültesi" data-icon="📖" data-color="linear-gradient(135deg, #10B981, #059669)">📖 Eğitim Fakültesi</div>
                 </div>
             </div>
             <div class="accordion-section">
-                <div class="accordion-header" onclick="this.nextElementSibling.classList.toggle('open'); const icon = this.querySelector('.accordion-icon'); if(this.nextElementSibling.classList.contains('open')) { icon.style.transform = 'rotate(90deg)'; } else { icon.style.transform = 'rotate(0deg)'; }">
+                <div class="accordion-header">
                     <span>🎭 Kulüp ve Organizasyonlar</span>
                     <span class="accordion-icon">▶</span>
                 </div>
                 <div class="accordion-content">
-                    <div class="menu-item org-link" onclick="window.handleOrganizationClick('Spor Kulübü', '⚽', 'linear-gradient(135deg, #10B981, #059669)')">⚽ Spor Kulübü</div>
-                    <div class="menu-item org-link" onclick="window.handleOrganizationClick('Tiyatro Kulübü', '🎭', 'linear-gradient(135deg, #8B5CF6, #4C1D95)')">🎭 Tiyatro Kulübü</div>
-                    <div class="menu-item org-link" onclick="window.handleOrganizationClick('Sağlık Kulübü', '🏥', 'linear-gradient(135deg, #EF4444, #B91C1C)')">🏥 Sağlık Kulübü</div>
+                    <div class="menu-item org-link" data-name="Spor Kulübü" data-icon="⚽" data-color="linear-gradient(135deg, #10B981, #059669)">⚽ Spor Kulübü</div>
+                    <div class="menu-item org-link" data-name="Tiyatro Kulübü" data-icon="🎭" data-color="linear-gradient(135deg, #8B5CF6, #4C1D95)">🎭 Tiyatro Kulübü</div>
+                    <div class="menu-item org-link" data-name="Sağlık Kulübü" data-icon="🏥" data-color="linear-gradient(135deg, #EF4444, #B91C1C)">🏥 Sağlık Kulübü</div>
                 </div>
             </div>
         `;
@@ -482,6 +501,7 @@ function initializeUniLoop() {
         if(rightCard) rightCard.innerHTML = '<h2 style="margin-bottom: 15px;">🌍 Ağlar</h2>' + accordionHTML;
     };
     
+    // Uygulama yüklendiğinde Accordion HTML'i enjekte et
     window.renderSidebarAccordions();
 
     // ============================================================================
@@ -569,7 +589,7 @@ function initializeUniLoop() {
                 isOnline: false, 
                 faculty: "",
                 organization: "",
-                isPremium: false
+                isPremium: false // 🌟 Premium başlangıçta kapalı
             }).then(() => {
                 window.ensureWelcomeMessage(user, name);
             }).catch(dbError => {
@@ -734,15 +754,26 @@ function initializeUniLoop() {
                 appScreen.style.display = 'block';
             }
 
-            if (!document.getElementById('nav-notifications-btn')) {
+            if (!document.getElementById('nav-custom-btn')) {
                 const msgBtn = document.getElementById('nav-messages-btn');
                 if (msgBtn) {
+                    const customBtnHTML = `
+                        <div class="menu-item" id="nav-custom-btn" data-target="custom">
+                            ↳ Bana Özel
+                        </div>
+                    `;
                     const notifBtnHTML = `
                         <div class="menu-item" id="nav-notifications-btn" data-target="notifications">
                             🔔 Bildirimler <span id="notif-badge" class="badge" style="display:none; background:#EF4444; color:white; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:auto;">0</span>
                         </div>
                     `;
-                    msgBtn.insertAdjacentHTML('afterend', notifBtnHTML);
+                    msgBtn.insertAdjacentHTML('afterend', customBtnHTML + notifBtnHTML);
+                    
+                    document.getElementById('nav-custom-btn').addEventListener('click', (e) => {
+                        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        window.loadPage('custom');
+                    });
 
                     document.getElementById('nav-notifications-btn').addEventListener('click', (e) => {
                         document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
@@ -782,6 +813,7 @@ function initializeUniLoop() {
                     window.loadPage(activeTab ? activeTab.getAttribute('data-target') : 'home'); 
                 }
                 
+                // Menüye Premium Butonunu Dinamik Ekle (Profilimin yanına)
                 if (!document.getElementById('nav-premium-action') && !window.userProfile.isPremium) {
                     const profileBtn = document.getElementById('profile-btn');
                     if (profileBtn) {
@@ -906,7 +938,7 @@ function initializeUniLoop() {
     }
 
     // ============================================================================
-    // 🌟 PREMIUM ABONELİK MODAL VE MANTIK
+    // 🌟 YENİ: PREMIUM ABONELİK MODAL VE MANTIK
     // ============================================================================
     window.openPremiumModal = function() {
         window.openModal('🌟 UniLoop Premium', `
@@ -938,11 +970,13 @@ function initializeUniLoop() {
         btn.innerText = '⏳ Ödeme İşleniyor... Lütfen bekleyin.';
         btn.disabled = true;
         
+        // Simüle Edilmiş Ödeme Geçidi (3 Saniye Bekleme)
         setTimeout(async () => {
             try {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: true });
                 window.userProfile.isPremium = true;
                 
+                // Sidebar'daki Premium Butonunu gizle
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) navBtn.style.display = 'none';
 
@@ -958,7 +992,7 @@ function initializeUniLoop() {
     };
 
     // ============================================================================
-    // 3. AÇILIR PENCERELER VE TIKLAMA YÖNETİMİ
+    // 3. AÇILIR PENCERELER VE TIKLAMA YÖNETİMİ (ACCORDION DESTEKLİ)
     // ============================================================================
 
     window.goToMessages = function() {
@@ -991,8 +1025,45 @@ function initializeUniLoop() {
         document.getElementById('sidebar').classList.toggle('open'); 
     });
 
+    document.body.addEventListener('click', (e) => {
+        // 🌟 YENİ: Accordion Toggle Mantığı 🌟
+        const accordionHeader = e.target.closest('.accordion-header');
+        if(accordionHeader) {
+            const content = accordionHeader.nextElementSibling;
+            const icon = accordionHeader.querySelector('.accordion-icon');
+            if(content.classList.contains('open')) {
+                content.classList.remove('open');
+                if(icon) { icon.style.transform = 'rotate(0deg)'; }
+            } else {
+                content.classList.add('open');
+                if(icon) { icon.style.transform = 'rotate(90deg)'; }
+            }
+            return;
+        }
+
+        // Fakülte Tıklaması
+        const link = e.target.closest('.community-link');
+        if(link) {
+            const name = link.getAttribute('data-name');
+            const icon = link.getAttribute('data-icon');
+            const color = link.getAttribute('data-color');
+            if(typeof window.handleFacultyClick === 'function') window.handleFacultyClick(name, icon, color);
+            return;
+        }
+
+        // 🌟 YENİ: Organizasyon Tıklaması 🌟
+        const orgLink = e.target.closest('.org-link');
+        if(orgLink) {
+            const name = orgLink.getAttribute('data-name');
+            const icon = orgLink.getAttribute('data-icon');
+            const color = orgLink.getAttribute('data-color');
+            if(typeof window.handleOrganizationClick === 'function') window.handleOrganizationClick(name, icon, color);
+            return;
+        }
+    });
+
     // ============================================================================
-    // 4. ARKADAŞ ARAMA MOTORU VE ANA SAYFA
+    // 4. ARKADAŞ ARAMA MOTORU VE ANA SAYFA (YENİ ŞEFFAF AI RADAR ENTEGRELİ)
     // ============================================================================
 
     window.searchAndAddFriend = async function() {
@@ -1113,13 +1184,14 @@ function initializeUniLoop() {
                 </div>
             `;
         } else {
+            // 🔥 YENİ: ATEŞLİ VE PAZARLAMAYA UYGUN AI RADARI METNİ 🔥
             aiRadarContent = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
                     <h2 style="margin:0; color:#DC2626;">🔥 Kampüs Tespitleri</h2>
                 </div>
                 <div style="background: linear-gradient(135deg, #FEF2F2, #FEF3C7); color: #92400E; padding: 16px; border-radius: 12px; margin-bottom: 15px; font-size: 14px; border: 1px solid #FCD34D; line-height: 1.6; font-weight: 800; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.1);">
-                    ✨ AI Radarımız <strong>${userFac}</strong> ağını taradı!<br><br>
-                    Kampüsünde seninle aynı ilgi alanlarına sahip kişileri ve potansiyel eşleşmeleri senin için bulduk. Hemen keşfetmeye başla! 👇
+                    🚨 AI Radarımız <strong>${userFac}</strong> ağını taradı!<br><br>
+                    👀 Profiline kimin baktığını, gizli hayranlarını ve ortak ilgi alanlarındaki en sıcak eşleşmeleri yakaladık. Maskeleri düşür, kilitleri kır ve kampüsün zirvesine yerleş! 👇
                 </div>
                 <div class="match-grid">
                     <div class="match-card locked-container">
@@ -1829,6 +1901,7 @@ function initializeUniLoop() {
                 deleteBtnHtml = `<button class="feed-action-btn" style="color: #ef4444; margin-left: auto;" onclick="window.deleteConfession('${post.id}')">🗑️ Sil</button>`;
             }
 
+            // YENİ: Premium Kullanıcılara Anonim İpucu
             let premiumHintHtml = '';
             if (post.user === "Anonim Kullanıcı" && window.userProfile.isPremium) {
                 premiumHintHtml = `<div style="font-size:11px; color:#D97706; font-weight:bold; margin-top:4px;">🌟 Premium İpucu: Bu kişi Bilgisayar Müh. bölümünden.</div>`;
@@ -2038,7 +2111,7 @@ function initializeUniLoop() {
     };
 
     // ============================================================================
-    // 10. FAKÜLTE VE ORGANİZASYON SİSTEMİ
+    // 10. FAKÜLTE VE ORGANİZASYON SİSTEMİ (YENİ ACCORDION ENTEGRELİ)
     // ============================================================================
 
     // --- Fakülte Fonksiyonları ---
@@ -2081,6 +2154,7 @@ function initializeUniLoop() {
         } catch (e) { console.error(e); }
         if(totalMembers === 0) totalMembers = 1; if(onlineMembers === 0) onlineMembers = 1;
 
+        // 🌟 YENİ: FAKÜLTE İÇİN GENEL MESAJLAŞMA ODASI HİSSİYATI
         mainContent.innerHTML = `
             <div style="margin-bottom: 24px;">
                 <div class="community-banner" style="background: ${bgColor};">
@@ -2110,7 +2184,7 @@ function initializeUniLoop() {
         `;
     };
 
-    // --- Kulüp ve Organizasyonlar Fonksiyonları ---
+    // --- Yeni: Kulüp ve Organizasyonlar Fonksiyonları ---
     window.handleOrganizationClick = async function(name, icon, bgColor) {
         document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
         if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
@@ -2140,40 +2214,24 @@ function initializeUniLoop() {
         } else { alert("Hatalı kod girdiniz. Lütfen kulüp yönetimi ile iletişime geçin."); }
     };
 
-    // 🌟 KULÜPLER DE ARTIK TIKPKI FAKÜLTELER GİBİ SADE BİR MESAJLAŞMA ODASINA DÖNÜŞTÜ 🌟
     window.loadOrganizationFeed = async function(name, icon, bgColor) {
-        let totalMembers = 0; let onlineMembers = 0;
-        try {
-            const q = query(collection(db, "users"), where("organization", "==", name));
-            const querySnapshot = await getDocs(q);
-            totalMembers = querySnapshot.size;
-            querySnapshot.forEach((doc) => { if(doc.data().isOnline) onlineMembers++; });
-        } catch (e) { console.error(e); }
-        if(totalMembers === 0) totalMembers = 1; if(onlineMembers === 0) onlineMembers = 1;
-
+        // 🌟 YENİ: KULÜPLER İÇİN 3 BUTONLU İLETİŞİM ARAYÜZÜ
         mainContent.innerHTML = `
             <div style="margin-bottom: 24px;">
                 <div class="community-banner" style="background: ${bgColor};">
-                    <div class="comm-banner-left"><h1>${icon} ${name}</h1><p>Genel Akış</p></div>
+                    <div class="comm-banner-left"><h1>${icon} ${name}</h1><p>Resmi Topluluk Ağı</p></div>
                     <div class="comm-banner-right">
-                        <div class="member-avatars"><div class="avatar">👨‍💻</div><div class="avatar" style="background:white; color:var(--primary); font-size:11px; font-weight:bold;">+${totalMembers}</div></div>
-                        <div class="community-stats"><span class="online-dot"></span> Çevrimiçi: ${onlineMembers}</div>
+                        <div class="member-avatars"><div class="avatar">🌟</div><div class="avatar" style="background:white; color:var(--primary); font-size:11px; font-weight:bold;">Aktif</div></div>
                     </div>
                 </div>
                 
-                <div style="background: white; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 24px; display: flex; flex-direction: column; height: 400px; overflow: hidden;">
-                    <div style="padding: 15px; background: #F9FAFB; border-bottom: 1px solid var(--border-color); font-weight: bold; color: var(--text-dark);">
-                        💬 ${name} Genel Akış Odası
-                    </div>
-                    <div style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #F3F4F6;">
-                        <div style="align-self: flex-start; background: white; padding: 12px; border-radius: 12px; border-bottom-left-radius: 0; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                            <strong style="color: var(--primary); font-size: 13px;">Sistem</strong>
-                            <div style="font-size: 14px; margin-top: 4px;">Hoş geldin! Burası ${name} üyelerinin genel mesajlaşma ve akış odasıdır. 🚀</div>
-                        </div>
-                    </div>
-                    <div style="padding: 15px; background: white; border-top: 1px solid var(--border-color); display: flex; gap: 10px;">
-                        <input type="text" placeholder="Odada bir şeyler yaz..." style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #E5E7EB; outline: none;" onclick="alert('Canlı oda mesajlaşması Premium v2 paketine dahildir.')">
-                        <button class="btn-primary" style="padding: 12px 20px;" onclick="alert('Canlı oda mesajlaşması Premium v2 paketine dahildir.')">Gönder</button>
+                <div style="background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border-color); margin-bottom: 24px; text-align: center;">
+                    <h3 style="margin-bottom: 10px; font-size: 20px; color: var(--text-dark);">🚀 Canlı İletişim Odaları</h3>
+                    <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Ekip arkadaşlarınla projeleri tartışmak, toplantı yapmak veya sohbet etmek için bir oda seç.</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
+                        <button class="room-btn btn-chat" onclick="alert('Yazılı bağlantı odasına aktarılıyorsunuz...')">💬 Yazılı</button>
+                        <button class="room-btn btn-voice" onclick="alert('Sesli bağlantı odasına aktarılıyorsunuz...')">🎙️ Sesli</button>
+                        <button class="room-btn btn-video" onclick="alert('Görüntülü bağlantı odasına aktarılıyorsunuz...')">📹 Görüntülü</button>
                     </div>
                 </div>
             </div>
@@ -2192,11 +2250,24 @@ function initializeUniLoop() {
         else if (pageName === 'qa') window.renderQA(); 
         else if (pageName === 'messages') window.renderMessages(); 
         else if (pageName === 'notifications') window.renderNotifications();
+        else if (pageName === 'custom') window.renderCustomPage();
         else if (pageName === 'settings') window.renderSettings();
         else if (pageName === 'profile') window.renderProfile();
         
         if(window.innerWidth <= 1024 && document.getElementById('sidebar')) document.getElementById('sidebar').classList.remove('open');
         window.scrollTo(0,0);
+    };
+
+    window.renderCustomPage = function() {
+        mainContent.innerHTML = `
+            <div class="card">
+                <h2 style="margin-bottom: 20px;">↳ Bana Özel</h2>
+                <div style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 10px;">🌟 Sana Özel İçerikler</h3>
+                    <p style="opacity: 0.9;">Algoritmamızın senin kampüs yaşamına ve ilgi alanlarına göre seçtiği etkinlikler, eşleşmeler ve popüler gönderiler burada listelenecek.</p>
+                </div>
+            </div>
+        `;
     };
 
     document.querySelectorAll('.menu-item[data-target]').forEach(item => {
@@ -2230,131 +2301,80 @@ function initializeUniLoop() {
                         <div class="form-group"><label>Ad</label><input type="text" id="prof-name" value="${window.userProfile.name}"></div>
                         <div class="form-group"><label>Soyad</label><input type="text" id="prof-surname" value="${window.userProfile.surname}"></div>
                     </div>
-                                        <div class="form-group">
-                        <label>Kullanıcı Adı (Arkadaşlarının seni bulması için: #isim)</label>
-                        <input type="text" id="prof-username" value="${window.userProfile.username || ''}" placeholder="#kullanici_adi">
-                    </div>
                     <div class="form-group">
-                        <label>Üniversite</label>
-                        <input type="text" value="${window.userProfile.university}" disabled style="background:#F3F4F6; cursor:not-allowed;">
+                        <label>Kullanıcı Adı</label>
+                        <div style="display:flex; align-items:center; background:inherit; border:1px solid #D1D5DB; border-radius:10px; overflow:hidden; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.1)';" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none';">
+                            <span style="padding-left:12px; color:var(--primary); font-weight:800; font-size:16px;">#</span>
+                            <input type="text" id="prof-username" value="${(window.userProfile.username || '').replace('#', '')}" placeholder="kullaniciadi" style="border:none; background:transparent; width:100%; padding:12px 8px; outline:none; font-size:15px; box-shadow:none; font-weight:600; color:var(--text-dark);">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Profil İkonu (Emoji)</label>
-                        <select id="prof-avatar" style="width:100%; padding:12px; border-radius:12px; border:1px solid #E5E7EB;">
-                            <option value="👨‍🎓" ${window.userProfile.avatar === '👨‍🎓' ? 'selected' : ''}>👨‍🎓 Erkek Öğrenci</option>
-                            <option value="👩‍🎓" ${window.userProfile.avatar === '👩‍🎓' ? 'selected' : ''}>👩‍🎓 Kadın Öğrenci</option>
-                            <option value="🧑‍💻" ${window.userProfile.avatar === '🧑‍💻' ? 'selected' : ''}>🧑‍💻 Yazılımcı</option>
-                            <option value="🎨" ${window.userProfile.avatar === '🎨' ? 'selected' : ''}>🎨 Sanatçı</option>
-                            <option value="🏀" ${window.userProfile.avatar === '🏀' ? 'selected' : ''}>🏀 Sporcu</option>
-                            <option value="🎧" ${window.userProfile.avatar === '🎧' ? 'selected' : ''}>🎧 Müzik Sever</option>
-                        </select>
-                    </div>
-                    <button class="btn-primary" id="save-profile-btn" onclick="window.updateProfile()">Değişiklikleri Kaydet</button>
+                    <div class="form-group"><label>Üniversite</label><input type="text" disabled value="${window.userProfile.university}" style="background:#E5E7EB; cursor:not-allowed;"></div>
+                    <div class="form-group"><label>E-posta</label><input type="email" disabled value="${window.userProfile.email}" style="background:#E5E7EB; cursor:not-allowed;"></div>
+                    <button class="btn-primary" onclick="window.saveProfile()" style="padding:12px; margin-bottom: 15px;">Profilimi Kaydet</button>
+                    <button class="btn-danger" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
                 </div>
             </div>
         `;
     };
 
-    window.updateProfile = async function() {
-        const name = document.getElementById('prof-name').value.trim();
-        const surname = document.getElementById('prof-surname').value.trim();
-        const avatar = document.getElementById('prof-avatar').value;
-        let username = document.getElementById('prof-username').value.trim();
-
-        if(!name || !surname) { alert("Ad ve soyad boş bırakılamaz."); return; }
+    window.saveProfile = async function() {
+        const name = document.getElementById('prof-name').value; 
+        const surname = document.getElementById('prof-surname').value;
+        let rawUsername = document.getElementById('prof-username').value.trim().toLowerCase();
         
-        // Kullanıcı adı kontrolü
-        if(username !== "" && !username.startsWith('#')) {
-            username = '#' + username;
-        }
-
-        const btn = document.getElementById('save-profile-btn');
-        btn.innerText = "Güncelleniyor...";
-        btn.disabled = true;
-
-        try {
-            // Eğer kullanıcı adı değiştiyse benzersizlik kontrolü (Basit kontrol)
-            if (username !== "" && username !== window.userProfile.username) {
+        if(!rawUsername) { alert("Kullanıcı adı boş bırakılamaz!"); return; }
+        
+        rawUsername = rawUsername.replace(/^#/, '');
+        const username = '#' + rawUsername;
+        
+        if(username !== window.userProfile.username) {
+            try {
                 const q = query(collection(db, "users"), where("username", "==", username));
-                const snap = await getDocs(q);
-                if(!snap.empty) {
-                    alert("Bu kullanıcı adı zaten alınmış! Lütfen başka bir tane seçin.");
-                    btn.innerText = "Değişiklikleri Kaydet";
-                    btn.disabled = false;
-                    return;
-                }
-            }
-
-            await updateDoc(doc(db, "users", window.userProfile.uid), {
-                name: name,
-                surname: surname,
-                avatar: avatar,
-                username: username
-            });
-
-            // Local objeyi güncelle
-            window.userProfile.name = name;
-            window.userProfile.surname = surname;
-            window.userProfile.avatar = avatar;
-            window.userProfile.username = username;
-
-            alert("Profiliniz başarıyla güncellendi! 🎉");
-            window.loadPage('home');
-        } catch (error) {
-            alert("Hata oluştu: " + error.message);
-        } finally {
-            btn.innerText = "Değişiklikleri Kaydet";
-            btn.disabled = false;
+                const snapshot = await getDocs(q);
+                if(!snapshot.empty) { alert("Bu kullanıcı adı başkası tarafından alınmış. Lütfen başka bir tane deneyin."); return; }
+            } catch(e) { console.error(e); alert("Bir hata oluştu, lütfen tekrar deneyin."); return; }
         }
+        
+        window.userProfile.name = name; window.userProfile.surname = surname; window.userProfile.username = username;
+        
+        try {
+            await updateDoc(doc(db, "users", window.userProfile.uid), { name: name, surname: surname, username: username });
+            window.openModal('Başarılı', `<div style="text-align:center;"><p style="font-size:40px; margin:0;">✅</p><p>Profil güncellendi!</p></div>`);
+        } catch(e) { alert("Profil kaydedilirken hata: " + e.message); }
     };
 
-    // ============================================================================
-    // 12. AYARLAR (SETTINGS) VE DİL DESTEĞİ
-    // ============================================================================
-
     window.renderSettings = function() {
-        const lang = localStorage.getItem('uniloop_lang') || 'tr';
-        const t = TRANSLATIONS[lang];
+        const currentLang = localStorage.getItem('uniloop_lang') || 'tr';
         const currentTheme = localStorage.getItem('uniloop_theme') || 'light';
+        const t = TRANSLATIONS[currentLang];
 
         mainContent.innerHTML = `
             <div class="card">
                 <h2>${t.settingsTitle}</h2>
-                <div style="background: inherit; padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); display:flex; flex-direction:column; gap:20px;">
-                    
+                <div style="background: inherit; padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 1px solid var(--border-color);">
                     <div class="form-group">
-                        <label style="font-weight:bold; display:block; margin-bottom:10px;">🌍 ${t.langLabel}</label>
-                        <div style="display:flex; gap:10px;">
-                            <button class="action-btn ${lang === 'tr' ? 'active' : ''}" style="flex:1; justify-content:center; border:${lang === 'tr' ? '2px solid var(--primary)' : '1px solid #E5E7EB'}" onclick="window.setLanguage('tr')">🇹🇷 Türkçe</button>
-                            <button class="action-btn ${lang === 'en' ? 'active' : ''}" style="flex:1; justify-content:center; border:${lang === 'en' ? '2px solid var(--primary)' : '1px solid #E5E7EB'}" onclick="window.setLanguage('en')">🇺🇸 English</button>
-                        </div>
+                        <label>${t.langLabel}</label>
+                        <select onchange="window.setLanguage(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D1D5DB; background:transparent;">
+                            <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>Türkçe</option>
+                            <option value="en" ${currentLang === 'en' ? 'selected' : ''}>English</option>
+                        </select>
                     </div>
-
                     <div class="form-group">
-                        <label style="font-weight:bold; display:block; margin-bottom:10px;">🌓 ${t.themeLabel}</label>
-                        <div style="display:flex; gap:10px;">
-                            <button class="action-btn" style="flex:1; justify-content:center; background:${currentTheme === 'light' ? '#EEF2FF' : 'white'}" onclick="window.toggleTheme('light')">☀️ ${t.lightMode}</button>
-                            <button class="action-btn" style="flex:1; justify-content:center; background:${currentTheme === 'dark' ? '#374151' : 'white'}" onclick="window.toggleTheme('dark')">🌙 ${t.darkMode}</button>
-                        </div>
-                    </div>
-
-                    <div style="border-top:1px solid var(--border-color); padding-top:20px; margin-top:10px;">
-                        <button class="btn-danger" style="width:100%; padding:14px; font-weight:bold;" onclick="window.logout()">${t.logoutBtn}</button>
-                    </div>
-
-                    <div style="text-align:center; color:#9CA3AF; font-size:12px; margin-top:10px;">
-                        UniLoop v1.8.4 - Build 2026.04<br>
-                        Global Campus Network Engine
+                        <label>${t.themeLabel}</label>
+                        <select onchange="window.toggleTheme(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D1D5DB; background:transparent;">
+                            <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>${t.lightMode}</option>
+                            <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>${t.darkMode}</option>
+                        </select>
                     </div>
                 </div>
+                <button class="btn-danger" onclick="window.logout()">${t.logoutBtn}</button>
             </div>
         `;
     };
-
-    // --- Başlatma Komutu ---
-    initializeUniLoop();
 }
 
-// Uygulamayı Başlat
-initializeUniLoop();
-
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeUniLoop);
+} else {
+    initializeUniLoop();
+}
