@@ -466,7 +466,7 @@ function initializeUniLoop() {
     const modal = document.getElementById('app-modal');
 
     // ============================================================================
-    // 1. GİRİŞ, KAYIT, ONAY VE ŞİFREMİ UNUTTUM
+    // 1. GİRİŞ, KAYIT, ONAY VE ŞİFREMİ UNUTTUM (GÜÇLENDİRİLDİ)
     // ============================================================================
     
     bind('show-register-btn', 'click', (e) => {
@@ -478,6 +478,7 @@ function initializeUniLoop() {
     bind('show-login-btn', 'click', (e) => {
         if(e) e.preventDefault();
         document.getElementById('register-card').style.display = 'none'; 
+        document.getElementById('verify-card').style.display = 'none';
         document.getElementById('login-card').style.display = 'block';
     });
 
@@ -549,7 +550,7 @@ function initializeUniLoop() {
                 avatar: "👨‍🎓", 
                 isOnline: false, 
                 faculty: "",
-                isPremium: false // 🌟 Premium başlangıçta kapalı
+                isPremium: false
             }).then(() => {
                 window.ensureWelcomeMessage(user, name);
             }).catch(dbError => {
@@ -598,14 +599,20 @@ function initializeUniLoop() {
         }
     });
 
+    // 🚨 GİRİŞ KISMI HATA ÇÖZÜMÜ 🚨
     bind('login-btn', 'click', async (e) => {
         if(e) e.preventDefault(); 
-        const email = document.getElementById('login-email').value.trim();
-        const password = document.getElementById('login-password').value;
+        const emailInput = document.getElementById('login-email');
+        const passwordInput = document.getElementById('login-password');
         const btn = document.getElementById('login-btn');
 
+        if (!emailInput || !passwordInput) return;
+        
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
         if(!email || !password) {
-            alert("Lütfen e-posta ve şifrenizi girin.");
+            alert("Lütfen e-posta ve şifrenizi eksiksiz girin.");
             return;
         }
 
@@ -615,6 +622,8 @@ function initializeUniLoop() {
 
         try {
             const userCred = await signInWithEmailAndPassword(auth, email, password);
+            
+            // Eğer e-posta doğrulanmamışsa kullanıcıyı verify ekranına yönlendir
             if(!userCred.user.emailVerified) {
                 alert("Hesabınız henüz onaylanmamış. Lütfen e-postanızı kontrol edin.");
                 document.getElementById('login-card').style.display = 'none';
@@ -623,25 +632,56 @@ function initializeUniLoop() {
                 btn.disabled = false;
                 return;
             }
+            
+            // E-posta doğrulandıysa kesin olarak ekranları değiştir
+            if(authScreen && appScreen) {
+                authScreen.style.display = 'none';
+                appScreen.style.display = 'block';
+            }
+            
             await window.ensureWelcomeMessage(userCred.user, userCred.user.displayName || "Öğrenci");
+            
+            // Kullanıcı arayüzünü anında yükle
+            window.loadPage('home');
+            
         } catch (error) {
             console.error("Giriş Hatası:", error);
-            alert("Giriş başarısız! E-posta veya şifreniz yanlış.");
+            let hataMesaji = "E-posta veya şifreniz yanlış.";
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                hataMesaji = "Kayıtlı kullanıcı bulunamadı veya şifre hatalı.";
+            } else if (error.code === 'auth/too-many-requests') {
+                hataMesaji = "Çok fazla başarısız deneme yaptınız. Şifrenizi sıfırlamayı deneyin.";
+            }
+            alert("Giriş başarısız! " + hataMesaji + "\n\n(Hata Kodu: " + error.code + ")");
             btn.innerText = originalText;
             btn.disabled = false;
         } 
     });
 
+    // 🚨 ŞİFREMİ UNUTTUM (YENİ PAROLA) KISMI HATA ÇÖZÜMÜ 🚨
     bind('forgot-password-btn', 'click', async (e) => {
         if(e) e.preventDefault();
-        const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:");
-        if(!email) return;
+        
+        // E-posta alanında bir şey yazıyorsa onu otomatik çek
+        const loginEmailInput = document.getElementById('login-email');
+        const suggestedEmail = loginEmailInput && loginEmailInput.value ? loginEmailInput.value.trim() : "";
+        
+        const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:", suggestedEmail);
+        
+        if(!email || email.trim() === "") {
+            return; // Kullanıcı iptal etti veya boş bıraktı
+        }
         
         try {
-            await sendPasswordResetEmail(auth, email);
-            alert("Şifre sıfırlama bağlantısı e-posta adresinize başarıyla gönderildi!");
+            await sendPasswordResetEmail(auth, email.trim());
+            alert("✅ Şifre sıfırlama bağlantısı e-posta adresinize başarıyla gönderildi!\n\nLütfen Gereksiz/Spam kutunuzu da kontrol etmeyi unutmayın.");
         } catch (error) {
-            alert("Hata: " + error.message);
+            console.error("Şifre sıfırlama hatası:", error);
+            let hataMesaji = "Bir hata oluştu.";
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
+                hataMesaji = "Bu e-posta adresiyle kayıtlı bir hesap bulunamadı.";
+            }
+            alert("❌ Hata: " + hataMesaji + "\n(" + error.message + ")");
         }
     });
 
@@ -790,6 +830,30 @@ function initializeUniLoop() {
                     university: "Lütfen Firestore'u Test Moduna Alın", avatar: "⚠️", faculty: "", isOnline: true, isPremium: false 
                 };
                 if(typeof window.loadPage === 'function') { window.loadPage('home'); }
+            }
+        } else if (user && !user.emailVerified) {
+            // Kullanıcı girişi başarılı ama e-postası doğrulanmamışsa Auth ekranında kalmalı
+            if(authScreen && appScreen) {
+                appScreen.style.display = 'none';
+                authScreen.style.display = 'flex'; // Veya tasarımına göre 'block'
+                const lc = document.getElementById('login-card');
+                const rc = document.getElementById('register-card');
+                const vc = document.getElementById('verify-card');
+                if (lc) lc.style.display = 'none';
+                if (rc) rc.style.display = 'none';
+                if (vc) vc.style.display = 'block';
+            }
+        } else {
+            // Hiç giriş yapılmamışsa ana Login ekranını zorla göster
+            if(authScreen && appScreen) {
+                appScreen.style.display = 'none';
+                authScreen.style.display = 'flex'; // Veya tasarımına göre 'block'
+                const lc = document.getElementById('login-card');
+                const rc = document.getElementById('register-card');
+                const vc = document.getElementById('verify-card');
+                if (lc) lc.style.display = 'block';
+                if (rc) rc.style.display = 'none';
+                if (vc) vc.style.display = 'none';
             }
         }
     });
