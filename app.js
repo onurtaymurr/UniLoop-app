@@ -56,7 +56,7 @@ const storage = getStorage(app);
 
 function initializeUniLoop() {
     
-    // 🎨 DINAMIK CSS ENJEKSIYONU: Yumuşak Kaydırma, Yeni Akış, PREMIUM ve BUTON FIX Stilleri
+    // 🎨 DINAMIK CSS ENJEKSIYONU: Yumuşak Kaydırma, Yeni Akış, PREMIUM, BUTON FIX ve ACCORDION Stilleri
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         /* Sert kaydırmayı engeller ve estetik yumuşak kaydırma sağlar */
@@ -288,12 +288,10 @@ function initializeUniLoop() {
             padding: 5px 15px !important;
         }
         
-        /* UniLoop logosu ve texti aynı boyutta sabit kalsın */
         #app-header > :first-child, .logo, .logo-title, #logo-btn { 
             flex-shrink: 0 !important; 
         }
         
-        /* Sağ taraftaki menü ve buton kapsayıcıları */
         #app-header > :last-child, .header-right-menu {
             display: flex !important;
             align-items: center !important;
@@ -301,7 +299,6 @@ function initializeUniLoop() {
             flex-wrap: nowrap !important;
         }
 
-        /* Profil ve Premium butonları küçültüldü ve hizalandı */
         #profile-btn, #nav-premium-action {
             font-size: 12px !important;
             padding: 0 10px !important;
@@ -323,6 +320,23 @@ function initializeUniLoop() {
             .chat-main { display: none !important; }
             .chat-active .chat-main { display: flex !important; }
         }
+
+        /* 🌟 YENİ: ACCORDION VE ORGANİZASYON STİLLERİ 🌟 */
+        .accordion-section { margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: var(--card-bg); }
+        .accordion-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 14px 16px; font-weight: bold; font-size: 15px; transition: 0.2s; color: var(--text-dark);}
+        .accordion-header:hover { background: #EEF2FF; color: var(--primary); }
+        .accordion-content { display: none; padding: 10px 16px; background: #F9FAFB; border-top: 1px solid var(--border-color); }
+        .accordion-icon { font-size: 12px; transition: transform 0.2s; color: var(--text-gray); }
+        
+        .org-link { padding: 10px 0; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--text-dark); transition: 0.2s; border-bottom: 1px solid #E5E7EB; }
+        .org-link:last-child { border-bottom: none; }
+        .org-link:hover { color: var(--primary); transform: translateX(5px); }
+        
+        .room-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 12px; font-weight: bold; font-size: 15px; border: none; cursor: pointer; color: white; transition: 0.2s; flex: 1; min-width: 200px;}
+        .btn-voice { background: #10B981; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); } 
+        .btn-voice:hover { background: #059669; transform: translateY(-2px);}
+        .btn-video { background: #3B82F6; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);} 
+        .btn-video:hover { background: #2563EB; transform: translateY(-2px);}
     `;
     document.head.appendChild(styleFix);
     
@@ -379,10 +393,12 @@ function initializeUniLoop() {
         university: "", 
         avatar: "👨‍🎓", 
         faculty: "",
+        organization: "",
         isPremium: false // 🌟 YENİ: PREMIUM KONTROLÜ
     };
     
     window.joinedFaculties = [];
+    window.joinedOrganizations = [];
     let marketDB = [];
     let confessionsDB = [];
     let qaDB = [];
@@ -398,6 +414,12 @@ function initializeUniLoop() {
         "Hukuk Fakültesi": "hukuk1000", 
         "Mimarlık Fakültesi": "mim1000", 
         "Eğitim Fakültesi": "egt1000"
+    };
+
+    const ORGANIZATION_PASSCODES = {
+        "Yazılım Kulübü": "yaz1000", 
+        "Müzik Kulübü": "muz1000", 
+        "Girişimcilik Kulübü": "gir1000"
     };
 
     const globalUniversities = [
@@ -419,6 +441,46 @@ function initializeUniLoop() {
     const appScreen = document.getElementById('app-screen');
     const mainContent = document.getElementById('main-content');
     const modal = document.getElementById('app-modal');
+
+    // 🌟 YENİ: ACCORDION MENÜLERİ RENDER ETME 🌟
+    window.renderSidebarAccordions = function() {
+        const accordionHTML = `
+            <div class="accordion-section">
+                <div class="accordion-header">
+                    <span>🏢 Fakülteler</span>
+                    <span class="accordion-icon">▶</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="menu-item community-link" data-name="Tıp Fakültesi" data-icon="🩺" data-color="linear-gradient(135deg, #EF4444, #B91C1C)">🩺 Tıp Fakültesi</div>
+                    <div class="menu-item community-link" data-name="Bilgisayar Fakültesi" data-icon="💻" data-color="linear-gradient(135deg, #3B82F6, #2563EB)">💻 Bilgisayar Fakültesi</div>
+                    <div class="menu-item community-link" data-name="Diş Hekimliği" data-icon="🦷" data-color="linear-gradient(135deg, #06B6D4, #0891B2)">🦷 Diş Hekimliği</div>
+                    <div class="menu-item community-link" data-name="Hukuk Fakültesi" data-icon="⚖️" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">⚖️ Hukuk Fakültesi</div>
+                    <div class="menu-item community-link" data-name="Mimarlık Fakültesi" data-icon="📐" data-color="linear-gradient(135deg, #F59E0B, #D97706)">📐 Mimarlık Fakültesi</div>
+                    <div class="menu-item community-link" data-name="Eğitim Fakültesi" data-icon="📖" data-color="linear-gradient(135deg, #10B981, #059669)">📖 Eğitim Fakültesi</div>
+                </div>
+            </div>
+            <div class="accordion-section">
+                <div class="accordion-header">
+                    <span>🎭 Kulüp ve Organizasyonlar</span>
+                    <span class="accordion-icon">▶</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="menu-item org-link" data-name="Yazılım Kulübü" data-icon="⌨️" data-color="linear-gradient(135deg, #111827, #374151)">⌨️ Yazılım Kulübü</div>
+                    <div class="menu-item org-link" data-name="Müzik Kulübü" data-icon="🎸" data-color="linear-gradient(135deg, #8B5CF6, #4C1D95)">🎸 Müzik Kulübü</div>
+                    <div class="menu-item org-link" data-name="Girişimcilik Kulübü" data-icon="🚀" data-color="linear-gradient(135deg, #F59E0B, #B45309)">🚀 Girişimcilik Kulübü</div>
+                </div>
+            </div>
+        `;
+        
+        const mobileComm = document.querySelector('.mobile-only-communities');
+        const rightCard = document.querySelector('.right-panel .sticky-card');
+        
+        if(mobileComm) mobileComm.innerHTML = '<br><h3 style="margin-bottom: 15px;">Bölümler ve Topluluklar</h3>' + accordionHTML;
+        if(rightCard) rightCard.innerHTML = '<h2 style="margin-bottom: 15px;">🌍 Ağlar</h2>' + accordionHTML;
+    };
+    
+    // Uygulama yüklendiğinde Accordion HTML'i enjekte et
+    window.renderSidebarAccordions();
 
     // ============================================================================
     // 1. GİRİŞ, KAYIT, ONAY VE ŞİFREMİ UNUTTUM
@@ -504,6 +566,7 @@ function initializeUniLoop() {
                 avatar: "👨‍🎓", 
                 isOnline: false, 
                 faculty: "",
+                organization: "",
                 isPremium: false // 🌟 Premium başlangıçta kapalı
             }).then(() => {
                 window.ensureWelcomeMessage(user, name);
@@ -696,10 +759,13 @@ function initializeUniLoop() {
                     if(window.userProfile.isPremium === undefined) {
                         window.userProfile.isPremium = false;
                     }
+                    if(window.userProfile.organization === undefined) {
+                        window.userProfile.organization = "";
+                    }
                 } else {
                     window.userProfile = { 
                         uid: user.uid, name: "Öğrenci", surname: "", username: "",
-                        email: user.email, university: "UniLoop Kampüsü", avatar: "👨‍🎓", faculty: "", 
+                        email: user.email, university: "UniLoop Kampüsü", avatar: "👨‍🎓", faculty: "", organization: "", 
                         isOnline: true, isPremium: false
                     };
                     await setDoc(userDocRef, window.userProfile);
@@ -734,7 +800,7 @@ function initializeUniLoop() {
             } catch(error) { 
                 window.userProfile = { 
                     uid: user.uid, name: "Misafir", surname: "", username: "", email: user.email, 
-                    university: "Lütfen Firestore'u Test Moduna Alın", avatar: "⚠️", faculty: "", isOnline: true, isPremium: false 
+                    university: "Lütfen Firestore'u Test Moduna Alın", avatar: "⚠️", faculty: "", organization: "", isOnline: true, isPremium: false 
                 };
                 if(typeof window.loadPage === 'function') { window.loadPage('home'); }
             }
@@ -893,7 +959,7 @@ function initializeUniLoop() {
     };
 
     // ============================================================================
-    // 3. AÇILIR PENCERELER VE ARKA PLAN KAYMASINI ÖNLEME
+    // 3. AÇILIR PENCERELER VE TIKLAMA YÖNETİMİ (ACCORDION DESTEKLİ)
     // ============================================================================
 
     window.goToMessages = function() {
@@ -927,17 +993,44 @@ function initializeUniLoop() {
     });
 
     document.body.addEventListener('click', (e) => {
+        // 🌟 YENİ: Accordion Toggle Mantığı 🌟
+        const accordionHeader = e.target.closest('.accordion-header');
+        if(accordionHeader) {
+            const content = accordionHeader.nextElementSibling;
+            const icon = accordionHeader.querySelector('.accordion-icon');
+            if(content.style.display === 'block') {
+                content.style.display = 'none';
+                if(icon) icon.innerText = '▶';
+            } else {
+                content.style.display = 'block';
+                if(icon) icon.innerText = '▼';
+            }
+            return;
+        }
+
+        // Fakülte Tıklaması
         const link = e.target.closest('.community-link');
         if(link) {
             const name = link.getAttribute('data-name');
             const icon = link.getAttribute('data-icon');
             const color = link.getAttribute('data-color');
             if(typeof window.handleFacultyClick === 'function') window.handleFacultyClick(name, icon, color);
+            return;
+        }
+
+        // 🌟 YENİ: Organizasyon Tıklaması 🌟
+        const orgLink = e.target.closest('.org-link');
+        if(orgLink) {
+            const name = orgLink.getAttribute('data-name');
+            const icon = orgLink.getAttribute('data-icon');
+            const color = orgLink.getAttribute('data-color');
+            if(typeof window.handleOrganizationClick === 'function') window.handleOrganizationClick(name, icon, color);
+            return;
         }
     });
 
     // ============================================================================
-    // 4. ARKADAŞ ARAMA MOTORU VE ANA SAYFA (PREMIUM RADAR ENTEGRELİ)
+    // 4. ARKADAŞ ARAMA MOTORU VE ANA SAYFA (YENİ ŞEFFAF AI RADAR ENTEGRELİ)
     // ============================================================================
 
     window.searchAndAddFriend = async function() {
@@ -1023,10 +1116,9 @@ function initializeUniLoop() {
             `;
         }
 
-        // 🌟 YENİ: PREMIUM'A GÖRE DEĞİŞEN YAPAY ZEKA RADARI
         let aiRadarContent = '';
         const isPremium = window.userProfile.isPremium;
-        const userFac = window.userProfile.faculty || "Kampüsünde"; // Dinamik fakülte çekici
+        const userFac = window.userProfile.faculty || "Kampüs"; 
 
         if (isPremium) {
             aiRadarContent = `
@@ -1059,12 +1151,13 @@ function initializeUniLoop() {
                 </div>
             `;
         } else {
+            // 🌟 ŞEFFAF VE GERÇEKÇİ AI RADARI METNİ GÜNCELLEMESİ 🌟
             aiRadarContent = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                    <h2 style="margin:0;">✨ AI Kampüs Eşleşmeleri</h2>
+                    <h2 style="margin:0;">✨ AI Kampüs Tespitleri</h2>
                 </div>
-                <div style="background: #FEF3C7; color: #92400E; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-size: 13px; font-weight: bold; border: 1px solid #F59E0B;">
-                    Yapay Zeka radarımız <strong>${userFac}</strong> ağında seninle eşleşmek isteyen kişileri buldu!
+                <div style="background: #F3F4F6; color: var(--text-dark); padding: 12px; border-radius: 12px; margin-bottom: 15px; font-size: 13px; border: 1px solid var(--border-color); line-height: 1.5;">
+                    💡 Yapay Zeka radarımız <strong>${userFac}</strong> ağındaki profil verilerini analiz ederek, aynı fakültede olduğun ve ortak ilgi alanlarına sahip olabileceğin potansiyel kişileri tespit etti.
                 </div>
                 <div class="match-grid">
                     <div class="match-card locked-container">
@@ -1075,7 +1168,7 @@ function initializeUniLoop() {
                         <div class="locked-blur">
                             <div class="avatar">👨‍🎓</div>
                             <h4>A*** K***</h4>
-                            <p>${userFac} (Aynı Bölüm!)</p>
+                            <p>${userFac} (Potansiyel Eşleşme)</p>
                             <button class="action-btn">Mesaj At</button>
                         </div>
                     </div>
@@ -1984,19 +2077,10 @@ function initializeUniLoop() {
     };
 
     // ============================================================================
-    // 10. FAKÜLTE SİSTEMİ
+    // 10. FAKÜLTE VE ORGANİZASYON SİSTEMİ (YENİ ACCORDION ENTEGRELİ)
     // ============================================================================
 
-    window.updateMyFacultiesSidebar = function() {
-        const container = document.getElementById('my-joined-faculties');
-        if(!container) return;
-        let html = '';
-        window.joinedFaculties.forEach(fac => { 
-            html += `<div class="menu-item community-link" data-name="${fac.name}" data-icon="${fac.icon}" data-color="${fac.color}" onclick="window.handleFacultyClick('${fac.name}', '${fac.icon}', '${fac.color}')">${fac.icon} ${fac.name}</div>`; 
-        });
-        container.innerHTML = html;
-    };
-
+    // --- Fakülte Fonksiyonları ---
     window.handleFacultyClick = async function(name, icon, bgColor) {
         document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
         if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
@@ -2021,7 +2105,6 @@ function initializeUniLoop() {
         if (inputCode.toLowerCase() === FACULTY_PASSCODES[name].toLowerCase()) {
             window.userProfile.faculty = name; 
             window.joinedFaculties = [{name: name, icon: icon, color: bgColor}]; 
-            window.updateMyFacultiesSidebar();
             await updateDoc(doc(db, "users", window.userProfile.uid), { faculty: name });
             window.loadFacultyFeed(name, icon, bgColor);
         } else { alert("Hatalı kod girdiniz. Lütfen tekrar deneyin."); }
@@ -2048,6 +2131,62 @@ function initializeUniLoop() {
                 </div>
                 <div class="create-post-box">
                     <div class="cp-top"><div class="avatar" style="background:#F3F4F6; font-size:20px;">${window.userProfile.avatar}</div><input type="text" placeholder="${name} ağında paylaşım yap..." onclick="alert('Bu özellik premium sürüme (v2) saklanmıştır.')"></div>
+                </div>
+            </div>
+        `;
+    };
+
+    // --- Yeni: Kulüp ve Organizasyonlar Fonksiyonları ---
+    window.handleOrganizationClick = async function(name, icon, bgColor) {
+        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
+        if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
+
+        const isJoined = window.joinedOrganizations.some(o => o.name === name) || window.userProfile.organization === name;
+
+        if(isJoined) { window.loadOrganizationFeed(name, icon, bgColor); } 
+        else {
+            mainContent.innerHTML = `
+                <div class="join-faculty-box">
+                    <div class="icon">${icon}</div><h2>${name} Ağına Hoş Geldin</h2><p>Bu kulüp kapalı bir organizasyondur. Katılmak için giriş kodunu girmelisin.</p>
+                    <div style="max-width: 300px; margin: 0 auto 20px auto;"><input type="text" id="org-passcode-input" class="form-group" style="width: 100%; text-align:center; font-size:18px; font-weight:bold; letter-spacing:2px; padding: 15px; border: 2px solid var(--border-color); border-radius: 12px; outline:none;" placeholder="Katılım Kodunu Yazın"></div>
+                    <button class="btn-primary" style="max-width:250px; font-size:16px; padding:12px;" onclick="window.verifyOrganizationCode('${name}', '${icon}', '${bgColor}')">Organizasyona Katıl</button>
+                </div>
+            `;
+            window.scrollTo(0,0);
+        }
+    };
+
+    window.verifyOrganizationCode = async function(name, icon, bgColor) {
+        const inputCode = document.getElementById('org-passcode-input').value.trim();
+        if (inputCode.toLowerCase() === ORGANIZATION_PASSCODES[name].toLowerCase()) {
+            window.userProfile.organization = name; 
+            window.joinedOrganizations = [{name: name, icon: icon, color: bgColor}]; 
+            await updateDoc(doc(db, "users", window.userProfile.uid), { organization: name });
+            window.loadOrganizationFeed(name, icon, bgColor);
+        } else { alert("Hatalı kod girdiniz. Lütfen kulüp yönetimi ile iletişime geçin."); }
+    };
+
+    window.loadOrganizationFeed = async function(name, icon, bgColor) {
+        mainContent.innerHTML = `
+            <div style="margin-bottom: 24px;">
+                <div class="community-banner" style="background: ${bgColor};">
+                    <div class="comm-banner-left"><h1>${icon} ${name}</h1><p>Resmi Topluluk Ağı</p></div>
+                    <div class="comm-banner-right">
+                        <div class="member-avatars"><div class="avatar">🌟</div><div class="avatar" style="background:white; color:var(--primary); font-size:11px; font-weight:bold;">Aktif</div></div>
+                    </div>
+                </div>
+                
+                <div style="background: white; border-radius: 16px; padding: 20px; border: 1px solid var(--border-color); margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 15px; font-size: 18px;">Canlı İletişim Odaları</h3>
+                    <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 15px;">Ekip arkadaşlarınla hemen iletişime geçmek için sesli veya görüntülü odalara katıl.</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        <button class="room-btn btn-voice" onclick="alert('Sesli sohbet altyapısına bağlanılıyor...')">🎙️ Sesli Odaya Katıl</button>
+                        <button class="room-btn btn-video" onclick="alert('Görüntülü sohbet altyapısına bağlanılıyor...')">📹 Görüntülü Odaya Katıl</button>
+                    </div>
+                </div>
+
+                <div class="create-post-box">
+                    <div class="cp-top"><div class="avatar" style="background:#F3F4F6; font-size:20px;">${window.userProfile.avatar}</div><input type="text" placeholder="${name} üyelerine duyuru yap..." onclick="alert('Bu özellik premium sürüme (v2) saklanmıştır.')"></div>
                 </div>
             </div>
         `;
@@ -2180,4 +2319,3 @@ if (document.readyState === 'loading') {
 } else {
     initializeUniLoop();
 }
-sana attım kodu bak bu kod bana şimdi bunun sadece bunun diğer yukarıda verdigin html ve style.css koduyla çalışacak şekilde entegre bir şekilde ve eksiksiz bir şekilde bahsettiğimiz güncellemeleri içine ekleyerek bana sadece bunu sağlam eksiksiz bir şekilde ver bu bir emirdir tam halde istiyorum eksiksiz çalışacak ve içinde o güncellemeler olacak ve sistem tamamıyla çalışacak
