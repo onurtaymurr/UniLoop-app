@@ -682,7 +682,7 @@ function initializeUniLoop() {
                     if (profileBtn) {
                         profileBtn.insertAdjacentHTML('beforebegin', `
                             <div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold; margin-right: 10px;" onclick="window.openPremiumModal()">
-                                🌟 Premium Üyelik
+                                🌟 Premium
                             </div>
                         `);
                     }
