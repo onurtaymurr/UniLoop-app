@@ -55,6 +55,25 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .sidebar-bottom { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); }
 .mobile-only-communities { display: none; }
 
+/* 🌟 YENİ EKLENEN: AKORDEON (AÇILIR KAPANIR) MENÜ STİLLERİ 🌟 */
+.accordion-header {
+    user-select: none;
+    transition: color 0.2s;
+}
+.accordion-header:hover {
+    color: var(--primary);
+}
+.accordion-header span {
+    display: inline-block;
+    transition: transform 0.2s;
+    font-size: 12px;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+.accordion-content {
+    animation: fadeIn 0.3s ease-out;
+}
+
 .right-panel { display: flex; flex-direction: column; gap: 20px; }
 .sticky-card { position: sticky; top: 95px; }
 .community-list { list-style: none; }
