@@ -341,8 +341,10 @@ function initializeUniLoop() {
             border-top: 1px solid var(--border-color); 
         }
         .accordion-icon { 
+            display: inline-block; 
+            margin-left: auto; 
             font-size: 12px; 
-            transition: transform 0.3s ease; 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             color: var(--text-gray); 
         }
         
@@ -752,16 +754,27 @@ function initializeUniLoop() {
                 appScreen.style.display = 'block';
             }
 
-            if (!document.getElementById('nav-notifications-btn')) {
+            if (!document.getElementById('nav-custom-btn')) {
                 const msgBtn = document.getElementById('nav-messages-btn');
                 if (msgBtn) {
+                    const customBtnHTML = `
+                        <div class="menu-item" id="nav-custom-btn" data-target="custom">
+                            ↳ Bana Özel
+                        </div>
+                    `;
                     const notifBtnHTML = `
                         <div class="menu-item" id="nav-notifications-btn" data-target="notifications">
                             🔔 Bildirimler <span id="notif-badge" class="badge" style="display:none; background:#EF4444; color:white; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:auto;">0</span>
                         </div>
                     `;
-                    msgBtn.insertAdjacentHTML('afterend', notifBtnHTML);
+                    msgBtn.insertAdjacentHTML('afterend', customBtnHTML + notifBtnHTML);
                     
+                    document.getElementById('nav-custom-btn').addEventListener('click', (e) => {
+                        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        window.loadPage('custom');
+                    });
+
                     document.getElementById('nav-notifications-btn').addEventListener('click', (e) => {
                         document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
                         e.currentTarget.classList.add('active');
@@ -1174,11 +1187,11 @@ function initializeUniLoop() {
             // 🔥 YENİ: ATEŞLİ VE PAZARLAMAYA UYGUN AI RADARI METNİ 🔥
             aiRadarContent = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                    <h2 style="margin:0; color:#DC2626;">🔥 AI Kampüs Tespitleri 🔥</h2>
+                    <h2 style="margin:0; color:#DC2626;">🔥 Kampüs Tespitleri</h2>
                 </div>
-                <div style="background: linear-gradient(135deg, #FEF2F2, #FEF3C7); color: #92400E; padding: 16px; border-radius: 12px; margin-bottom: 15px; font-size: 14px; border: 1px solid #FCD34D; line-height: 1.6; font-weight: 500; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.1);">
-                    🚀 <strong>Heyecan Verici Bir Haber!</strong> Yapay Zeka radarımız <strong>${userFac}</strong> ağını taradı ve tam sana göre <strong>ateşli eşleşmeler</strong> buldu!<br><br>
-                    👀 Senin profiline gizlice bakanlar, aynı fakültede olduğun kişiler ve ortak ilgi alanlarına sahip olduğun kampüs sakinleri hemen aşağıda seni bekliyor. Kilitleri kır, maskeleri düşür ve kampüsün en popüler ağına anında dahil ol! 👇
+                <div style="background: linear-gradient(135deg, #FEF2F2, #FEF3C7); color: #92400E; padding: 16px; border-radius: 12px; margin-bottom: 15px; font-size: 14px; border: 1px solid #FCD34D; line-height: 1.6; font-weight: 800; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.1);">
+                    🚨 AI Radarımız <strong>${userFac}</strong> ağını taradı!<br><br>
+                    👀 Profiline kimin baktığını, gizli hayranlarını ve ortak ilgi alanlarındaki en sıcak eşleşmeleri yakaladık. Maskeleri düşür, kilitleri kır ve kampüsün zirvesine yerleş! 👇
                 </div>
                 <div class="match-grid">
                     <div class="match-card locked-container">
@@ -2145,7 +2158,7 @@ function initializeUniLoop() {
         mainContent.innerHTML = `
             <div style="margin-bottom: 24px;">
                 <div class="community-banner" style="background: ${bgColor};">
-                    <div class="comm-banner-left"><h1>${icon} ${name}</h1><p>Genel Mesajlaşma Odası ve Kampüs Akışı</p></div>
+                    <div class="comm-banner-left"><h1>${icon} ${name}</h1><p>Genel Akış</p></div>
                     <div class="comm-banner-right">
                         <div class="member-avatars"><div class="avatar">👨‍💻</div><div class="avatar" style="background:white; color:var(--primary); font-size:11px; font-weight:bold;">+${totalMembers}</div></div>
                         <div class="community-stats"><span class="online-dot"></span> Çevrimiçi: ${onlineMembers}</div>
@@ -2154,7 +2167,7 @@ function initializeUniLoop() {
                 
                 <div style="background: white; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 24px; display: flex; flex-direction: column; height: 400px; overflow: hidden;">
                     <div style="padding: 15px; background: #F9FAFB; border-bottom: 1px solid var(--border-color); font-weight: bold; color: var(--text-dark);">
-                        💬 ${name} Canlı Akış Odası
+                        💬 ${name} Genel Akış Odası
                     </div>
                     <div style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #F3F4F6;">
                         <div style="align-self: flex-start; background: white; padding: 12px; border-radius: 12px; border-bottom-left-radius: 0; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
@@ -2216,9 +2229,9 @@ function initializeUniLoop() {
                     <h3 style="margin-bottom: 10px; font-size: 20px; color: var(--text-dark);">🚀 Canlı İletişim Odaları</h3>
                     <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Ekip arkadaşlarınla projeleri tartışmak, toplantı yapmak veya sohbet etmek için bir oda seç.</p>
                     <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
-                        <button class="room-btn btn-chat" onclick="alert('Yazılı sohbet altyapısına bağlanılıyor...')">💬 Yazılı Grup Sohbeti</button>
-                        <button class="room-btn btn-voice" onclick="alert('Sesli sohbet altyapısına bağlanılıyor...')">🎙️ Sesli Oda</button>
-                        <button class="room-btn btn-video" onclick="alert('Görüntülü sohbet altyapısına bağlanılıyor...')">📹 Görüntülü Oda</button>
+                        <button class="room-btn btn-chat" onclick="alert('Yazılı bağlantı odasına aktarılıyorsunuz...')">💬 Yazılı</button>
+                        <button class="room-btn btn-voice" onclick="alert('Sesli bağlantı odasına aktarılıyorsunuz...')">🎙️ Sesli</button>
+                        <button class="room-btn btn-video" onclick="alert('Görüntülü bağlantı odasına aktarılıyorsunuz...')">📹 Görüntülü</button>
                     </div>
                 </div>
             </div>
@@ -2237,11 +2250,24 @@ function initializeUniLoop() {
         else if (pageName === 'qa') window.renderQA(); 
         else if (pageName === 'messages') window.renderMessages(); 
         else if (pageName === 'notifications') window.renderNotifications();
+        else if (pageName === 'custom') window.renderCustomPage();
         else if (pageName === 'settings') window.renderSettings();
         else if (pageName === 'profile') window.renderProfile();
         
         if(window.innerWidth <= 1024 && document.getElementById('sidebar')) document.getElementById('sidebar').classList.remove('open');
         window.scrollTo(0,0);
+    };
+
+    window.renderCustomPage = function() {
+        mainContent.innerHTML = `
+            <div class="card">
+                <h2 style="margin-bottom: 20px;">↳ Bana Özel</h2>
+                <div style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 10px;">🌟 Sana Özel İçerikler</h3>
+                    <p style="opacity: 0.9;">Algoritmamızın senin kampüs yaşamına ve ilgi alanlarına göre seçtiği etkinlikler, eşleşmeler ve popüler gönderiler burada listelenecek.</p>
+                </div>
+            </div>
+        `;
     };
 
     document.querySelectorAll('.menu-item[data-target]').forEach(item => {
