@@ -433,9 +433,9 @@ const FACULTY_PASSCODES = {
 };
 
 const ORGANIZATION_PASSCODES = {
-    "Spor Kulübü": "spor1000", 
-    "Tiyatro Kulübü": "tiyatro1000", 
-    "Sağlık Kulübü": "saglik1000"
+    "Spor Kulübü": "spor100", 
+    "Tiyatro Kulübü": "tiyatro100", 
+    "Sağlık Kulübü": "saglik100"
 };
 
 const globalUniversities = [
@@ -485,7 +485,6 @@ window.renderSidebarAccordions = function() {
         </div>
     `;
     
-    // index.html'deki hedeflere menüyü basıyoruz. Kural 2 tam olarak uygulanıyor.
     const sidebarContainer = document.getElementById('sidebar-networks-container');
     const rightContainer = document.getElementById('right-networks-container');
     
@@ -1161,6 +1160,7 @@ function getHomeContent() {
             </div>
         `;
     } else {
+        // 🔥 YENİ: KISALTILMIŞ VE İLGİ ÇEKİCİ METİN
         aiRadarContent = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
                 <h2 style="margin:0; color:#DC2626;">🔥 Kampüs Tespitleri</h2>
@@ -2212,7 +2212,7 @@ window.renderFacultyPosts = function() {
 };
 
 
-// --- 🌟 KURAL 4: Kulüp ve Organizasyonlar Fonksiyonları (TOPLANTI ODASI) 🌟 ---
+// --- 🌟 KURAL 4: Kulüp ve Organizasyonlar Fonksiyonları (YENİ: LOBİ -> TOPLANTI GEÇİŞİ) 🌟 ---
 window.handleOrganizationClick = async function(name, icon, bgColor) {
     document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
     if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
@@ -2238,6 +2238,7 @@ window.verifyOrganizationCode = async function(name, icon, bgColor) {
         window.userProfile.organization = name; 
         window.joinedOrganizations = [{name: name, icon: icon, color: bgColor}]; 
         await updateDoc(doc(db, "users", window.userProfile.uid), { organization: name });
+        // Doğrulamadan sonra Lobiye yönlendir!
         window.loadOrganizationFeed(name, icon, bgColor);
     } else { alert("Hatalı kod girdiniz. Lütfen kulüp yönetimi ile iletişime geçin."); }
 };
@@ -2250,7 +2251,79 @@ window.sendReaction = function() {
     setTimeout(() => emoji.remove(), 2000);
 };
 
+// YENİ: KULÜP LOBİSİ (DUYURULAR, SOHBET VE TOPLANTI OLUŞTURMA ALANI)
 window.loadOrganizationFeed = async function(name, icon, bgColor) {
+    mainContent.innerHTML = `
+        <div style="display:flex; flex-direction:column; height:calc(100vh - 90px); background:var(--card-bg); border-radius:16px; overflow:hidden; border:1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            
+            <div style="padding:20px; background:${bgColor}; color:white; display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <span style="font-size:32px; background:rgba(255,255,255,0.2); width:50px; height:50px; display:flex; align-items:center; justify-content:center; border-radius:50%;">${icon}</span>
+                    <div>
+                        <h2 style="margin:0; font-size:20px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">${name} Lobisi</h2>
+                        <span style="font-size:13px; opacity:0.9;">Duyurular, Yazılı Sohbet ve Canlı Toplantılar</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; flex:1; overflow:hidden; flex-wrap:wrap;">
+                
+                <div style="flex:1; min-width:300px; padding:20px; border-right:1px solid var(--border-color); overflow-y:auto; background:#F9FAFB;">
+                    
+                    <h3 style="margin-bottom:15px; font-size:16px; display:flex; align-items:center; gap:8px;">📢 Güncel Duyurular</h3>
+                    <div style="background:white; padding:15px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:25px;">
+                        <strong style="color:var(--primary); font-size:14px;">Kulüp Yönetimi</strong>
+                        <p style="font-size:14px; margin-top:5px; color:var(--text-dark);">Hoş geldiniz! İletişimi buradan sağlayabilir, anlık toplantılar başlatabilirsiniz. Kameraları test etmeyi unutmayın!</p>
+                        <span style="font-size:11px; color:var(--text-gray); display:block; margin-top:8px;">Bugün, 09:00</span>
+                    </div>
+
+                    <h3 style="margin-bottom:15px; font-size:16px; display:flex; align-items:center; gap:8px;">🎙️ Sesli & Görüntülü Odalar</h3>
+                    
+                    <div style="background:white; padding:20px; border-radius:12px; border:1px solid #E5E7EB; text-align:center; margin-bottom:15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                        <div style="font-size:40px; margin-bottom:10px;">👥</div>
+                        <h4 style="margin-bottom:5px; color:var(--text-dark);">Yeni Toplantı Başlat</h4>
+                        <p style="font-size:13px; color:var(--text-gray); margin-bottom:15px;">Şu an kimse konuşmuyor. İlk başlatan sen ol!</p>
+                        <button class="btn-primary" style="width:100%; border-radius:12px; font-size:15px;" onclick="window.joinLiveMeeting('${name}', '${icon}', '${bgColor}')">🎙️ Konuşma Oluştur</button>
+                    </div>
+
+                    <div style="background:#F0FDF4; padding:15px; border-radius:12px; border:1px solid #86EFAC; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="text-align:left;">
+                            <div style="color:#059669; font-weight:800; font-size:14px; display:flex; align-items:center; gap:6px;">
+                                <span style="width:10px; height:10px; background:#10B981; border-radius:50%; display:inline-block; animation: pulse 1.5s infinite;"></span> Aktif Konuşma Var
+                            </div>
+                            <div style="font-size:12px; color:#047857; margin-top:4px; font-weight:600;">Moderatör ve 2 kişi içeride</div>
+                        </div>
+                        <button style="background:#10B981; color:white; border:none; padding:10px 16px; border-radius:10px; font-weight:bold; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'" onclick="window.joinLiveMeeting('${name}', '${icon}', '${bgColor}')">Katıl ➤</button>
+                    </div>
+
+                </div>
+
+                <div style="flex:1; min-width:300px; display:flex; flex-direction:column; background:white;">
+                    <div style="padding:15px; border-bottom:1px solid var(--border-color); font-weight:bold; display:flex; justify-content:space-between; background:#F9FAFB;">
+                        <span>💬 Genel Yazılı Sohbet</span>
+                    </div>
+                    
+                    <div style="flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:12px;">
+                        <div style="font-size:13px; line-height:1.5; background:#EEF2FF; padding:12px 16px; border-radius:16px; border-bottom-left-radius:0; align-self:flex-start; max-width:85%;">
+                            <strong style="color:var(--primary); display:block; margin-bottom:4px;">Sistem Moderatörü</strong>
+                            Kulüp sohbet odasına katıldınız. Küfür, argo ve saygısızlık yasaktır.
+                            <div style="font-size:10px; color:#6B7280; text-align:right; margin-top:4px;">Şimdi</div>
+                        </div>
+                    </div>
+
+                    <div style="padding:15px; border-top:1px solid var(--border-color); display:flex; gap:10px; background:white; align-items:center;">
+                        <input type="text" placeholder="Kulübe bir şeyler yaz..." style="flex:1; padding:12px 16px; border-radius:24px; border:1px solid #D1D5DB; background:#F9FAFB; outline:none; font-size:14px; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';">
+                        <button class="btn-primary" style="width:auto; border-radius:24px; padding:10px 20px; font-size:14px;" onclick="alert('Gerçek zamanlı yazılı sohbet entegrasyon aşamasındadır.')">➤</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    `;
+};
+
+// YENİ: AKTİF TOPLANTI ODASINA GİRİŞ (KAMERALI/SESLİ EKRAN)
+window.joinLiveMeeting = async function(name, icon, bgColor) {
     mainContent.innerHTML = `
         <div style="display:flex; flex-direction:column; height:calc(100vh - 90px); background:#111827; border-radius:16px; overflow:hidden; color:white; font-family: system-ui, -apple-system, sans-serif;">
             
@@ -2320,7 +2393,7 @@ window.loadOrganizationFeed = async function(name, icon, bgColor) {
                 <button style="width:50px; height:50px; border-radius:50%; border:none; background:#374151; color:white; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;" onmouseover="this.style.background='#4B5563'" onmouseout="this.style.background='#374151'" title="Ekran Paylaş">💻</button>
                 <button style="width:50px; height:50px; border-radius:50%; border:none; background:#374151; color:white; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;" onmouseover="this.style.background='#4B5563'" onmouseout="this.style.background='#374151'" title="Reaksiyon Gönder" onclick="window.sendReaction()">✋</button>
                 
-                <button style="padding:0 25px; height:50px; border-radius:25px; border:none; background:#EF4444; color:white; font-size:15px; font-weight:bold; cursor:pointer; transition:0.2s; margin-left:auto;" onmouseover="this.style.background='#DC2626'" onmouseout="this.style.background='#EF4444'" onclick="window.loadPage('home')">Odadan Ayrıl 📵</button>
+                <button style="padding:0 25px; height:50px; border-radius:25px; border:none; background:#EF4444; color:white; font-size:15px; font-weight:bold; cursor:pointer; transition:0.2s; margin-left:auto;" onmouseover="this.style.background='#DC2626'" onmouseout="this.style.background='#EF4444'" onclick="window.loadOrganizationFeed('${name}', '${icon}', '${bgColor}')">Odadan Ayrıl 📵</button>
             </div>
 
             <style>
