@@ -637,54 +637,15 @@ function initializeUniLoop() {
                     window.loadPage(activeTab ? activeTab.getAttribute('data-target') : 'home'); 
                 }
                 
-                // 🌟 YENİ FIX: Menüde Profil ve Premium Butonlarını Aynı Satıra Koyma ve Küçültme
-                if (!document.getElementById('premium-split-container') && !window.userProfile.isPremium) {
+                // Menüye Premium Butonunu Dinamik Ekle (Profilimin yanına)
+                if (!document.getElementById('nav-premium-action') && !window.userProfile.isPremium) {
                     const profileBtn = document.getElementById('profile-btn');
                     if (profileBtn) {
-                        const wrapper = document.createElement('div');
-                        wrapper.id = 'premium-split-container';
-                        wrapper.style.display = 'flex';
-                        wrapper.style.alignItems = 'center';
-                        wrapper.style.gap = '6px';
-                        wrapper.style.width = '100%';
-                        wrapper.style.marginBottom = window.getComputedStyle(profileBtn).marginBottom || '5px';
-                        
-                        profileBtn.parentNode.insertBefore(wrapper, profileBtn);
-                        
-                        const premiumBtn = document.createElement('div');
-                        premiumBtn.id = 'nav-premium-action';
-                        premiumBtn.className = 'menu-item premium-glow';
-                        premiumBtn.style.flex = '1';
-                        premiumBtn.style.margin = '0';
-                        premiumBtn.style.padding = '10px 5px';
-                        premiumBtn.style.fontSize = '13px';
-                        premiumBtn.style.color = '#D97706';
-                        premiumBtn.style.fontWeight = 'bold';
-                        premiumBtn.style.display = 'flex';
-                        premiumBtn.style.alignItems = 'center';
-                        premiumBtn.style.justifyContent = 'center';
-                        premiumBtn.style.textAlign = 'center';
-                        premiumBtn.style.whiteSpace = 'nowrap';
-                        premiumBtn.innerHTML = '<span style="color:#EC4899; margin-right:4px;">✔</span> Premium';
-                        premiumBtn.onclick = window.openPremiumModal;
-                        
-                        profileBtn.style.flex = '1';
-                        profileBtn.style.margin = '0';
-                        profileBtn.style.padding = '10px 5px';
-                        profileBtn.style.fontSize = '13px';
-                        profileBtn.style.display = 'flex';
-                        profileBtn.style.alignItems = 'center';
-                        profileBtn.style.justifyContent = 'center';
-                        profileBtn.style.textAlign = 'center';
-                        profileBtn.style.whiteSpace = 'nowrap';
-                        
-                        wrapper.appendChild(premiumBtn);
-                        wrapper.appendChild(profileBtn);
-                    }
-                } else if (window.userProfile.isPremium) {
-                    const profileBtn = document.getElementById('profile-btn');
-                    if (profileBtn && !profileBtn.innerHTML.includes('✔')) {
-                        profileBtn.innerHTML += ' <span style="color:#EC4899; font-weight:bold; margin-left:5px;">✔</span>';
+                        profileBtn.insertAdjacentHTML('afterend', `
+                            <div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold;" onclick="window.openPremiumModal()">
+                                🌟 Premium'a Geç
+                            </div>
+                        `);
                     }
                 }
 
@@ -839,22 +800,9 @@ function initializeUniLoop() {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: true });
                 window.userProfile.isPremium = true;
                 
-                // 🌟 FIX: Satın alım sonrası butonları orijinal haline (eski büyük boyutuna) döndürüp pembe tik ekleme
-                const wrapper = document.getElementById('premium-split-container');
-                const profileBtn = document.getElementById('profile-btn');
-                
-                if (wrapper && profileBtn) {
-                    wrapper.parentNode.insertBefore(profileBtn, wrapper);
-                    profileBtn.style.flex = 'none';
-                    profileBtn.style.width = '100%';
-                    profileBtn.style.padding = '';
-                    profileBtn.style.fontSize = '';
-                    profileBtn.style.justifyContent = 'flex-start';
-                    profileBtn.innerHTML += ' <span style="color:#EC4899; font-weight:bold; margin-left:5px;">✔</span>';
-                    wrapper.remove();
-                } else if (profileBtn && !profileBtn.innerHTML.includes('✔')) {
-                    profileBtn.innerHTML += ' <span style="color:#EC4899; font-weight:bold; margin-left:5px;">✔</span>';
-                }
+                // Sidebar'daki Premium Butonunu gizle
+                const navBtn = document.getElementById('nav-premium-action');
+                if(navBtn) navBtn.style.display = 'none';
 
                 window.closeModal();
                 alert("🎉 Tebrikler! Ödemeniz başarıyla alındı. UniLoop Premium ayrıcalıklarına artık sahipsiniz!");
@@ -998,6 +946,7 @@ function initializeUniLoop() {
             `;
         }
 
+        // 🌟 YENİ: PREMIUM'A GÖRE DEĞİŞEN YAPAY ZEKA RADARI
         let aiRadarContent = '';
         const isPremium = window.userProfile.isPremium;
 
@@ -2120,4 +2069,14 @@ function initializeUniLoop() {
                         </select>
                     </div>
                 </div>
-                <button class="btn-danger" onclick="window.logout()">${t.logout
+                <button class="btn-danger" onclick="window.logout()">${t.logoutBtn}</button>
+            </div>
+        `;
+    };
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeUniLoop);
+} else {
+    initializeUniLoop();
+}
