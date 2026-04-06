@@ -9,7 +9,6 @@
 <body>
 
     <div id="auth-screen">
-        
         <div class="auth-card" id="login-card">
             <div class="auth-logo">🌍 UniLoop</div>
             <p class="auth-subtitle">Kampüs ağına giriş yap, döngüde kal.</p>
@@ -67,7 +66,6 @@
             <button class="btn-primary" id="verify-code-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Aktifleştir</button>
             <p style="font-size: 12px; color: var(--text-gray); margin-top: 15px;">Maildeki linke tıkladıysanız doğrudan butona basabilirsiniz.</p>
         </div>
-
     </div>
 
     <div id="app-screen" style="display: none;">
@@ -97,31 +95,7 @@
                     <div id="my-joined-faculties"></div>
                     <div id="my-joined-orgs"></div>
                     
-                    <div>
-                        <br>
-                        <h3 style="cursor: pointer; display: flex; align-items: center; gap: 5px; user-select: none;" onclick="window.toggleAccordion('faculties-accordion', 'fac-icon')">
-                            <span id="fac-icon" style="font-size: 12px; transition: transform 0.3s; width: 12px;">▶</span> 🏢 Fakülteler
-                        </h3>
-                        <div id="faculties-accordion" style="display: none; padding-left: 10px;">
-                            <div class="menu-item community-link" data-name="Tıp Fakültesi" data-icon="🩺" data-color="linear-gradient(135deg, #EF4444, #B91C1C)">🩺 Tıp Fakültesi</div>
-                            <div class="menu-item community-link" data-name="Bilgisayar Fakültesi" data-icon="💻" data-color="linear-gradient(135deg, #3B82F6, #2563EB)">💻 Bilgisayar Fakültesi</div>
-                            <div class="menu-item community-link" data-name="Diş Hekimliği" data-icon="🦷" data-color="linear-gradient(135deg, #06B6D4, #0891B2)">🦷 Diş Hekimliği</div>
-                            <div class="menu-item community-link" data-name="Hukuk Fakültesi" data-icon="⚖️" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">⚖️ Hukuk Fakültesi</div>
-                            <div class="menu-item community-link" data-name="Mimarlık Fakültesi" data-icon="📐" data-color="linear-gradient(135deg, #F59E0B, #D97706)">📐 Mimarlık Fakültesi</div>
-                            <div class="menu-item community-link" data-name="Eğitim Fakültesi" data-icon="📖" data-color="linear-gradient(135deg, #10B981, #059669)">📖 Eğitim Fakültesi</div>
-                        </div>
-
-                        <br>
-                        <h3 style="cursor: pointer; display: flex; align-items: center; gap: 5px; user-select: none;" onclick="window.toggleAccordion('orgs-accordion', 'org-icon')">
-                            <span id="org-icon" style="font-size: 12px; transition: transform 0.3s; width: 12px;">▶</span> 🎭 Kulüp ve Organizasyonlar
-                        </h3>
-                        <div id="orgs-accordion" style="display: none; padding-left: 10px;">
-                            <div class="menu-item org-link" data-name="Müzik Kulübü" data-icon="🎸" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">🎸 Müzik Kulübü</div>
-                            <div class="menu-item org-link" data-name="Girişimcilik Kulübü" data-icon="💡" data-color="linear-gradient(135deg, #F59E0B, #D97706)">💡 Girişimcilik Kulübü</div>
-                            <div class="menu-item org-link" data-name="Doğa ve Kampçılık" data-icon="🏕️" data-color="linear-gradient(135deg, #10B981, #059669)">🏕️ Doğa ve Kampçılık</div>
-                            <div class="menu-item org-link" data-name="Fotoğrafçılık Kulübü" data-icon="📸" data-color="linear-gradient(135deg, #EC4899, #BE185D)">📸 Fotoğrafçılık Kulübü</div>
-                        </div>
-                    </div>
+                    <div id="sidebar-networks-container"></div>
                 </div>
                 
                 <div class="sidebar-bottom">
@@ -132,28 +106,8 @@
             <main class="main-feed" id="main-content"></main>
 
             <aside class="right-panel">
-                <div class="card sticky-card">
-                    <h2 style="cursor: pointer; display: flex; align-items: center; gap: 5px; user-select: none;" onclick="window.toggleAccordion('right-faculties-accordion', 'right-fac-icon')">
-                        <span id="right-fac-icon" style="font-size: 14px; transition: transform 0.3s; width: 16px;">▶</span> 🏢 Fakülteler
-                    </h2>
-                    <ul class="community-list" id="right-faculties-accordion" style="display: none;">
-                        <li class="community-link" data-name="Tıp Fakültesi" data-icon="🩺" data-color="linear-gradient(135deg, #EF4444, #B91C1C)">🩺 Tıp Fakültesi</li>
-                        <li class="community-link" data-name="Bilgisayar Fakültesi" data-icon="💻" data-color="linear-gradient(135deg, #3B82F6, #2563EB)">💻 Bilgisayar Fakültesi</li>
-                        <li class="community-link" data-name="Diş Hekimliği" data-icon="🦷" data-color="linear-gradient(135deg, #06B6D4, #0891B2)">🦷 Diş Hekimliği</li>
-                        <li class="community-link" data-name="Hukuk Fakültesi" data-icon="⚖️" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">⚖️ Hukuk Fakültesi</li>
-                        <li class="community-link" data-name="Mimarlık Fakültesi" data-icon="📐" data-color="linear-gradient(135deg, #F59E0B, #D97706)">📐 Mimarlık Fakültesi</li>
-                        <li class="community-link" data-name="Eğitim Fakültesi" data-icon="📖" data-color="linear-gradient(135deg, #10B981, #059669)">📖 Eğitim Fakültesi</li>
-                    </ul>
-
-                    <h2 style="cursor: pointer; display: flex; align-items: center; gap: 5px; margin-top: 20px; user-select: none;" onclick="window.toggleAccordion('right-orgs-accordion', 'right-org-icon')">
-                        <span id="right-org-icon" style="font-size: 14px; transition: transform 0.3s; width: 16px;">▶</span> 🎭 Kulüpler
-                    </h2>
-                    <ul class="community-list org-list" id="right-orgs-accordion" style="display: none;">
-                        <li class="org-link" data-name="Müzik Kulübü" data-icon="🎸" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">🎸 Müzik Kulübü</li>
-                        <li class="org-link" data-name="Girişimcilik Kulübü" data-icon="💡" data-color="linear-gradient(135deg, #F59E0B, #D97706)">💡 Girişimcilik Kulübü</li>
-                        <li class="org-link" data-name="Doğa ve Kampçılık" data-icon="🏕️" data-color="linear-gradient(135deg, #10B981, #059669)">🏕️ Doğa ve Kampçılık</li>
-                        <li class="org-link" data-name="Fotoğrafçılık Kulübü" data-icon="📸" data-color="linear-gradient(135deg, #EC4899, #BE185D)">📸 Fotoğrafçılık Kulübü</li>
-                    </ul>
+                <div class="card sticky-card" style="padding: 15px;">
+                    <div id="right-networks-container"></div>
                 </div>
             </aside>
         </div>
