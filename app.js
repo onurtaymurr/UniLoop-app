@@ -239,6 +239,45 @@ function initializeUniLoop() {
         .dark-mode #sidebar { background: #1e1e1e !important; border-right-color: #374151 !important; }
         .dark-mode .locked-overlay { background: rgba(30, 30, 30, 0.7); }
 
+        /* 🌟 GÖRSEL DÜZELTME: HEADER TEK SATIR & KÜÇÜLTÜLMÜŞ BUTONLAR */
+        #app-header, header {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            flex-wrap: nowrap !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            padding: 5px 15px !important;
+        }
+        
+        /* UniLoop logosu ve texti aynı boyutta sabit kalsın */
+        #app-header > :first-child, .logo, .logo-title, #logo-btn { 
+            flex-shrink: 0 !important; 
+        }
+        
+        /* Sağ taraftaki menü ve buton kapsayıcıları */
+        #app-header > :last-child, .header-right-menu {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-end !important;
+            flex-wrap: nowrap !important;
+        }
+
+        /* Profil ve Premium butonları küçültüldü ve hizalandı */
+        #profile-btn, #nav-premium-action {
+            font-size: 12px !important;
+            padding: 0 10px !important;
+            height: 32px !important;
+            line-height: 32px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            margin: 0 !important;
+            border-radius: 8px !important;
+        }
+
         @media (max-width: 1024px) {
             #chat-layout-container { height: calc(100vh - 160px) !important; }
             .chat-sidebar { width: 100%; display: block; }
@@ -637,13 +676,13 @@ function initializeUniLoop() {
                     window.loadPage(activeTab ? activeTab.getAttribute('data-target') : 'home'); 
                 }
                 
-                // Menüye Premium Butonunu Dinamik Ekle (Profilimin yanına)
+                // Menüye Premium Butonunu Dinamik Ekle (Profilimin yanına) - GÖRSEL FİX UYGULANDI (Profilin solunda)
                 if (!document.getElementById('nav-premium-action') && !window.userProfile.isPremium) {
                     const profileBtn = document.getElementById('profile-btn');
                     if (profileBtn) {
-                        profileBtn.insertAdjacentHTML('afterend', `
-                            <div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold;" onclick="window.openPremiumModal()">
-                                🌟 Premium'a Geç
+                        profileBtn.insertAdjacentHTML('beforebegin', `
+                            <div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold; margin-right: 10px;" onclick="window.openPremiumModal()">
+                                🌟 Premium Üyelik
                             </div>
                         `);
                     }
