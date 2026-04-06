@@ -200,23 +200,6 @@ function initializeUniLoop() {
         .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
         .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
 
-        /* 🌟 YENİ: ACCORDION MENÜ STİLLERİ (▶ ve ▼ mantığıyla) */
-        .accordion-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 15px; cursor: pointer; color: var(--text-gray);
-            font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
-            transition: background 0.2s; border-radius: 8px; margin-top: 10px;
-        }
-        .accordion-header:hover { background: rgba(0,0,0,0.05); color: var(--text-dark); }
-        .accordion-header .chevron { transition: transform 0.3s ease; font-size: 12px; display: inline-block; transform: rotate(0deg); }
-        .accordion-header.active .chevron { transform: rotate(90deg); }
-        .accordion-content {
-            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out;
-            padding-left: 5px; display: flex; flex-direction: column; gap: 2px;
-        }
-        .accordion-content.expanded { max-height: 800px; overflow-y: auto; }
-        .dark-mode .accordion-header:hover { background: #374151; color: #e5e7eb; }
-
         /* 🌟 YENİ: PREMIUM BÖLÜMÜ VE KİLİTLİ İÇERİK STİLLERİ */
         .premium-glow {
             animation: glowPulse 2s infinite alternate;
@@ -400,8 +383,6 @@ function initializeUniLoop() {
     };
     
     window.joinedFaculties = [];
-    window.joinedOrganizations = []; // YENİ: Organizasyonlar listesi
-    
     let marketDB = [];
     let confessionsDB = [];
     let qaDB = [];
@@ -418,32 +399,6 @@ function initializeUniLoop() {
         "Mimarlık Fakültesi": "mim1000", 
         "Eğitim Fakültesi": "egt1000"
     };
-
-    // YENİ: ORGANİZASYON KODLARI
-    const ORGANIZATION_PASSCODES = {
-        "Müzik Kulübü": "muzik100",
-        "Yapay Zeka ve Yazılım": "ai100",
-        "Doğa Sporları": "doga100",
-        "Girişimcilik Topluluğu": "girisim100"
-    };
-
-    // 🌟 YENİ: TÜM KATILINABİLECEK FAKÜLTELER LİSTESİ
-    const ALL_FACULTIES = [
-        {name: "Tıp Fakültesi", icon: "🩺", color: "linear-gradient(135deg, #EF4444, #B91C1C)"},
-        {name: "Bilgisayar Fakültesi", icon: "💻", color: "linear-gradient(135deg, #3B82F6, #1D4ED8)"},
-        {name: "Diş Hekimliği", icon: "🦷", color: "linear-gradient(135deg, #06B6D4, #0369A1)"},
-        {name: "Hukuk Fakültesi", icon: "⚖️", color: "linear-gradient(135deg, #8B5CF6, #4338CA)"},
-        {name: "Mimarlık Fakültesi", icon: "🏛️", color: "linear-gradient(135deg, #F59E0B, #B45309)"},
-        {name: "Eğitim Fakültesi", icon: "📚", color: "linear-gradient(135deg, #10B981, #047857)"}
-    ];
-
-    // 🌟 YENİ: TÜM KATILINABİLECEK KULÜPLER LİSTESİ
-    const ALL_ORGANIZATIONS = [
-        {name: "Müzik Kulübü", icon: "🎵", color: "linear-gradient(135deg, #8B5CF6, #6D28D9)"},
-        {name: "Yapay Zeka ve Yazılım", icon: "🤖", color: "linear-gradient(135deg, #3B82F6, #1E40AF)"},
-        {name: "Doğa Sporları", icon: "🏕️", color: "linear-gradient(135deg, #10B981, #047857)"},
-        {name: "Girişimcilik Topluluğu", icon: "🚀", color: "linear-gradient(135deg, #F59E0B, #B45309)"}
-    ];
 
     const globalUniversities = [
         "Yakın Doğu Üniversitesi (NEU)", 
@@ -466,7 +421,7 @@ function initializeUniLoop() {
     const modal = document.getElementById('app-modal');
 
     // ============================================================================
-    // 1. GİRİŞ, KAYIT, ONAY VE ŞİFREMİ UNUTTUM (GÜÇLENDİRİLDİ)
+    // 1. GİRİŞ, KAYIT, ONAY VE ŞİFREMİ UNUTTUM
     // ============================================================================
     
     bind('show-register-btn', 'click', (e) => {
@@ -478,7 +433,6 @@ function initializeUniLoop() {
     bind('show-login-btn', 'click', (e) => {
         if(e) e.preventDefault();
         document.getElementById('register-card').style.display = 'none'; 
-        document.getElementById('verify-card').style.display = 'none';
         document.getElementById('login-card').style.display = 'block';
     });
 
@@ -550,7 +504,7 @@ function initializeUniLoop() {
                 avatar: "👨‍🎓", 
                 isOnline: false, 
                 faculty: "",
-                isPremium: false
+                isPremium: false // 🌟 Premium başlangıçta kapalı
             }).then(() => {
                 window.ensureWelcomeMessage(user, name);
             }).catch(dbError => {
@@ -599,20 +553,14 @@ function initializeUniLoop() {
         }
     });
 
-    // 🚨 GİRİŞ KISMI HATA ÇÖZÜMÜ 🚨
     bind('login-btn', 'click', async (e) => {
         if(e) e.preventDefault(); 
-        const emailInput = document.getElementById('login-email');
-        const passwordInput = document.getElementById('login-password');
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
         const btn = document.getElementById('login-btn');
 
-        if (!emailInput || !passwordInput) return;
-        
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-
         if(!email || !password) {
-            alert("Lütfen e-posta ve şifrenizi eksiksiz girin.");
+            alert("Lütfen e-posta ve şifrenizi girin.");
             return;
         }
 
@@ -622,8 +570,6 @@ function initializeUniLoop() {
 
         try {
             const userCred = await signInWithEmailAndPassword(auth, email, password);
-            
-            // Eğer e-posta doğrulanmamışsa kullanıcıyı verify ekranına yönlendir
             if(!userCred.user.emailVerified) {
                 alert("Hesabınız henüz onaylanmamış. Lütfen e-postanızı kontrol edin.");
                 document.getElementById('login-card').style.display = 'none';
@@ -632,56 +578,25 @@ function initializeUniLoop() {
                 btn.disabled = false;
                 return;
             }
-            
-            // E-posta doğrulandıysa kesin olarak ekranları değiştir
-            if(authScreen && appScreen) {
-                authScreen.style.display = 'none';
-                appScreen.style.display = 'block';
-            }
-            
             await window.ensureWelcomeMessage(userCred.user, userCred.user.displayName || "Öğrenci");
-            
-            // Kullanıcı arayüzünü anında yükle
-            window.loadPage('home');
-            
         } catch (error) {
             console.error("Giriş Hatası:", error);
-            let hataMesaji = "E-posta veya şifreniz yanlış.";
-            if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                hataMesaji = "Kayıtlı kullanıcı bulunamadı veya şifre hatalı.";
-            } else if (error.code === 'auth/too-many-requests') {
-                hataMesaji = "Çok fazla başarısız deneme yaptınız. Şifrenizi sıfırlamayı deneyin.";
-            }
-            alert("Giriş başarısız! " + hataMesaji + "\n\n(Hata Kodu: " + error.code + ")");
+            alert("Giriş başarısız! E-posta veya şifreniz yanlış.");
             btn.innerText = originalText;
             btn.disabled = false;
         } 
     });
 
-    // 🚨 ŞİFREMİ UNUTTUM (YENİ PAROLA) KISMI HATA ÇÖZÜMÜ 🚨
     bind('forgot-password-btn', 'click', async (e) => {
         if(e) e.preventDefault();
-        
-        // E-posta alanında bir şey yazıyorsa onu otomatik çek
-        const loginEmailInput = document.getElementById('login-email');
-        const suggestedEmail = loginEmailInput && loginEmailInput.value ? loginEmailInput.value.trim() : "";
-        
-        const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:", suggestedEmail);
-        
-        if(!email || email.trim() === "") {
-            return; // Kullanıcı iptal etti veya boş bıraktı
-        }
+        const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:");
+        if(!email) return;
         
         try {
-            await sendPasswordResetEmail(auth, email.trim());
-            alert("✅ Şifre sıfırlama bağlantısı e-posta adresinize başarıyla gönderildi!\n\nLütfen Gereksiz/Spam kutunuzu da kontrol etmeyi unutmayın.");
+            await sendPasswordResetEmail(auth, email);
+            alert("Şifre sıfırlama bağlantısı e-posta adresinize başarıyla gönderildi!");
         } catch (error) {
-            console.error("Şifre sıfırlama hatası:", error);
-            let hataMesaji = "Bir hata oluştu.";
-            if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
-                hataMesaji = "Bu e-posta adresiyle kayıtlı bir hesap bulunamadı.";
-            }
-            alert("❌ Hata: " + hataMesaji + "\n(" + error.message + ")");
+            alert("Hata: " + error.message);
         }
     });
 
@@ -811,17 +726,9 @@ function initializeUniLoop() {
                     }
                 }
 
-                // YENİ: Accordion Sidebar Yapısını İnşa Et (Eğer Yoksa)
-                if(typeof window.buildSidebarAccordions === 'function') {
-                    window.buildSidebarAccordions();
-                }
-
                 if(window.userProfile.faculty && typeof window.updateMyFacultiesSidebar === 'function') {
                     window.joinedFaculties = [{ name: window.userProfile.faculty, icon: "🏢", color: "linear-gradient(135deg, #1E3A8A, #4F46E5)" }];
                     window.updateMyFacultiesSidebar();
-                }
-                if(typeof window.updateMyOrganizationsSidebar === 'function') {
-                    window.updateMyOrganizationsSidebar();
                 }
 
             } catch(error) { 
@@ -830,30 +737,6 @@ function initializeUniLoop() {
                     university: "Lütfen Firestore'u Test Moduna Alın", avatar: "⚠️", faculty: "", isOnline: true, isPremium: false 
                 };
                 if(typeof window.loadPage === 'function') { window.loadPage('home'); }
-            }
-        } else if (user && !user.emailVerified) {
-            // Kullanıcı girişi başarılı ama e-postası doğrulanmamışsa Auth ekranında kalmalı
-            if(authScreen && appScreen) {
-                appScreen.style.display = 'none';
-                authScreen.style.display = 'flex'; // Veya tasarımına göre 'block'
-                const lc = document.getElementById('login-card');
-                const rc = document.getElementById('register-card');
-                const vc = document.getElementById('verify-card');
-                if (lc) lc.style.display = 'none';
-                if (rc) rc.style.display = 'none';
-                if (vc) vc.style.display = 'block';
-            }
-        } else {
-            // Hiç giriş yapılmamışsa ana Login ekranını zorla göster
-            if(authScreen && appScreen) {
-                appScreen.style.display = 'none';
-                authScreen.style.display = 'flex'; // Veya tasarımına göre 'block'
-                const lc = document.getElementById('login-card');
-                const rc = document.getElementById('register-card');
-                const vc = document.getElementById('verify-card');
-                if (lc) lc.style.display = 'block';
-                if (rc) rc.style.display = 'none';
-                if (vc) vc.style.display = 'none';
             }
         }
     });
@@ -1049,11 +932,7 @@ function initializeUniLoop() {
             const name = link.getAttribute('data-name');
             const icon = link.getAttribute('data-icon');
             const color = link.getAttribute('data-color');
-            if(typeof window.handleFacultyClick === 'function' && link.closest('#my-joined-faculties')) {
-                window.handleFacultyClick(name, icon, color);
-            } else if (typeof window.handleOrganizationClick === 'function' && link.closest('#my-joined-organizations')) {
-                window.handleOrganizationClick(name, icon, color);
-            }
+            if(typeof window.handleFacultyClick === 'function') window.handleFacultyClick(name, icon, color);
         }
     });
 
@@ -1180,13 +1059,12 @@ function initializeUniLoop() {
                 </div>
             `;
         } else {
-            // YENİ: Daha Şeffaf ve Gerçekçi AI Metni
             aiRadarContent = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
                     <h2 style="margin:0;">✨ AI Kampüs Eşleşmeleri</h2>
                 </div>
                 <div style="background: #FEF3C7; color: #92400E; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-size: 13px; font-weight: bold; border: 1px solid #F59E0B;">
-                    Yapay Zeka radarımız <strong>${userFac}</strong> ağında aynı fakültedeki potansiyel kişileri tespit etti.
+                    Yapay Zeka radarımız <strong>${userFac}</strong> ağında seninle eşleşmek isteyen kişileri buldu!
                 </div>
                 <div class="match-grid">
                     <div class="match-card locked-container">
@@ -2106,72 +1984,15 @@ function initializeUniLoop() {
     };
 
     // ============================================================================
-    // 10. FAKÜLTE VE ORGANİZASYON (KULÜP) SİSTEMİ (YENİ ACCORDION ENTEGRELİ)
+    // 10. FAKÜLTE SİSTEMİ
     // ============================================================================
 
-    // YENİ: Sidebar'a Accordion (Açılır/Kapanır) menüleri yerleştirme fonksiyonu (Tüm listeleri otomatik çizer)
-    window.buildSidebarAccordions = function() {
-        const sidebar = document.getElementById('sidebar');
-        if(!sidebar) return;
-        
-        if(!document.getElementById('faculties-accordion')) {
-            const accordionHtml = `
-                <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 10px;"></div>
-                
-                <div class="accordion-header" id="faculties-accordion" onclick="window.toggleAccordion('faculties-content', this)">
-                    <span>🏢 Fakülteler</span>
-                    <span class="chevron">▶</span>
-                </div>
-                <div class="accordion-content" id="faculties-content">
-                    <div id="my-joined-faculties"></div>
-                </div>
-
-                <div class="accordion-header" id="organizations-accordion" onclick="window.toggleAccordion('organizations-content', this)">
-                    <span>🎭 Kulüp & Organizasyonlar</span>
-                    <span class="chevron">▶</span>
-                </div>
-                <div class="accordion-content" id="organizations-content">
-                    <div id="my-joined-organizations"></div>
-                </div>
-            `;
-            sidebar.insertAdjacentHTML('beforeend', accordionHtml);
-            
-            window.updateMyFacultiesSidebar();
-            window.updateMyOrganizationsSidebar();
-        }
-    };
-
-    // YENİ: Accordion Açma / Kapama Dinamiği (▶ ve ▼ dönüşümü)
-    window.toggleAccordion = function(contentId, headerEl) {
-        const content = document.getElementById(contentId);
-        if(content) {
-            content.classList.toggle('expanded');
-            headerEl.classList.toggle('active');
-        }
-    };
-
-    // YENİ: Fakülteleri Kenar Çubuğuna Çiz (Tüm listeyi çizer, katıldıklarını yeşil badge ile işaretler)
     window.updateMyFacultiesSidebar = function() {
         const container = document.getElementById('my-joined-faculties');
         if(!container) return;
         let html = '';
-        ALL_FACULTIES.forEach(fac => { 
-            const isJoined = window.joinedFaculties.some(f => f.name === fac.name) || window.userProfile.faculty === fac.name;
-            const joinedBadge = isJoined ? '<span style="margin-left:auto; font-size:10px; background:#10B981; color:white; padding:2px 6px; border-radius:8px;">Katıldın</span>' : '';
-            html += `<div class="menu-item community-link" data-name="${fac.name}" data-icon="${fac.icon}" data-color="${fac.color}" onclick="window.handleFacultyClick('${fac.name}', '${fac.icon}', '${fac.color}')" style="display:flex; align-items:center;">${fac.icon} ${fac.name} ${joinedBadge}</div>`; 
-        });
-        container.innerHTML = html;
-    };
-
-    // YENİ: Organizasyonları Kenar Çubuğuna Çiz (Tüm listeyi çizer, katıldıklarını yeşil badge ile işaretler)
-    window.updateMyOrganizationsSidebar = function() {
-        const container = document.getElementById('my-joined-organizations');
-        if(!container) return;
-        let html = '';
-        ALL_ORGANIZATIONS.forEach(org => { 
-            const isJoined = window.joinedOrganizations.some(o => o.name === org.name);
-            const joinedBadge = isJoined ? '<span style="margin-left:auto; font-size:10px; background:#10B981; color:white; padding:2px 6px; border-radius:8px;">Katıldın</span>' : '';
-            html += `<div class="menu-item community-link" data-name="${org.name}" data-icon="${org.icon}" data-color="${org.color}" onclick="window.handleOrganizationClick('${org.name}', '${org.icon}', '${org.color}')" style="display:flex; align-items:center;">${org.icon} ${org.name} ${joinedBadge}</div>`; 
+        window.joinedFaculties.forEach(fac => { 
+            html += `<div class="menu-item community-link" data-name="${fac.name}" data-icon="${fac.icon}" data-color="${fac.color}" onclick="window.handleFacultyClick('${fac.name}', '${fac.icon}', '${fac.color}')">${fac.icon} ${fac.name}</div>`; 
         });
         container.innerHTML = html;
     };
@@ -2195,46 +2016,15 @@ function initializeUniLoop() {
         }
     };
 
-    // YENİ: Organizasyon Tıklama ve Kontrol Yönetimi
-    window.handleOrganizationClick = async function(name, icon, bgColor) {
-        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
-        if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
-        window.closeModal(); 
-
-        const isJoined = window.joinedOrganizations.some(o => o.name === name);
-
-        if(isJoined) { window.loadOrganizationFeed(name, icon, bgColor); } 
-        else {
-            mainContent.innerHTML = `
-                <div class="join-faculty-box">
-                    <div class="icon">${icon}</div><h2>${name} Ağına Hoş Geldin</h2><p>Bu alan organizasyona özel kapalı bir ağdır. Girmek için <b>Katılma Kodunu</b> girmelisin.</p>
-                    <div style="max-width: 300px; margin: 0 auto 20px auto;"><input type="text" id="org-passcode-input" class="form-group" style="width: 100%; text-align:center; font-size:18px; font-weight:bold; letter-spacing:2px; padding: 15px; border: 2px solid var(--border-color); border-radius: 12px; outline:none;" placeholder="Katılma Kodunu Yazın"></div>
-                    <button class="btn-primary" style="max-width:250px; font-size:16px; padding:12px;" onclick="window.verifyOrganizationCode('${name}', '${icon}', '${bgColor}')">Organizasyona Katıl</button>
-                </div>
-            `;
-            window.scrollTo(0,0);
-        }
-    };
-
     window.verifyFacultyCode = async function(name, icon, bgColor) {
         const inputCode = document.getElementById('faculty-passcode-input').value.trim();
         if (inputCode.toLowerCase() === FACULTY_PASSCODES[name].toLowerCase()) {
             window.userProfile.faculty = name; 
-            window.joinedFaculties.push({name: name, icon: icon, color: bgColor}); 
+            window.joinedFaculties = [{name: name, icon: icon, color: bgColor}]; 
             window.updateMyFacultiesSidebar();
             await updateDoc(doc(db, "users", window.userProfile.uid), { faculty: name });
             window.loadFacultyFeed(name, icon, bgColor);
         } else { alert("Hatalı kod girdiniz. Lütfen tekrar deneyin."); }
-    };
-
-    // YENİ: Organizasyon Kodu Doğrulama
-    window.verifyOrganizationCode = async function(name, icon, bgColor) {
-        const inputCode = document.getElementById('org-passcode-input').value.trim();
-        if (inputCode.toLowerCase() === ORGANIZATION_PASSCODES[name].toLowerCase()) {
-            window.joinedOrganizations.push({name: name, icon: icon, color: bgColor}); 
-            window.updateMyOrganizationsSidebar();
-            window.loadOrganizationFeed(name, icon, bgColor);
-        } else { alert("Hatalı katılma kodu girdiniz. Lütfen tekrar deneyin."); }
     };
 
     window.loadFacultyFeed = async function(name, icon, bgColor) {
@@ -2258,30 +2048,6 @@ function initializeUniLoop() {
                 </div>
                 <div class="create-post-box">
                     <div class="cp-top"><div class="avatar" style="background:#F3F4F6; font-size:20px;">${window.userProfile.avatar}</div><input type="text" placeholder="${name} ağında paylaşım yap..." onclick="alert('Bu özellik premium sürüme (v2) saklanmıştır.')"></div>
-                </div>
-            </div>
-        `;
-    };
-
-    // YENİ: Organizasyon İçi Özel Sayfa (Sesli/Görüntülü Özellikler İle)
-    window.loadOrganizationFeed = async function(name, icon, bgColor) {
-        mainContent.innerHTML = `
-            <div style="margin-bottom: 24px;">
-                <div class="community-banner" style="background: ${bgColor};">
-                    <div class="comm-banner-left"><h1>${icon} ${name}</h1><p>Özel Organizasyon Ağı</p></div>
-                    <div class="comm-banner-right">
-                        <div class="member-avatars"><div class="avatar">🎭</div><div class="avatar" style="background:white; color:var(--primary); font-size:11px; font-weight:bold;">+👥</div></div>
-                        <div class="community-stats"><span class="online-dot"></span> Aktif Ağ</div>
-                    </div>
-                </div>
-                
-                <div class="card" style="display:flex; justify-content:space-around; align-items:center; gap: 15px; padding: 20px; margin-bottom:20px; background: #F9FAFB; border: 1px dashed var(--primary); flex-wrap: wrap;">
-                    <button class="action-btn" style="flex:1; justify-content:center; padding:15px; font-size:15px; font-weight:bold; background: white; border: 2px solid #3B82F6; color: #3B82F6;" onclick="alert('Sesli sohbet odasına bağlanılıyor... (Altyapı hazır, yakında aktif!)')">🎙️ Sesli Odaya Katıl</button>
-                    <button class="action-btn" style="flex:1; justify-content:center; padding:15px; font-size:15px; font-weight:bold; background: white; border: 2px solid #10B981; color: #10B981;" onclick="alert('Görüntülü toplantı başlatılıyor... (Altyapı hazır, yakında aktif!)')">📹 Görüntülü Toplantı</button>
-                </div>
-
-                <div class="create-post-box">
-                    <div class="cp-top"><div class="avatar" style="background:#F3F4F6; font-size:20px;">${window.userProfile.avatar}</div><input type="text" placeholder="${name} içinde duyuru veya mesaj paylaş..." onclick="alert('Bu özellik premium sürüme (v2) saklanmıştır.')"></div>
                 </div>
             </div>
         `;
