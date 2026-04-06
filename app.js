@@ -416,15 +416,13 @@ window.userProfile = {
     isPremium: false 
 };
 
+window.joinedFaculties = [];
+window.joinedOrganizations = [];
 let marketDB = [];
 let confessionsDB = [];
 let qaDB = [];
 let chatsDB = [];
 let currentChatId = null;
-
-// Firebase listener tutucuları
-window.facultyUnsubscribe = null;
-window.clubChatUnsubscribe = null;
 
 window.resetCurrentChatId = function() { currentChatId = null; };
 
@@ -460,41 +458,7 @@ const appScreen = document.getElementById('app-screen');
 const mainContent = document.getElementById('main-content');
 const modal = document.getElementById('app-modal');
 
-// 🌟 YENİ: BANA ÖZEL VE AĞLARIM RENDER ETME FONKSİYONLARI 🌟
-window.renderMyJoinedNetworks = function() {
-    const facContainer = document.getElementById('my-joined-faculties');
-    const orgContainer = document.getElementById('my-joined-orgs');
-    
-    const fMap = {
-        "Tıp Fakültesi": {icon: "🩺", color: "linear-gradient(135deg, #EF4444, #B91C1C)"},
-        "Hukuk Fakültesi": {icon: "⚖️", color: "linear-gradient(135deg, #8B5CF6, #6D28D9)"},
-        "Diş Hekimliği Fakültesi": {icon: "🦷", color: "linear-gradient(135deg, #06B6D4, #0891B2)"}
-    };
-    const oMap = {
-        "Spor Kulübü": {icon: "⚽", color: "linear-gradient(135deg, #10B981, #059669)"},
-        "Sağlık Kulübü": {icon: "🏥", color: "linear-gradient(135deg, #EF4444, #B91C1C)"},
-        "Tiyatro Kulübü": {icon: "🎭", color: "linear-gradient(135deg, #8B5CF6, #4C1D95)"}
-    };
-
-    if(facContainer) {
-        let facHTML = '';
-        if(window.userProfile.faculty && fMap[window.userProfile.faculty]) {
-            const f = fMap[window.userProfile.faculty];
-            facHTML = `<div class="menu-item" style="font-weight:700; color:var(--primary);" onclick="window.loadFacultyFeed('${window.userProfile.faculty}', '${f.icon}', '${f.color}')"><span style="font-size:18px;">${f.icon}</span> ${window.userProfile.faculty}</div>`;
-        }
-        facContainer.innerHTML = facHTML;
-    }
-    
-    if(orgContainer) {
-        let orgHTML = '';
-        if(window.userProfile.organization && oMap[window.userProfile.organization]) {
-            const o = oMap[window.userProfile.organization];
-            orgHTML = `<div class="menu-item" style="font-weight:700; color:var(--primary);" onclick="window.loadOrganizationFeed('${window.userProfile.organization}', '${o.icon}', '${o.color}')"><span style="font-size:18px;">${o.icon}</span> ${window.userProfile.organization}</div>`;
-        }
-        orgContainer.innerHTML = orgHTML;
-    }
-};
-
+// 🌟 YENİ: ACCORDION MENÜLERİ RENDER ETME 🌟
 window.renderSidebarAccordions = function() {
     const accordionHTML = `
         <div class="accordion-section">
@@ -821,10 +785,6 @@ onAuthStateChanged(auth, async (user) => {
 
             await window.ensureWelcomeMessage(user, window.userProfile.name);
             await updateDoc(userDocRef, { isOnline: true });
-            
-            // "Bana Özel" kısmını Firebase'deki verilere göre doldur
-            window.renderMyJoinedNetworks();
-
             initRealtimeListeners(user.uid);
 
             const activeTab = document.querySelector('.menu-item.active');
@@ -841,6 +801,11 @@ onAuthStateChanged(auth, async (user) => {
                         </div>
                     `);
                 }
+            }
+
+            if(window.userProfile.faculty && typeof window.updateMyFacultiesSidebar === 'function') {
+                window.joinedFaculties = [{ name: window.userProfile.faculty, icon: "🏢", color: "linear-gradient(135deg, #1E3A8A, #4F46E5)" }];
+                window.updateMyFacultiesSidebar();
             }
 
         } catch(error) { 
@@ -2124,8 +2089,18 @@ window.submitAnswer = async function(docId) {
 // 10. FAKÜLTE VE ORGANİZASYON SİSTEMİ (YENİ ACCORDION & FORUM/MEETING ENTEGRELİ)
 // ============================================================================
 
-// --- 🌟 KURAL 3: Fakülte Fonksiyonları (FORUM YAPISI & VERİ KALICILIĞI) 🌟 ---
-window.currentFacultyPosts = [];
+// --- 🌟 KURAL 3: Fakülte Fonksiyonları (FORUM YAPISI) 🌟 ---
+window.currentFacultyPosts = [
+    { 
+        id: 1, 
+        user: "Sistem Moderatörü", 
+        avatar: "🤖", 
+        text: "Fakülte forumuna hoş geldin! Bu alan sadece senin fakültendeki öğrencilere özeldir. Ders notları, sınav takvimleri ve fakülte duyuruları buradan paylaşılacak.", 
+        time: "Bugün", 
+        likes: 12, 
+        replies: 0 
+    }
+];
 
 window.handleFacultyClick = async function(name, icon, bgColor) {
     document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
@@ -2152,7 +2127,6 @@ window.verifyFacultyCode = async function(name, icon, bgColor) {
         window.userProfile.faculty = name; 
         window.joinedFaculties = [{name: name, icon: icon, color: bgColor}]; 
         await updateDoc(doc(db, "users", window.userProfile.uid), { faculty: name });
-        window.renderMyJoinedNetworks(); // Bana Özel'e Ekle
         window.loadFacultyFeed(name, icon, bgColor);
     } else { alert("Hatalı kod girdiniz. Lütfen tekrar deneyin."); }
 };
@@ -2180,60 +2154,33 @@ window.loadFacultyFeed = async function(name, icon, bgColor) {
                 </div>
             </div>
 
-            <div id="faculty-posts-container" style="display:flex; flex-direction:column; gap:15px;">
-                <div style="text-align:center; padding:30px; color:var(--text-gray);">Veriler yükleniyor...</div>
-            </div>
+            <div id="faculty-posts-container" style="display:flex; flex-direction:column; gap:15px;"></div>
         </div>
     `;
-
-    if(window.facultyUnsubscribe) window.facultyUnsubscribe();
-    const q = query(collection(db, "facultyPosts"), where("faculty", "==", name), orderBy("createdAt", "desc"));
-    window.facultyUnsubscribe = onSnapshot(q, (snapshot) => {
-        window.currentFacultyPosts = [];
-        snapshot.forEach(doc => {
-            window.currentFacultyPosts.push({ id: doc.id, ...doc.data() });
-        });
-        window.renderFacultyPosts();
-    });
+    window.renderFacultyPosts();
 };
 
-window.submitFacultyPost = async function() {
+window.submitFacultyPost = function() {
     const input = document.getElementById('faculty-post-input');
     if(!input || input.value.trim() === '') return;
     
-    try {
-        await addDoc(collection(db, "facultyPosts"), {
-            faculty: window.currentFacultyName,
-            user: window.userProfile.name + " " + window.userProfile.surname,
-            avatar: window.userProfile.avatar,
-            text: input.value.trim(),
-            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-            likes: 0,
-            replies: 0,
-            createdAt: serverTimestamp()
-        });
-        input.value = '';
-    } catch(e) {
-        console.error(e);
-        alert("Gönderi yayınlanırken hata oluştu. Veritabanı izinlerini kontrol edin.");
-    }
-};
-
-window.likeFacultyPost = async function(docId, currentLikes) {
-    try {
-        await updateDoc(doc(db, "facultyPosts", docId), { likes: currentLikes + 1 });
-    } catch(e) { console.error(e); }
+    window.currentFacultyPosts.unshift({
+        id: Date.now(),
+        user: window.userProfile.name + " " + window.userProfile.surname,
+        avatar: window.userProfile.avatar,
+        text: input.value.trim(),
+        time: "Az önce",
+        likes: 0,
+        replies: 0
+    });
+    input.value = '';
+    window.renderFacultyPosts();
 };
 
 window.renderFacultyPosts = function() {
     const container = document.getElementById('faculty-posts-container');
     if(!container) return;
     
-    if(window.currentFacultyPosts.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-gray);">Henüz gönderi yok. İlk paylaşan sen ol!</div>`;
-        return;
-    }
-
     let html = '';
     window.currentFacultyPosts.forEach(post => {
         html += `
@@ -2251,11 +2198,11 @@ window.renderFacultyPosts = function() {
                     ${post.text.replace(/\n/g, '<br>')}
                 </div>
                 <div style="display:flex; gap:15px; border-top:1px solid var(--border-color); padding-top:10px;">
-                    <button style="background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:5px; color:var(--text-gray); font-weight:600; font-size:13px;" onclick="window.likeFacultyPost('${post.id}', ${post.likes})">
+                    <button style="background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:5px; color:var(--text-gray); font-weight:600; font-size:13px;" onclick="this.style.color='var(--primary)'; this.innerHTML='💙 Beğenildi (${post.likes + 1})';">
                         🤍 Beğen (${post.likes})
                     </button>
                     <button style="background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:5px; color:var(--text-gray); font-weight:600; font-size:13px;" onclick="alert('Yanıt özelliği yakında aktif olacak!')">
-                        💬 Yanıtla (${post.replies || 0})
+                        💬 Yanıtla (${post.replies})
                     </button>
                 </div>
             </div>
@@ -2265,7 +2212,7 @@ window.renderFacultyPosts = function() {
 };
 
 
-// --- 🌟 KURAL 4: Kulüp ve Organizasyonlar Fonksiyonları (TEK EKRAN LOBİ & VERİ KALICILIĞI) 🌟 ---
+// --- 🌟 KURAL 4: Kulüp ve Organizasyonlar Fonksiyonları (YENİ: LOBİ -> TOPLANTI GEÇİŞİ) 🌟 ---
 window.handleOrganizationClick = async function(name, icon, bgColor) {
     document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
     if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
@@ -2291,7 +2238,7 @@ window.verifyOrganizationCode = async function(name, icon, bgColor) {
         window.userProfile.organization = name; 
         window.joinedOrganizations = [{name: name, icon: icon, color: bgColor}]; 
         await updateDoc(doc(db, "users", window.userProfile.uid), { organization: name });
-        window.renderMyJoinedNetworks(); // Bana Özel'e Ekle
+        // Doğrulamadan sonra Lobiye yönlendir!
         window.loadOrganizationFeed(name, icon, bgColor);
     } else { alert("Hatalı kod girdiniz. Lütfen kulüp yönetimi ile iletişime geçin."); }
 };
@@ -2304,100 +2251,75 @@ window.sendReaction = function() {
     setTimeout(() => emoji.remove(), 2000);
 };
 
-window.submitClubMessage = async function() {
-    const input = document.getElementById('club-chat-input');
-    if(!input || input.value.trim() === '') return;
-    try {
-        await addDoc(collection(db, "clubMessages"), {
-            club: window.currentClubName,
-            uid: window.userProfile.uid,
-            user: window.userProfile.name,
-            text: input.value.trim(),
-            createdAt: serverTimestamp()
-        });
-        input.value = '';
-    } catch(e) { console.error(e); alert("Mesaj gönderilemedi."); }
-};
-
-// YENİ: KULÜP LOBİSİ (TEK EKRAN, KAYDIRMASIZ)
+// YENİ: KULÜP LOBİSİ (DUYURULAR, SOHBET VE TOPLANTI OLUŞTURMA ALANI)
 window.loadOrganizationFeed = async function(name, icon, bgColor) {
-    window.currentClubName = name;
-
     mainContent.innerHTML = `
-        <div style="display:flex; flex-direction:column; height:calc(100vh - 95px); background:var(--card-bg); border-radius:16px; overflow:hidden; border:1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <div style="display:flex; flex-direction:column; height:calc(100vh - 90px); background:var(--card-bg); border-radius:16px; overflow:hidden; border:1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             
-            <div style="height:65px; padding:0 20px; background:${bgColor}; color:white; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+            <div style="padding:20px; background:${bgColor}; color:white; display:flex; justify-content:space-between; align-items:center;">
                 <div style="display:flex; align-items:center; gap:15px;">
-                    <span style="font-size:28px;">${icon}</span>
+                    <span style="font-size:32px; background:rgba(255,255,255,0.2); width:50px; height:50px; display:flex; align-items:center; justify-content:center; border-radius:50%;">${icon}</span>
                     <div>
-                        <h2 style="margin:0; font-size:18px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">${name} Lobisi</h2>
+                        <h2 style="margin:0; font-size:20px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">${name} Lobisi</h2>
+                        <span style="font-size:13px; opacity:0.9;">Duyurular, Yazılı Sohbet ve Canlı Toplantılar</span>
                     </div>
                 </div>
             </div>
 
-            <div style="display:flex; flex:1; min-height:0; flex-wrap:wrap;">
+            <div style="display:flex; flex:1; overflow:hidden; flex-wrap:wrap;">
                 
-                <div style="flex:1; min-width:300px; display:flex; flex-direction:column; padding:20px; border-right:1px solid var(--border-color); background:#F9FAFB; justify-content: center; gap:20px;">
+                <div style="flex:1; min-width:300px; padding:20px; border-right:1px solid var(--border-color); overflow-y:auto; background:#F9FAFB;">
                     
-                    <div style="background:white; padding:20px; border-radius:12px; border:1px solid #E5E7EB; text-align:center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                        <div style="font-size:48px; margin-bottom:12px;">🎙️</div>
-                        <h4 style="margin-bottom:8px; font-size:16px; color:var(--text-dark);">Sesli & Görüntülü Oda</h4>
-                        <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px;">Şu an kimse konuşmuyor. İlk başlatan sen ol!</p>
-                        <button class="btn-primary" style="width:100%; border-radius:10px; font-size:15px; padding:12px;" onclick="window.joinLiveMeeting('${name}', '${icon}', '${bgColor}')">Konuşma Oluştur</button>
+                    <h3 style="margin-bottom:15px; font-size:16px; display:flex; align-items:center; gap:8px;">📢 Güncel Duyurular</h3>
+                    <div style="background:white; padding:15px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:25px;">
+                        <strong style="color:var(--primary); font-size:14px;">Kulüp Yönetimi</strong>
+                        <p style="font-size:14px; margin-top:5px; color:var(--text-dark);">Hoş geldiniz! İletişimi buradan sağlayabilir, anlık toplantılar başlatabilirsiniz. Kameraları test etmeyi unutmayın!</p>
+                        <span style="font-size:11px; color:var(--text-gray); display:block; margin-top:8px;">Bugün, 09:00</span>
                     </div>
 
-                    <div style="background:#F0FDF4; padding:16px; border-radius:12px; border:1px solid #86EFAC; display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin-bottom:15px; font-size:16px; display:flex; align-items:center; gap:8px;">🎙️ Sesli & Görüntülü Odalar</h3>
+                    
+                    <div style="background:white; padding:20px; border-radius:12px; border:1px solid #E5E7EB; text-align:center; margin-bottom:15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                        <div style="font-size:40px; margin-bottom:10px;">👥</div>
+                        <h4 style="margin-bottom:5px; color:var(--text-dark);">Yeni Toplantı Başlat</h4>
+                        <p style="font-size:13px; color:var(--text-gray); margin-bottom:15px;">Şu an kimse konuşmuyor. İlk başlatan sen ol!</p>
+                        <button class="btn-primary" style="width:100%; border-radius:12px; font-size:15px;" onclick="window.joinLiveMeeting('${name}', '${icon}', '${bgColor}')">🎙️ Konuşma Oluştur</button>
+                    </div>
+
+                    <div style="background:#F0FDF4; padding:15px; border-radius:12px; border:1px solid #86EFAC; display:flex; justify-content:space-between; align-items:center;">
                         <div style="text-align:left;">
                             <div style="color:#059669; font-weight:800; font-size:14px; display:flex; align-items:center; gap:6px;">
                                 <span style="width:10px; height:10px; background:#10B981; border-radius:50%; display:inline-block; animation: pulse 1.5s infinite;"></span> Aktif Konuşma Var
                             </div>
-                            <div style="font-size:12px; color:#047857; margin-top:4px; font-weight:600;">Moderatör içeride</div>
+                            <div style="font-size:12px; color:#047857; margin-top:4px; font-weight:600;">Moderatör ve 2 kişi içeride</div>
                         </div>
-                        <button style="background:#10B981; color:white; border:none; padding:10px 16px; border-radius:10px; font-size:14px; font-weight:bold; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'" onclick="window.joinLiveMeeting('${name}', '${icon}', '${bgColor}')">Katıl ➤</button>
+                        <button style="background:#10B981; color:white; border:none; padding:10px 16px; border-radius:10px; font-weight:bold; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'" onclick="window.joinLiveMeeting('${name}', '${icon}', '${bgColor}')">Katıl ➤</button>
                     </div>
 
                 </div>
 
                 <div style="flex:1; min-width:300px; display:flex; flex-direction:column; background:white;">
-                    <div style="padding:15px 20px; border-bottom:1px solid var(--border-color); font-weight:bold; background:#F9FAFB; font-size:15px; flex-shrink:0;">
-                        💬 Genel Yazılı Sohbet
+                    <div style="padding:15px; border-bottom:1px solid var(--border-color); font-weight:bold; display:flex; justify-content:space-between; background:#F9FAFB;">
+                        <span>💬 Genel Yazılı Sohbet</span>
                     </div>
                     
-                    <div id="club-chat-messages" style="flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:12px;">
-                        <div style="text-align:center; padding:20px; color:var(--text-gray);">Mesajlar yükleniyor...</div>
+                    <div style="flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:12px;">
+                        <div style="font-size:13px; line-height:1.5; background:#EEF2FF; padding:12px 16px; border-radius:16px; border-bottom-left-radius:0; align-self:flex-start; max-width:85%;">
+                            <strong style="color:var(--primary); display:block; margin-bottom:4px;">Sistem Moderatörü</strong>
+                            Kulüp sohbet odasına katıldınız. Küfür, argo ve saygısızlık yasaktır.
+                            <div style="font-size:10px; color:#6B7280; text-align:right; margin-top:4px;">Şimdi</div>
+                        </div>
                     </div>
 
-                    <div style="padding:15px; border-top:1px solid var(--border-color); display:flex; gap:10px; background:white; align-items:center; flex-shrink:0;">
-                        <input type="text" id="club-chat-input" placeholder="Kulübe yaz..." style="flex:1; padding:12px 16px; border-radius:24px; border:1px solid #D1D5DB; background:#F9FAFB; outline:none; font-size:14px; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onkeypress="if(event.key==='Enter') window.submitClubMessage()">
-                        <button class="btn-primary" style="width:auto; border-radius:24px; padding:10px 20px; font-size:14px;" onclick="window.submitClubMessage()">Gönder</button>
+                    <div style="padding:15px; border-top:1px solid var(--border-color); display:flex; gap:10px; background:white; align-items:center;">
+                        <input type="text" placeholder="Kulübe bir şeyler yaz..." style="flex:1; padding:12px 16px; border-radius:24px; border:1px solid #D1D5DB; background:#F9FAFB; outline:none; font-size:14px; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';">
+                        <button class="btn-primary" style="width:auto; border-radius:24px; padding:10px 20px; font-size:14px;" onclick="alert('Gerçek zamanlı yazılı sohbet entegrasyon aşamasındadır.')">➤</button>
                     </div>
                 </div>
 
             </div>
         </div>
     `;
-
-    // Firebase Canlı Dinleyici Ekle (Kulüp Sohbeti)
-    if(window.clubChatUnsubscribe) window.clubChatUnsubscribe();
-    const q = query(collection(db, "clubMessages"), where("club", "==", name), orderBy("createdAt", "asc"));
-    window.clubChatUnsubscribe = onSnapshot(q, (snapshot) => {
-        const container = document.getElementById('club-chat-messages');
-        if(!container) return;
-        let html = '';
-        snapshot.forEach(doc => {
-            const msg = doc.data();
-            const isMe = msg.uid === window.userProfile.uid;
-            html += `
-                <div style="font-size:14px; line-height:1.4; background:${isMe ? '#E0E7FF' : '#F3F4F6'}; padding:12px 16px; border-radius:16px; align-self:${isMe ? 'flex-end' : 'flex-start'}; max-width:85%;">
-                    <strong style="color:var(--primary); display:block; margin-bottom:4px; font-size:12px;">${msg.user}</strong>
-                    ${msg.text}
-                </div>
-            `;
-        });
-        if(html === '') html = '<div style="text-align:center; color:var(--text-gray); font-size:13px; margin-top:auto; margin-bottom:auto;">Henüz mesaj yok. İlk mesajı sen gönder!</div>';
-        container.innerHTML = html;
-        container.scrollTop = container.scrollHeight;
-    });
 };
 
 // YENİ: AKTİF TOPLANTI ODASINA GİRİŞ (KAMERALI/SESLİ EKRAN)
@@ -2408,7 +2330,7 @@ window.joinLiveMeeting = async function(name, icon, bgColor) {
             <div style="padding:15px 20px; background:#1F2937; border-bottom:1px solid #374151; display:flex; justify-content:space-between; align-items:center;">
                 <div style="display:flex; align-items:center; gap:12px;">
                     <span style="font-size:24px;">${icon}</span>
-                    <h2 style="margin:0; font-size:18px; font-weight:600;">${name} - Canlı Toplant Odası</h2>
+                    <h2 style="margin:0; font-size:18px; font-weight:600;">${name} - Canlı Toplantı Odası</h2>
                 </div>
                 <div style="display:flex; gap:10px; align-items:center;">
                     <span style="background:rgba(239, 68, 68, 0.2); color:#FCA5A5; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:bold; display:flex; align-items:center; gap:6px;">
@@ -2443,7 +2365,7 @@ window.joinLiveMeeting = async function(name, icon, bgColor) {
 
                 <div style="flex:1; min-width:300px; max-width:400px; background:#1F2937; border-left:1px solid #374151; display:flex; flex-direction:column;">
                     <div style="padding:15px; border-bottom:1px solid #374151; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-                        <span>Toplantı İçi Sohbet</span>
+                        <span>Toplantı Sohbeti</span>
                         <span style="font-size:12px; background:#374151; padding:2px 8px; border-radius:10px;">👥 3 Kişi</span>
                     </div>
                     
@@ -2452,11 +2374,15 @@ window.joinLiveMeeting = async function(name, icon, bgColor) {
                             <strong style="color:#60A5FA;">Moderatör:</strong> Herkese merhaba, kulüp etkinlik planlaması için saat 20:00'de ajandayı paylaşacağım.
                             <div style="font-size:10px; color:#9CA3AF; margin-top:2px;">19:55</div>
                         </div>
+                        <div style="font-size:13px; line-height:1.5;">
+                            <strong style="color:#FCA5A5;">Ayşe Y.:</strong> Harika, bekliyoruz! Kamera açamıyorum şu an kusura bakmayın.
+                            <div style="font-size:10px; color:#9CA3AF; margin-top:2px;">19:57</div>
+                        </div>
                     </div>
 
                     <div style="padding:15px; border-top:1px solid #374151; display:flex; gap:10px;">
-                        <input type="text" placeholder="Odaya mesaj yaz..." style="flex:1; padding:10px 12px; border-radius:8px; border:none; background:#374151; color:white; outline:none; font-size:13px;">
-                        <button style="background:var(--primary); border:none; color:white; border-radius:8px; padding:0 15px; cursor:pointer;">➤</button>
+                        <input type="text" placeholder="Mesaj yaz..." style="flex:1; padding:10px 12px; border-radius:8px; border:none; background:#374151; color:white; outline:none; font-size:13px;">
+                        <button style="background:var(--primary); border:none; color:white; border-radius:8px; padding:0 15px; cursor:pointer;" onclick="alert('Mesaj sistemi entegrasyon aşamasında.')">➤</button>
                     </div>
                 </div>
             </div>
