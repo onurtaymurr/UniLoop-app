@@ -200,21 +200,23 @@ function initializeUniLoop() {
         .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
         .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
 
-        /* 🌟 YENİ: ACCORDION MENÜ STİLLERİ (Fakülteler ve Organizasyonlar) */
+        /* 🌟 YENİ: ACCORDION MENÜ STİLLERİ (Fakülteler ve Organizasyonlar Seçim Listesi İçin) */
         .accordion-header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px 15px; cursor: pointer; color: var(--text-gray);
             font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
-            transition: background 0.2s; border-radius: 8px; margin-top: 10px;
+            transition: background 0.2s; border-radius: 8px; margin-top: 5px;
         }
         .accordion-header:hover { background: rgba(0,0,0,0.05); color: var(--text-dark); }
-        .accordion-header .chevron { transition: transform 0.3s ease; font-size: 12px; }
-        .accordion-header.active .chevron { transform: rotate(180deg); }
+        .accordion-header .chevron { 
+            transition: transform 0.3s ease; 
+            font-size: 12px; 
+            display: inline-block;
+        }
         .accordion-content {
-            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out;
+            overflow: hidden; transition: max-height 0.3s ease-out;
             padding-left: 5px; display: flex; flex-direction: column; gap: 2px;
         }
-        .accordion-content.expanded { max-height: 500px; }
         .dark-mode .accordion-header:hover { background: #374151; color: #e5e7eb; }
 
         /* 🌟 YENİ: PREMIUM BÖLÜMÜ VE KİLİTLİ İÇERİK STİLLERİ */
@@ -714,6 +716,17 @@ function initializeUniLoop() {
                 }
             }
 
+            // YENİ: Bildirimlerden Hemen Sonra Kullanıcının KATILDIĞI Grupları Oluştur
+            const notifBtnCheck = document.getElementById('nav-notifications-btn');
+            if (notifBtnCheck) {
+                if(!document.getElementById('my-joined-faculties')) {
+                    notifBtnCheck.insertAdjacentHTML('afterend', `<div id="my-joined-faculties"></div>`);
+                }
+                if(!document.getElementById('my-joined-organizations')) {
+                    document.getElementById('my-joined-faculties').insertAdjacentHTML('afterend', `<div id="my-joined-organizations"></div>`);
+                }
+            }
+
             try {
                 const userDocRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(userDocRef);
@@ -753,11 +766,12 @@ function initializeUniLoop() {
                     }
                 }
 
-                // YENİ: Accordion Sidebar Yapısını İnşa Et (Eğer Yoksa)
+                // YENİ: Seçilebilir Accordion Liste Yapısını En Alta İnşa Et
                 if(typeof window.buildSidebarAccordions === 'function') {
                     window.buildSidebarAccordions();
                 }
 
+                // Katılınanları "Bana Özel" kısmına (Bildirimlerin altına) güncelle
                 if(window.userProfile.faculty && typeof window.updateMyFacultiesSidebar === 'function') {
                     window.joinedFaculties = [{ name: window.userProfile.faculty, icon: "🏢", color: "linear-gradient(135deg, #1E3A8A, #4F46E5)" }];
                     window.updateMyFacultiesSidebar();
@@ -967,9 +981,9 @@ function initializeUniLoop() {
             const name = link.getAttribute('data-name');
             const icon = link.getAttribute('data-icon');
             const color = link.getAttribute('data-color');
-            if(typeof window.handleFacultyClick === 'function' && link.closest('#my-joined-faculties')) {
+            if(typeof window.handleFacultyClick === 'function' && (link.closest('#faculties-content') || link.closest('#my-joined-faculties'))) {
                 window.handleFacultyClick(name, icon, color);
-            } else if (typeof window.handleOrganizationClick === 'function' && link.closest('#my-joined-organizations')) {
+            } else if (typeof window.handleOrganizationClick === 'function' && (link.closest('#organizations-content') || link.closest('#my-joined-organizations'))) {
                 window.handleOrganizationClick(name, icon, color);
             }
         }
@@ -1062,10 +1076,9 @@ function initializeUniLoop() {
             `;
         }
 
-        // 🌟 YENİ: PREMIUM'A GÖRE DEĞİŞEN YAPAY ZEKA RADARI
         let aiRadarContent = '';
         const isPremium = window.userProfile.isPremium;
-        const userFac = window.userProfile.faculty || "Kampüsünde"; // Dinamik fakülte çekici
+        const userFac = window.userProfile.faculty || "Kampüsünde";
 
         if (isPremium) {
             aiRadarContent = `
@@ -1098,7 +1111,6 @@ function initializeUniLoop() {
                 </div>
             `;
         } else {
-            // YENİ: Daha Şeffaf ve Gerçekçi AI Metni (Güncellendi)
             aiRadarContent = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
                     <h2 style="margin:0;">✨ AI Kampüs Eşleşmeleri</h2>
@@ -2008,332 +2020,4 @@ function initializeUniLoop() {
 
         window.openModal('Soru Detayı', `
             <div style="margin-bottom: 24px;"><span class="qa-tag" style="font-size:12px;">${q.tag}</span><div style="font-size:18px; font-weight:800; margin-top:12px;">${q.question}</div></div>
-            <div style="border-top:1px solid var(--border-color); padding-top:24px; margin-bottom:24px;"><h4>Cevaplar (${q.answers.length})</h4><div class="answers-container">${answersHtml}</div></div>
-            <div style="display:flex; gap:10px;"><input type="text" id="new-answer-input" class="form-group" style="flex:1; margin:0;" placeholder="Cevabını yaz..."><button class="btn-primary" style="width:auto;" onclick="window.submitAnswer('${q.id}')">Gönder</button></div>
-        `);
-    };
-
-    window.submitAnswer = async function(docId) {
-        const ansInput = document.getElementById('new-answer-input');
-        if(ansInput && ansInput.value.trim() !== '') {
-            try { 
-                await updateDoc(doc(db, "qa", docId), { answers: arrayUnion({ user: window.userProfile.name, text: ansInput.value.trim() }) }); 
-                window.closeModal(); 
-            } catch(e) { console.error(e); }
-        }
-    };
-
-    // ============================================================================
-    // 10. FAKÜLTE VE ORGANİZASYON (KULÜP) SİSTEMİ (YENİ ACCORDION ENTEGRELİ)
-    // ============================================================================
-
-    // YENİ: Sidebar'a Accordion (Açılır/Kapanır) menüleri yerleştirme fonksiyonu
-    window.buildSidebarAccordions = function() {
-        const sidebar = document.getElementById('sidebar');
-        if(!sidebar) return;
-        
-        // Eğer zaten inşa edilmişse tekrar ekleme yapma
-        if(!document.getElementById('faculties-accordion')) {
-            const accordionHtml = `
-                <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 10px;"></div>
-                
-                <div class="accordion-header active" id="faculties-accordion" onclick="window.toggleAccordion('faculties-content', this)">
-                    <span>🏢 Fakültelerim</span>
-                    <span class="chevron" style="transform: rotate(180deg);">▼</span>
-                </div>
-                <div class="accordion-content expanded" id="faculties-content" style="max-height: 500px;">
-                    <div id="my-joined-faculties"></div>
-                </div>
-
-                <div class="accordion-header active" id="organizations-accordion" onclick="window.toggleAccordion('organizations-content', this)">
-                    <span>🎭 Kulüp & Organizasyonlar</span>
-                    <span class="chevron" style="transform: rotate(180deg);">▼</span>
-                </div>
-                <div class="accordion-content expanded" id="organizations-content" style="max-height: 500px;">
-                    <div id="my-joined-organizations"></div>
-                    <div class="menu-item" style="font-size: 13px; color: var(--primary); font-weight: bold; justify-content: center; margin-top: 5px;" onclick="window.showAllOrganizations()">+ Yeni Kulübe Katıl</div>
-                </div>
-            `;
-            sidebar.insertAdjacentHTML('beforeend', accordionHtml);
-        }
-    };
-
-    // YENİ: Accordion Açma / Kapama Dinamiği
-    window.toggleAccordion = function(contentId, headerEl) {
-        const content = document.getElementById(contentId);
-        if(content) {
-            content.classList.toggle('expanded');
-            headerEl.classList.toggle('active');
-        }
-    };
-
-    window.updateMyFacultiesSidebar = function() {
-        const container = document.getElementById('my-joined-faculties');
-        if(!container) return;
-        let html = '';
-        window.joinedFaculties.forEach(fac => { 
-            html += `<div class="menu-item community-link" data-name="${fac.name}" data-icon="${fac.icon}" data-color="${fac.color}" onclick="window.handleFacultyClick('${fac.name}', '${fac.icon}', '${fac.color}')">${fac.icon} ${fac.name}</div>`; 
-        });
-        container.innerHTML = html;
-    };
-
-    // YENİ: Organizasyonları Kenar Çubuğuna Çiz
-    window.updateMyOrganizationsSidebar = function() {
-        const container = document.getElementById('my-joined-organizations');
-        if(!container) return;
-        let html = '';
-        window.joinedOrganizations.forEach(org => { 
-            html += `<div class="menu-item community-link" data-name="${org.name}" data-icon="${org.icon}" data-color="${org.color}" onclick="window.handleOrganizationClick('${org.name}', '${org.icon}', '${org.color}')">${org.icon} ${org.name}</div>`; 
-        });
-        container.innerHTML = html;
-    };
-
-    // YENİ: Katılınabilecek Tüm Organizasyonları Gösteren Modal
-    window.showAllOrganizations = function() {
-        let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
-        Object.keys(ORGANIZATION_PASSCODES).forEach(org => {
-            html += `<button class="btn-primary" style="padding:10px; font-size:14px;" onclick="window.handleOrganizationClick('${org}', '🎭', 'linear-gradient(135deg, #059669, #10B981)')">Katıl: ${org}</button>`;
-        });
-        html += '</div>';
-        window.openModal('Kampüs Organizasyonları', html);
-    };
-
-    window.handleFacultyClick = async function(name, icon, bgColor) {
-        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
-        if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
-
-        const isJoined = window.joinedFaculties.some(f => f.name === name) || window.userProfile.faculty === name;
-
-        if(isJoined) { window.loadFacultyFeed(name, icon, bgColor); } 
-        else {
-            mainContent.innerHTML = `
-                <div class="join-faculty-box">
-                    <div class="icon">${icon}</div><h2>${name} Ağına Hoş Geldin</h2><p>Bu alan kapalı bir ağdır. Girmek için fakülte kodunu girmelisin.</p>
-                    <div style="max-width: 300px; margin: 0 auto 20px auto;"><input type="text" id="faculty-passcode-input" class="form-group" style="width: 100%; text-align:center; font-size:18px; font-weight:bold; letter-spacing:2px; padding: 15px; border: 2px solid var(--border-color); border-radius: 12px; outline:none;" placeholder="Giriş Kodunu Yazın"></div>
-                    <button class="btn-primary" style="max-width:250px; font-size:16px; padding:12px;" onclick="window.verifyFacultyCode('${name}', '${icon}', '${bgColor}')">Ağa Katıl</button>
-                </div>
-            `;
-            window.scrollTo(0,0);
-        }
-    };
-
-    // YENİ: Organizasyon Tıklama ve Kontrol Yönetimi
-    window.handleOrganizationClick = async function(name, icon, bgColor) {
-        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
-        if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
-        window.closeModal(); // Modaldan gelindiyse kapat
-
-        const isJoined = window.joinedOrganizations.some(o => o.name === name);
-
-        if(isJoined) { window.loadOrganizationFeed(name, icon, bgColor); } 
-        else {
-            mainContent.innerHTML = `
-                <div class="join-faculty-box">
-                    <div class="icon">${icon}</div><h2>${name} Ağına Hoş Geldin</h2><p>Bu alan organizasyona özel kapalı bir ağdır. Girmek için <b>Katılma Kodunu</b> girmelisin.</p>
-                    <div style="max-width: 300px; margin: 0 auto 20px auto;"><input type="text" id="org-passcode-input" class="form-group" style="width: 100%; text-align:center; font-size:18px; font-weight:bold; letter-spacing:2px; padding: 15px; border: 2px solid var(--border-color); border-radius: 12px; outline:none;" placeholder="Katılma Kodunu Yazın"></div>
-                    <button class="btn-primary" style="max-width:250px; font-size:16px; padding:12px;" onclick="window.verifyOrganizationCode('${name}', '${icon}', '${bgColor}')">Organizasyona Katıl</button>
-                </div>
-            `;
-            window.scrollTo(0,0);
-        }
-    };
-
-    window.verifyFacultyCode = async function(name, icon, bgColor) {
-        const inputCode = document.getElementById('faculty-passcode-input').value.trim();
-        if (inputCode.toLowerCase() === FACULTY_PASSCODES[name].toLowerCase()) {
-            window.userProfile.faculty = name; 
-            window.joinedFaculties = [{name: name, icon: icon, color: bgColor}]; 
-            window.updateMyFacultiesSidebar();
-            await updateDoc(doc(db, "users", window.userProfile.uid), { faculty: name });
-            window.loadFacultyFeed(name, icon, bgColor);
-        } else { alert("Hatalı kod girdiniz. Lütfen tekrar deneyin."); }
-    };
-
-    // YENİ: Organizasyon Kodu Doğrulama
-    window.verifyOrganizationCode = async function(name, icon, bgColor) {
-        const inputCode = document.getElementById('org-passcode-input').value.trim();
-        if (inputCode.toLowerCase() === ORGANIZATION_PASSCODES[name].toLowerCase()) {
-            window.joinedOrganizations.push({name: name, icon: icon, color: bgColor}); 
-            window.updateMyOrganizationsSidebar();
-            // Bu adımda ilerleyen zamanlarda organizasyonu firebase'e de (userDoc) kaydedebilirsin.
-            window.loadOrganizationFeed(name, icon, bgColor);
-        } else { alert("Hatalı katılma kodu girdiniz. Lütfen tekrar deneyin."); }
-    };
-
-    window.loadFacultyFeed = async function(name, icon, bgColor) {
-        let totalMembers = 0; let onlineMembers = 0;
-        try {
-            const q = query(collection(db, "users"), where("faculty", "==", name));
-            const querySnapshot = await getDocs(q);
-            totalMembers = querySnapshot.size;
-            querySnapshot.forEach((doc) => { if(doc.data().isOnline) onlineMembers++; });
-        } catch (e) { console.error(e); }
-        if(totalMembers === 0) totalMembers = 1; if(onlineMembers === 0) onlineMembers = 1;
-
-        mainContent.innerHTML = `
-            <div style="margin-bottom: 24px;">
-                <div class="community-banner" style="background: ${bgColor};">
-                    <div class="comm-banner-left"><h1>${icon} ${name}</h1><p>Küresel Ağa Bağlısın</p></div>
-                    <div class="comm-banner-right">
-                        <div class="member-avatars"><div class="avatar">👨‍💻</div><div class="avatar" style="background:white; color:var(--primary); font-size:11px; font-weight:bold;">+${totalMembers}</div></div>
-                        <div class="community-stats"><span class="online-dot"></span> Gerçek Çevrimiçi: ${onlineMembers}</div>
-                    </div>
-                </div>
-                <div class="create-post-box">
-                    <div class="cp-top"><div class="avatar" style="background:#F3F4F6; font-size:20px;">${window.userProfile.avatar}</div><input type="text" placeholder="${name} ağında paylaşım yap..." onclick="alert('Bu özellik premium sürüme (v2) saklanmıştır.')"></div>
-                </div>
-            </div>
-        `;
-    };
-
-    // YENİ: Organizasyon İçi Özel Sayfa (Sesli/Görüntülü Özellikler İle)
-    window.loadOrganizationFeed = async function(name, icon, bgColor) {
-        mainContent.innerHTML = `
-            <div style="margin-bottom: 24px;">
-                <div class="community-banner" style="background: ${bgColor};">
-                    <div class="comm-banner-left"><h1>${icon} ${name}</h1><p>Özel Organizasyon Ağı</p></div>
-                    <div class="comm-banner-right">
-                        <div class="member-avatars"><div class="avatar">🎭</div><div class="avatar" style="background:white; color:var(--primary); font-size:11px; font-weight:bold;">+👥</div></div>
-                        <div class="community-stats"><span class="online-dot"></span> Aktif Ağ</div>
-                    </div>
-                </div>
-                
-                <div class="card" style="display:flex; justify-content:space-around; align-items:center; gap: 15px; padding: 20px; margin-bottom:20px; background: #F9FAFB; border: 1px dashed var(--primary); flex-wrap: wrap;">
-                    <button class="action-btn" style="flex:1; justify-content:center; padding:15px; font-size:15px; font-weight:bold; background: white; border: 2px solid #3B82F6; color: #3B82F6;" onclick="alert('Sesli sohbet odasına bağlanılıyor... (Altyapı hazır, yakında aktif!)')">🎙️ Sesli Odaya Katıl</button>
-                    <button class="action-btn" style="flex:1; justify-content:center; padding:15px; font-size:15px; font-weight:bold; background: white; border: 2px solid #10B981; color: #10B981;" onclick="alert('Görüntülü toplantı başlatılıyor... (Altyapı hazır, yakında aktif!)')">📹 Görüntülü Toplantı</button>
-                </div>
-
-                <div class="create-post-box">
-                    <div class="cp-top"><div class="avatar" style="background:#F3F4F6; font-size:20px;">${window.userProfile.avatar}</div><input type="text" placeholder="${name} içinde duyuru veya mesaj paylaş..." onclick="alert('Bu özellik premium sürüme (v2) saklanmıştır.')"></div>
-                </div>
-            </div>
-        `;
-    };
-
-    // ============================================================================
-    // 11. SAYFA YÖNLENDİRME (ROUTING) VE PROFİL YÖNETİMİ
-    // ============================================================================
-
-    window.loadPage = function(pageName) {
-        if (pageName === 'home') mainContent.innerHTML = getHomeContent();
-        else if (pageName === 'market') window.renderListings('market', '🛒 Kampüs Market', 'market');
-        else if (pageName === 'housing') window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt', 'housing');
-        else if (pageName === 'confessions') window.renderConfessions();
-        else if (pageName === 'qa') window.renderQA(); 
-        else if (pageName === 'messages') window.renderMessages(); 
-        else if (pageName === 'notifications') window.renderNotifications();
-        else if (pageName === 'settings') window.renderSettings();
-        else if (pageName === 'profile') window.renderProfile();
-        
-        if(window.innerWidth <= 1024 && document.getElementById('sidebar')) document.getElementById('sidebar').classList.remove('open');
-        window.scrollTo(0,0);
-    };
-
-    document.querySelectorAll('.menu-item[data-target]').forEach(item => {
-        item.addEventListener('click', (e) => {
-            if(e.currentTarget.getAttribute('data-target')) {
-                document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
-                e.currentTarget.classList.add('active'); 
-                window.loadPage(e.currentTarget.getAttribute('data-target'));
-            }
-        });
-    });
-
-    bind('logo-btn', 'click', () => { 
-        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
-        document.querySelector('[data-target="home"]').classList.add('active'); 
-        window.loadPage('home'); 
-    });
-    
-    bind('profile-btn', 'click', () => { 
-        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
-        window.loadPage('profile'); 
-    });
-
-    window.renderProfile = function() {
-        let premiumBadge = window.userProfile.isPremium ? '<span style="font-size:12px; background:#FEF3C7; color:#D97706; padding:4px 8px; border-radius:8px; font-weight:bold; margin-left:10px;">🌟 Premium</span>' : '';
-        mainContent.innerHTML = `
-            <div class="card">
-                <h2>👤 Profil Bilgilerim ${premiumBadge}</h2>
-                <div style="background: inherit; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color);">
-                    <div class="grid-2col" style="margin-top:0;">
-                        <div class="form-group"><label>Ad</label><input type="text" id="prof-name" value="${window.userProfile.name}"></div>
-                        <div class="form-group"><label>Soyad</label><input type="text" id="prof-surname" value="${window.userProfile.surname}"></div>
-                    </div>
-                    <div class="form-group">
-                        <label>Kullanıcı Adı</label>
-                        <div style="display:flex; align-items:center; background:inherit; border:1px solid #D1D5DB; border-radius:10px; overflow:hidden; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.1)';" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none';">
-                            <span style="padding-left:12px; color:var(--primary); font-weight:800; font-size:16px;">#</span>
-                            <input type="text" id="prof-username" value="${(window.userProfile.username || '').replace('#', '')}" placeholder="kullaniciadi" style="border:none; background:transparent; width:100%; padding:12px 8px; outline:none; font-size:15px; box-shadow:none; font-weight:600; color:var(--text-dark);">
-                        </div>
-                    </div>
-                    <div class="form-group"><label>Üniversite</label><input type="text" disabled value="${window.userProfile.university}" style="background:#E5E7EB; cursor:not-allowed;"></div>
-                    <div class="form-group"><label>E-posta</label><input type="email" disabled value="${window.userProfile.email}" style="background:#E5E7EB; cursor:not-allowed;"></div>
-                    <button class="btn-primary" onclick="window.saveProfile()" style="padding:12px; margin-bottom: 15px;">Profilimi Kaydet</button>
-                    <button class="btn-danger" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
-                </div>
-            </div>
-        `;
-    };
-
-    window.saveProfile = async function() {
-        const name = document.getElementById('prof-name').value; 
-        const surname = document.getElementById('prof-surname').value;
-        let rawUsername = document.getElementById('prof-username').value.trim().toLowerCase();
-        
-        if(!rawUsername) { alert("Kullanıcı adı boş bırakılamaz!"); return; }
-        
-        rawUsername = rawUsername.replace(/^#/, '');
-        const username = '#' + rawUsername;
-        
-        if(username !== window.userProfile.username) {
-            try {
-                const q = query(collection(db, "users"), where("username", "==", username));
-                const snapshot = await getDocs(q);
-                if(!snapshot.empty) { alert("Bu kullanıcı adı başkası tarafından alınmış. Lütfen başka bir tane deneyin."); return; }
-            } catch(e) { console.error(e); alert("Bir hata oluştu, lütfen tekrar deneyin."); return; }
-        }
-        
-        window.userProfile.name = name; window.userProfile.surname = surname; window.userProfile.username = username;
-        
-        try {
-            await updateDoc(doc(db, "users", window.userProfile.uid), { name: name, surname: surname, username: username });
-            window.openModal('Başarılı', `<div style="text-align:center;"><p style="font-size:40px; margin:0;">✅</p><p>Profil güncellendi!</p></div>`);
-        } catch(e) { alert("Profil kaydedilirken hata: " + e.message); }
-    };
-
-    window.renderSettings = function() {
-        const currentLang = localStorage.getItem('uniloop_lang') || 'tr';
-        const currentTheme = localStorage.getItem('uniloop_theme') || 'light';
-        const t = TRANSLATIONS[currentLang];
-
-        mainContent.innerHTML = `
-            <div class="card">
-                <h2>${t.settingsTitle}</h2>
-                <div style="background: inherit; padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 1px solid var(--border-color);">
-                    <div class="form-group">
-                        <label>${t.langLabel}</label>
-                        <select onchange="window.setLanguage(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D1D5DB; background:transparent;">
-                            <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>Türkçe</option>
-                            <option value="en" ${currentLang === 'en' ? 'selected' : ''}>English</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>${t.themeLabel}</label>
-                        <select onchange="window.toggleTheme(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D1D5DB; background:transparent;">
-                            <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>${t.lightMode}</option>
-                            <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>${t.darkMode}</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn-danger" onclick="window.logout()">${t.logoutBtn}</button>
-            </div>
-        `;
-    };
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeUniLoop);
-} else {
-    initializeUniLoop();
-}
+            <div style="border-top:1px solid var(--border-color); padding-top:24px; margin-bottom:24px;"><h4>Cevaplar (${q.answers.length})</h4><div class="answers-container
