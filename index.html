@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -8,129 +9,259 @@
 </head>
 <body>
 
-    <div id="auth-screen">
-        <div class="auth-card" id="login-card">
-            <div class="auth-logo">🌍 UniLoop</div>
-            <p class="auth-subtitle">Kampüs ağına giriş yap, döngüde kal.</p>
-            
-            <div class="form-group">
-                <input type="email" id="login-email" placeholder="E-posta Adresiniz">
-            </div>
-            <div class="form-group" style="margin-bottom: 8px;">
-                <input type="password" id="login-password" placeholder="Şifren">
-            </div>
-            
-            <div style="text-align: right; margin-bottom: 20px;">
-                <span id="forgot-password-btn" style="font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 600;">Şifremi Unuttum</span>
-            </div>
-            
-            <button class="btn-primary" id="login-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Giriş Yap</button>
-            <button class="action-btn" id="show-register-btn" style="padding: 12px; font-size: 16px;">Yeni Hesap Oluştur</button>
-            
-            <p style="font-size: 12px; color: var(--text-gray); margin-top: 20px;">Sisteme giriş için e-posta onayı gereklidir.</p>
+```
+<div id="auth-screen">
+    <div class="auth-card" id="login-card">
+        <div class="auth-logo">🌍 UniLoop</div>
+        <p class="auth-subtitle">Kampüs ağına giriş yap, döngüde kal.</p>
+        
+        <div class="form-group">
+            <input type="email" id="login-email" placeholder="E-posta Adresiniz">
         </div>
-
-        <div class="auth-card" id="register-card" style="display: none;">
-            <div class="auth-logo" style="font-size: 28px;">🌍 Ağa Katıl</div>
-            <p class="auth-subtitle" style="margin-bottom: 20px;">Üniversiteni seç ve kendi kampüs ağına bağlan.</p>
-            
-            <div class="grid-2col" style="margin-top: 0; margin-bottom: 0;">
-                <div class="form-group"><input type="text" id="reg-name" placeholder="Ad"></div>
-                <div class="form-group"><input type="text" id="reg-surname" placeholder="Soyad"></div>
-            </div>
-            
-            <div class="form-group autocomplete">
-                <input type="text" id="reg-uni" placeholder="Üniversiteni Ara (Örn: Stanford, ODTÜ...)" autocomplete="off">
-                <div id="uni-autocomplete-list" class="autocomplete-items"></div>
-            </div>
-
-            <div class="form-group">
-                <input type="email" id="reg-email" placeholder="E-posta Adresiniz">
-            </div>
-            <div class="form-group">
-                <input type="password" id="reg-password" placeholder="Güçlü Bir Şifre Belirle">
-            </div>
-            
-            <button class="btn-primary" id="register-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Oluştur</button>
-            <button class="action-btn" id="show-login-btn" style="padding: 12px; font-size: 16px; background: transparent; border: 1px solid var(--border-color);">Zaten hesabım var</button>
+        <div class="form-group" style="margin-bottom: 8px;">
+            <input type="password" id="login-password" placeholder="Şifren">
         </div>
-
-        <div class="auth-card" id="verify-card" style="display: none;">
-            <div class="auth-logo" style="font-size: 28px;">📧 Hesabı Doğrula</div>
-            <p class="auth-subtitle" style="margin-bottom: 20px;">E-posta adresinize gönderilen onay kodunu girin veya maildeki doğrulama linkine tıklayın.</p>
-            
-            <div class="form-group">
-                <input type="text" id="verify-code-input" placeholder="6 Haneli Kod (Varsa)" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 5px; font-weight: bold; border: 2px solid var(--primary);">
-            </div>
-            
-            <button class="btn-primary" id="verify-code-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Aktifleştir</button>
-            <p style="font-size: 12px; color: var(--text-gray); margin-top: 15px;">Maildeki linke tıkladıysanız doğrudan butona basabilirsiniz.</p>
+        
+        <div style="text-align: right; margin-bottom: 20px;">
+            <span id="forgot-password-btn" style="font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 600;">Şifremi Unuttum</span>
         </div>
+        
+        <button class="btn-primary" id="login-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Giriş Yap</button>
+        <button class="action-btn" id="show-register-btn" style="padding: 12px; font-size: 16px;">Yeni Hesap Oluştur</button>
+        
+        <p style="font-size: 12px; color: var(--text-gray); margin-top: 20px;">Sisteme giriş için e-posta onayı gereklidir.</p>
     </div>
 
-    <div id="app-screen" style="display: none;">
-        <header>
-            <div class="logo-area">
-                <div id="mobile-menu-btn">☰</div>
-                <div class="logo" id="logo-btn">🌍 UniLoop</div>
-            </div>
-            <div class="user-menu">
-                <button class="btn-primary" id="profile-btn" style="width: auto; padding: 10px 20px; border-radius: 20px;">👤 Profilim</button>
-            </div>
-        </header>
+    <div class="auth-card" id="register-card" style="display: none;">
+        <div class="auth-logo" style="font-size: 28px;">🌍 Ağa Katıl</div>
+        <p class="auth-subtitle" style="margin-bottom: 20px;">Üniversiteni seç ve kendi kampüs ağına bağlan.</p>
+        
+        <div class="grid-2col" style="margin-top: 0; margin-bottom: 0;">
+            <div class="form-group"><input type="text" id="reg-name" placeholder="Ad"></div>
+            <div class="form-group"><input type="text" id="reg-surname" placeholder="Soyad"></div>
+        </div>
+        
+        <div class="form-group autocomplete">
+            <input type="text" id="reg-uni" placeholder="Üniversiteni Ara (Örn: Stanford, ODTÜ...)" autocomplete="off">
+            <div id="uni-autocomplete-list" class="autocomplete-items"></div>
+        </div>
 
-        <div class="container">
-            <aside class="sidebar" id="sidebar">
-                <div class="sidebar-top">
-                    <h3>Navigasyon</h3>
-                    <div class="menu-item active" data-target="home">🏠 Ana Sayfa</div>
-                    <div class="menu-item" data-target="market">🛒 Kampüs Market</div>
-                    <div class="menu-item" data-target="housing">🔑 Ev Arkadaşı & Yurt</div>
-                    <div class="menu-item" data-target="confessions">🤫 Anonim Kampüs</div>
-                    <div class="menu-item" data-target="qa">❓ Soru & Cevap</div>
-                    
-                    <br>
-                    <h3>Bana Özel</h3>
-                    <div class="menu-item" id="nav-messages-btn" data-target="messages">💬 Mesajlarım <span id="msg-badge" class="badge" style="display:none;">0</span></div>
-                    <div id="my-joined-faculties"></div>
-                    <div id="my-joined-orgs"></div>
-                    
-                    <div id="sidebar-networks-container"></div>
+        <div class="form-group">
+            <input type="email" id="reg-email" placeholder="E-posta Adresiniz">
+        </div>
+        <div class="form-group">
+            <input type="password" id="reg-password" placeholder="Güçlü Bir Şifre Belirle">
+        </div>
+        
+        <button class="btn-primary" id="register-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Oluştur</button>
+        <button class="action-btn" id="show-login-btn" style="padding: 12px; font-size: 16px; background: transparent; border: 1px solid var(--border-color);">Zaten hesabım var</button>
+    </div>
+
+    <div class="auth-card" id="verify-card" style="display: none;">
+        <div class="auth-logo" style="font-size: 28px;">📧 Hesabı Doğrula</div>
+        <p class="auth-subtitle" style="margin-bottom: 20px;">E-posta adresinize gönderilen onay kodunu girin veya maildeki doğrulama linkine tıklayın.</p>
+        
+        <div class="form-group">
+            <input type="text" id="verify-code-input" placeholder="6 Haneli Kod (Varsa)" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 5px; font-weight: bold; border: 2px solid var(--primary);">
+        </div>
+        
+        <button class="btn-primary" id="verify-code-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Aktifleştir</button>
+        <p style="font-size: 12px; color: var(--text-gray); margin-top: 15px;">Maildeki linke tıkladıysanız doğrudan butona basabilirsiniz.</p>
+    </div>
+</div>
+
+<div id="app-screen" style="display: none;">
+    <header>
+        <div class="logo-area">
+            <div id="mobile-menu-btn">☰</div>
+            <div class="logo" id="logo-btn">🌍 UniLoop</div>
+        </div>
+        <div class="user-menu">
+            <button class="btn-primary" id="profile-btn" style="width: auto; padding: 10px 20px; border-radius: 20px;">👤 Profilim</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- ============================================================ -->
+        <!-- SOL SIDEBAR - YENİ NAVİGASYON YAPISI                        -->
+        <!-- ============================================================ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-top">
+                <h3>Navigasyon</h3>
+                <div class="menu-item active" data-target="home">🏠 Ana Sayfa</div>
+                <div class="menu-item" data-target="market">🛒 Kampüs Market</div>
+                <div class="menu-item" data-target="campus">🏛️ Kampüs</div>
+
+                <br>
+                <h3>Bana Özel</h3>
+                <div class="menu-item" id="nav-messages-btn" data-target="messages">
+                    💬 Mesajlarım
+                    <span id="msg-badge" class="badge" style="display:none;">0</span>
                 </div>
-                
-                <div class="sidebar-bottom">
-                    <div class="menu-item" data-target="settings">⚙️ Ayarlar</div>
+                <!-- Bildirimler butonu JS tarafından buraya eklenir -->
+
+                <br>
+                <!-- ====================================================== -->
+                <!-- 🌐 AĞLARIM - YENİ ANA BAŞLIK VE ACCORDION MENÜSÜ       -->
+                <!-- ====================================================== -->
+                <h3>🌐 Ağlarım</h3>
+
+                <!-- Fakülteler Accordion -->
+                <div class="accordion-section" id="accordion-faculties">
+                    <div class="accordion-header" id="acc-header-faculties">
+                        <span>🏢 Fakülteler</span>
+                        <span class="accordion-icon" id="acc-icon-faculties">▶</span>
+                    </div>
+                    <div class="accordion-content" id="acc-content-faculties">
+                        <div class="menu-item community-link"
+                            data-name="Tıp Fakültesi"
+                            data-icon="🩺"
+                            data-color="linear-gradient(135deg, #EF4444, #B91C1C)">
+                            🩺 Tıp Fakültesi
+                        </div>
+                        <div class="menu-item community-link"
+                            data-name="Hukuk Fakültesi"
+                            data-icon="⚖️"
+                            data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">
+                            ⚖️ Hukuk Fakültesi
+                        </div>
+                        <div class="menu-item community-link"
+                            data-name="Diş Hekimliği Fakültesi"
+                            data-icon="🦷"
+                            data-color="linear-gradient(135deg, #06B6D4, #0891B2)">
+                            🦷 Diş Hekimliği Fakültesi
+                        </div>
+                    </div>
                 </div>
-            </aside>
 
-            <main class="main-feed" id="main-content"></main>
-
-            <aside class="right-panel">
-                <div class="card sticky-card" style="padding: 15px;">
-                    <div id="right-networks-container"></div>
+                <!-- Kulüp ve Organizasyonlar Accordion -->
+                <div class="accordion-section" id="accordion-clubs">
+                    <div class="accordion-header" id="acc-header-clubs">
+                        <span>🎭 Kulüp ve Organizasyonlar</span>
+                        <span class="accordion-icon" id="acc-icon-clubs">▶</span>
+                    </div>
+                    <div class="accordion-content" id="acc-content-clubs">
+                        <div class="menu-item org-link"
+                            data-name="Spor Kulübü"
+                            data-icon="⚽"
+                            data-color="linear-gradient(135deg, #10B981, #059669)">
+                            ⚽ Spor Kulübü
+                        </div>
+                        <div class="menu-item org-link"
+                            data-name="Tiyatro Kulübü"
+                            data-icon="🎭"
+                            data-color="linear-gradient(135deg, #8B5CF6, #4C1D95)">
+                            🎭 Tiyatro Kulübü
+                        </div>
+                        <div class="menu-item org-link"
+                            data-name="Sağlık Kulübü"
+                            data-icon="🏥"
+                            data-color="linear-gradient(135deg, #EF4444, #B91C1C)">
+                            🏥 Sağlık Kulübü
+                        </div>
+                    </div>
                 </div>
-            </aside>
-        </div>
-    </div>
 
-    <div id="app-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-title">Başlık</h3>
-                <span class="close-btn" id="modal-close">&times;</span>
+                <!-- Mobil için ek içerik alanı -->
+                <div id="my-joined-faculties"></div>
+                <div id="my-joined-orgs"></div>
+                <div id="sidebar-networks-container"></div>
             </div>
-            <div class="modal-body" id="modal-body"></div>
+            
+            <div class="sidebar-bottom">
+                <div class="menu-item" data-target="settings">⚙️ Ayarlar</div>
+            </div>
+        </aside>
+
+        <main class="main-feed" id="main-content"></main>
+
+        <!-- SAĞ PANEL -->
+        <aside class="right-panel">
+            <div class="card sticky-card" style="padding: 15px;">
+                <h2 style="margin-bottom: 15px; font-size: 16px;">🌍 Ağlar</h2>
+
+                <!-- Fakülteler Accordion (Sağ Panel) -->
+                <div class="accordion-section">
+                    <div class="accordion-header">
+                        <span>🏢 Fakülteler</span>
+                        <span class="accordion-icon">▶</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="menu-item community-link"
+                            data-name="Tıp Fakültesi"
+                            data-icon="🩺"
+                            data-color="linear-gradient(135deg, #EF4444, #B91C1C)">
+                            🩺 Tıp Fakültesi
+                        </div>
+                        <div class="menu-item community-link"
+                            data-name="Hukuk Fakültesi"
+                            data-icon="⚖️"
+                            data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">
+                            ⚖️ Hukuk Fakültesi
+                        </div>
+                        <div class="menu-item community-link"
+                            data-name="Diş Hekimliği Fakültesi"
+                            data-icon="🦷"
+                            data-color="linear-gradient(135deg, #06B6D4, #0891B2)">
+                            🦷 Diş Hekimliği Fakültesi
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kulüp ve Organizasyonlar Accordion (Sağ Panel) -->
+                <div class="accordion-section">
+                    <div class="accordion-header">
+                        <span>🎭 Kulüp ve Organizasyonlar</span>
+                        <span class="accordion-icon">▶</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="menu-item org-link"
+                            data-name="Spor Kulübü"
+                            data-icon="⚽"
+                            data-color="linear-gradient(135deg, #10B981, #059669)">
+                            ⚽ Spor Kulübü
+                        </div>
+                        <div class="menu-item org-link"
+                            data-name="Tiyatro Kulübü"
+                            data-icon="🎭"
+                            data-color="linear-gradient(135deg, #8B5CF6, #4C1D95)">
+                            🎭 Tiyatro Kulübü
+                        </div>
+                        <div class="menu-item org-link"
+                            data-name="Sağlık Kulübü"
+                            data-icon="🏥"
+                            data-color="linear-gradient(135deg, #EF4444, #B91C1C)">
+                            🏥 Sağlık Kulübü
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div id="app-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">Başlık</h3>
+            <span class="close-btn" id="modal-close">&times;</span>
         </div>
+        <div class="modal-body" id="modal-body"></div>
     </div>
+</div>
 
-    <div id="lightbox" class="lightbox">
-        <span class="lightbox-close" onclick="window.closeLightbox()">&times;</span>
-        <span class="lightbox-counter" id="lightbox-counter">1/3</span>
-        <button class="lightbox-prev" onclick="window.changeLightboxImage(-1)">&#10094;</button>
-        <img class="lightbox-content" id="lightbox-img" src="">
-        <button class="lightbox-next" onclick="window.changeLightboxImage(1)">&#10095;</button>
-    </div>
+<!-- LIGHTBOX -->
+<div id="lightbox" class="lightbox">
+    <span class="lightbox-close" onclick="window.closeLightbox()">&times;</span>
+    <span class="lightbox-counter" id="lightbox-counter">1/3</span>
+    <button class="lightbox-prev" onclick="window.changeLightboxImage(-1)">&#10094;</button>
+    <img class="lightbox-content" id="lightbox-img" src="">
+    <button class="lightbox-next" onclick="window.changeLightboxImage(1)">&#10095;</button>
+</div>
 
-    <script type="module" src="app.js"></script>
+<script type="module" src="app.js"></script>
+```
+
 </body>
 </html>
