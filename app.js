@@ -82,6 +82,7 @@ function initializeUniLoop() {
             max-height: 100vh !important;
             top: 0 !important;
             padding-bottom: 40px !important;
+            z-index: 9998 !important;
         }
         
         /* Mesajlar: Sayfanın kaymamasını sağlayan Fix */
@@ -203,23 +204,6 @@ function initializeUniLoop() {
             pointer-events: none;
             user-select: none;
         }
-        .locked-container {
-            position: relative;
-            overflow: hidden;
-            border-radius: 16px;
-        }
-        .locked-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255, 255, 255, 0.7);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 5;
-            text-align: center;
-            padding: 10px;
-        }
 
         /* GERÇEK ÇALIŞAN KARANLIK MOD (DARK MODE) DESTEĞİ */
         body.dark-mode, .dark-mode #main-content { background-color: #121212 !important; color: #e5e7eb !important; }
@@ -235,19 +219,26 @@ function initializeUniLoop() {
         .dark-mode .modal-content { background-color: #1e1e1e !important; color: #e5e7eb !important; border-color: #374151 !important;}
         .dark-mode .menu-item { color: #9ca3af; }
         .dark-mode .menu-item.active { background: #374151 !important; color: var(--primary) !important; }
-        .dark-mode #app-header { background: #1e1e1e !important; border-bottom-color: #374151 !important; }
-        .dark-mode #sidebar { background: #1e1e1e !important; border-right-color: #374151 !important; }
-        .dark-mode .locked-overlay { background: rgba(30, 30, 30, 0.7); }
 
-        /* 🌟 GÖRSEL DÜZELTME: HEADER TEK SATIR & KÜÇÜLTÜLMÜŞ BUTONLAR */
+        /* 🌟 GÖRSEL DÜZELTME: HEADER TEK SATIR, KÜÇÜLTÜLMÜŞ BUTONLAR VE STICKY (SABIT) YAPI */
         #app-header, header {
             display: flex !important;
             align-items: center !important;
             justify-content: space-between !important;
             flex-wrap: nowrap !important;
             white-space: nowrap !important;
-            overflow: hidden !important;
             padding: 5px 15px !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 9999 !important;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+        }
+        
+        .dark-mode #app-header, .dark-mode header {
+            background-color: #1e1e1e !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+            border-bottom-color: transparent !important;
         }
         
         /* UniLoop logosu ve texti aynı boyutta sabit kalsın */
@@ -676,7 +667,7 @@ function initializeUniLoop() {
                     window.loadPage(activeTab ? activeTab.getAttribute('data-target') : 'home'); 
                 }
                 
-                // Menüye Premium Butonunu Dinamik Ekle (Profilimin yanına) - GÖRSEL FİX UYGULANDI (Profilin solunda)
+                // Menüye Premium Butonunu Dinamik Ekle (Profilimin yanına)
                 if (!document.getElementById('nav-premium-action') && !window.userProfile.isPremium) {
                     const profileBtn = document.getElementById('profile-btn');
                     if (profileBtn) {
@@ -985,9 +976,12 @@ function initializeUniLoop() {
             `;
         }
 
-        // 🌟 YENİ: PREMIUM'A GÖRE DEĞİŞEN YAPAY ZEKA RADARI
+        // 🌟 YENİ: PREMIUM'A GÖRE DEĞİŞEN YAPAY ZEKA RADARI VE SANSÜRLÜ MERAK TASARIMI
         let aiRadarContent = '';
         const isPremium = window.userProfile.isPremium;
+        
+        // Kullanıcının fakültesini alıyoruz, yoksa teşvik edici bir metin yazıyoruz
+        let userFac = window.userProfile.faculty || "Aynı Fakülte (Bilinmiyor)";
 
         if (isPremium) {
             aiRadarContent = `
@@ -1020,34 +1014,31 @@ function initializeUniLoop() {
                 </div>
             `;
         } else {
+            // YENİ: KİLİTLİ ANCAK FAKÜLTESİ GÖRÜNEN MERAK UYANDIRICI KARTLAR
             aiRadarContent = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
                     <h2 style="margin:0;">✨ AI Kampüs Eşleşmeleri</h2>
                 </div>
                 <div class="match-grid">
-                    <div class="match-card">
-                        <div class="avatar">👨‍💻</div>
-                        <h4>John D.</h4>
-                        <p>Bilgisayar Müh.</p>
-                        <button class="action-btn" onclick="window.openModal('Bağlantı Kur', '<p>Sistem yakında aktif edilecek!</p>')">Bağlan</button>
-                    </div>
                     
-                    <div class="match-card locked-container">
-                        <div class="locked-overlay">
-                            <span style="font-size:28px; margin-bottom:8px;">🔒</span>
-                            <span style="font-size:13px; font-weight:bold; color:#1F2937;">3 Yeni Kişi Seninle Eşleşmek İstiyor!</span>
-                        </div>
-                        <div class="locked-blur">
-                            <div class="avatar">👩‍⚕️</div>
-                            <h4>S**** B.</h4>
-                            <p>Tıp Fakültesi</p>
-                            <button class="action-btn">Mesaj At</button>
-                        </div>
+                    <div class="match-card" style="position:relative; border: 1px solid #E5E7EB;">
+                        <div class="avatar" style="filter: blur(2px);">👩‍⚕️</div>
+                        <h4 style="margin: 8px 0 2px 0;">S**** B.</h4>
+                        <p style="color:#059669; font-weight:bold; font-size:13px; margin-bottom:10px;">${userFac}</p>
+                        <button class="action-btn" style="background:#F3F4F6; color:#6B7280; width:100%; display:flex; justify-content:center; gap:5px;" onclick="window.openPremiumModal()"><span>🔒</span> Kilidi Aç</button>
                     </div>
+
+                    <div class="match-card" style="position:relative; border: 1px solid #E5E7EB;">
+                        <div class="avatar" style="filter: blur(2px);">👨‍💻</div>
+                        <h4 style="margin: 8px 0 2px 0;">E**** Y.</h4>
+                        <p style="color:#059669; font-weight:bold; font-size:13px; margin-bottom:10px;">${userFac}</p>
+                        <button class="action-btn" style="background:#F3F4F6; color:#6B7280; width:100%; display:flex; justify-content:center; gap:5px;" onclick="window.openPremiumModal()"><span>🔒</span> Kilidi Aç</button>
+                    </div>
+
                 </div>
                 <div style="text-align:center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
                     <button class="premium-upgrade-btn premium-glow" onclick="window.openPremiumModal()">
-                        🌟 Kilitleri Açmak İçin Premium'a Geç
+                        🌟 Kim Olduklarını Görmek İçin Premium'a Geç
                     </button>
                 </div>
             `;
@@ -2014,108 +2005,4 @@ function initializeUniLoop() {
     document.querySelectorAll('.menu-item[data-target]').forEach(item => {
         item.addEventListener('click', (e) => {
             if(e.currentTarget.getAttribute('data-target')) {
-                document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
-                e.currentTarget.classList.add('active'); 
-                window.loadPage(e.currentTarget.getAttribute('data-target'));
-            }
-        });
-    });
-
-    bind('logo-btn', 'click', () => { 
-        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
-        document.querySelector('[data-target="home"]').classList.add('active'); 
-        window.loadPage('home'); 
-    });
-    
-    bind('profile-btn', 'click', () => { 
-        document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
-        window.loadPage('profile'); 
-    });
-
-    window.renderProfile = function() {
-        let premiumBadge = window.userProfile.isPremium ? '<span style="font-size:12px; background:#FEF3C7; color:#D97706; padding:4px 8px; border-radius:8px; font-weight:bold; margin-left:10px;">🌟 Premium</span>' : '';
-        mainContent.innerHTML = `
-            <div class="card">
-                <h2>👤 Profil Bilgilerim ${premiumBadge}</h2>
-                <div style="background: inherit; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color);">
-                    <div class="grid-2col" style="margin-top:0;">
-                        <div class="form-group"><label>Ad</label><input type="text" id="prof-name" value="${window.userProfile.name}"></div>
-                        <div class="form-group"><label>Soyad</label><input type="text" id="prof-surname" value="${window.userProfile.surname}"></div>
-                    </div>
-                    <div class="form-group">
-                        <label>Kullanıcı Adı</label>
-                        <div style="display:flex; align-items:center; background:inherit; border:1px solid #D1D5DB; border-radius:10px; overflow:hidden; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.1)';" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none';">
-                            <span style="padding-left:12px; color:var(--primary); font-weight:800; font-size:16px;">#</span>
-                            <input type="text" id="prof-username" value="${(window.userProfile.username || '').replace('#', '')}" placeholder="kullaniciadi" style="border:none; background:transparent; width:100%; padding:12px 8px; outline:none; font-size:15px; box-shadow:none; font-weight:600; color:var(--text-dark);">
-                        </div>
-                    </div>
-                    <div class="form-group"><label>Üniversite</label><input type="text" disabled value="${window.userProfile.university}" style="background:#E5E7EB; cursor:not-allowed;"></div>
-                    <div class="form-group"><label>E-posta</label><input type="email" disabled value="${window.userProfile.email}" style="background:#E5E7EB; cursor:not-allowed;"></div>
-                    <button class="btn-primary" onclick="window.saveProfile()" style="padding:12px; margin-bottom: 15px;">Profilimi Kaydet</button>
-                    <button class="btn-danger" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
-                </div>
-            </div>
-        `;
-    };
-
-    window.saveProfile = async function() {
-        const name = document.getElementById('prof-name').value; 
-        const surname = document.getElementById('prof-surname').value;
-        let rawUsername = document.getElementById('prof-username').value.trim().toLowerCase();
-        
-        if(!rawUsername) { alert("Kullanıcı adı boş bırakılamaz!"); return; }
-        
-        rawUsername = rawUsername.replace(/^#/, '');
-        const username = '#' + rawUsername;
-        
-        if(username !== window.userProfile.username) {
-            try {
-                const q = query(collection(db, "users"), where("username", "==", username));
-                const snapshot = await getDocs(q);
-                if(!snapshot.empty) { alert("Bu kullanıcı adı başkası tarafından alınmış. Lütfen başka bir tane deneyin."); return; }
-            } catch(e) { console.error(e); alert("Bir hata oluştu, lütfen tekrar deneyin."); return; }
-        }
-        
-        window.userProfile.name = name; window.userProfile.surname = surname; window.userProfile.username = username;
-        
-        try {
-            await updateDoc(doc(db, "users", window.userProfile.uid), { name: name, surname: surname, username: username });
-            window.openModal('Başarılı', `<div style="text-align:center;"><p style="font-size:40px; margin:0;">✅</p><p>Profil güncellendi!</p></div>`);
-        } catch(e) { alert("Profil kaydedilirken hata: " + e.message); }
-    };
-
-    window.renderSettings = function() {
-        const currentLang = localStorage.getItem('uniloop_lang') || 'tr';
-        const currentTheme = localStorage.getItem('uniloop_theme') || 'light';
-        const t = TRANSLATIONS[currentLang];
-
-        mainContent.innerHTML = `
-            <div class="card">
-                <h2>${t.settingsTitle}</h2>
-                <div style="background: inherit; padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 1px solid var(--border-color);">
-                    <div class="form-group">
-                        <label>${t.langLabel}</label>
-                        <select onchange="window.setLanguage(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D1D5DB; background:transparent;">
-                            <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>Türkçe</option>
-                            <option value="en" ${currentLang === 'en' ? 'selected' : ''}>English</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>${t.themeLabel}</label>
-                        <select onchange="window.toggleTheme(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D1D5DB; background:transparent;">
-                            <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>${t.lightMode}</option>
-                            <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>${t.darkMode}</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn-danger" onclick="window.logout()">${t.logoutBtn}</button>
-            </div>
-        `;
-    };
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeUniLoop);
-} else {
-    initializeUniLoop();
-}
+                document.querySelectorAll('.menu-item[data-target]').forEach(m => m.
