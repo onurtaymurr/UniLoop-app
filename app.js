@@ -200,7 +200,7 @@ function initializeUniLoop() {
         .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
         .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
 
-        /* 🌟 YENİ: ACCORDION MENÜ STİLLERİ (Fakülteler ve Organizasyonlar) */
+        /* 🌟 YENİ: ACCORDION MENÜ STİLLERİ (▶ ve ▼ mantığıyla) */
         .accordion-header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px 15px; cursor: pointer; color: var(--text-gray);
@@ -208,13 +208,13 @@ function initializeUniLoop() {
             transition: background 0.2s; border-radius: 8px; margin-top: 10px;
         }
         .accordion-header:hover { background: rgba(0,0,0,0.05); color: var(--text-dark); }
-        .accordion-header .chevron { transition: transform 0.3s ease; font-size: 12px; }
-        .accordion-header.active .chevron { transform: rotate(180deg); }
+        .accordion-header .chevron { transition: transform 0.3s ease; font-size: 12px; display: inline-block; transform: rotate(0deg); }
+        .accordion-header.active .chevron { transform: rotate(90deg); }
         .accordion-content {
             max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out;
             padding-left: 5px; display: flex; flex-direction: column; gap: 2px;
         }
-        .accordion-content.expanded { max-height: 500px; }
+        .accordion-content.expanded { max-height: 800px; overflow-y: auto; }
         .dark-mode .accordion-header:hover { background: #374151; color: #e5e7eb; }
 
         /* 🌟 YENİ: PREMIUM BÖLÜMÜ VE KİLİTLİ İÇERİK STİLLERİ */
@@ -426,6 +426,24 @@ function initializeUniLoop() {
         "Doğa Sporları": "doga100",
         "Girişimcilik Topluluğu": "girisim100"
     };
+
+    // 🌟 YENİ: TÜM KATILINABİLECEK FAKÜLTELER LİSTESİ
+    const ALL_FACULTIES = [
+        {name: "Tıp Fakültesi", icon: "🩺", color: "linear-gradient(135deg, #EF4444, #B91C1C)"},
+        {name: "Bilgisayar Fakültesi", icon: "💻", color: "linear-gradient(135deg, #3B82F6, #1D4ED8)"},
+        {name: "Diş Hekimliği", icon: "🦷", color: "linear-gradient(135deg, #06B6D4, #0369A1)"},
+        {name: "Hukuk Fakültesi", icon: "⚖️", color: "linear-gradient(135deg, #8B5CF6, #4338CA)"},
+        {name: "Mimarlık Fakültesi", icon: "🏛️", color: "linear-gradient(135deg, #F59E0B, #B45309)"},
+        {name: "Eğitim Fakültesi", icon: "📚", color: "linear-gradient(135deg, #10B981, #047857)"}
+    ];
+
+    // 🌟 YENİ: TÜM KATILINABİLECEK KULÜPLER LİSTESİ
+    const ALL_ORGANIZATIONS = [
+        {name: "Müzik Kulübü", icon: "🎵", color: "linear-gradient(135deg, #8B5CF6, #6D28D9)"},
+        {name: "Yapay Zeka ve Yazılım", icon: "🤖", color: "linear-gradient(135deg, #3B82F6, #1E40AF)"},
+        {name: "Doğa Sporları", icon: "🏕️", color: "linear-gradient(135deg, #10B981, #047857)"},
+        {name: "Girişimcilik Topluluğu", icon: "🚀", color: "linear-gradient(135deg, #F59E0B, #B45309)"}
+    ];
 
     const globalUniversities = [
         "Yakın Doğu Üniversitesi (NEU)", 
@@ -1098,7 +1116,7 @@ function initializeUniLoop() {
                 </div>
             `;
         } else {
-            // YENİ: Daha Şeffaf ve Gerçekçi AI Metni (Güncellendi)
+            // YENİ: Daha Şeffaf ve Gerçekçi AI Metni
             aiRadarContent = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
                     <h2 style="margin:0;">✨ AI Kampüs Eşleşmeleri</h2>
@@ -2027,38 +2045,39 @@ function initializeUniLoop() {
     // 10. FAKÜLTE VE ORGANİZASYON (KULÜP) SİSTEMİ (YENİ ACCORDION ENTEGRELİ)
     // ============================================================================
 
-    // YENİ: Sidebar'a Accordion (Açılır/Kapanır) menüleri yerleştirme fonksiyonu
+    // YENİ: Sidebar'a Accordion (Açılır/Kapanır) menüleri yerleştirme fonksiyonu (Tüm listeleri otomatik çizer)
     window.buildSidebarAccordions = function() {
         const sidebar = document.getElementById('sidebar');
         if(!sidebar) return;
         
-        // Eğer zaten inşa edilmişse tekrar ekleme yapma
         if(!document.getElementById('faculties-accordion')) {
             const accordionHtml = `
                 <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 10px;"></div>
                 
-                <div class="accordion-header active" id="faculties-accordion" onclick="window.toggleAccordion('faculties-content', this)">
-                    <span>🏢 Fakültelerim</span>
-                    <span class="chevron" style="transform: rotate(180deg);">▼</span>
+                <div class="accordion-header" id="faculties-accordion" onclick="window.toggleAccordion('faculties-content', this)">
+                    <span>🏢 Fakülteler</span>
+                    <span class="chevron">▶</span>
                 </div>
-                <div class="accordion-content expanded" id="faculties-content" style="max-height: 500px;">
+                <div class="accordion-content" id="faculties-content">
                     <div id="my-joined-faculties"></div>
                 </div>
 
-                <div class="accordion-header active" id="organizations-accordion" onclick="window.toggleAccordion('organizations-content', this)">
+                <div class="accordion-header" id="organizations-accordion" onclick="window.toggleAccordion('organizations-content', this)">
                     <span>🎭 Kulüp & Organizasyonlar</span>
-                    <span class="chevron" style="transform: rotate(180deg);">▼</span>
+                    <span class="chevron">▶</span>
                 </div>
-                <div class="accordion-content expanded" id="organizations-content" style="max-height: 500px;">
+                <div class="accordion-content" id="organizations-content">
                     <div id="my-joined-organizations"></div>
-                    <div class="menu-item" style="font-size: 13px; color: var(--primary); font-weight: bold; justify-content: center; margin-top: 5px;" onclick="window.showAllOrganizations()">+ Yeni Kulübe Katıl</div>
                 </div>
             `;
             sidebar.insertAdjacentHTML('beforeend', accordionHtml);
+            
+            window.updateMyFacultiesSidebar();
+            window.updateMyOrganizationsSidebar();
         }
     };
 
-    // YENİ: Accordion Açma / Kapama Dinamiği
+    // YENİ: Accordion Açma / Kapama Dinamiği (▶ ve ▼ dönüşümü)
     window.toggleAccordion = function(contentId, headerEl) {
         const content = document.getElementById(contentId);
         if(content) {
@@ -2067,35 +2086,30 @@ function initializeUniLoop() {
         }
     };
 
+    // YENİ: Fakülteleri Kenar Çubuğuna Çiz (Tüm listeyi çizer, katıldıklarını yeşil badge ile işaretler)
     window.updateMyFacultiesSidebar = function() {
         const container = document.getElementById('my-joined-faculties');
         if(!container) return;
         let html = '';
-        window.joinedFaculties.forEach(fac => { 
-            html += `<div class="menu-item community-link" data-name="${fac.name}" data-icon="${fac.icon}" data-color="${fac.color}" onclick="window.handleFacultyClick('${fac.name}', '${fac.icon}', '${fac.color}')">${fac.icon} ${fac.name}</div>`; 
+        ALL_FACULTIES.forEach(fac => { 
+            const isJoined = window.joinedFaculties.some(f => f.name === fac.name) || window.userProfile.faculty === fac.name;
+            const joinedBadge = isJoined ? '<span style="margin-left:auto; font-size:10px; background:#10B981; color:white; padding:2px 6px; border-radius:8px;">Katıldın</span>' : '';
+            html += `<div class="menu-item community-link" data-name="${fac.name}" data-icon="${fac.icon}" data-color="${fac.color}" onclick="window.handleFacultyClick('${fac.name}', '${fac.icon}', '${fac.color}')" style="display:flex; align-items:center;">${fac.icon} ${fac.name} ${joinedBadge}</div>`; 
         });
         container.innerHTML = html;
     };
 
-    // YENİ: Organizasyonları Kenar Çubuğuna Çiz
+    // YENİ: Organizasyonları Kenar Çubuğuna Çiz (Tüm listeyi çizer, katıldıklarını yeşil badge ile işaretler)
     window.updateMyOrganizationsSidebar = function() {
         const container = document.getElementById('my-joined-organizations');
         if(!container) return;
         let html = '';
-        window.joinedOrganizations.forEach(org => { 
-            html += `<div class="menu-item community-link" data-name="${org.name}" data-icon="${org.icon}" data-color="${org.color}" onclick="window.handleOrganizationClick('${org.name}', '${org.icon}', '${org.color}')">${org.icon} ${org.name}</div>`; 
+        ALL_ORGANIZATIONS.forEach(org => { 
+            const isJoined = window.joinedOrganizations.some(o => o.name === org.name);
+            const joinedBadge = isJoined ? '<span style="margin-left:auto; font-size:10px; background:#10B981; color:white; padding:2px 6px; border-radius:8px;">Katıldın</span>' : '';
+            html += `<div class="menu-item community-link" data-name="${org.name}" data-icon="${org.icon}" data-color="${org.color}" onclick="window.handleOrganizationClick('${org.name}', '${org.icon}', '${org.color}')" style="display:flex; align-items:center;">${org.icon} ${org.name} ${joinedBadge}</div>`; 
         });
         container.innerHTML = html;
-    };
-
-    // YENİ: Katılınabilecek Tüm Organizasyonları Gösteren Modal
-    window.showAllOrganizations = function() {
-        let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
-        Object.keys(ORGANIZATION_PASSCODES).forEach(org => {
-            html += `<button class="btn-primary" style="padding:10px; font-size:14px;" onclick="window.handleOrganizationClick('${org}', '🎭', 'linear-gradient(135deg, #059669, #10B981)')">Katıl: ${org}</button>`;
-        });
-        html += '</div>';
-        window.openModal('Kampüs Organizasyonları', html);
     };
 
     window.handleFacultyClick = async function(name, icon, bgColor) {
@@ -2121,7 +2135,7 @@ function initializeUniLoop() {
     window.handleOrganizationClick = async function(name, icon, bgColor) {
         document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
         if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
-        window.closeModal(); // Modaldan gelindiyse kapat
+        window.closeModal(); 
 
         const isJoined = window.joinedOrganizations.some(o => o.name === name);
 
@@ -2142,7 +2156,7 @@ function initializeUniLoop() {
         const inputCode = document.getElementById('faculty-passcode-input').value.trim();
         if (inputCode.toLowerCase() === FACULTY_PASSCODES[name].toLowerCase()) {
             window.userProfile.faculty = name; 
-            window.joinedFaculties = [{name: name, icon: icon, color: bgColor}]; 
+            window.joinedFaculties.push({name: name, icon: icon, color: bgColor}); 
             window.updateMyFacultiesSidebar();
             await updateDoc(doc(db, "users", window.userProfile.uid), { faculty: name });
             window.loadFacultyFeed(name, icon, bgColor);
