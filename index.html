@@ -98,17 +98,27 @@
                     
                     <div class="mobile-only-communities">
                         <br>
-                        <h3>🏢 Fakülteler</h3>
-                        <div class="menu-item community-link" data-name="Tıp Fakültesi" data-icon="🩺" data-color="linear-gradient(135deg, #EF4444, #B91C1C)">🩺 Tıp Fakültesi</div>
-                        <div class="menu-item community-link" data-name="Bilgisayar Fakültesi" data-icon="💻" data-color="linear-gradient(135deg, #3B82F6, #2563EB)">💻 Bilgisayar Fakültesi</div>
-                        <div class="menu-item community-link" data-name="Diş Hekimliği" data-icon="🦷" data-color="linear-gradient(135deg, #06B6D4, #0891B2)">🦷 Diş Hekimliği</div>
-                        
-                        <div id="mobile-more-faculties" style="display: none;">
-                            <div class="menu-item community-link" data-name="Hukuk Fakültesi" data-icon="⚖️" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">⚖️ Hukuk Fakültesi</div>
-                            <div class="menu-item community-link" data-name="Mimarlık Fakültesi" data-icon="📐" data-color="linear-gradient(135deg, #F59E0B, #D97706)">📐 Mimarlık Fakültesi</div>
-                            <div class="menu-item community-link" data-name="Eğitim Fakültesi" data-icon="📖" data-color="linear-gradient(135deg, #10B981, #059669)">📖 Eğitim Fakültesi</div>
+                        <h3 class="accordion-header" style="cursor:pointer;" onclick="window.toggleAccordion('mob-faculties')"><span id="mob-faculties-arrow">▶</span> 🏢 Fakülteler</h3>
+                        <div id="mob-faculties-content" class="accordion-content" style="display:none;">
+                            <div class="menu-item community-link" data-name="Tıp Fakültesi" data-icon="🩺" data-color="linear-gradient(135deg, #EF4444, #B91C1C)">🩺 Tıp Fakültesi</div>
+                            <div class="menu-item community-link" data-name="Bilgisayar Fakültesi" data-icon="💻" data-color="linear-gradient(135deg, #3B82F6, #2563EB)">💻 Bilgisayar Fakültesi</div>
+                            <div class="menu-item community-link" data-name="Diş Hekimliği" data-icon="🦷" data-color="linear-gradient(135deg, #06B6D4, #0891B2)">🦷 Diş Hekimliği</div>
+                            
+                            <div id="mobile-more-faculties" style="display: none;">
+                                <div class="menu-item community-link" data-name="Hukuk Fakültesi" data-icon="⚖️" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">⚖️ Hukuk Fakültesi</div>
+                                <div class="menu-item community-link" data-name="Mimarlık Fakültesi" data-icon="📐" data-color="linear-gradient(135deg, #F59E0B, #D97706)">📐 Mimarlık Fakültesi</div>
+                                <div class="menu-item community-link" data-name="Eğitim Fakültesi" data-icon="📖" data-color="linear-gradient(135deg, #10B981, #059669)">📖 Eğitim Fakültesi</div>
+                            </div>
+                            <button class="action-btn" id="mobile-show-more-btn" style="margin-top: 10px;">Daha Fazla Göster</button>
                         </div>
-                        <button class="action-btn" id="mobile-show-more-btn" style="margin-top: 10px;">Daha Fazla Göster</button>
+
+                        <br>
+                        <h3 class="accordion-header" style="cursor:pointer;" onclick="window.toggleAccordion('mob-orgs')"><span id="mob-orgs-arrow">▶</span> 🎭 Kulüp ve Organizasyonlar</h3>
+                        <div id="mob-orgs-content" class="accordion-content" style="display:none;">
+                            <div class="menu-item community-link" data-name="Müzik Kulübü" data-icon="🎸" data-color="linear-gradient(135deg, #EC4899, #BE185D)" data-type="org">🎸 Müzik Kulübü</div>
+                            <div class="menu-item community-link" data-name="Girişimcilik Kulübü" data-icon="🚀" data-color="linear-gradient(135deg, #F59E0B, #D97706)" data-type="org">🚀 Girişimcilik Kulübü</div>
+                            <div class="menu-item community-link" data-name="Yazılım Topluluğu" data-icon="💻" data-color="linear-gradient(135deg, #10B981, #059669)" data-type="org">💻 Yazılım Topluluğu</div>
+                        </div>
                     </div>
                 </div>
                 
@@ -121,8 +131,8 @@
 
             <aside class="right-panel">
                 <div class="card sticky-card">
-                    <h2>🏢 Fakülteler</h2>
-                    <ul class="community-list">
+                    <h2 class="accordion-header" style="cursor:pointer; font-size:16px; margin-bottom:10px;" onclick="window.toggleAccordion('desk-faculties')"><span id="desk-faculties-arrow">▶</span> 🏢 Fakülteler</h2>
+                    <ul class="community-list" id="desk-faculties-content" style="display:none;">
                         <li class="community-link" data-name="Tıp Fakültesi" data-icon="🩺" data-color="linear-gradient(135deg, #EF4444, #B91C1C)">🩺 Tıp Fakültesi</li>
                         <li class="community-link" data-name="Bilgisayar Fakültesi" data-icon="💻" data-color="linear-gradient(135deg, #3B82F6, #2563EB)">💻 Bilgisayar Fakültesi</li>
                         <li class="community-link" data-name="Diş Hekimliği" data-icon="🦷" data-color="linear-gradient(135deg, #06B6D4, #0891B2)">🦷 Diş Hekimliği</li>
@@ -132,8 +142,17 @@
                             <li class="community-link" data-name="Mimarlık Fakültesi" data-icon="📐" data-color="linear-gradient(135deg, #F59E0B, #D97706)">📐 Mimarlık Fakültesi</li>
                             <li class="community-link" data-name="Eğitim Fakültesi" data-icon="📖" data-color="linear-gradient(135deg, #10B981, #059669)">📖 Eğitim Fakültesi</li>
                         </div>
+                        <button class="action-btn" id="desktop-show-more-btn" style="margin-top: 15px;">Daha Fazla Göster</button>
                     </ul>
-                    <button class="action-btn" id="desktop-show-more-btn" style="margin-top: 15px;">Daha Fazla Göster</button>
+
+                    <hr style="margin:20px 0; border:none; border-top:1px solid var(--border-color);">
+
+                    <h2 class="accordion-header" style="cursor:pointer; font-size:16px; margin-bottom:10px;" onclick="window.toggleAccordion('desk-orgs')"><span id="desk-orgs-arrow">▶</span> 🎭 Kulüp ve Organizasyonlar</h2>
+                    <ul class="community-list" id="desk-orgs-content" style="display:none;">
+                        <li class="community-link" data-name="Müzik Kulübü" data-icon="🎸" data-color="linear-gradient(135deg, #EC4899, #BE185D)" data-type="org">🎸 Müzik Kulübü</li>
+                        <li class="community-link" data-name="Girişimcilik Kulübü" data-icon="🚀" data-color="linear-gradient(135deg, #F59E0B, #D97706)" data-type="org">🚀 Girişimcilik Kulübü</li>
+                        <li class="community-link" data-name="Yazılım Topluluğu" data-icon="💻" data-color="linear-gradient(135deg, #10B981, #059669)" data-type="org">💻 Yazılım Topluluğu</li>
+                    </ul>
                 </div>
             </aside>
         </div>
