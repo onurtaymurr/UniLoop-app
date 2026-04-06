@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-
-<html lang="tr">
+<!DOCTYPE html><html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,7 +7,6 @@
 </head>
 <body>
 
-```
 <div id="auth-screen">
     <div class="auth-card" id="login-card">
         <div class="auth-logo">🌍 UniLoop</div>
@@ -82,89 +79,19 @@
     </header>
 
     <div class="container">
-        <!-- ============================================================ -->
-        <!-- SOL SIDEBAR - YENİ NAVİGASYON YAPISI                        -->
-        <!-- ============================================================ -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-top">
                 <h3>Navigasyon</h3>
                 <div class="menu-item active" data-target="home">🏠 Ana Sayfa</div>
                 <div class="menu-item" data-target="market">🛒 Kampüs Market</div>
-                <div class="menu-item" data-target="campus">🏛️ Kampüs</div>
-
+                <div class="menu-item" data-target="housing">🔑 Ev Arkadaşı & Yurt</div>
+                <div class="menu-item" data-target="confessions">🤫 Anonim Kampüs</div>
+                <div class="menu-item" data-target="qa">❓ Soru & Cevap</div>
+                
                 <br>
                 <h3>Bana Özel</h3>
-                <div class="menu-item" id="nav-messages-btn" data-target="messages">
-                    💬 Mesajlarım
-                    <span id="msg-badge" class="badge" style="display:none;">0</span>
-                </div>
-                <!-- Bildirimler butonu JS tarafından buraya eklenir -->
-
-                <br>
-                <!-- ====================================================== -->
-                <!-- 🌐 AĞLARIM - YENİ ANA BAŞLIK VE ACCORDION MENÜSÜ       -->
-                <!-- ====================================================== -->
-                <h3>🌐 Ağlarım</h3>
-
-                <!-- Fakülteler Accordion -->
-                <div class="accordion-section" id="accordion-faculties">
-                    <div class="accordion-header" id="acc-header-faculties">
-                        <span>🏢 Fakülteler</span>
-                        <span class="accordion-icon" id="acc-icon-faculties">▶</span>
-                    </div>
-                    <div class="accordion-content" id="acc-content-faculties">
-                        <div class="menu-item community-link"
-                            data-name="Tıp Fakültesi"
-                            data-icon="🩺"
-                            data-color="linear-gradient(135deg, #EF4444, #B91C1C)">
-                            🩺 Tıp Fakültesi
-                        </div>
-                        <div class="menu-item community-link"
-                            data-name="Hukuk Fakültesi"
-                            data-icon="⚖️"
-                            data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">
-                            ⚖️ Hukuk Fakültesi
-                        </div>
-                        <div class="menu-item community-link"
-                            data-name="Diş Hekimliği Fakültesi"
-                            data-icon="🦷"
-                            data-color="linear-gradient(135deg, #06B6D4, #0891B2)">
-                            🦷 Diş Hekimliği Fakültesi
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Kulüp ve Organizasyonlar Accordion -->
-                <div class="accordion-section" id="accordion-clubs">
-                    <div class="accordion-header" id="acc-header-clubs">
-                        <span>🎭 Kulüp ve Organizasyonlar</span>
-                        <span class="accordion-icon" id="acc-icon-clubs">▶</span>
-                    </div>
-                    <div class="accordion-content" id="acc-content-clubs">
-                        <div class="menu-item org-link"
-                            data-name="Spor Kulübü"
-                            data-icon="⚽"
-                            data-color="linear-gradient(135deg, #10B981, #059669)">
-                            ⚽ Spor Kulübü
-                        </div>
-                        <div class="menu-item org-link"
-                            data-name="Tiyatro Kulübü"
-                            data-icon="🎭"
-                            data-color="linear-gradient(135deg, #8B5CF6, #4C1D95)">
-                            🎭 Tiyatro Kulübü
-                        </div>
-                        <div class="menu-item org-link"
-                            data-name="Sağlık Kulübü"
-                            data-icon="🏥"
-                            data-color="linear-gradient(135deg, #EF4444, #B91C1C)">
-                            🏥 Sağlık Kulübü
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mobil için ek içerik alanı -->
-                <div id="my-joined-faculties"></div>
-                <div id="my-joined-orgs"></div>
+                <div class="menu-item" id="nav-messages-btn" data-target="messages">💬 Mesajlarım <span id="msg-badge" class="badge" style="display:none;">0</span></div>
+                
                 <div id="sidebar-networks-container"></div>
             </div>
             
@@ -175,72 +102,14 @@
 
         <main class="main-feed" id="main-content"></main>
 
-        <!-- SAĞ PANEL -->
         <aside class="right-panel">
             <div class="card sticky-card" style="padding: 15px;">
-                <h2 style="margin-bottom: 15px; font-size: 16px;">🌍 Ağlar</h2>
-
-                <!-- Fakülteler Accordion (Sağ Panel) -->
-                <div class="accordion-section">
-                    <div class="accordion-header">
-                        <span>🏢 Fakülteler</span>
-                        <span class="accordion-icon">▶</span>
-                    </div>
-                    <div class="accordion-content">
-                        <div class="menu-item community-link"
-                            data-name="Tıp Fakültesi"
-                            data-icon="🩺"
-                            data-color="linear-gradient(135deg, #EF4444, #B91C1C)">
-                            🩺 Tıp Fakültesi
-                        </div>
-                        <div class="menu-item community-link"
-                            data-name="Hukuk Fakültesi"
-                            data-icon="⚖️"
-                            data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">
-                            ⚖️ Hukuk Fakültesi
-                        </div>
-                        <div class="menu-item community-link"
-                            data-name="Diş Hekimliği Fakültesi"
-                            data-icon="🦷"
-                            data-color="linear-gradient(135deg, #06B6D4, #0891B2)">
-                            🦷 Diş Hekimliği Fakültesi
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Kulüp ve Organizasyonlar Accordion (Sağ Panel) -->
-                <div class="accordion-section">
-                    <div class="accordion-header">
-                        <span>🎭 Kulüp ve Organizasyonlar</span>
-                        <span class="accordion-icon">▶</span>
-                    </div>
-                    <div class="accordion-content">
-                        <div class="menu-item org-link"
-                            data-name="Spor Kulübü"
-                            data-icon="⚽"
-                            data-color="linear-gradient(135deg, #10B981, #059669)">
-                            ⚽ Spor Kulübü
-                        </div>
-                        <div class="menu-item org-link"
-                            data-name="Tiyatro Kulübü"
-                            data-icon="🎭"
-                            data-color="linear-gradient(135deg, #8B5CF6, #4C1D95)">
-                            🎭 Tiyatro Kulübü
-                        </div>
-                        <div class="menu-item org-link"
-                            data-name="Sağlık Kulübü"
-                            data-icon="🏥"
-                            data-color="linear-gradient(135deg, #EF4444, #B91C1C)">
-                            🏥 Sağlık Kulübü
-                        </div>
-                    </div>
-                </div>
+                <div id="right-networks-container"></div>
             </div>
         </aside>
     </div>
 </div>
 
-<!-- MODAL -->
 <div id="app-modal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -251,7 +120,6 @@
     </div>
 </div>
 
-<!-- LIGHTBOX -->
 <div id="lightbox" class="lightbox">
     <span class="lightbox-close" onclick="window.closeLightbox()">&times;</span>
     <span class="lightbox-counter" id="lightbox-counter">1/3</span>
@@ -261,7 +129,6 @@
 </div>
 
 <script type="module" src="app.js"></script>
-```
 
 </body>
 </html>
