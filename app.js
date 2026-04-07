@@ -201,7 +201,7 @@ const bind = (id, event, callback) => {
 
 // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
 window.userProfile = { 
-    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", bio: "", avatarUrl: "", isPremium: false 
+    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", bio: "", avatarUrl: "", age: "", isPremium: false 
 };
 
 window.joinedFaculties = [];
@@ -283,6 +283,7 @@ window.updateMyFacultiesSidebar = function() {
     html += `
         <div class="menu-item" id="nav-messages-btn" data-target="messages" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('messages');">💬 Mesajlarım</div>
         <div class="menu-item" id="nav-notifications-btn" data-target="notifications" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('notifications');">🔔 Bildirimler <span id="notif-badge" class="badge" style="display:none; background:#EF4444; color:white; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:auto;">0</span></div>
+        <div class="menu-item" id="nav-friends-btn" data-target="friends" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('friends');">👥 Arkadaşlarım</div>
     `;
     
     container.innerHTML = html;
@@ -372,6 +373,7 @@ bind('register-btn', 'click', async (e) => {
             avatar: "👨‍🎓",
             avatarUrl: "",
             bio: "",
+            age: "",
             isOnline: false, 
             faculty: "",
             isPremium: false 
@@ -547,11 +549,12 @@ onAuthStateChanged(auth, async (user) => {
                 window.userProfile = docSnap.data();
                 if(window.userProfile.isPremium === undefined) window.userProfile.isPremium = false;
                 if(window.userProfile.bio === undefined) window.userProfile.bio = "";
+                if(window.userProfile.age === undefined) window.userProfile.age = "";
                 if(window.userProfile.avatarUrl === undefined) window.userProfile.avatarUrl = "";
             } else {
                 window.userProfile = { 
                     uid: user.uid, name: "Öğrenci", surname: "", username: "",
-                    email: user.email, university: "UniLoop Kampüsü", avatar: "👨‍🎓", faculty: "", bio: "", avatarUrl: "", 
+                    email: user.email, university: "UniLoop Kampüsü", avatar: "👨‍🎓", faculty: "", bio: "", age: "", avatarUrl: "", 
                     isOnline: true, isPremium: false
                 };
                 await setDoc(userDocRef, window.userProfile);
@@ -678,6 +681,8 @@ function initRealtimeListeners(currentUid) {
             } else { window.renderMessages(); }
         } else if (activeTab && activeTab.getAttribute('data-target') === 'notifications') {
             window.renderNotifications();
+        } else if (activeTab && activeTab.getAttribute('data-target') === 'friends') {
+            window.renderFriends();
         }
     });
 }
@@ -795,7 +800,7 @@ document.body.addEventListener('click', (e) => {
 });
 
 // ============================================================================
-// 4. YENİ ANA SAYFA (HOME) TASARIMI VE KULLANICI ARAMA
+// 4. YENİ ANA SAYFA (HOME) TASARIMI VE KULLANICI PROFİLİ GÖRÜNTÜLEME
 // ============================================================================
 
 window.searchAndAddFriend = async function() {
@@ -853,21 +858,17 @@ window.sendFriendRequest = async function(targetUserId, targetUserName) {
                 participantNames: { [myUid]: window.userProfile.name, [targetUserId]: targetUserName },
                 participantAvatars: { [myUid]: window.userProfile.avatar || "👨‍🎓", [targetUserId]: "👤" },
                 lastUpdated: serverTimestamp(), status: 'pending', initiator: myUid, 
-                messages: [{ senderId: "system", text: "Arkadaşlık isteği gönderildi.", time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), read: false }]
+                messages: [{ senderId: "system", text: "Sizi arkadaş olarak eklemek istiyor.", time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), read: false }]
             });
             alert("Arkadaşlık isteği başarıyla gönderildi!");
             document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
-            document.querySelector('[data-target="messages"]').classList.add('active');
-            window.loadPage('messages');
+            document.querySelector('[data-target="notifications"]')?.classList.add('active');
+            window.loadPage('notifications');
         } else {
             if(existingChat.status === 'pending') {
                 alert("Bu kişiye zaten bir istek gönderilmiş veya ondan sana istek gelmiş. Lütfen Bildirimlerinizi kontrol edin.");
             } else {
                 alert("Bu kişiyle zaten arkadaşsınız.");
-                document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
-                document.querySelector('[data-target="messages"]').classList.add('active');
-                window.loadPage('messages');
-                setTimeout(() => window.openChatView(existingChat.id), 500); 
             }
         }
     } catch (error) {
@@ -875,7 +876,44 @@ window.sendFriendRequest = async function(targetUserId, targetUserName) {
     }
 };
 
-// YENİ ANA SAYFA RENDER FONKSİYONU
+window.viewUserProfile = async function(targetUid) {
+    if(targetUid === window.userProfile.uid) { window.loadPage('profile'); return; }
+    
+    try {
+        const docSnap = await getDoc(doc(db, "users", targetUid));
+        if (docSnap.exists()) {
+            const u = docSnap.data();
+            const initial = u.surname ? u.surname.charAt(0) + '.' : '';
+            let avatarHtml = u.avatarUrl 
+                ? `<img src="${u.avatarUrl}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid #E5E7EB;">` 
+                : `<div style="width:100px; height:100px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:40px; border:3px solid #E5E7EB; margin:0 auto;">${u.avatar || '👤'}</div>`;
+            
+            const bioText = u.bio ? u.bio : "Henüz bir biyografi eklemedi.";
+            const ageText = u.age ? u.age + " yaşında" : "Yaş belirtilmemiş";
+            const facText = u.faculty ? u.faculty : "Fakülte belirtilmemiş";
+
+            window.openModal('Kullanıcı Profili', `
+                <div style="text-align:center;">
+                    ${avatarHtml}
+                    <h3 style="margin: 10px 0 5px 0; font-size:18px; color:var(--text-dark);">${u.name} ${initial}</h3>
+                    <p style="color:var(--primary); font-size:14px; margin-bottom: 5px; font-weight:bold;">${facText}</p>
+                    <p style="color:var(--text-gray); font-size:13px; margin-bottom: 15px;">${ageText}</p>
+                    
+                    <div style="background:#F9FAFB; padding:15px; border-radius:12px; text-align:left; margin-bottom: 20px; border:1px solid #E5E7EB;">
+                        <strong style="font-size:12px; color:#6B7280; text-transform:uppercase; letter-spacing:1px;">Hobiler / Biyografi</strong>
+                        <p style="font-size:14px; margin-top:5px; color:var(--text-dark); line-height:1.5;">${bioText}</p>
+                    </div>
+
+                    <button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendFriendRequest('${u.uid}', '${u.name} ${initial}'); window.closeModal();">➕ Arkadaş Ekle</button>
+                </div>
+            `);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Profil yüklenirken hata oluştu.");
+    }
+};
+
 window.renderHome = async function() {
     let usernameWarning = '';
     if (!window.userProfile.username) {
@@ -917,7 +955,6 @@ window.renderHome = async function() {
     
     mainContent.innerHTML = html;
 
-    // Kullanıcıları Veritabanından Çekip 2'li Şablona (Grid) Basma (Max 10 kişi ile sınırla)
     try {
         const querySnapshot = await getDocs(query(collection(db, "users")));
         let usersHtml = '';
@@ -930,14 +967,14 @@ window.renderHome = async function() {
                 const initial = u.surname ? u.surname.charAt(0) + '.' : '';
                 let avatarHtml = u.avatarUrl 
                     ? `<img src="${u.avatarUrl}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #E5E7EB;">` 
-                    : `<div style="width:60px; height:60px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:30px; border:2px solid #E5E7EB;">${u.avatar || '👤'}</div>`;
+                    : `<div style="width:60px; height:60px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:30px; border:2px solid #E5E7EB; margin:0 auto;">${u.avatar || '👤'}</div>`;
                 
                 usersHtml += `
-                    <div class="user-card" onclick="alert('Kullanıcı profilleri yakında yayında!')">
+                    <div class="user-card" onclick="window.viewUserProfile('${u.uid}')">
                         <div style="margin-bottom: 10px;">${avatarHtml}</div>
                         <div style="font-weight:bold; font-size:15px; color:var(--text-dark);">${u.name} ${initial}</div>
                         <div style="font-size:12px; color:var(--text-gray); margin-top:5px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100%;">${u.faculty || 'Kampüs Öğrencisi'}</div>
-                        <button class="btn-primary" style="margin-top:12px; padding:8px; font-size:13px; border-radius:8px; width:100%; box-shadow:none;" onclick="event.stopPropagation(); window.startMarketChat('${u.uid}', '${u.name} ${initial}', 'Merhaba!')">💬 Mesaj At</button>
+                        <button class="btn-primary" style="margin-top:12px; padding:8px; font-size:13px; border-radius:8px; width:100%; box-shadow:none;" onclick="event.stopPropagation(); window.sendFriendRequest('${u.uid}', '${u.name} ${initial}')">➕ Arkadaş Ekle</button>
                     </div>
                 `;
             }
@@ -949,6 +986,11 @@ window.renderHome = async function() {
         document.getElementById('home-users-grid').innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:red;">Kullanıcılar yüklenirken hata oluştu.</p>';
     }
 };
+
+function getHomeContent() {
+    window.renderHome();
+    return `<div style="text-align:center; padding: 50px; color:var(--text-gray);">Kampüsünüz hazırlanıyor...</div>`;
+}
 
 // ============================================================================
 // 5. TAM EKRAN FOTOĞRAF GALERİSİ (LIGHTBOX) MANTIĞI
@@ -1234,7 +1276,7 @@ window.submitListing = async function(type) {
 };
 
 // ============================================================================
-// 7. MESAJLAŞMA VE BİLDİRİMLER
+// 7. ARKADAŞLARIM, BİLDİRİMLER VE MESAJLAŞMA SİSTEMİ
 // ============================================================================
 
 window.startMarketChat = async function(targetUserId, targetUserName, autoText) {
@@ -1265,7 +1307,7 @@ window.startMarketChat = async function(targetUserId, targetUserName, autoText) 
             });
         }
         document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
-        document.querySelector('[data-target="messages"]').classList.add('active');
+        document.querySelector('[data-target="messages"]')?.classList.add('active');
         window.loadPage('messages');
         setTimeout(() => window.openChatView(existingChatId), 500); 
     } catch (error) {
@@ -1273,21 +1315,69 @@ window.startMarketChat = async function(targetUserId, targetUserName, autoText) 
     }
 };
 
+// 🌟 YENİ: ARKADAŞLARIM SAYFASI
+window.renderFriends = function() {
+    const acceptedFriends = chatsDB.filter(c => c.status === 'accepted');
+    
+    let html = `
+        <div class="card" style="padding: 20px; min-height: calc(100vh - 120px);">
+            <h2 style="margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px; display:flex; align-items:center; gap:10px;">
+                <span>👥 Arkadaşlarım</span>
+                <span style="font-size:14px; background:#EEF2FF; color:var(--primary); padding:4px 12px; border-radius:12px;">${acceptedFriends.length} Kişi</span>
+            </h2>
+    `;
+    
+    if (acceptedFriends.length === 0) {
+        html += `<div style="text-align:center; padding: 40px 20px; color:var(--text-gray);">Henüz ekli bir arkadaşın yok. Ana sayfadan yeni insanlarla tanışabilirsin!</div>`;
+    } else {
+        html += `<div class="user-grid">`;
+        acceptedFriends.forEach(friend => {
+            let avatarHtml = friend.avatar.startsWith('http') 
+                ? `<img src="${friend.avatar}" style="width:70px; height:70px; border-radius:50%; object-fit:cover; border:2px solid #E5E7EB;">` 
+                : `<div style="width:70px; height:70px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:35px; border:2px solid #E5E7EB; margin:0 auto;">${friend.avatar}</div>`;
+            
+            html += `
+                <div class="user-card" onclick="window.viewUserProfile('${friend.otherUid}')">
+                    <div style="margin-bottom: 10px;">${avatarHtml}</div>
+                    <div style="font-weight:bold; font-size:15px; color:var(--text-dark);">${friend.name}</div>
+                    <div style="display:flex; gap:10px; width:100%; margin-top:15px;">
+                        <button class="btn-primary" style="flex:1; padding:8px; font-size:13px; border-radius:8px; box-shadow:none;" onclick="event.stopPropagation(); window.openChatViewDirect('${friend.id}')">💬 Mesaja Git</button>
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+    }
+    html += `</div>`;
+    mainContent.innerHTML = html;
+};
+
+window.openChatViewDirect = function(chatId) {
+    document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
+    document.querySelector('[data-target="messages"]')?.classList.add('active');
+    window.loadPage('messages');
+    setTimeout(() => window.openChatView(chatId), 200);
+};
+
 window.renderNotifications = function() {
     const incomingRequests = chatsDB.filter(c => c.status === 'pending' && c.initiator !== window.userProfile.uid);
-    let html = `<div class="card"><h2 style="margin-bottom: 20px;">🔔 Bildirimler ve Arkadaşlık İstekleri</h2>`;
+    let html = `<div class="card" style="min-height: calc(100vh - 120px);"><h2 style="margin-bottom: 20px; padding-bottom:10px; border-bottom:1px solid var(--border-color);">🔔 Bildirimler ve İstekler</h2>`;
     
     if (incomingRequests.length === 0) {
         html += `<p style="text-align:center; color:var(--text-gray); padding: 40px 0;">Henüz bekleyen bir bildiriminiz yok.</p>`;
     } else {
         html += `<div style="display:flex; flex-direction:column; gap:15px;">`;
         incomingRequests.forEach(req => {
+            let avatarHtml = req.avatar.startsWith('http') 
+                ? `<img src="${req.avatar}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">` 
+                : `<div style="width:50px; height:50px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0;">${req.avatar}</div>`;
+
             html += `
                 <div style="display:flex; justify-content:space-between; align-items:center; background:#F9FAFB; padding:15px 20px; border-radius:12px; border:1px solid var(--border-color); flex-wrap:wrap; gap:15px;">
                     <div style="display:flex; align-items:center; gap:15px;">
-                        <div class="avatar" style="margin:0; width:50px; height:50px; font-size:24px;">${req.avatar}</div>
+                        ${avatarHtml}
                         <div>
-                            <strong style="display:block; font-size:16px; color:var(--text-dark);">${req.name}</strong>
+                            <strong style="display:block; font-size:16px; color:var(--text-dark); cursor:pointer;" onclick="window.viewUserProfile('${req.otherUid}')">${req.name}</strong>
                             <span style="font-size:13px; color:var(--text-gray);">Sizi arkadaş olarak eklemek istiyor.</span>
                         </div>
                     </div>
@@ -1309,10 +1399,10 @@ window.acceptRequest = async function(chatId) {
         const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         await updateDoc(doc(db, "chats", chatId), {
             status: 'accepted',
-            messages: arrayUnion({ senderId: "system", text: "Arkadaşlık isteği kabul edildi. Artık mesajlaşabilirsiniz! 🎉", time: timeStr, read: false }),
+            messages: arrayUnion({ senderId: "system", text: "Arkadaşlık isteği kabul edildi. Artık arkadaşlarım listesindesiniz! 🎉", time: timeStr, read: false }),
             lastUpdated: serverTimestamp()
         });
-        alert("İstek kabul edildi! Mesajlarım bölümünden yazışabilirsiniz.");
+        alert("İstek kabul edildi! Arkadaşlarım sekmesinden bulabilirsiniz.");
         window.renderNotifications(); 
     } catch(error) { alert("Hata oluştu: " + error.message); }
 };
@@ -1340,9 +1430,13 @@ window.renderMessagesSidebarOnly = function() {
         if (chat.status === 'pending' && chat.initiator === window.userProfile.uid) rawLastMsg = "⏳ İstek gönderildi, bekleniyor...";
         const previewMsg = rawLastMsg.replace(/<br>/g, ' ').substring(0, 35) + (rawLastMsg.length > 35 ? "..." : "");
 
+        let avatarHtml = chat.avatar.startsWith('http') 
+            ? `<img src="${chat.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">` 
+            : `<div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; margin:0;">${chat.avatar}</div>`;
+
         html += `
             <div class="chat-contact ${isActive}" data-id="${chat.id}" onclick="window.openChatView('${chat.id}')" style="padding:15px; border-bottom:1px solid #E5E7EB; display:flex; gap:10px; cursor:pointer;">
-                <div class="avatar" style="width:40px; height:40px; font-size:20px; margin:0; display:flex; align-items:center; justify-content:center;">${chat.avatar}</div>
+                ${avatarHtml}
                 <div class="chat-contact-info" style="flex:1;">
                     <div class="chat-contact-top" style="display:flex; justify-content:space-between; margin-bottom:4px;"><span class="chat-contact-name" style="font-weight:bold; font-size:14px;">${chat.name}</span><span class="chat-contact-time" style="font-size:11px; color:#9CA3AF;">${lastMsgObj ? lastMsgObj.time : ""}</span></div>
                     <div class="chat-contact-last" style="font-size:13px; color:#6B7280;">${previewMsg}</div>
@@ -1417,10 +1511,14 @@ window.openChatView = function(chatId) {
     const container = document.getElementById('chat-main-view');
     document.getElementById('chat-layout-container').classList.add('chat-active');
 
+    let avatarHtml = activeChat.avatar.startsWith('http') 
+        ? `<img src="${activeChat.avatar}" style="width:42px; height:42px; border-radius:50%; object-fit:cover;">` 
+        : `<div style="width:42px; height:42px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; margin:0;">${activeChat.avatar}</div>`;
+
     let chatHTML = `
         <div class="chat-header" style="padding:15px; border-bottom:1px solid #E5E7EB; background:white; display:flex; align-items:center; gap:15px;">
             <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); window.resetCurrentChatId();" style="border:none; background:none; font-size:20px; cursor:pointer;">←</button>
-            <div class="avatar" style="width:42px; height:42px; font-size:20px; margin:0; display:flex; align-items:center; justify-content:center;">${activeChat.avatar}</div>
+            ${avatarHtml}
             <div class="chat-header-info">
                 <div class="chat-header-name" style="font-weight:bold; font-size:16px;">${activeChat.name}</div>
                 <div class="chat-header-status" style="font-size:12px; color:#10B981;">UniLoop Ağı</div>
@@ -1594,10 +1692,14 @@ window.drawConfessionsFeed = function() {
             premiumHintHtml = `<div style="font-size:11px; color:#D97706; font-weight:bold; margin-top:4px;">🌟 Premium İpucu: Bu kişi Bilgisayar Müh. bölümünden.</div>`;
         }
 
+        let avatarHtml = post.avatar.startsWith('http') 
+            ? `<img src="${post.avatar}" style="width:44px; height:44px; border-radius:50%; object-fit:cover;">` 
+            : post.avatar;
+
         html += `
         <div class="feed-post">
             <div class="feed-post-header">
-                <div class="feed-post-avatar">${post.avatar}</div>
+                <div class="feed-post-avatar">${avatarHtml}</div>
                 <div class="feed-post-meta">
                     <span class="feed-post-author">${post.user}</span>
                     <span class="feed-post-time">${post.time || 'Az önce'}</span>
@@ -1649,10 +1751,14 @@ window.updateConfessionDetailLive = function(docId) {
         });
     }
 
+    let avatarHtml = post.avatar.startsWith('http') 
+        ? `<img src="${post.avatar}" style="width:48px; height:48px; border-radius:50%; object-fit:cover;">` 
+        : post.avatar;
+
     container.innerHTML = `
         <div style="margin-bottom:20px;">
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-                <div class="feed-post-avatar" style="width:48px; height:48px; font-size:28px;">${post.avatar}</div>
+                <div class="feed-post-avatar" style="width:48px; height:48px; font-size:28px;">${avatarHtml}</div>
                 <div>
                     <div style="font-weight:bold; font-size:16px;">${post.user}</div>
                     <div style="font-size:12px; color:var(--text-gray);">${post.time}</div>
@@ -1797,7 +1903,7 @@ window.submitAnswer = async function(docId) {
 };
 
 // ============================================================================
-// 10. FAKÜLTE FORUM SİSTEMİ (STANDART TASARIM - MAVİ TON YOK)
+// 10. FAKÜLTE FORUM SİSTEMİ
 // ============================================================================
 
 window.currentFacultyPosts = [];
@@ -1837,7 +1943,7 @@ window.verifyFacultyCode = async function(name, icon, bgColor) {
 };
 
 window.loadFacultyFeed = async function(name, icon, bgColor) {
-    const activeUsersCount = Math.floor(Math.random() * 80) + 20; // Rastgele aktif kullanıcı sayısı
+    const activeUsersCount = Math.floor(Math.random() * 80) + 20; 
     
     mainContent.innerHTML = `
         <div style="display:flex; flex-direction:column; gap:20px;">
@@ -1897,11 +2003,15 @@ window.renderFacultyPosts = function() {
     
     let html = '';
     window.currentFacultyPosts.forEach(post => {
+        let avatarHtml = post.avatar.startsWith('http') 
+            ? `<img src="${post.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">` 
+            : post.avatar;
+
         html += `
             <div class="card" style="padding:15px;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <div class="avatar" style="width:40px; height:40px; font-size:20px; margin:0;">${post.avatar}</div>
+                        <div class="avatar" style="width:40px; height:40px; font-size:20px; margin:0; display:flex; align-items:center; justify-content:center;">${avatarHtml}</div>
                         <div>
                             <div style="font-weight:bold; font-size:15px;">${post.user}</div>
                             <div style="font-size:12px; color:var(--text-gray);">${post.time}</div>
@@ -1940,6 +2050,7 @@ window.loadPage = function(pageName) {
     else if (pageName === 'qa') window.renderQA(); 
     else if (pageName === 'messages') window.renderMessages(); 
     else if (pageName === 'notifications') window.renderNotifications();
+    else if (pageName === 'friends') window.renderFriends();
     else if (pageName === 'settings') window.renderSettings();
     else if (pageName === 'profile') window.renderProfile();
 };
@@ -1956,7 +2067,7 @@ document.querySelectorAll('.menu-item[data-target]').forEach(item => {
 
 bind('logo-btn', 'click', () => { 
     document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active')); 
-    document.querySelector('[data-target="home"]').classList.add('active'); 
+    document.querySelector('[data-target="home"]')?.classList.add('active'); 
     window.loadPage('home'); 
 });
 
@@ -2005,15 +2116,21 @@ window.renderProfile = function() {
                     </div>
                 </div>
                 
-                <div class="form-group" style="margin-top:15px; margin-bottom:25px;">
-                    <label style="font-size:13px; color:#6B7280; font-weight:bold;">Kullanıcı Adı</label>
-                    <div style="display:flex; align-items:center; background:white; border:1px solid #D1D5DB; border-radius:12px; overflow:hidden; margin-top:5px;">
-                        <span style="padding-left:15px; color:var(--primary); font-weight:800; font-size:16px;">#</span>
-                        <input type="text" id="prof-username" value="${(window.userProfile.username || '').replace('#', '')}" placeholder="kullaniciadi" style="border:none; background:transparent; width:100%; padding:12px 10px; outline:none; font-size:15px; font-weight:600; color:var(--text-dark);">
+                <div class="grid-2col" style="margin-top:0;">
+                    <div class="form-group">
+                        <label style="font-size:13px; color:#6B7280; font-weight:bold;">Yaş</label>
+                        <input type="number" id="prof-age" value="${window.userProfile.age || ''}" placeholder="Yaşınız" style="border:1px solid #D1D5DB; border-radius:12px; padding:12px; margin-top:5px; width:100%;">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size:13px; color:#6B7280; font-weight:bold;">Kullanıcı Adı</label>
+                        <div style="display:flex; align-items:center; background:white; border:1px solid #D1D5DB; border-radius:12px; overflow:hidden; margin-top:5px;">
+                            <span style="padding-left:15px; color:var(--primary); font-weight:800; font-size:16px;">#</span>
+                            <input type="text" id="prof-username" value="${(window.userProfile.username || '').replace('#', '')}" placeholder="kullaniciadi" style="border:none; background:transparent; width:100%; padding:12px 10px; outline:none; font-size:15px; font-weight:600; color:var(--text-dark);">
+                        </div>
                     </div>
                 </div>
                 
-                <button class="btn-primary" onclick="window.saveProfile()" style="width: 100%; padding: 14px; font-size: 15px; border-radius: 12px; margin-bottom:12px; font-weight:bold;">💾 Profili Güncelle</button>
+                <button class="btn-primary" onclick="window.saveProfile()" style="width: 100%; padding: 14px; font-size: 15px; border-radius: 12px; margin-bottom:12px; margin-top:15px; font-weight:bold;">💾 Profili Güncelle</button>
                 <button class="btn-danger" onclick="window.logout()" style="width: 100%; padding: 14px; font-size: 15px; border-radius: 12px; background: transparent; color: #EF4444; border: 2px solid #EF4444; font-weight:bold;">🚪 Çıkış Yap</button>
                 <p id="profile-upload-status" style="display:none; color:var(--primary); text-align:center; margin-top:10px; font-size:12px; font-weight:bold;"></p>
             </div>
@@ -2050,6 +2167,7 @@ window.saveProfile = async function() {
     const name = document.getElementById('prof-name').value; 
     const surname = document.getElementById('prof-surname').value;
     const bio = document.getElementById('prof-bio').value;
+    const age = document.getElementById('prof-age').value;
     let rawUsername = document.getElementById('prof-username').value.trim().toLowerCase();
     
     if(!rawUsername) { alert("Kullanıcı adı boş bırakılamaz!"); return; }
@@ -2065,10 +2183,10 @@ window.saveProfile = async function() {
         } catch(e) { console.error(e); alert("Bir hata oluştu, lütfen tekrar deneyin."); return; }
     }
     
-    window.userProfile.name = name; window.userProfile.surname = surname; window.userProfile.username = username; window.userProfile.bio = bio;
+    window.userProfile.name = name; window.userProfile.surname = surname; window.userProfile.username = username; window.userProfile.bio = bio; window.userProfile.age = age;
     
     try {
-        await updateDoc(doc(db, "users", window.userProfile.uid), { name: name, surname: surname, username: username, bio: bio });
+        await updateDoc(doc(db, "users", window.userProfile.uid), { name: name, surname: surname, username: username, bio: bio, age: age });
         window.openModal('Başarılı', `<div style="text-align:center;"><p style="font-size:40px; margin:0;">✅</p><p>Profil başarıyla güncellendi!</p></div>`);
         window.renderProfile();
     } catch(e) { alert("Profil kaydedilirken hata: " + e.message); }
