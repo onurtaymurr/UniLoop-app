@@ -613,14 +613,14 @@ window.addEventListener("beforeunload", () => {
 function initRealtimeListeners(currentUid) {
     const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
 
-    // MARKET İLANLARI (Housing çıkartıldı)
+    // MARKET İLANLARI DİNLENİYOR
     onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc")), (snapshot) => {
         marketDB = [];
         snapshot.forEach(doc => { marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
         marketDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
         
         const activeTab = document.querySelector('.menu-item.active');
-        if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
+        if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market', 'market');
     });
 
     // YENİ: LOOPMAP İÇİN DİNLEYİCİ
@@ -995,7 +995,6 @@ window.renderHome = async function() {
         let usersHtml = '';
         let count = 0;
         
-        // Mevcut ilişkileri çıkar (Arkadaş olanları veya istek bekleyenleri ana sayfada gösterme)
         const interactedUids = chatsDB.map(c => c.otherUid);
         
         querySnapshot.forEach((doc) => {
@@ -1031,13 +1030,15 @@ function getHomeContent() {
 }
 
 // ============================================================================
-// 🌍 YENİ: LOOPMAP ENTEGRASYONU (TAMAMI)
+// 🌍 YENİ: LOOPMAP ENTEGRASYONU (TAMAMI GÜNCELLENMİŞ HALİ)
 // ============================================================================
 
 window.renderLoopMap = function() {
     mainContent.innerHTML = `
-        <div id="loopmap-container" style="width: 100%; height: calc(100vh - 120px); border-radius: 16px; overflow: hidden; position: relative; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-            <div id="map" style="width: 100%; height: 100%;"></div>
+        <div id="loopmap-container" style="width: 100%; height: calc(100vh - 120px); border-radius: 16px; overflow: hidden; position: relative; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05); background: #e5e7eb;">
+            <div id="map" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #6b7280; text-align: center; padding: 20px;">
+                Harita Yükleniyor...
+            </div>
             
             <input type="file" id="loopmap-cam-input" accept="image/*" capture="environment" style="display:none;" onchange="window.handleMapPhotoCapture(this)">
             
@@ -1048,15 +1049,28 @@ window.renderLoopMap = function() {
     `;
 
     if (navigator.geolocation) {
+        // Konum bulma motorunu güçlendirdik: Yüksek doğruluk ve maksimum 10 sn bekleme
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        };
+
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 userCurrentLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
                 window.initGoogleMap(userCurrentLocation);
             },
             (error) => {
-                alert("Konum izni reddedildi veya alınamadı. Harita varsayılan konuma ayarlanıyor.");
+                let hataMesaji = "Konum alınamadı.";
+                if(error.code === 1) hataMesaji = "Tarayıcıdan konum iznini reddettiniz (veya cihaz ayarlarınız engelliyor).";
+                if(error.code === 2) hataMesaji = "Konum bilgisi cihazdan okunamıyor (GPS kapalı olabilir).";
+                if(error.code === 3) hataMesaji = "Konum bulma işlemi zaman aşımına uğradı (İnternet veya GPS yavaş).";
+
+                alert(hataMesaji + "\\n\\nHarita varsayılan konuma ayarlanıyor.");
                 window.initGoogleMap({ lat: 39.92077, lng: 32.85411 }); 
-            }
+            },
+            options
         );
     } else {
         alert("Tarayıcınız konum servisini desteklemiyor.");
@@ -1109,7 +1123,6 @@ window.handleMapPhotoCapture = async function(input) {
 
     const file = input.files[0];
     
-    // Upload durumunu göstermek için geçici modal
     window.openModal("Fotoğraf Yükleniyor", `<div style="text-align:center; padding: 20px;"><p style="font-weight:bold; font-size:16px;">Haritaya anı bırakılıyor, lütfen bekleyin... 🚀</p></div>`);
 
     try {
@@ -2298,12 +2311,11 @@ window.triggerAvatarCrop = function(inputEl) {
             const image = document.getElementById('cropper-image');
             if (window.cropperInstance) { window.cropperInstance.destroy(); }
             
-            // Yuvarlak ve estetik bir kırpma alanı
             window.cropperInstance = new Cropper(image, {
-                aspectRatio: 1, // Kare referans
-                viewMode: 1, // Sınırların dışına çıkmayı engelle
-                dragMode: 'move', // Resmi kaydırarak kırp
-                guides: false, // Kılavuz çizgileri gizle
+                aspectRatio: 1, 
+                viewMode: 1, 
+                dragMode: 'move', 
+                guides: false, 
                 center: false,
                 highlight: false,
                 cropBoxMovable: true,
@@ -2319,7 +2331,6 @@ window.triggerAvatarCrop = function(inputEl) {
                 statusEl.style.display = 'block';
                 statusEl.innerText = 'Fotoğraf işleniyor ve yükleniyor...';
                 
-                // Canvas'ı PNG formatında ve şeffaf arkaplanlı olarak al
                 window.cropperInstance.getCroppedCanvas({
                     width: 400,
                     height: 400,
