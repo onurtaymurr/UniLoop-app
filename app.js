@@ -68,6 +68,25 @@ let currentChatId = null;
 let googleMap = null; // YENİ: Google Harita objesi
 let userCurrentLocation = null; // YENİ: Kullanıcı konumu
 
+// --- GOOGLE MAPS GÜVENLİ YÜKLEYİCİ (VERCEL ENTEGRASYONU) ---
+function loadGoogleMapsScript() {
+    if (typeof google !== 'undefined') return; // Zaten yüklüyse tekrar yükleme
+    
+    // Vercel ortam değişkeninden harita anahtarını çekiyoruz
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    
+    if (!apiKey) {
+        console.error("HATA: Google Maps API Key bulunamadı. Lütfen Vercel ayarlarınızı kontrol edin.");
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+}
+
 window.resetCurrentChatId = function() { currentChatId = null; };
 
 const FACULTY_PASSCODES = {
@@ -89,6 +108,9 @@ const mainContent = document.getElementById('main-content');
 const modal = document.getElementById('app-modal');
 
 function initializeUniLoop() {
+
+// Harita motorunu güvenli şekilde arka planda başlat
+loadGoogleMapsScript();
 
 // ✂️ CROPPER.JS ENJEKSİYONU (INSTAGRAM TARZI PROFİL KIRPMA İÇİN)
 const cropperCss = document.createElement('link');
