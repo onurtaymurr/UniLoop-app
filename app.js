@@ -78,7 +78,7 @@ function loadGoogleMapsScript() {
     // Güvenliği zaten Google Cloud panelinde domain kısıtlaması yaparak sağladık.
     const apiKey = "SENIN_GOOGLE_MAPS_KEYIN_BURAYA"; 
     
-    if (!apiKey || apiKey === "SENIN_GOOGLE_MAPS_KEYIN_BURAYA") {
+    if (!apiKey || apiKey === "AIzaSyC3vVgQCI8a5ctJ45fefAh1hKTwpCIYboE") {
         console.error("HATA: Google Maps API Key eksik. Lütfen koddaki ilgili alana anahtarınızı yazın.");
         return;
     }
