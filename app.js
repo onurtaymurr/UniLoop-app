@@ -177,11 +177,6 @@ window.toggleTheme = function(theme) {
 const savedTheme = localStorage.getItem('uniloop_theme') || 'light';
 window.toggleTheme(savedTheme);
 
-const TRANSLATIONS = {
-    'tr': { settingsTitle: '⚙️ Uygulama Ayarları', langLabel: 'Dil Seçimi', themeLabel: 'Tema', lightMode: 'Aydınlık Mod', darkMode: 'Karanlık Mod', logoutBtn: '🚪 Güvenli Çıkış Yap' },
-    'en': { settingsTitle: '⚙️ App Settings', langLabel: 'Language', themeLabel: 'Theme', lightMode: 'Light Mode', darkMode: 'Dark Mode', logoutBtn: '🚪 Secure Logout' }
-};
-
 const closeSidebarIfOutside = (e) => {
     const sidebar = document.getElementById('sidebar');
     const mobileBtn = document.getElementById('mobile-menu-btn');
@@ -238,6 +233,7 @@ window.renderSidebarAccordions = function() {
     const sidebarContainer = document.getElementById('sidebar-networks-container');
     const rightContainer = document.getElementById('right-networks-container');
     
+    // Yalnızca Fakülteler menüsü açılır liste
     const accordionHTML = `
         <div id="bana-ozel-container"></div>
         <div class="accordion-section" style="margin-top: 15px;">
@@ -265,6 +261,7 @@ window.updateMyFacultiesSidebar = function() {
     const container = document.getElementById('bana-ozel-container');
     if(!container) return;
     
+    // Eski HTML linkleri üst üste binmesin diye siliyoruz
     const origMsgBtn = document.getElementById('nav-messages-btn');
     const origNotifBtn = document.getElementById('nav-notifications-btn');
     if(origMsgBtn && origMsgBtn.parentElement !== container) origMsgBtn.remove();
@@ -272,6 +269,7 @@ window.updateMyFacultiesSidebar = function() {
 
     let html = ``;
     
+    // Yalnızca kayıt olunan fakülte "Bana Özel" başlığı altında gösterilecek.
     if(window.userProfile && window.userProfile.faculty) {
         html += `
             <div class="menu-item community-link" data-name="${window.userProfile.faculty}">
@@ -861,9 +859,6 @@ window.sendFriendRequest = async function(targetUserId, targetUserName) {
                 messages: [{ senderId: "system", text: "Sizi arkadaş olarak eklemek istiyor.", time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), read: false }]
             });
             alert("Arkadaşlık isteği başarıyla gönderildi!");
-            document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
-            document.querySelector('[data-target="notifications"]')?.classList.add('active');
-            window.loadPage('notifications');
         } else {
             if(existingChat.status === 'pending') {
                 alert("Bu kişiye zaten bir istek gönderilmiş veya ondan sana istek gelmiş. Lütfen Bildirimlerinizi kontrol edin.");
@@ -1186,7 +1181,7 @@ window.openListingForm = function(type) {
         </div>
         <div class="form-group"><textarea id="new-item-desc" rows="3" placeholder="${descPlaceholder}"></textarea></div>
         <div class="upload-btn-wrapper">
-            <button class="action-btn" id="photo-trigger-btn" style="width:100%; justify-content:center;">📷 Fotoğraf Çek / Galeriden Seç (Max 3)</button>
+            <button class="action-btn" id="photo-trigger-btn" style="width:100%; justify-content:center;">📷 Fotoğraf Çek / Cihazdan Seç</button>
             <input type="file" id="new-item-photo" accept="image/*" multiple style="display:none;" />
         </div>
         <div id="preview-container" class="preview-container"></div>
@@ -1315,7 +1310,7 @@ window.startMarketChat = async function(targetUserId, targetUserName, autoText) 
     }
 };
 
-// 🌟 YENİ: ARKADAŞLARIM SAYFASI
+// 🌟 ARKADAŞLARIM SAYFASI
 window.renderFriends = function() {
     const acceptedFriends = chatsDB.filter(c => c.status === 'accepted');
     
@@ -1520,7 +1515,7 @@ window.openChatView = function(chatId) {
             <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); window.resetCurrentChatId();" style="border:none; background:none; font-size:20px; cursor:pointer;">←</button>
             ${avatarHtml}
             <div class="chat-header-info">
-                <div class="chat-header-name" style="font-weight:bold; font-size:16px;">${activeChat.name}</div>
+                <div class="chat-header-name" style="font-weight:bold; font-size:16px; cursor:pointer;" onclick="window.viewUserProfile('${activeChat.otherUid}')">${activeChat.name}</div>
                 <div class="chat-header-status" style="font-size:12px; color:#10B981;">UniLoop Ağı</div>
             </div>
         </div>
@@ -1592,7 +1587,7 @@ window.openConfessionForm = function() {
         </div>
         <textarea id="new-conf-text" class="form-group" style="width:100%; height:120px; border-radius:12px; padding:15px; font-size:16px; margin-top:10px; resize:none; outline:none; border: 1px solid #E5E7EB;" placeholder="Aklından ne geçiyor? İnsanlarla paylaş..."></textarea>
         <div class="upload-btn-wrapper" style="margin-bottom: 15px;">
-            <button class="action-btn" id="conf-photo-trigger-btn" style="width:100%; justify-content:center; font-size:15px; border:1px dashed var(--primary); background:var(--bg-secondary); padding:12px; border-radius:12px;">📷 Fotoğraf Ekle (İsteğe Bağlı)</button>
+            <button class="action-btn" id="conf-photo-trigger-btn" style="width:100%; justify-content:center; font-size:15px; border:1px dashed var(--primary); background:var(--bg-secondary); padding:12px; border-radius:12px;">📷 Cihazdan Fotoğraf Seç (İsteğe Bağlı)</button>
             <input type="file" id="new-conf-photo" accept="image/*" style="display:none;" />
         </div>
         <div id="conf-preview-container" class="preview-container"></div>
@@ -1699,9 +1694,9 @@ window.drawConfessionsFeed = function() {
         html += `
         <div class="feed-post">
             <div class="feed-post-header">
-                <div class="feed-post-avatar">${avatarHtml}</div>
+                <div class="feed-post-avatar" style="cursor:pointer;" onclick="${post.user !== 'Anonim Kullanıcı' ? `window.viewUserProfile('${post.authorId}')` : ''}">${avatarHtml}</div>
                 <div class="feed-post-meta">
-                    <span class="feed-post-author">${post.user}</span>
+                    <span class="feed-post-author" style="cursor:pointer;" onclick="${post.user !== 'Anonim Kullanıcı' ? `window.viewUserProfile('${post.authorId}')` : ''}">${post.user}</span>
                     <span class="feed-post-time">${post.time || 'Az önce'}</span>
                     ${premiumHintHtml}
                 </div>
