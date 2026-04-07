@@ -55,7 +55,7 @@ const storage = getStorage(app);
 
 function initializeUniLoop() {
 
-// ✂️ CROPPER.JS ENJEKSİYONU (INSTAGRAM TARZI PROFİL KIRPMA İÇİN)
+// ✂️ CROPPER.JS ENJEKSİYONU
 const cropperCss = document.createElement('link');
 cropperCss.rel = 'stylesheet';
 cropperCss.href = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css';
@@ -64,6 +64,17 @@ document.head.appendChild(cropperCss);
 const cropperJs = document.createElement('script');
 cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
 document.head.appendChild(cropperJs);
+
+// 🗺️ LEAFLET.JS ENJEKSİYONU (LOOPMAP İÇİN)
+const leafletCss = document.createElement('link');
+leafletCss.rel = 'stylesheet';
+leafletCss.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+document.head.appendChild(leafletCss);
+
+const leafletJs = document.createElement('script');
+leafletJs.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+leafletJs.onload = () => { window.leafletLoaded = true; };
+document.head.appendChild(leafletJs);
 
 // 🎨 DINAMIK CSS ENJEKSIYONU VE STIL AYARLARI
 const styleFix = document.createElement('style');
@@ -114,12 +125,10 @@ styleFix.innerHTML = `
     .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
     .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
 
-    /* ANA SAYFA GRID */
     .user-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; width: 100%; }
     .user-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; justify-content: center; min-height: 160px;}
     .user-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); border-color: var(--primary); }
 
-    /* CROPPER JS YUVARLAK REFERANS STİLİ */
     .cropper-view-box, .cropper-face { border-radius: 50%; }
     .cropper-view-box { outline: 0; box-shadow: 0 0 0 1px #39f; }
 
@@ -128,6 +137,10 @@ styleFix.innerHTML = `
     .premium-upgrade-btn { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 15px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); display: inline-flex; align-items: center; gap: 8px; }
     .premium-upgrade-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(245, 158, 11, 0.4); }
     
+    .leaflet-container { z-index: 1 !important; border-radius: 16px; font-family: inherit; }
+    .custom-snap-marker { transition: transform 0.2s ease-in-out; cursor: pointer; }
+    .custom-snap-marker:hover { transform: scale(1.15) !important; z-index: 1000 !important; }
+
     body.dark-mode, .dark-mode #main-content { background-color: #121212 !important; color: #e5e7eb !important; }
     .dark-mode .card, .dark-mode .feed-post, .dark-mode .item-card, .dark-mode .chat-sidebar-header, .dark-mode .user-card { background-color: #1e1e1e !important; border-color: #374151 !important; color: #e5e7eb !important; }
     .dark-mode .card > div { border-color: #374151 !important; }
@@ -222,6 +235,7 @@ let marketDB = [];
 let confessionsDB = [];
 let qaDB = [];
 let chatsDB = [];
+let loopmapDB = [];
 let currentChatId = null;
 
 window.resetCurrentChatId = function() { currentChatId = null; };
@@ -245,9 +259,39 @@ const mainContent = document.getElementById('main-content');
 const modal = document.getElementById('app-modal');
 
 // ============================================================================
-// 🌟 HTML YAPI ENTEGRASYONU: MENÜ DÜZENLEME VE "BANA ÖZEL" SIRALAMASI
+// 🌟 HTML YAPI ENTEGRASYONU: YENİ MENÜ DİZİLİMİ VE BANA ÖZEL
 // ============================================================================
+window.renderMainMenu = function() {
+    const sidebar = document.getElementById('sidebar');
+    if(!sidebar) return;
+    
+    let topMenu = document.getElementById('top-menu-container');
+    if(!topMenu) {
+        topMenu = document.createElement('div');
+        topMenu.id = 'top-menu-container';
+        sidebar.insertBefore(topMenu, sidebar.firstChild);
+    }
+    
+    // İstenilen sıralama: Ana Sayfa, LoopMap, Kampüs Market, Anonim Kampüs, Soru-Cevap
+    topMenu.innerHTML = `
+        <div class="menu-item active" data-target="home" onclick="window.handleMenuClick(this)">🏠 Ana Sayfa</div>
+        <div class="menu-item" style="color: #10B981; font-weight: bold;" data-target="loopmap" onclick="window.handleMenuClick(this)">📍 LoopMap</div>
+        <div class="menu-item" data-target="market" onclick="window.handleMenuClick(this)">🛒 Kampüs Market</div>
+        <div class="menu-item" data-target="confessions" onclick="window.handleMenuClick(this)">📸 Anonim Kampüs</div>
+        <div class="menu-item" data-target="qa" onclick="window.handleMenuClick(this)">❓ Soru & Cevap</div>
+        <hr style="border:0; border-top:1px solid #E5E7EB; margin:15px 0;">
+    `;
+};
+
+window.handleMenuClick = function(el) {
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+    el.classList.add('active');
+    window.loadPage(el.getAttribute('data-target'));
+};
+
 window.renderSidebarAccordions = function() {
+    window.renderMainMenu();
+    
     const sidebarContainer = document.getElementById('sidebar-networks-container');
     const rightContainer = document.getElementById('right-networks-container');
     
@@ -278,13 +322,7 @@ window.updateMyFacultiesSidebar = function() {
     const container = document.getElementById('bana-ozel-container');
     if(!container) return;
     
-    const origMsgBtn = document.getElementById('nav-messages-btn');
-    const origNotifBtn = document.getElementById('nav-notifications-btn');
-    if(origMsgBtn && origMsgBtn.parentElement !== container) origMsgBtn.remove();
-    if(origNotifBtn && origNotifBtn.parentElement !== container) origNotifBtn.remove();
-
     let html = ``;
-    
     if(window.userProfile && window.userProfile.faculty) {
         html += `
             <div class="menu-item community-link" data-name="${window.userProfile.faculty}">
@@ -294,9 +332,9 @@ window.updateMyFacultiesSidebar = function() {
     }
     
     html += `
-        <div class="menu-item" id="nav-messages-btn" data-target="messages" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('messages');">💬 Mesajlarım</div>
-        <div class="menu-item" id="nav-notifications-btn" data-target="notifications" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('notifications');">🔔 Bildirimler <span id="notif-badge" class="badge" style="display:none; background:#EF4444; color:white; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:auto;">0</span></div>
-        <div class="menu-item" id="nav-friends-btn" data-target="friends" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('friends');">👥 Arkadaşlarım</div>
+        <div class="menu-item" id="nav-messages-btn" data-target="messages" onclick="window.handleMenuClick(this)">💬 Mesajlarım</div>
+        <div class="menu-item" id="nav-notifications-btn" data-target="notifications" onclick="window.handleMenuClick(this)">🔔 Bildirimler <span id="notif-badge" class="badge" style="display:none; background:#EF4444; color:white; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:auto;">0</span></div>
+        <div class="menu-item" id="nav-friends-btn" data-target="friends" onclick="window.handleMenuClick(this)">👥 Arkadaşlarım</div>
     `;
     
     container.innerHTML = html;
@@ -496,9 +534,9 @@ window.ensureWelcomeMessage = async function(user, userName) {
             const systemMessageText = `
                 Merhaba ${userName}! Dünyanın en yenilikçi kampüs ağı UniLoop'a hoş geldin. 🎓✨<br><br>
                 Bu platform senin dijital kampüsün! Neler mi yapabilirsin?<br><br>
+                📍 <b>LoopMap:</b> Kampüste olan biteni canlı haritada keşfet.<br>
                 🛒 <b>Kampüs Market:</b> İhtiyacın olmayan eşyaları sat.<br>
                 📸 <b>Kampüs Akışı:</b> Düşüncelerini özgürce paylaş.<br>
-                ❓ <b>Soru & Cevap:</b> Aklına takılan her şeyi sor.<br>
                 Burası senin alanın. Hemen "Profilim" sekmesine giderek kendine estetik bir biyografi ve profil fotoğrafı ekle!
             `;
             
@@ -544,7 +582,7 @@ window.logout = async function() {
 };
 
 // ============================================================================
-// 2. OTURUM DURUMU KONTROLÜ VE BİLDİRİM SEKME ENTEGRASYONU
+// 2. OTURUM DURUMU KONTROLÜ VE GERÇEK ZAMANLI LİSTENERLAR
 // ============================================================================
 
 onAuthStateChanged(auth, async (user) => {
@@ -610,6 +648,15 @@ window.addEventListener("beforeunload", () => {
 function initRealtimeListeners(currentUid) {
     const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
 
+    // LOOPMAP DİNLEYİCİSİ
+    onSnapshot(query(collection(db, "loopmap_snaps"), orderBy("createdAt", "desc")), (snapshot) => {
+        loopmapDB = [];
+        snapshot.forEach(doc => { loopmapDB.push({ id: doc.id, ...doc.data() }); });
+        if(document.getElementById('loopmap-container')) {
+            window.updateMapMarkers();
+        }
+    });
+
     onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc")), (snapshot) => {
         marketDB = [];
         snapshot.forEach(doc => { marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
@@ -617,7 +664,6 @@ function initRealtimeListeners(currentUid) {
         
         const activeTab = document.querySelector('.menu-item.active');
         if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market', 'market');
-        if(activeTab && activeTab.getAttribute('data-target') === 'housing') window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt', 'housing');
     });
 
     onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc")), (snapshot) => {
@@ -813,7 +859,215 @@ document.body.addEventListener('click', (e) => {
 });
 
 // ============================================================================
-// 4. YENİ ANA SAYFA (HOME) TASARIMI VE KULLANICI PROFİLİ GÖRÜNTÜLEME
+// 📍 YENİ ÖZELLİK: LOOPMAP (HARİTA VE SNAP PAYLAŞIMI)
+// ============================================================================
+
+window.mapInstance = null;
+window.userCurrentLocation = null;
+window.mapMarkers = [];
+
+window.renderLoopMap = function() {
+    mainContent.innerHTML = `
+        <div class="card" style="height: calc(100vh - 120px); padding:0; position:relative; overflow:hidden; border-radius: 16px; display:flex; align-items:center; justify-content:center; flex-direction:column; background:#F3F4F6;" id="loopmap-wrapper">
+            <div style="font-size:24px; font-weight:bold; color:var(--text-gray); margin-bottom: 20px;">📍 Konum aranıyor...</div>
+            <button class="btn-primary" style="width: auto; padding: 12px 24px;" onclick="window.initLoopMap()">Konum İzni Ver</button>
+        </div>
+    `;
+    window.initLoopMap();
+};
+
+window.initLoopMap = function() {
+    if (navigator.geolocation) {
+        document.getElementById('loopmap-wrapper').innerHTML = '<div style="font-size:24px; font-weight:bold; color:var(--text-gray);">📍 Harita Yükleniyor...</div>';
+        
+        navigator.geolocation.getCurrentPosition((position) => {
+            window.userCurrentLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+            document.getElementById('loopmap-wrapper').innerHTML = `
+                <div id="loopmap-container" style="width: 100%; height: 100%; z-index: 1;"></div>
+                <button onclick="window.openLoopMapCamera()" style="position:absolute; bottom:30px; left:50%; transform:translateX(-50%); z-index:1000; padding:15px 30px; border-radius:30px; background:linear-gradient(135deg, #10B981, #059669); color:white; font-weight:bold; border:none; box-shadow:0 4px 10px rgba(0,0,0,0.3); font-size:16px; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                    📸 Snap Paylaş
+                </button>
+            `;
+            
+            // Leaflet Harita Başlatma
+            const checkLeaflet = setInterval(() => {
+                if(window.leafletLoaded && typeof L !== 'undefined') {
+                    clearInterval(checkLeaflet);
+                    if(window.mapInstance) { window.mapInstance.remove(); }
+                    window.mapInstance = L.map('loopmap-container').setView([window.userCurrentLocation.lat, window.userCurrentLocation.lng], 16);
+                    
+                    // Google Haritalar benzeri tasarım için OSM Katmanı
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '© OpenStreetMap'
+                    }).addTo(window.mapInstance);
+
+                    window.updateMapMarkers();
+                }
+            }, 100);
+
+        }, (error) => {
+            document.getElementById('loopmap-wrapper').innerHTML = `
+                <div style="text-align:center; padding:20px;">
+                    <div style="font-size:40px; margin-bottom:10px;">🗺️</div>
+                    <h3 style="color:#EF4444; margin-bottom: 10px;">Konum İzni Gerekli</h3>
+                    <p style="color:var(--text-gray); margin-bottom:15px;">Haritayı görebilmek ve Snap paylaşabilmek için cihazınızdan veya tarayıcınızdan konum erişimine izin vermelisiniz.</p>
+                    <button class="btn-primary" style="width: auto; padding: 12px 24px;" onclick="window.initLoopMap()">Tekrar Dene</button>
+                </div>
+            `;
+        });
+    } else {
+        alert("Tarayıcınız konum özelliğini desteklemiyor.");
+    }
+};
+
+window.updateMapMarkers = function() {
+    if(!window.mapInstance) return;
+    
+    if(window.mapMarkers) { window.mapMarkers.forEach(m => m.remove()); }
+    window.mapMarkers = [];
+
+    loopmapDB.forEach(snap => {
+        const iconHtml = `
+            <div style="width:50px; height:50px; border-radius:50%; border:3px solid #10B981; overflow:hidden; background:white; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3);">
+                <img src="${snap.imgUrl}" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+        `;
+        
+        const customIcon = L.divIcon({
+            html: iconHtml,
+            className: 'custom-snap-marker',
+            iconSize: [50, 50],
+            iconAnchor: [25, 25]
+        });
+
+        const marker = L.marker([snap.lat, snap.lng], {icon: customIcon}).addTo(window.mapInstance);
+        marker.on('click', () => window.viewSnapDetail(snap));
+        window.mapMarkers.push(marker);
+    });
+};
+
+window.openLoopMapCamera = function() {
+    window.openModal('📍 Haritada Snap Paylaş', `
+        <div style="text-align:center; margin-bottom:15px; color:var(--text-gray); font-size:14px; line-height: 1.5;">
+            O anını yakala! Arka kameran ile ortamı çek veya ön kameraya geçip kendinle haritaya bir iz bırak.
+        </div>
+        <div class="upload-btn-wrapper" style="margin-bottom: 15px;">
+            <button class="action-btn" id="snap-photo-trigger" style="width:100%; justify-content:center; font-size:16px; border:2px dashed #10B981; color:#10B981; background:#ECFDF5; padding:20px; border-radius:16px;">📷 Kamerayı Aç / Fotoğraf Çek</button>
+            <input type="file" id="new-snap-photo" accept="image/*" capture="environment" style="display:none;" />
+        </div>
+        <div id="snap-preview-container" class="preview-container"></div>
+        <button class="btn-primary" id="publish-snap-btn" onclick="window.submitSnap()" style="padding:14px; font-size:16px; border-radius:12px; font-weight:bold; display:none; width:100%;">🚀 Haritaya Bırak</button>
+        <p id="snap-upload-status" style="font-size:13px; color:var(--primary); text-align:center; margin-top:10px; display:none; font-weight:bold;">Yükleniyor, lütfen bekleyin...</p>
+    `);
+
+    setTimeout(() => {
+        const photoBtn = document.getElementById('snap-photo-trigger');
+        const photoInput = document.getElementById('new-snap-photo');
+        if(photoBtn && photoInput) {
+            photoBtn.addEventListener('click', () => { photoInput.click(); });
+            photoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if(file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) { 
+                        document.getElementById('snap-preview-container').innerHTML = `<img src="${event.target.result}" style="width:100%; max-height:300px; object-fit:cover; border-radius:16px; border:2px solid #10B981; margin-bottom:15px;">`; 
+                        document.getElementById('publish-snap-btn').style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    }, 100);
+};
+
+window.submitSnap = async function() {
+    const photoInput = document.getElementById('new-snap-photo');
+    const btn = document.getElementById('publish-snap-btn');
+    const statusEl = document.getElementById('snap-upload-status');
+    
+    if(!photoInput || !photoInput.files || photoInput.files.length === 0) return;
+    
+    if(!window.userCurrentLocation) {
+        alert("Konumunuz alınamadı. Lütfen konum servislerinin açık olduğundan emin olun.");
+        return;
+    }
+
+    btn.disabled = true;
+    statusEl.style.display = 'block';
+    statusEl.innerText = "Snap haritaya bırakılıyor...";
+
+    try {
+        const file = photoInput.files[0];
+        const fileName = Date.now() + '_' + window.userProfile.uid + '.jpg';
+        const storageRef = ref(storage, 'loopmap/' + fileName);
+        await uploadBytes(storageRef, file);
+        const imgUrl = await getDownloadURL(storageRef);
+
+        await addDoc(collection(db, "loopmap_snaps"), {
+            uid: window.userProfile.uid,
+            username: window.userProfile.username || window.userProfile.name,
+            avatarUrl: window.userProfile.avatarUrl || window.userProfile.avatar,
+            lat: window.userCurrentLocation.lat,
+            lng: window.userCurrentLocation.lng,
+            imgUrl: imgUrl,
+            createdAt: serverTimestamp()
+        });
+        
+        window.closeModal();
+        alert("Harika! Snap'iniz haritada yayınlandı.");
+    } catch(err) {
+        alert("Snap yüklenemedi. Lütfen tekrar deneyin. Hata: " + err.message);
+        btn.disabled = false; 
+        statusEl.style.display = 'none'; 
+    }
+};
+
+window.viewSnapDetail = function(snap) {
+    const existingChat = chatsDB.find(c => c.otherUid === snap.uid);
+    let actionBtnHtml = '';
+    
+    if (snap.uid === window.userProfile.uid) {
+        actionBtnHtml = `<button class="btn-danger" style="width:100%; padding:12px; font-size:15px; border-radius:12px;" onclick="window.deleteSnap('${snap.id}'); window.closeModal();">🗑️ Snap'i Sil</button>`;
+    } else if (existingChat && existingChat.status === 'accepted') {
+        actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px;" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">💬 Mesaj Gönder</button>`;
+    } else if (existingChat && existingChat.status === 'pending') {
+        actionBtnHtml = `<button class="btn-primary" disabled style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:#9CA3AF;">⏳ İstek Bekleniyor</button>`;
+    } else {
+        actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px;" onclick="window.sendFriendRequest('${snap.uid}', '${snap.username}'); window.closeModal();">➕ Arkadaş Ekle</button>`;
+    }
+
+    let avatarHtml = snap.avatarUrl && snap.avatarUrl.startsWith('http') 
+        ? `<img src="${snap.avatarUrl}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #E5E7EB;">` 
+        : `<div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; border:2px solid #E5E7EB; margin:0;">${snap.avatarUrl || '👤'}</div>`;
+
+    window.openModal('Harita Snap', `
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
+            <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="window.viewUserProfile('${snap.uid}')">
+                ${avatarHtml}
+                <div>
+                    <div style="font-weight:bold; font-size:15px; color:var(--text-dark);">${snap.username}</div>
+                    <div style="font-size:12px; color:var(--text-gray);">📍 Konumundan bir an</div>
+                </div>
+            </div>
+        </div>
+        <img src="${snap.imgUrl}" style="width:100%; height:400px; object-fit:cover; border-radius:16px; margin-bottom:15px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+        <div style="display:flex; gap:10px;">
+            <button class="action-btn" style="flex:1; padding:12px; text-align:center; justify-content:center;" onclick="window.viewUserProfile('${snap.uid}')">👤 Profile Git</button>
+            <div style="flex:1;">${actionBtnHtml}</div>
+        </div>
+    `);
+};
+
+window.deleteSnap = async function(docId) {
+    if(confirm("Bu Snap'i silmek istediğinize emin misiniz?")) {
+        try { await deleteDoc(doc(db, "loopmap_snaps", docId)); }
+        catch(e) { alert("Hata: " + e.message); }
+    }
+};
+
+// ============================================================================
+// 4. ANA SAYFA (HOME) TASARIMI VE KULLANICI PROFİLİ GÖRÜNTÜLEME
 // ============================================================================
 
 window.searchAndAddFriend = async function() {
@@ -905,7 +1159,6 @@ window.viewUserProfile = async function(targetUid) {
             const ageText = u.age ? u.age + " yaşında" : "Yaş belirtilmemiş";
             const facText = u.faculty ? u.faculty : "Fakülte belirtilmemiş";
 
-            // Arkadaşlık durumuna göre buton ayarla
             const existingChat = chatsDB.find(c => c.otherUid === u.uid);
             let actionBtnHtml = '';
             
@@ -985,12 +1238,10 @@ window.renderHome = async function() {
         let usersHtml = '';
         let count = 0;
         
-        // Mevcut ilişkileri çıkar (Arkadaş olanları veya istek bekleyenleri ana sayfada gösterme)
         const interactedUids = chatsDB.map(c => c.otherUid);
         
         querySnapshot.forEach((doc) => {
             const u = doc.data();
-            // Kendisi değilse ve interactedUids içinde (chatsDB'de) yoksa listele
             if(u.uid !== window.userProfile.uid && !interactedUids.includes(u.uid) && count < 10) {
                 count++;
                 const initial = u.surname ? u.surname.charAt(0) + '.' : '';
@@ -1015,11 +1266,6 @@ window.renderHome = async function() {
         document.getElementById('home-users-grid').innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:red;">Kullanıcılar yüklenirken hata oluştu.</p>';
     }
 };
-
-function getHomeContent() {
-    window.renderHome();
-    return `<div style="text-align:center; padding: 50px; color:var(--text-gray);">Kampüsünüz hazırlanıyor...</div>`;
-}
 
 // ============================================================================
 // 5. TAM EKRAN FOTOĞRAF GALERİSİ (LIGHTBOX) MANTIĞI
@@ -1072,11 +1318,10 @@ if(lb) {
 }
 
 // ============================================================================
-// 6. İLAN YÖNETİMİ (MARKET VE LIGHTBOX ENTEGRASYONU)
+// 6. İLAN YÖNETİMİ (MARKET ENTEGRASYONU)
 // ============================================================================
 
 window.renderListings = function(type, title) {
-    const buttonTextType = type === 'market' ? 'market' : 'housing';
     let html = `
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
@@ -1089,11 +1334,11 @@ window.renderListings = function(type, title) {
     `;
     
     mainContent.innerHTML = html;
-    window.drawListingsGrid(type, buttonTextType, '');
+    window.drawListingsGrid(type, 'market', '');
     
     const searchInput = document.getElementById('local-search-input');
     if(searchInput) {
-        searchInput.addEventListener('input', (e) => { window.drawListingsGrid(type, buttonTextType, e.target.value.toLowerCase()); }); 
+        searchInput.addEventListener('input', (e) => { window.drawListingsGrid(type, 'market', e.target.value.toLowerCase()); }); 
     }
 };
 
@@ -1165,7 +1410,6 @@ window.openListingDetail = function(docId, type) {
     const safeTitle = item.title.replace(/'/g, "\\'"); 
     const existingChat = chatsDB.find(c => c.otherUid === item.sellerId);
 
-    // Kendi İlanıysa Düzenle/Sil. Başkasınınsa Arkadaşlık Kontrolü yap.
     if (item.sellerId === currentUid) {
          actionButtonsHtml = `
             <div style="display:flex; gap:10px; margin-top: 20px;">
@@ -1174,13 +1418,10 @@ window.openListingDetail = function(docId, type) {
             </div>
          `;
     } else if (existingChat && existingChat.status === 'accepted') {
-         // Zaten arkadaşlar, mesaj ekranına git
          actionButtonsHtml = `<button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">💬 Mesaj Gönder</button>`;
     } else if (existingChat && existingChat.status === 'pending') {
-         // İstek zaten bekliyor
          actionButtonsHtml = `<button class="btn-primary" disabled style="margin-top: 20px; padding:12px; font-size:15px; background:#9CA3AF;">⏳ İstek Bekleniyor</button>`;
     } else {
-         // Arkadaş değiller, istek gönderilecek
          actionButtonsHtml = `<button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="window.sendFriendRequest('${item.sellerId}', '${item.sellerName}'); window.closeModal();">➕ İstek Gönder</button>`;
     }
 
@@ -1211,14 +1452,14 @@ window.editListing = async function(docId, oldTitle, oldPrice) {
 };
 
 window.openListingForm = function(type) {
-    const formTitle = type === 'market' ? '🛒 Kampüs Market İlanı Ekle' : '🔑 Ev Arkadaşı & Yurt İlanı Ekle';
-    const titlePlaceholder = type === 'market' ? 'İlan Başlığı (Örn: Temiz Çalışma Masası veya Çıkmış Sorular)' : 'İlan Başlığı (Örn: Acil Ev Arkadaşı Aranıyor)';
-    const descPlaceholder = type === 'market' ? 'Ürünün durumu ve detayları...' : 'Evin kuralları, konumu ve aranan özellikler...';
+    const formTitle = '🛒 Kampüs Market İlanı Ekle';
+    const titlePlaceholder = 'İlan Başlığı (Örn: Temiz Çalışma Masası veya Çıkmış Sorular)';
+    const descPlaceholder = 'Ürünün durumu ve detayları...';
 
     window.openModal(formTitle, `
         <div class="form-group"><input type="text" id="new-item-title" placeholder="${titlePlaceholder}"></div>
         <div class="form-group" style="display: flex; gap: 10px;">
-            <input type="number" id="new-item-price" placeholder="Fiyat / Kira Bedeli" style="flex: 2;">
+            <input type="number" id="new-item-price" placeholder="Fiyat" style="flex: 2;">
             <select id="new-item-currency" style="flex: 1;">
                 <option value="₺">TL (₺)</option>
                 <option value="$">Dolar ($)</option>
@@ -1331,7 +1572,6 @@ window.submitListing = async function(type) {
 // 7. ARKADAŞLARIM, BİLDİRİMLER VE MESAJLAŞMA SİSTEMİ
 // ============================================================================
 
-// 🌟 ARKADAŞLARIM SAYFASI
 window.renderFriends = function() {
     const acceptedFriends = chatsDB.filter(c => c.status === 'accepted');
     
@@ -1344,7 +1584,7 @@ window.renderFriends = function() {
     `;
     
     if (acceptedFriends.length === 0) {
-        html += `<div style="text-align:center; padding: 40px 20px; color:var(--text-gray);">Henüz ekli bir arkadaşın yok. Ana sayfadan yeni insanlarla tanışabilirsin!</div>`;
+        html += `<div style="text-align:center; padding: 40px 20px; color:var(--text-gray);">Henüz ekli bir arkadaşın yok. Ana sayfadan veya LoopMap'ten yeni insanlarla tanışabilirsin!</div>`;
     } else {
         html += `<div class="user-grid">`;
         acceptedFriends.forEach(friend => {
@@ -2060,8 +2300,8 @@ window.loadPage = function(pageName) {
     window.scrollTo(0,0);
 
     if (pageName === 'home') window.renderHome();
+    else if (pageName === 'loopmap') window.renderLoopMap();
     else if (pageName === 'market') window.renderListings('market', '🛒 Kampüs Market');
-    else if (pageName === 'housing') window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt');
     else if (pageName === 'confessions') window.renderConfessions();
     else if (pageName === 'qa') window.renderQA(); 
     else if (pageName === 'messages') window.renderMessages(); 
@@ -2070,16 +2310,6 @@ window.loadPage = function(pageName) {
     else if (pageName === 'settings') window.renderSettings();
     else if (pageName === 'profile') window.renderProfile();
 };
-
-document.querySelectorAll('.menu-item[data-target]').forEach(item => {
-    item.addEventListener('click', (e) => {
-        if(e.currentTarget.getAttribute('data-target')) {
-            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-            e.currentTarget.classList.add('active'); 
-            window.loadPage(e.currentTarget.getAttribute('data-target'));
-        }
-    });
-});
 
 bind('logo-btn', 'click', () => { 
     document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active')); 
@@ -2142,148 +2372,156 @@ window.renderProfile = function() {
                         <div style="display:flex; align-items:center; background:white; border:1px solid #D1D5DB; border-radius:12px; overflow:hidden; margin-top:5px;">
                             <span style="padding-left:15px; color:var(--primary); font-weight:800; font-size:16px;">#</span>
                             <input type="text" id="prof-username" value="${(window.userProfile.username || '').replace('#', '')}" placeholder="kullaniciadi" style="border:none; background:transparent; width:100%; padding:12px 10px; outline:none; font-size:15px; font-weight:600; color:var(--text-dark);">
-                        </div>
-                    </div>
+                                            </div>
                 </div>
-                
-                <button class="btn-primary" onclick="window.saveProfile()" style="width: 100%; padding: 14px; font-size: 15px; border-radius: 12px; margin-bottom:12px; margin-top:15px; font-weight:bold;">💾 Profili Güncelle</button>
-                <button class="btn-danger" onclick="window.logout()" style="width: 100%; padding: 14px; font-size: 15px; border-radius: 12px; background: transparent; color: #EF4444; border: 2px solid #EF4444; font-weight:bold;">🚪 Çıkış Yap</button>
+                <button class="btn-primary" style="margin-top:20px; width:100%; padding:14px; border-radius:12px; font-size:16px; box-shadow: 0 4px 6px rgba(79,70,229,0.3);" onclick="window.saveProfile()">💾 Profili Kaydet</button>
             </div>
         </div>
     `;
-};
-
-// ✂️ INSTAGRAM TARZI YUVARLAK KIRPMA İŞLEVİ (CROPPER.JS)
-window.triggerAvatarCrop = function(inputEl) {
-    if(!inputEl.files || inputEl.files.length === 0) return;
-    const file = inputEl.files[0];
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-        window.openModal('Profil Fotoğrafını Kırp', `
-            <div style="width: 100%; max-height: 400px; margin-bottom: 20px; display:flex; justify-content:center;">
-                <img id="cropper-image" src="${e.target.result}" style="max-width: 100%; display:block;">
-            </div>
-            <button class="btn-primary" id="crop-upload-btn" style="width: 100%; padding: 14px; font-size: 16px; font-weight: bold; border-radius:12px;">✂️ Kırp ve Yükle</button>
-            <p id="profile-upload-status" style="display:none; color:var(--primary); text-align:center; margin-top:10px; font-size:13px; font-weight:bold;"></p>
-        `);
-        
-        setTimeout(() => {
-            const image = document.getElementById('cropper-image');
-            if (window.cropperInstance) { window.cropperInstance.destroy(); }
-            
-            // Yuvarlak ve estetik bir kırpma alanı
-            window.cropperInstance = new Cropper(image, {
-                aspectRatio: 1, // Kare referans
-                viewMode: 1, // Sınırların dışına çıkmayı engelle
-                dragMode: 'move', // Resmi kaydırarak kırp
-                guides: false, // Kılavuz çizgileri gizle
-                center: false,
-                highlight: false,
-                cropBoxMovable: true,
-                cropBoxResizable: true,
-                toggleDragModeOnDblclick: false,
-            });
-            
-            document.getElementById('crop-upload-btn').addEventListener('click', async function() {
-                const btn = this;
-                const statusEl = document.getElementById('profile-upload-status');
-                btn.disabled = true;
-                btn.style.opacity = "0.7";
-                statusEl.style.display = 'block';
-                statusEl.innerText = 'Fotoğraf işleniyor ve yükleniyor...';
-                
-                // Canvas'ı PNG formatında ve şeffaf arkaplanlı olarak al
-                window.cropperInstance.getCroppedCanvas({
-                    width: 400,
-                    height: 400,
-                    fillColor: 'transparent'
-                }).toBlob(async function(blob) {
-                    try {
-                        const fileName = "avatar_" + window.userProfile.uid + "_" + Date.now() + ".png";
-                        const storageRef = ref(storage, 'avatars/' + fileName);
-                        await uploadBytes(storageRef, blob);
-                        const url = await getDownloadURL(storageRef);
-                        
-                        window.userProfile.avatarUrl = url;
-                        await updateDoc(doc(db, "users", window.userProfile.uid), { avatarUrl: url });
-                        
-                        window.closeModal();
-                        window.renderProfile();
-                    } catch(err) {
-                        statusEl.innerText = "❌ Hata: " + err.message;
-                        statusEl.style.color = "red";
-                        btn.disabled = false;
-                        btn.style.opacity = "1";
-                    }
-                }, 'image/png');
-            });
-        }, 200);
-    };
-    reader.readAsDataURL(file);
 };
 
 window.saveProfile = async function() {
-    const name = document.getElementById('prof-name').value; 
-    const surname = document.getElementById('prof-surname').value;
-    const bio = document.getElementById('prof-bio').value;
-    const age = document.getElementById('prof-age').value;
-    let rawUsername = document.getElementById('prof-username').value.trim().toLowerCase();
+    const name = document.getElementById('prof-name').value.trim();
+    const surname = document.getElementById('prof-surname').value.trim();
+    const bio = document.getElementById('prof-bio').value.trim();
+    const age = document.getElementById('prof-age').value.trim();
+    const usernameRaw = document.getElementById('prof-username').value.trim().toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9_]/g, '');
     
-    if(!rawUsername) { alert("Kullanıcı adı boş bırakılamaz!"); return; }
+    if(!name || !surname) { alert("Ad ve Soyad alanları boş bırakılamaz."); return; }
     
-    rawUsername = rawUsername.replace(/^#/, '');
-    const username = '#' + rawUsername;
-    
-    if(username !== window.userProfile.username) {
-        try {
-            const q = query(collection(db, "users"), where("username", "==", username));
-            const snapshot = await getDocs(q);
-            if(!snapshot.empty) { alert("Bu kullanıcı adı başkası tarafından alınmış. Lütfen başka bir tane deneyin."); return; }
-        } catch(e) { console.error(e); alert("Bir hata oluştu, lütfen tekrar deneyin."); return; }
+    let usernameToSave = "";
+    if (usernameRaw) {
+        usernameToSave = "#" + usernameRaw;
+        if(usernameToSave !== window.userProfile.username) {
+            const q = query(collection(db, "users"), where("username", "==", usernameToSave));
+            const snap = await getDocs(q);
+            if(!snap.empty) { alert("Bu kullanıcı adı başka biri tarafından kullanılıyor. Lütfen farklı bir tane seçin."); return; }
+        }
+    } else {
+        alert("Kullanıcı adı belirlemek zorunludur!"); return;
     }
-    
-    window.userProfile.name = name; window.userProfile.surname = surname; window.userProfile.username = username; window.userProfile.bio = bio; window.userProfile.age = age;
-    
+
     try {
-        await updateDoc(doc(db, "users", window.userProfile.uid), { name: name, surname: surname, username: username, bio: bio, age: age });
-        window.openModal('Başarılı', `<div style="text-align:center;"><p style="font-size:40px; margin:0;">✅</p><p>Profil başarıyla güncellendi!</p></div>`);
-        window.renderProfile();
-    } catch(e) { alert("Profil kaydedilirken hata: " + e.message); }
+        await updateDoc(doc(db, "users", window.userProfile.uid), {
+            name: name,
+            surname: surname,
+            bio: bio,
+            age: age,
+            username: usernameToSave
+        });
+        
+        window.userProfile.name = name;
+        window.userProfile.surname = surname;
+        window.userProfile.bio = bio;
+        window.userProfile.age = age;
+        window.userProfile.username = usernameToSave;
+        
+        alert("Profil başarıyla güncellendi!");
+        window.loadPage('home'); 
+    } catch(error) { alert("Profil güncellenirken hata oluştu: " + error.message); }
+};
+
+window.cropperInstance = null;
+
+window.triggerAvatarCrop = function(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            window.openModal('Profil Fotoğrafını Kırp', `
+                <div style="width:100%; max-height:400px; margin-bottom:15px; background:#F9FAFB; display:flex; justify-content:center;">
+                    <img id="cropper-image" src="${e.target.result}" style="max-width:100%; max-height:400px;">
+                </div>
+                <button class="btn-primary" style="width:100%; padding:14px; border-radius:12px; font-size:16px;" onclick="window.saveCroppedAvatar()">✂️ Kırp ve Kaydet</button>
+                <p id="avatar-upload-status" style="font-size:13px; color:var(--primary); text-align:center; margin-top:10px; display:none; font-weight:bold;">Yükleniyor...</p>
+            `);
+            
+            setTimeout(() => {
+                const image = document.getElementById('cropper-image');
+                window.cropperInstance = new Cropper(image, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 1,
+                    restore: false,
+                    guides: false,
+                    center: false,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                });
+            }, 100);
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+};
+
+window.saveCroppedAvatar = async function() {
+    const btn = document.querySelector('#modal-body .btn-primary');
+    const statusText = document.getElementById('avatar-upload-status');
+    
+    if (window.cropperInstance) {
+        btn.disabled = true;
+        statusText.style.display = 'block';
+        
+        window.cropperInstance.getCroppedCanvas({ width: 400, height: 400 }).toBlob(async (blob) => {
+            const fileName = 'avatar_' + window.userProfile.uid + '.jpg';
+            const storageRef = ref(storage, 'avatars/' + window.userProfile.uid + '/' + fileName);
+            
+            try {
+                await uploadBytes(storageRef, blob);
+                const downloadURL = await getDownloadURL(storageRef);
+                
+                await updateDoc(doc(db, "users", window.userProfile.uid), { avatarUrl: downloadURL });
+                window.userProfile.avatarUrl = downloadURL;
+                
+                window.closeModal();
+                alert("Profil fotoğrafınız başarıyla güncellendi!");
+                window.loadPage('profile');
+            } catch (error) {
+                alert("Fotoğraf yüklenemedi: " + error.message);
+                btn.disabled = false;
+                statusText.style.display = 'none';
+            }
+        }, 'image/jpeg', 0.8);
+    }
 };
 
 window.renderSettings = function() {
-    const currentLang = localStorage.getItem('uniloop_lang') || 'tr';
-    const currentTheme = localStorage.getItem('uniloop_theme') || 'light';
-    const t = TRANSLATIONS[currentLang];
+    const lang = localStorage.getItem('uniloop_lang') || 'tr';
+    const t = TRANSLATIONS[lang];
+    const savedTheme = localStorage.getItem('uniloop_theme') || 'light';
 
     mainContent.innerHTML = `
-        <div class="card">
-            <h2>${t.settingsTitle}</h2>
-            <div style="background: inherit; padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 1px solid var(--border-color);">
-                <div class="form-group">
-                    <label>${t.langLabel}</label>
-                    <select onchange="window.setLanguage(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D1D5DB; background:transparent;">
-                        <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>Türkçe</option>
-                        <option value="en" ${currentLang === 'en' ? 'selected' : ''}>English</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>${t.themeLabel}</label>
-                    <select onchange="window.toggleTheme(this.value)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #D1D5DB; background:transparent;">
-                        <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>${t.lightMode}</option>
-                        <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>${t.darkMode}</option>
-                    </select>
-                </div>
+        <div class="card" style="max-width:600px; margin:0 auto;">
+            <h2 style="margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">${t.settingsTitle}</h2>
+            
+            <div class="form-group">
+                <label style="font-weight:bold;">${t.langLabel}</label>
+                <select id="lang-select" onchange="window.setLanguage(this.value)" style="width:100%; padding:12px; border-radius:12px; border:1px solid #d1d5db; outline:none; cursor:pointer;">
+                    <option value="tr" ${lang === 'tr' ? 'selected' : ''}>🇹🇷 Türkçe</option>
+                    <option value="en" ${lang === 'en' ? 'selected' : ''}>🇬🇧 English</option>
+                </select>
             </div>
-            <button class="btn-danger" onclick="window.logout()">${t.logoutBtn}</button>
+            
+            <div class="form-group">
+                <label style="font-weight:bold;">${t.themeLabel}</label>
+                <select id="theme-select" onchange="window.toggleTheme(this.value)" style="width:100%; padding:12px; border-radius:12px; border:1px solid #d1d5db; outline:none; cursor:pointer;">
+                    <option value="light" ${savedTheme === 'light' ? 'selected' : ''}>☀️ ${t.lightMode}</option>
+                    <option value="dark" ${savedTheme === 'dark' ? 'selected' : ''}>🌙 ${t.darkMode}</option>
+                </select>
+            </div>
+            
+            <button class="btn-danger" style="width:100%; padding:14px; border-radius:12px; font-size:16px; margin-top:20px; box-shadow:0 4px 6px rgba(239,68,68,0.2);" onclick="window.logout()">${t.logoutBtn}</button>
         </div>
     `;
 };
 
-}
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeUniLoop);
-} else {
+bind('nav-settings-btn', 'click', () => { window.loadPage('settings'); });
+
+} 
+
+window.onload = function() {
     initializeUniLoop();
-}
+};
+
