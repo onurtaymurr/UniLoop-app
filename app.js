@@ -68,15 +68,18 @@ let currentChatId = null;
 let googleMap = null; // YENİ: Google Harita objesi
 let userCurrentLocation = null; // YENİ: Kullanıcı konumu
 
-// --- GOOGLE MAPS GÜVENLİ YÜKLEYİCİ (VERCEL ENTEGRASYONU) ---
+// ============================================================================
+// 📍 GOOGLE MAPS YÜKLEYİCİ (DÜZELTİLDİ: SAF JS İÇİN)
+// ============================================================================
 function loadGoogleMapsScript() {
-    if (typeof google !== 'undefined') return; // Zaten yüklüyse tekrar yükleme
+    if (typeof google !== 'undefined') return; 
     
-    // Vercel ortam değişkeninden harita anahtarını çekiyoruz
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    // DİKKAT: Anahtarını buraya yapıştır!
+    // Güvenliği zaten Google Cloud panelinde domain kısıtlaması yaparak sağladık.
+    const apiKey = "SENIN_GOOGLE_MAPS_KEYIN_BURAYA"; 
     
-    if (!apiKey) {
-        console.error("HATA: Google Maps API Key bulunamadı. Lütfen Vercel ayarlarınızı kontrol edin.");
+    if (!apiKey || apiKey === "SENIN_GOOGLE_MAPS_KEYIN_BURAYA") {
+        console.error("HATA: Google Maps API Key eksik. Lütfen koddaki ilgili alana anahtarınızı yazın.");
         return;
     }
 
@@ -109,7 +112,7 @@ const modal = document.getElementById('app-modal');
 
 function initializeUniLoop() {
 
-// Harita motorunu güvenli şekilde arka planda başlat
+// Harita motorunu başlat
 loadGoogleMapsScript();
 
 // ✂️ CROPPER.JS ENJEKSİYONU (INSTAGRAM TARZI PROFİL KIRPMA İÇİN)
@@ -1123,7 +1126,7 @@ window.requestLocationAndInitMap = function() {
 
 window.initGoogleMap = function(centerLoc) {
     if(typeof google === 'undefined') {
-        document.getElementById('map').innerHTML = `<div style="padding:40px; text-align:center; color:gray; font-weight:bold;">Google Maps API yüklenemedi.<br><br>Lütfen index.html dosyasındaki script etiketine kendi API Key'inizi girin.</div>`;
+        document.getElementById('map').innerHTML = `<div style="padding:40px; text-align:center; color:gray; font-weight:bold;">Google Maps API yüklenemedi.<br><br>Lütfen internet bağlantınızı ve şifrenizi kontrol edin.</div>`;
         return;
     }
     
