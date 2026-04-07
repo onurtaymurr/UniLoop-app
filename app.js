@@ -1115,8 +1115,13 @@ window.drawListingsGrid = function(type, buttonTextType, filterText) {
         let imgHtml = ''; 
         const displayCurrency = item.currency || '₺';
 
-        if (item.imgUrl) { imgHtml = `<img src="${item.imgUrl}" alt="İlan" style="width:100%; height:100%; object-fit:cover;">`; } 
-        else { imgHtml = `<div style="font-size:48px; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">📦</div>`; }
+        if (item.isPdf) {
+            imgHtml = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; background:#F9FAFB;"><span style="font-size:40px;">📄</span><span style="font-size:12px; font-weight:bold; color:#EF4444; margin-top:5px;">PDF Dosyası</span></div>`;
+        } else if (item.imgUrl) { 
+            imgHtml = `<img src="${item.imgUrl}" alt="İlan" style="width:100%; height:100%; object-fit:cover;">`; 
+        } else { 
+            imgHtml = `<div style="font-size:48px; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">📦</div>`; 
+        }
 
         gridHtml += `
             <div class="item-card" onclick="window.openListingDetail('${item.id}', '${buttonTextType}')">
@@ -1139,7 +1144,9 @@ window.openListingDetail = function(docId, type) {
     let indicatorsHtml = '';
     const displayCurrency = item.currency || '₺';
 
-    if (item.imgUrls && item.imgUrls.length > 0) {
+    if (item.isPdf) {
+        imgHtml = `<div style="width:100%; height:250px; background:#F9FAFB; border:2px dashed #EF4444; border-radius:12px; margin-bottom:16px; display:flex; align-items:center; justify-content:center; flex-direction:column;"><span style="font-size:60px;">📄</span><h3 style="color:#EF4444; margin-top:10px; margin-bottom:5px;">PDF Dosyası</h3><p style="font-size:13px; color:var(--text-gray);">Bu içerik bir PDF belgesidir.</p></div>`;
+    } else if (item.imgUrls && item.imgUrls.length > 0) {
         imgHtml += '<div class="image-gallery" style="height:250px; border-radius:12px; margin-bottom:16px;">';
         const imgArrayStr = encodeURIComponent(JSON.stringify(item.imgUrls));
         item.imgUrls.forEach((url, i) => {
@@ -1205,7 +1212,7 @@ window.editListing = async function(docId, oldTitle, oldPrice) {
 
 window.openListingForm = function(type) {
     const formTitle = type === 'market' ? '🛒 Kampüs Market İlanı Ekle' : '🔑 Ev Arkadaşı & Yurt İlanı Ekle';
-    const titlePlaceholder = type === 'market' ? 'İlan Başlığı (Örn: Temiz Çalışma Masası)' : 'İlan Başlığı (Örn: Acil Ev Arkadaşı Aranıyor)';
+    const titlePlaceholder = type === 'market' ? 'İlan Başlığı (Örn: Temiz Çalışma Masası veya Çıkmış Sorular)' : 'İlan Başlığı (Örn: Acil Ev Arkadaşı Aranıyor)';
     const descPlaceholder = type === 'market' ? 'Ürünün durumu ve detayları...' : 'Evin kuralları, konumu ve aranan özellikler...';
 
     window.openModal(formTitle, `
@@ -1221,12 +1228,12 @@ window.openListingForm = function(type) {
         </div>
         <div class="form-group"><textarea id="new-item-desc" rows="3" placeholder="${descPlaceholder}"></textarea></div>
         <div class="upload-btn-wrapper">
-            <button class="action-btn" id="photo-trigger-btn" style="width:100%; justify-content:center;">📷 Fotoğraf Çek / Cihazdan Seç</button>
-            <input type="file" id="new-item-photo" accept="image/*" multiple style="display:none;" />
+            <button class="action-btn" id="photo-trigger-btn" style="width:100%; justify-content:center;">📷 Fotoğraf veya 📄 PDF Seç</button>
+            <input type="file" id="new-item-photo" accept="image/*, application/pdf" multiple style="display:none;" />
         </div>
         <div id="preview-container" class="preview-container"></div>
         <button class="btn-primary" id="publish-listing-btn" onclick="window.submitListing('${type}')">İlanı Yayınla</button>
-        <p id="upload-status" style="font-size:12px; color:var(--primary); text-align:center; margin-top:10px; display:none; font-weight:bold;">Fotoğraflar Yükleniyor, lütfen bekleyin...</p>
+        <p id="upload-status" style="font-size:12px; color:var(--primary); text-align:center; margin-top:10px; display:none; font-weight:bold;">Dosyalar Yükleniyor, lütfen bekleyin...</p>
     `);
 
     setTimeout(() => {
@@ -1239,9 +1246,13 @@ window.openListingForm = function(type) {
                 const previewContainer = document.getElementById('preview-container');
                 previewContainer.innerHTML = ''; 
                 files.forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = function(event) { previewContainer.innerHTML += `<div class="preview-box"><img src="${event.target.result}"></div>`; }
-                    reader.readAsDataURL(file);
+                    if (file.type === "application/pdf") {
+                        previewContainer.innerHTML += `<div class="preview-box" style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:#F9FAFB; border:1px solid #E5E7EB;"><span style="font-size:30px;">📄</span><span style="font-size:12px; color:#EF4444; font-weight:bold; margin-top:5px;">PDF Dosyası</span></div>`;
+                    } else {
+                        const reader = new FileReader();
+                        reader.onload = function(event) { previewContainer.innerHTML += `<div class="preview-box"><img src="${event.target.result}"></div>`; }
+                        reader.readAsDataURL(file);
+                    }
                 });
             });
         }
@@ -1268,11 +1279,16 @@ window.submitListing = async function(type) {
 
     let files = [];
     if(photoInput && photoInput.files && photoInput.files.length > 0) { files = Array.from(photoInput.files).slice(0, 3); }
-    if(files.length === 0) { alert("Lütfen en az 1 fotoğraf seçin veya çekin."); return; }
+    if(files.length === 0) { alert("Lütfen en az 1 dosya veya fotoğraf seçin."); return; }
+
+    let isPdf = false;
+    if(files.length > 0 && files[0].type === "application/pdf") {
+        isPdf = true;
+    }
 
     btn.disabled = true;
     statusEl.style.display = 'block';
-    statusEl.innerText = "Fotoğraflar Yükleniyor, lütfen bekleyin...";
+    statusEl.innerText = "Dosyalar Yükleniyor, lütfen bekleyin...";
     statusEl.style.color = "var(--primary)";
 
     let imgUrlsArray = [];
@@ -1294,11 +1310,12 @@ window.submitListing = async function(type) {
         await addDoc(collection(db, "listings"), {
             type: type, title: title, price: price, currency: currency, desc: desc, 
             imgUrls: imgUrlsArray, imgUrl: imgUrlsArray.length > 0 ? imgUrlsArray[0] : "", 
+            isPdf: isPdf,
             sellerId: window.userProfile.uid, sellerName: window.userProfile.name + " " + window.userProfile.surname, createdAt: serverTimestamp()
         });
 
         window.closeModal();
-        alert("İlanınız başarıyla fotoğraflarıyla birlikte yayınlandı!");
+        alert("İlanınız başarıyla yayınlandı!");
     } catch (error) {
         console.error("İlan eklenirken hata:", error);
         statusEl.innerText = "HATA: " + error.message; 
