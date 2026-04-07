@@ -105,6 +105,11 @@ styleFix.innerHTML = `
     .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
     .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
 
+    /* İKİLİ ŞABLON GRID STİLLERİ (Çıkmış Sorular İçin - EKRANI DOLDURAN YAPI) */
+    .exam-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; margin-top: 20px; }
+    .exam-card { background: transparent; border: 2px solid var(--border-color); border-radius: 16px; padding: 40px 20px; text-align: center; transition: all 0.3s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; }
+    .exam-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-color: var(--primary); }
+
     .premium-glow { animation: glowPulse 2s infinite alternate; }
     @keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); } 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); } }
     .premium-upgrade-btn { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 15px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); display: inline-flex; align-items: center; gap: 8px; }
@@ -131,6 +136,7 @@ styleFix.innerHTML = `
     .dark-mode #app-header { background: #1e1e1e !important; border-bottom-color: #374151 !important; }
     .dark-mode #sidebar { background: #1e1e1e !important; border-right-color: #374151 !important; }
     .dark-mode .locked-overlay { background: rgba(30, 30, 30, 0.8); }
+    .dark-mode .exam-card { border-color: #374151 !important; color: #e5e7eb !important; }
 
     #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
     #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
@@ -210,7 +216,7 @@ let marketDB = [];
 let confessionsDB = [];
 let qaDB = [];
 let chatsDB = [];
-let pastExamsDB = []; // Çıkmış Sorular Havuzu
+let pastExamsDB = []; // Çıkmış Sorular Havuzu DB
 let currentChatId = null;
 
 window.resetCurrentChatId = function() { currentChatId = null; };
@@ -233,45 +239,45 @@ const appScreen = document.getElementById('app-screen');
 const mainContent = document.getElementById('main-content');
 const modal = document.getElementById('app-modal');
 
-// 🌟 YENİ: DÜZELTİLMİŞ "BANA ÖZEL" VE STANDART BUTONLU AKIŞ
+// ============================================================================
+// 🌟 HTML YAPI ENTEGRASYONU: MENÜ DÜZENLEME VE "BANA ÖZEL" SIRALAMASI
+// ============================================================================
 window.renderSidebarAccordions = function() {
     const sidebarContainer = document.getElementById('sidebar-networks-container');
     const rightContainer = document.getElementById('right-networks-container');
     
+    // Sadece Tüm Fakülteler Accordion'u containerların içine render edilecek.
     const accordionHTML = `
         <div id="bana-ozel-container"></div>
-        
-        <div class="accordion-section" style="margin-top: 20px;">
+        <div class="accordion-section" style="margin-top: 15px;">
             <div class="accordion-header menu-item" style="padding:12px 15px; margin-bottom:5px; border-radius:12px;">
-                <span style="font-weight:bold;">🏢 Tüm Fakülteler</span>
+                <span>🏢 Tüm Fakülteler</span>
                 <span class="accordion-icon">▶</span>
             </div>
             <div class="accordion-content">
-                <div class="menu-item community-link" data-name="Tıp Fakültesi" data-icon="🩺" data-color="linear-gradient(135deg, #EF4444, #B91C1C)">🩺 Tıp Fakültesi</div>
-                <div class="menu-item community-link" data-name="Diş Hekimliği Fakültesi" data-icon="🦷" data-color="linear-gradient(135deg, #06B6D4, #0891B2)">🦷 Diş Fakültesi</div>
-                <div class="menu-item community-link" data-name="Bilgisayar Fakültesi" data-icon="💻" data-color="linear-gradient(135deg, #3B82F6, #1D4ED8)">💻 Bilgisayar Fakültesi</div>
-                <div class="menu-item community-link" data-name="Eczacılık Fakültesi" data-icon="💊" data-color="linear-gradient(135deg, #10B981, #047857)">💊 Eczacılık Fakültesi</div>
-                <div class="menu-item community-link" data-name="Hukuk Fakültesi" data-icon="⚖️" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">⚖️ Hukuk Fakültesi</div>
+                <div class="menu-item community-link" data-name="Tıp Fakültesi">🩺 Tıp Fakültesi</div>
+                <div class="menu-item community-link" data-name="Diş Hekimliği Fakültesi">🦷 Diş Fakültesi</div>
+                <div class="menu-item community-link" data-name="Bilgisayar Fakültesi">💻 Bilgisayar Fakültesi</div>
+                <div class="menu-item community-link" data-name="Eczacılık Fakültesi">💊 Eczacılık Fakültesi</div>
+                <div class="menu-item community-link" data-name="Hukuk Fakültesi">⚖️ Hukuk Fakültesi</div>
             </div>
         </div>
     `;
     
     if(sidebarContainer) sidebarContainer.innerHTML = accordionHTML;
     if(rightContainer) rightContainer.innerHTML = accordionHTML;
-    
-    window.updateMyFacultiesSidebar();
 
-    // Çıkmış Sorular butonunu standart stilde, Soru & Cevap altına ekle
-    setTimeout(() => {
-        const qaMenuBtn = document.querySelector('.menu-item[data-target="qa"]');
-        if (qaMenuBtn && !document.querySelector('.menu-item[data-target="past-exams"]')) {
-            qaMenuBtn.insertAdjacentHTML('afterend', `
-                <div class="menu-item" data-target="past-exams" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('past-exams')">
-                    📚 Çıkmış Sorular
-                </div>
-            `);
-        }
-    }, 500);
+    // Çıkmış Sorular Menüsünü DİĞERLERİYLE AYNI STANDART TONDA Soru Cevap Altına Ekleme
+    const qaMenuBtn = document.querySelector('.menu-item[data-target="qa"]');
+    if (qaMenuBtn && !document.querySelector('.menu-item[data-target="past-exams"]')) {
+        qaMenuBtn.insertAdjacentHTML('afterend', `
+            <div class="menu-item" data-target="past-exams" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('past-exams')">
+                📚 Çıkmış Sorular
+            </div>
+        `);
+    }
+
+    window.updateMyFacultiesSidebar();
 };
 
 // TEK BİR BANA ÖZEL MANTIĞI: Fakülte -> Mesajlarım -> Bildirimler
@@ -285,11 +291,14 @@ window.updateMyFacultiesSidebar = function() {
     if(origMsgBtn && origMsgBtn.parentElement !== container) origMsgBtn.remove();
     if(origNotifBtn && origNotifBtn.parentElement !== container) origNotifBtn.remove();
 
-    let html = `<div style="margin-top:15px; margin-bottom: 5px; font-weight:900; color:var(--text-gray); font-size:12px; letter-spacing: 1px; padding-left:15px;">BANA ÖZEL</div>`;
+    // JavaScript üzerinden ekstra bir "BANA ÖZEL" kelimesi yazdırmıyoruz.
+    // HTML'de zaten "<h3>Bana Özel</h3>" var, biz sadece altındaki linkleri düzenliyoruz.
+    let html = ``;
     
     if(window.userProfile && window.userProfile.faculty) {
+        // Fakülte eklendiğinde ekstra mavi/yeşil ton yok, diğerleriyle birebir aynı stil.
         html += `
-            <div class="menu-item community-link active" data-name="${window.userProfile.faculty}" data-icon="🏢" data-color="linear-gradient(135deg, #1E3A8A, #4F46E5)" style="background:#EEF2FF; color:var(--primary); font-weight:bold; border-left: 4px solid var(--primary);">
+            <div class="menu-item community-link" data-name="${window.userProfile.faculty}">
                 📌 ${window.userProfile.faculty}
             </div>
         `;
@@ -642,6 +651,7 @@ function initRealtimeListeners(currentUid) {
         }
     });
 
+    // 🌟 ÇIKMIŞ SORULAR DİNLENMESİ
     onSnapshot(query(collection(db, "past_exams"), orderBy("createdAt", "desc")), (snapshot) => {
         pastExamsDB = [];
         snapshot.forEach(doc => { pastExamsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
@@ -1415,8 +1425,8 @@ window.renderMessagesSidebarOnly = function() {
         const previewMsg = rawLastMsg.replace(/<br>/g, ' ').substring(0, 35) + (rawLastMsg.length > 35 ? "..." : "");
 
         html += `
-            <div class="chat-contact ${isActive}" data-id="${chat.id}" onclick="window.openChatView('${chat.id}')" style="padding:15px; border-bottom:1px solid #E5E7EB; display:flex; gap:10px;">
-                <div class="avatar" style="width:40px; height:40px; font-size:20px; margin:0;">${chat.avatar}</div>
+            <div class="chat-contact ${isActive}" data-id="${chat.id}" onclick="window.openChatView('${chat.id}')" style="padding:15px; border-bottom:1px solid #E5E7EB; display:flex; gap:10px; cursor:pointer;">
+                <div class="avatar" style="width:40px; height:40px; font-size:20px; margin:0; display:flex; align-items:center; justify-content:center;">${chat.avatar}</div>
                 <div class="chat-contact-info" style="flex:1;">
                     <div class="chat-contact-top" style="display:flex; justify-content:space-between; margin-bottom:4px;"><span class="chat-contact-name" style="font-weight:bold; font-size:14px;">${chat.name}</span><span class="chat-contact-time" style="font-size:11px; color:#9CA3AF;">${lastMsgObj ? lastMsgObj.time : ""}</span></div>
                     <div class="chat-contact-last" style="font-size:13px; color:#6B7280;">${previewMsg}</div>
@@ -1494,7 +1504,7 @@ window.openChatView = function(chatId) {
     let chatHTML = `
         <div class="chat-header" style="padding:15px; border-bottom:1px solid #E5E7EB; background:white; display:flex; align-items:center; gap:15px;">
             <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); window.resetCurrentChatId();" style="border:none; background:none; font-size:20px; cursor:pointer;">←</button>
-            <div class="avatar" style="width:42px; height:42px; font-size:20px; margin:0;">${activeChat.avatar}</div>
+            <div class="avatar" style="width:42px; height:42px; font-size:20px; margin:0; display:flex; align-items:center; justify-content:center;">${activeChat.avatar}</div>
             <div class="chat-header-info">
                 <div class="chat-header-name" style="font-weight:bold; font-size:16px;">${activeChat.name}</div>
                 <div class="chat-header-status" style="font-size:12px; color:#10B981;">UniLoop Ağı</div>
@@ -1871,30 +1881,30 @@ window.submitAnswer = async function(docId) {
 };
 
 // ============================================================================
-// 10. ÇIKMIŞ SORULAR HAVUZU
+// 10. ÇIKMIŞ SORULAR HAVUZU (EKRANI DOLDURAN 2x2 ŞABLONLU YAPI)
 // ============================================================================
 
 window.renderPastExamsPool = function() {
     mainContent.innerHTML = `
-        <div class="card" style="padding:20px;">
-            <h2 style="margin-bottom:15px; padding-bottom:10px; font-size:20px; color:var(--text-dark);">📚 Hangi Havuza Erişmek İstiyorsun?</h2>
+        <div class="card" style="padding:20px; min-height: calc(100vh - 120px);">
+            <h2 style="margin-bottom:15px; padding-bottom:10px; font-size:20px; color:var(--text-dark); border-bottom:1px solid var(--border-color);">📚 Hangi Havuza Erişmek İstiyorsun?</h2>
             
             <div class="exam-grid">
                 <div class="exam-card" onclick="window.openPastExamsFaculty('Tıp Fakültesi')">
-                    <div style="font-size:40px; margin-bottom:10px;">🩺</div>
-                    <strong style="font-size:15px; color:var(--text-dark);">Tıp Fakültesi</strong>
+                    <div style="font-size:50px; margin-bottom:15px;">🩺</div>
+                    <strong style="font-size:16px; color:var(--text-dark);">Tıp Fakültesi</strong>
                 </div>
                 <div class="exam-card" onclick="window.openPastExamsFaculty('Diş Hekimliği Fakültesi')">
-                    <div style="font-size:40px; margin-bottom:10px;">🦷</div>
-                    <strong style="font-size:15px; color:var(--text-dark);">Diş Fakültesi</strong>
+                    <div style="font-size:50px; margin-bottom:15px;">🦷</div>
+                    <strong style="font-size:16px; color:var(--text-dark);">Diş Fakültesi</strong>
                 </div>
                 <div class="exam-card" onclick="window.openPastExamsFaculty('Bilgisayar Fakültesi')">
-                    <div style="font-size:40px; margin-bottom:10px;">💻</div>
-                    <strong style="font-size:15px; color:var(--text-dark);">Bilgisayar Fakültesi</strong>
+                    <div style="font-size:50px; margin-bottom:15px;">💻</div>
+                    <strong style="font-size:16px; color:var(--text-dark);">Bilgisayar Fakültesi</strong>
                 </div>
                 <div class="exam-card" onclick="window.openPastExamsFaculty('Eczacılık Fakültesi')">
-                    <div style="font-size:40px; margin-bottom:10px;">💊</div>
-                    <strong style="font-size:15px; color:var(--text-dark);">Eczacılık Fakültesi</strong>
+                    <div style="font-size:50px; margin-bottom:15px;">💊</div>
+                    <strong style="font-size:16px; color:var(--text-dark);">Eczacılık Fakültesi</strong>
                 </div>
             </div>
             
@@ -1904,7 +1914,7 @@ window.renderPastExamsPool = function() {
 
 window.openPastExamsFaculty = function(facultyName) {
     mainContent.innerHTML = `
-        <div class="card" style="padding:20px;">
+        <div class="card" style="padding:20px; min-height: calc(100vh - 120px);">
             <input type="hidden" id="current-exam-faculty" value="${facultyName}">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; padding-bottom:10px; border-bottom:1px solid var(--border-color);">
                 <div style="display:flex; align-items:center; gap:10px;">
