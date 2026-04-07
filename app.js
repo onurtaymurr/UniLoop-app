@@ -104,10 +104,10 @@ styleFix.innerHTML = `
     .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
     .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
 
-    /* ANA SAYFA KULLANICI GRID (2x2 ŞABLON) */
-    .user-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; }
-    .user-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
-    .user-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); border-color: var(--primary); }
+    /* ANA SAYFA VE ÇIKMIŞ SORULAR GRID (2x2 ŞABLON) */
+    .user-grid, .exam-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; width: 100%; }
+    .user-card, .exam-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; justify-content: center; min-height: 160px;}
+    .user-card:hover, .exam-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); border-color: var(--primary); }
 
     .premium-glow { animation: glowPulse 2s infinite alternate; }
     @keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); } 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); } }
@@ -116,7 +116,7 @@ styleFix.innerHTML = `
     .premium-match-card { border: 2px solid #F59E0B !important; background: linear-gradient(to bottom right, #fff, #FEF3C7) !important; }
     
     body.dark-mode, .dark-mode #main-content { background-color: #121212 !important; color: #e5e7eb !important; }
-    .dark-mode .card, .dark-mode .feed-post, .dark-mode .item-card, .dark-mode .chat-sidebar-header, .dark-mode .user-card { background-color: #1e1e1e !important; border-color: #374151 !important; color: #e5e7eb !important; }
+    .dark-mode .card, .dark-mode .feed-post, .dark-mode .item-card, .dark-mode .chat-sidebar-header, .dark-mode .user-card, .dark-mode .exam-card { background-color: #1e1e1e !important; border-color: #374151 !important; color: #e5e7eb !important; }
     .dark-mode .card > div { border-color: #374151 !important; }
     .dark-mode .feed-post-author, .dark-mode .feed-post-text, .dark-mode h2, .dark-mode label, .dark-mode .item-title { color: #e5e7eb !important; }
     .dark-mode .feed-layout-container, .dark-mode #conf-feed { background-color: #121212 !important; }
@@ -177,6 +177,11 @@ window.toggleTheme = function(theme) {
 const savedTheme = localStorage.getItem('uniloop_theme') || 'light';
 window.toggleTheme(savedTheme);
 
+const TRANSLATIONS = {
+    'tr': { settingsTitle: '⚙️ Uygulama Ayarları', langLabel: 'Dil Seçimi', themeLabel: 'Tema', lightMode: 'Aydınlık Mod', darkMode: 'Karanlık Mod', logoutBtn: '🚪 Güvenli Çıkış Yap' },
+    'en': { settingsTitle: '⚙️ App Settings', langLabel: 'Language', themeLabel: 'Theme', lightMode: 'Light Mode', darkMode: 'Dark Mode', logoutBtn: '🚪 Secure Logout' }
+};
+
 const closeSidebarIfOutside = (e) => {
     const sidebar = document.getElementById('sidebar');
     const mobileBtn = document.getElementById('mobile-menu-btn');
@@ -204,6 +209,7 @@ let marketDB = [];
 let confessionsDB = [];
 let qaDB = [];
 let chatsDB = [];
+let pastExamsDB = []; // Çıkmış Sorular Havuzu DB
 let currentChatId = null;
 
 window.resetCurrentChatId = function() { currentChatId = null; };
@@ -233,7 +239,6 @@ window.renderSidebarAccordions = function() {
     const sidebarContainer = document.getElementById('sidebar-networks-container');
     const rightContainer = document.getElementById('right-networks-container');
     
-    // Yalnızca Fakülteler menüsü açılır liste
     const accordionHTML = `
         <div id="bana-ozel-container"></div>
         <div class="accordion-section" style="margin-top: 15px;">
@@ -254,6 +259,18 @@ window.renderSidebarAccordions = function() {
     if(sidebarContainer) sidebarContainer.innerHTML = accordionHTML;
     if(rightContainer) rightContainer.innerHTML = accordionHTML;
 
+    // Çıkmış Sorular Butonu Soru & Cevap Altına Ekleniyor
+    setTimeout(() => {
+        const qaMenuBtn = document.querySelector('.menu-item[data-target="qa"]');
+        if (qaMenuBtn && !document.querySelector('.menu-item[data-target="past-exams"]')) {
+            qaMenuBtn.insertAdjacentHTML('afterend', `
+                <div class="menu-item" data-target="past-exams" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('past-exams')">
+                    📚 Çıkmış Sorular
+                </div>
+            `);
+        }
+    }, 500);
+
     window.updateMyFacultiesSidebar();
 };
 
@@ -261,7 +278,7 @@ window.updateMyFacultiesSidebar = function() {
     const container = document.getElementById('bana-ozel-container');
     if(!container) return;
     
-    // Eski HTML linkleri üst üste binmesin diye siliyoruz
+    // HTML'den gelen eski butonları tamamen kaldırıyoruz, javascript üzerinden kendi sıramızla ekliyoruz
     const origMsgBtn = document.getElementById('nav-messages-btn');
     const origNotifBtn = document.getElementById('nav-notifications-btn');
     if(origMsgBtn && origMsgBtn.parentElement !== container) origMsgBtn.remove();
@@ -269,7 +286,6 @@ window.updateMyFacultiesSidebar = function() {
 
     let html = ``;
     
-    // Yalnızca kayıt olunan fakülte "Bana Özel" başlığı altında gösterilecek.
     if(window.userProfile && window.userProfile.faculty) {
         html += `
             <div class="menu-item community-link" data-name="${window.userProfile.faculty}">
@@ -630,6 +646,17 @@ function initRealtimeListeners(currentUid) {
         }
     });
 
+    onSnapshot(query(collection(db, "past_exams"), orderBy("createdAt", "desc")), (snapshot) => {
+        pastExamsDB = [];
+        snapshot.forEach(doc => { pastExamsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
+        
+        const activeTab = document.querySelector('.menu-item.active');
+        if(activeTab && activeTab.getAttribute('data-target') === 'past-exams' && document.getElementById('current-exam-faculty')) {
+            const currentFac = document.getElementById('current-exam-faculty').value;
+            if(currentFac) window.drawPastExamsList(currentFac, document.getElementById('exam-search-input')?.value || '');
+        }
+    });
+
     onSnapshot(query(collection(db, "chats"), where("participants", "array-contains", currentUid)), (snapshot) => {
         chatsDB = [];
         let pendingRequestsCount = 0;
@@ -859,6 +886,9 @@ window.sendFriendRequest = async function(targetUserId, targetUserName) {
                 messages: [{ senderId: "system", text: "Sizi arkadaş olarak eklemek istiyor.", time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), read: false }]
             });
             alert("Arkadaşlık isteği başarıyla gönderildi!");
+            document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
+            document.querySelector('[data-target="notifications"]')?.classList.add('active');
+            window.loadPage('notifications');
         } else {
             if(existingChat.status === 'pending') {
                 alert("Bu kişiye zaten bir istek gönderilmiş veya ondan sana istek gelmiş. Lütfen Bildirimlerinizi kontrol edin.");
@@ -1898,7 +1928,170 @@ window.submitAnswer = async function(docId) {
 };
 
 // ============================================================================
-// 10. FAKÜLTE FORUM SİSTEMİ
+// 10. ÇIKMIŞ SORULAR HAVUZU (EKRANI DOLDURAN 2x2 ŞABLONLU YAPI)
+// ============================================================================
+
+window.renderPastExamsPool = function() {
+    mainContent.innerHTML = `
+        <div class="card" style="padding:20px; min-height: calc(100vh - 120px);">
+            <h2 style="margin-bottom:15px; padding-bottom:10px; font-size:20px; color:var(--text-dark); border-bottom:1px solid var(--border-color);">📚 Hangi Havuza Erişmek İstiyorsun?</h2>
+            
+            <div class="exam-grid">
+                <div class="exam-card" onclick="window.openPastExamsFaculty('Tıp Fakültesi')">
+                    <div style="font-size:50px; margin-bottom:15px;">🩺</div>
+                    <strong style="font-size:16px; color:var(--text-dark);">Tıp Fakültesi</strong>
+                </div>
+                <div class="exam-card" onclick="window.openPastExamsFaculty('Diş Hekimliği Fakültesi')">
+                    <div style="font-size:50px; margin-bottom:15px;">🦷</div>
+                    <strong style="font-size:16px; color:var(--text-dark);">Diş Fakültesi</strong>
+                </div>
+                <div class="exam-card" onclick="window.openPastExamsFaculty('Bilgisayar Fakültesi')">
+                    <div style="font-size:50px; margin-bottom:15px;">💻</div>
+                    <strong style="font-size:16px; color:var(--text-dark);">Bilgisayar Fakültesi</strong>
+                </div>
+                <div class="exam-card" onclick="window.openPastExamsFaculty('Eczacılık Fakültesi')">
+                    <div style="font-size:50px; margin-bottom:15px;">💊</div>
+                    <strong style="font-size:16px; color:var(--text-dark);">Eczacılık Fakültesi</strong>
+                </div>
+            </div>
+            
+        </div>
+    `;
+};
+
+window.openPastExamsFaculty = function(facultyName) {
+    mainContent.innerHTML = `
+        <div class="card" style="padding:20px; min-height: calc(100vh - 120px);">
+            <input type="hidden" id="current-exam-faculty" value="${facultyName}">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; padding-bottom:10px; border-bottom:1px solid var(--border-color);">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <button class="action-btn" style="width:auto; padding:6px 12px; background:#F3F4F6; border-radius:8px;" onclick="window.renderPastExamsPool()">← Geri</button>
+                    <h3 style="margin:0; font-size:18px; color:var(--text-dark);">📂 ${facultyName} Havuzu</h3>
+                </div>
+                <button class="btn-primary" style="width:auto; padding:10px 18px; border-radius:12px; box-shadow:0 2px 4px rgba(79, 70, 229, 0.2);" onclick="window.openPdfUploadForm('${facultyName}')">+ PDF Yükle</button>
+            </div>
+            
+            <div style="display:flex; background:#F3F4F6; border-radius:12px; padding:0 12px; border:1px solid transparent; transition:0.2s; margin-bottom:15px;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';">
+                <span style="font-size:18px; margin-right:8px; display:flex; align-items:center;">🔍</span>
+                <input type="text" id="exam-search-input" placeholder="Ders adı, sınıf veya yıl ara (Örn: Anatomi, 2. Sınıf)..." style="border:none; background:transparent; width:100%; padding:14px 8px; outline:none; font-size:14px;" oninput="window.drawPastExamsList('${facultyName}', this.value)">
+            </div>
+            
+            <div id="past-exams-list" style="display:flex; flex-direction:column; gap:12px; overflow-y:auto; max-height:400px; padding-right:5px; scroll-behavior:smooth;"></div>
+        </div>
+    `;
+    window.drawPastExamsList(facultyName, '');
+};
+
+window.drawPastExamsList = function(facultyName, filterText = '') {
+    const listContainer = document.getElementById('past-exams-list');
+    if(!listContainer) return;
+    
+    const filtered = pastExamsDB.filter(e => e.faculty === facultyName && (e.course.toLowerCase().includes(filterText.toLowerCase()) || e.grade.toLowerCase().includes(filterText.toLowerCase())));
+    
+    if(filtered.length === 0) {
+        listContainer.innerHTML = `
+            <div style="text-align:center; padding:40px 20px; background:#F9FAFB; border-radius:12px; border:1px dashed #D1D5DB;">
+                <div style="font-size:40px; margin-bottom:10px;">📄</div>
+                <div style="color:var(--text-gray); font-size:15px; font-weight:bold;">Bu fakülte için havuza henüz dosya eklenmemiş.</div>
+                <div style="color:var(--text-gray); font-size:13px; margin-top:5px;">Aradığını bulamadıysan ilk PDF'i sen yükleyebilirsin!</div>
+            </div>`;
+        return;
+    }
+    
+    let html = '';
+    filtered.forEach(doc => {
+        html += `
+            <div style="border:1px solid #E5E7EB; border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center; background:white; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+                <div>
+                    <div style="font-weight:800; font-size:16px; color:var(--text-dark); margin-bottom:4px;">${doc.course}</div>
+                    <div style="font-size:13px; color:var(--text-gray); display:flex; align-items:center; gap:10px;">
+                        <span style="background:#F3F4F6; padding:2px 8px; border-radius:6px; font-weight:600;">Sınıf/Yıl: ${doc.grade}</span> 
+                        <span>Yükleyen: <strong>${doc.uploaderName}</strong></span>
+                    </div>
+                </div>
+                <a href="${doc.pdfUrl}" target="_blank" class="btn-primary" style="text-decoration:none; width:auto; padding:10px 20px; border-radius:10px; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+                    📥 İndir / Görüntüle
+                </a>
+            </div>
+        `;
+    });
+    listContainer.innerHTML = html;
+};
+
+window.openPdfUploadForm = function(facultyName) {
+    window.openModal('📄 Dosya Havuza Ekle', `
+        <div class="form-group">
+            <label style="font-weight:bold; color:var(--text-dark);">Kayıt Edilecek Havuz (Fakülte)</label>
+            <input type="text" disabled value="${facultyName}" style="background:#F3F4F6; border:1px solid #E5E7EB; border-radius:8px; padding:12px; font-weight:bold;">
+        </div>
+        <div class="form-group" style="margin-top:15px;">
+            <label style="font-weight:bold; color:var(--text-dark);">Hangi Sınıf / Yıl? (Örn: 1. Sınıf, 2023-2024)</label>
+            <input type="text" id="pdf-grade" placeholder="Bu notlar hangi döneme ait?" style="border-radius:8px; padding:12px; border:1px solid #D1D5DB;">
+        </div>
+        <div class="form-group" style="margin-top:15px;">
+            <label style="font-weight:bold; color:var(--text-dark);">Ders Adı (Örn: Anatomi, Veri Yapıları)</label>
+            <input type="text" id="pdf-course" placeholder="Dersin adını tam yazınız..." style="border-radius:8px; padding:12px; border:1px solid #D1D5DB;">
+        </div>
+        <div class="upload-btn-wrapper" style="margin-top:20px;">
+            <button class="action-btn" id="pdf-trigger-btn" style="width:100%; justify-content:center; padding:14px; background:#EEF2FF; border:1px dashed var(--primary); color:var(--primary); font-weight:bold; border-radius:12px; font-size:15px;">📂 Cihazdan PDF Seç</button>
+            <input type="file" id="pdf-file-input" accept="application/pdf" style="display:none;" />
+        </div>
+        <div id="pdf-file-name" style="margin-top:12px; font-size:14px; font-weight:bold; color:#10B981; text-align:center;"></div>
+        
+        <button class="btn-primary" id="publish-pdf-btn" style="margin-top:25px; padding:14px; border-radius:12px; font-size:16px; font-weight:bold; box-shadow:0 4px 6px rgba(79, 70, 229, 0.3);" onclick="window.submitPdfUpload('${facultyName}')">Dosyayı Havuza Yükle</button>
+        <p id="pdf-upload-status" style="font-size:13px; color:var(--primary); text-align:center; margin-top:15px; display:none; font-weight:bold;">PDF Yükleniyor, lütfen ayrılmayın...</p>
+    `);
+    
+    setTimeout(() => {
+        const btn = document.getElementById('pdf-trigger-btn');
+        const input = document.getElementById('pdf-file-input');
+        const nameDisplay = document.getElementById('pdf-file-name');
+        if(btn && input) {
+            btn.addEventListener('click', () => input.click());
+            input.addEventListener('change', (e) => {
+                if(e.target.files.length > 0) { nameDisplay.innerText = "✅ Seçilen Dosya: " + e.target.files[0].name; }
+            });
+        }
+    }, 100);
+};
+
+window.submitPdfUpload = async function(facultyName) {
+    const grade = document.getElementById('pdf-grade').value.trim();
+    const course = document.getElementById('pdf-course').value.trim();
+    const fileInput = document.getElementById('pdf-file-input');
+    const btn = document.getElementById('publish-pdf-btn');
+    const status = document.getElementById('pdf-upload-status');
+    
+    if(!grade || !course) { alert("Lütfen sınıf ve ders adını doldur."); return; }
+    if(!fileInput.files || fileInput.files.length === 0) { alert("Lütfen cihazından bir PDF dosyası seç."); return; }
+    
+    const file = fileInput.files[0];
+    if(file.type !== "application/pdf") { alert("Havuzun bütünlüğü için sadece PDF formatında dosya yükleyebilirsin."); return; }
+    
+    btn.disabled = true; status.style.display = 'block';
+    
+    try {
+        const fileName = Date.now() + '_' + file.name.replace(/\s/g, ''); 
+        const storageRef = ref(storage, 'past_exams/' + window.userProfile.uid + '/' + fileName);
+        await uploadBytes(storageRef, file);
+        const pdfUrl = await getDownloadURL(storageRef);
+        
+        await addDoc(collection(db, "past_exams"), {
+            faculty: facultyName, grade: grade, course: course, pdfUrl: pdfUrl,
+            uploaderId: window.userProfile.uid, uploaderName: window.userProfile.name + " " + window.userProfile.surname,
+            createdAt: serverTimestamp()
+        });
+        
+        window.closeModal();
+        alert("Harika! PDF başarıyla havuza eklendi, artık herkes faydalanabilir.");
+    } catch(e) {
+        alert("Dosya yüklenirken hata oluştu: " + e.message);
+        btn.disabled = false; status.style.display = 'none';
+    }
+};
+
+// ============================================================================
+// 11. FAKÜLTE FORUM SİSTEMİ
 // ============================================================================
 
 window.currentFacultyPosts = [];
@@ -2031,7 +2224,7 @@ window.renderFacultyPosts = function() {
 };
 
 // ============================================================================
-// 11. SAYFA YÖNLENDİRME (ROUTING) VE INSTAGRAM TARZI PROFİL
+// 12. SAYFA YÖNLENDİRME (ROUTING) VE INSTAGRAM TARZI PROFİL
 // ============================================================================
 
 window.loadPage = function(pageName) {
@@ -2043,6 +2236,7 @@ window.loadPage = function(pageName) {
     else if (pageName === 'housing') window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt');
     else if (pageName === 'confessions') window.renderConfessions();
     else if (pageName === 'qa') window.renderQA(); 
+    else if (pageName === 'past-exams') window.renderPastExamsPool(); 
     else if (pageName === 'messages') window.renderMessages(); 
     else if (pageName === 'notifications') window.renderNotifications();
     else if (pageName === 'friends') window.renderFriends();
