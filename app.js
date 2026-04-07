@@ -210,7 +210,7 @@ let marketDB = [];
 let confessionsDB = [];
 let qaDB = [];
 let chatsDB = [];
-let pastExamsDB = []; // YENİ: Çıkmış Sorular Havuzu
+let pastExamsDB = []; // Çıkmış Sorular Havuzu
 let currentChatId = null;
 
 window.resetCurrentChatId = function() { currentChatId = null; };
@@ -233,7 +233,7 @@ const appScreen = document.getElementById('app-screen');
 const mainContent = document.getElementById('main-content');
 const modal = document.getElementById('app-modal');
 
-// 🌟 YENİ: BANA ÖZEL VE FAKÜLTELER ACCORDION
+// 🌟 YENİ: DÜZELTİLMİŞ "BANA ÖZEL" VE STANDART BUTONLU AKIŞ
 window.renderSidebarAccordions = function() {
     const sidebarContainer = document.getElementById('sidebar-networks-container');
     const rightContainer = document.getElementById('right-networks-container');
@@ -261,23 +261,30 @@ window.renderSidebarAccordions = function() {
     
     window.updateMyFacultiesSidebar();
 
-    // Çıkmış Sorular butonunu menüye Soru & Cevap'tan sonra dinamik olarak ekle
+    // Çıkmış Sorular butonunu standart stilde, Soru & Cevap altına ekle
     setTimeout(() => {
         const qaMenuBtn = document.querySelector('.menu-item[data-target="qa"]');
         if (qaMenuBtn && !document.querySelector('.menu-item[data-target="past-exams"]')) {
             qaMenuBtn.insertAdjacentHTML('afterend', `
-                <div class="menu-item" data-target="past-exams" onclick="window.loadPage('past-exams')" style="background: linear-gradient(135deg, #10B981, #059669); color: white; font-weight: bold; margin-top: 5px;">
-                    📚 Çıkmış SORULAR
+                <div class="menu-item" data-target="past-exams" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('past-exams')">
+                    📚 Çıkmış Sorular
                 </div>
             `);
         }
     }, 500);
 };
 
+// TEK BİR BANA ÖZEL MANTIĞI: Fakülte -> Mesajlarım -> Bildirimler
 window.updateMyFacultiesSidebar = function() {
     const container = document.getElementById('bana-ozel-container');
     if(!container) return;
     
+    // Orijinal HTML'den gelen eski ve gereksiz butonları temizle ki çift "Bana Özel" yaratmasın
+    const origMsgBtn = document.getElementById('nav-messages-btn');
+    const origNotifBtn = document.getElementById('nav-notifications-btn');
+    if(origMsgBtn && origMsgBtn.parentElement !== container) origMsgBtn.remove();
+    if(origNotifBtn && origNotifBtn.parentElement !== container) origNotifBtn.remove();
+
     let html = `<div style="margin-top:15px; margin-bottom: 5px; font-weight:900; color:var(--text-gray); font-size:12px; letter-spacing: 1px; padding-left:15px;">BANA ÖZEL</div>`;
     
     if(window.userProfile && window.userProfile.faculty) {
@@ -289,8 +296,8 @@ window.updateMyFacultiesSidebar = function() {
     }
     
     html += `
-        <div class="menu-item" data-target="messages" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('messages');">💬 Mesajlarım</div>
-        <div class="menu-item" data-target="notifications" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('notifications');">🔔 Bildirimler <span id="notif-badge" class="badge" style="display:none; background:#EF4444; color:white; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:auto;">0</span></div>
+        <div class="menu-item" id="nav-messages-btn" data-target="messages" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('messages');">💬 Mesajlarım</div>
+        <div class="menu-item" id="nav-notifications-btn" data-target="notifications" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('notifications');">🔔 Bildirimler <span id="notif-badge" class="badge" style="display:none; background:#EF4444; color:white; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:auto;">0</span></div>
     `;
     
     container.innerHTML = html;
@@ -566,7 +573,7 @@ onAuthStateChanged(auth, async (user) => {
             await window.ensureWelcomeMessage(user, window.userProfile.name);
             await updateDoc(userDocRef, { isOnline: true });
             
-            window.renderSidebarAccordions(); // Menüyü hazırla ve Bana Özel'i güncelle
+            window.renderSidebarAccordions(); 
             initRealtimeListeners(user.uid);
 
             const activeTab = document.querySelector('.menu-item.active');
@@ -635,7 +642,6 @@ function initRealtimeListeners(currentUid) {
         }
     });
 
-    // 🌟 ÇIKMIŞ SORULAR DİNLENMESİ
     onSnapshot(query(collection(db, "past_exams"), orderBy("createdAt", "desc")), (snapshot) => {
         pastExamsDB = [];
         snapshot.forEach(doc => { pastExamsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
@@ -753,7 +759,7 @@ window.upgradeToPremium = async function() {
 };
 
 // ============================================================================
-// 3. AÇILIR PENCERELER VE TIKLAMA YÖNETİMİ (ACCORDION DESTEKLİ)
+// 3. AÇILIR PENCERELER VE TIKLAMA YÖNETİMİ
 // ============================================================================
 
 window.goToMessages = function() {
@@ -802,7 +808,6 @@ document.body.addEventListener('click', (e) => {
         return;
     }
 
-    // Fakülte Tıklaması
     const link = e.target.closest('.community-link');
     if(link) {
         const name = link.getAttribute('data-name');
@@ -1873,6 +1878,7 @@ window.renderPastExamsPool = function() {
     mainContent.innerHTML = `
         <div class="card" style="padding:20px;">
             <h2 style="margin-bottom:15px; padding-bottom:10px; font-size:20px; color:var(--text-dark);">📚 Hangi Havuza Erişmek İstiyorsun?</h2>
+            
             <div class="exam-grid">
                 <div class="exam-card" onclick="window.openPastExamsFaculty('Tıp Fakültesi')">
                     <div style="font-size:40px; margin-bottom:10px;">🩺</div>
@@ -1891,6 +1897,7 @@ window.renderPastExamsPool = function() {
                     <strong style="font-size:15px; color:var(--text-dark);">Eczacılık Fakültesi</strong>
                 </div>
             </div>
+            
         </div>
     `;
 };
