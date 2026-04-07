@@ -104,7 +104,7 @@ styleFix.innerHTML = `
     .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
     .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
 
-    /* YENİ: ANA SAYFA KULLANICI GRID (2x2 ŞABLON) */
+    /* ANA SAYFA KULLANICI GRID (2x2 ŞABLON) */
     .user-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; }
     .user-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
     .user-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); border-color: var(--primary); }
@@ -238,7 +238,6 @@ window.renderSidebarAccordions = function() {
     const sidebarContainer = document.getElementById('sidebar-networks-container');
     const rightContainer = document.getElementById('right-networks-container');
     
-    // Veri attributeları (data-icon ve data-color) null hatasını çözer!
     const accordionHTML = `
         <div id="bana-ozel-container"></div>
         <div class="accordion-section" style="margin-top: 15px;">
@@ -274,7 +273,6 @@ window.updateMyFacultiesSidebar = function() {
     let html = ``;
     
     if(window.userProfile && window.userProfile.faculty) {
-        // Fakülte eklendiğinde ekstra mavi/yeşil ton yok, diğerleriyle birebir aynı stil.
         html += `
             <div class="menu-item community-link" data-name="${window.userProfile.faculty}">
                 📌 ${window.userProfile.faculty}
@@ -893,7 +891,7 @@ window.renderHome = async function() {
         <div class="card" style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; border:none;">
             <h2 style="font-size:24px; margin-bottom:8px;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
             <p style="opacity:0.9; font-size:15px;">
-                <strong style="color:#D9FDD3;">${window.userProfile.university}</strong> ağındasın. Arkadaş edin ve etkileşime geç.
+                <strong style="color:#D9FDD3;">${window.userProfile.university}</strong> ağındasın. Kampüsündeki öğrencileri keşfet.
             </p>
         </div>
         
@@ -908,7 +906,7 @@ window.renderHome = async function() {
         
         <div class="card" style="padding: 20px;">
             <h2 style="margin-bottom:15px; font-size:18px; display:flex; align-items:center; justify-content:space-between;">
-                <span>🔥 Kampüsteki Öğrenciler</span>
+                <span>🔥 Önerilen Kişiler</span>
                 <span style="font-size:12px; background:var(--primary); color:white; padding:4px 8px; border-radius:8px;">Yeni</span>
             </h2>
             <div class="user-grid" id="home-users-grid">
@@ -919,7 +917,7 @@ window.renderHome = async function() {
     
     mainContent.innerHTML = html;
 
-    // Kullanıcıları Veritabanından Çekip Grid'e Basma (10 kişi ile sınırla)
+    // Kullanıcıları Veritabanından Çekip 2'li Şablona (Grid) Basma (Max 10 kişi ile sınırla)
     try {
         const querySnapshot = await getDocs(query(collection(db, "users")));
         let usersHtml = '';
@@ -930,30 +928,27 @@ window.renderHome = async function() {
             if(u.uid !== window.userProfile.uid && count < 10) {
                 count++;
                 const initial = u.surname ? u.surname.charAt(0) + '.' : '';
-                let avatarHtml = u.avatarUrl ? `<img src="${u.avatarUrl}" style="width:60px; height:60px; border-radius:50%; object-fit:cover;">` : `<div style="width:60px; height:60px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:30px;">${u.avatar || '👤'}</div>`;
+                let avatarHtml = u.avatarUrl 
+                    ? `<img src="${u.avatarUrl}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #E5E7EB;">` 
+                    : `<div style="width:60px; height:60px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:30px; border:2px solid #E5E7EB;">${u.avatar || '👤'}</div>`;
                 
                 usersHtml += `
-                    <div class="user-card" onclick="alert('Profil detayı yakında eklenecek!')">
+                    <div class="user-card" onclick="alert('Kullanıcı profilleri yakında yayında!')">
                         <div style="margin-bottom: 10px;">${avatarHtml}</div>
                         <div style="font-weight:bold; font-size:15px; color:var(--text-dark);">${u.name} ${initial}</div>
                         <div style="font-size:12px; color:var(--text-gray); margin-top:5px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100%;">${u.faculty || 'Kampüs Öğrencisi'}</div>
-                        <button class="btn-primary" style="margin-top:12px; padding:8px; font-size:13px; border-radius:8px; width:100%; box-shadow:none;" onclick="event.stopPropagation(); window.startMarketChat('${u.uid}', '${u.name}', 'Merhaba!')">💬 Mesaj At</button>
+                        <button class="btn-primary" style="margin-top:12px; padding:8px; font-size:13px; border-radius:8px; width:100%; box-shadow:none;" onclick="event.stopPropagation(); window.startMarketChat('${u.uid}', '${u.name} ${initial}', 'Merhaba!')">💬 Mesaj At</button>
                     </div>
                 `;
             }
         });
         
-        document.getElementById('home-users-grid').innerHTML = usersHtml || '<p style="grid-column: 1 / -1; text-align:center;">Henüz başka kullanıcı bulunamadı.</p>';
+        document.getElementById('home-users-grid').innerHTML = usersHtml || '<p style="grid-column: 1 / -1; text-align:center; color:var(--text-gray);">Henüz başka kullanıcı bulunamadı.</p>';
     } catch(e) {
         console.error("Kullanıcılar çekilemedi", e);
-        document.getElementById('home-users-grid').innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:red;">Bağlantı hatası.</p>';
+        document.getElementById('home-users-grid').innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:red;">Kullanıcılar yüklenirken hata oluştu.</p>';
     }
 };
-
-function getHomeContent() {
-    window.renderHome();
-    return `<div style="text-align:center; padding: 50px;">Ana sayfa yükleniyor...</div>`;
-}
 
 // ============================================================================
 // 5. TAM EKRAN FOTOĞRAF GALERİSİ (LIGHTBOX) MANTIĞI
@@ -1931,23 +1926,22 @@ window.renderFacultyPosts = function() {
 };
 
 // ============================================================================
-// 12. SAYFA YÖNLENDİRME (ROUTING) VE INSTAGRAM TARZI PROFİL
+// 11. SAYFA YÖNLENDİRME (ROUTING) VE INSTAGRAM TARZI PROFİL
 // ============================================================================
 
 window.loadPage = function(pageName) {
-    if (pageName === 'home') mainContent.innerHTML = getHomeContent();
+    if(window.innerWidth <= 1024 && document.getElementById('sidebar')) document.getElementById('sidebar').classList.remove('open');
+    window.scrollTo(0,0);
+
+    if (pageName === 'home') window.renderHome();
     else if (pageName === 'market') window.renderListings('market', '🛒 Kampüs Market');
     else if (pageName === 'housing') window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt');
     else if (pageName === 'confessions') window.renderConfessions();
     else if (pageName === 'qa') window.renderQA(); 
-    else if (pageName === 'past-exams') window.renderPastExamsPool(); 
     else if (pageName === 'messages') window.renderMessages(); 
     else if (pageName === 'notifications') window.renderNotifications();
     else if (pageName === 'settings') window.renderSettings();
     else if (pageName === 'profile') window.renderProfile();
-    
-    if(window.innerWidth <= 1024 && document.getElementById('sidebar')) document.getElementById('sidebar').classList.remove('open');
-    window.scrollTo(0,0);
 };
 
 document.querySelectorAll('.menu-item[data-target]').forEach(item => {
