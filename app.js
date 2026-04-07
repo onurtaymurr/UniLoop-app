@@ -995,6 +995,7 @@ window.renderHome = async function() {
         let usersHtml = '';
         let count = 0;
         
+        // Mevcut ilişkileri çıkar (Arkadaş olanları veya istek bekleyenleri ana sayfada gösterme)
         const interactedUids = chatsDB.map(c => c.otherUid);
         
         querySnapshot.forEach((doc) => {
@@ -1030,50 +1031,70 @@ function getHomeContent() {
 }
 
 // ============================================================================
-// 🌍 YENİ: LOOPMAP ENTEGRASYONU (TAMAMI GÜNCELLENMİŞ HALİ)
+// 🌍 YENİ: LOOPMAP ENTEGRASYONU (SAFARİ ENGELİNİ AŞAN GÜNCELLEME)
 // ============================================================================
 
 window.renderLoopMap = function() {
     mainContent.innerHTML = `
         <div id="loopmap-container" style="width: 100%; height: calc(100vh - 120px); border-radius: 16px; overflow: hidden; position: relative; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05); background: #e5e7eb;">
-            <div id="map" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #6b7280; text-align: center; padding: 20px;">
-                Harita Yükleniyor...
-            </div>
             
-            <input type="file" id="loopmap-cam-input" accept="image/*" capture="environment" style="display:none;" onchange="window.handleMapPhotoCapture(this)">
+            <div id="map-auth-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; background:white; z-index:500; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
+                <div style="font-size:50px; margin-bottom:15px;">📍</div>
+                <h3 style="margin-bottom:10px; color:var(--text-dark);">Kampüs Haritası</h3>
+                <p style="color:var(--text-gray); margin-bottom:25px; font-size:14px; max-width:80%;">Tarayıcınızın haritayı güvenle yükleyebilmesi için konum bağlantısını başlatın.</p>
+                <button class="btn-primary" id="start-map-btn" onclick="window.requestLocationAndInitMap()" style="width:auto; padding:14px 28px; border-radius:24px; font-size:16px; box-shadow:0 4px 12px rgba(79,70,229,0.3);">🚀 Haritayı Başlat</button>
+            </div>
+
+            <div id="map" style="width: 100%; height: 100%;"></div>
+            
+            <input type="file" id="loopmap-cam-input" accept="image/*" style="display:none;" onchange="window.handleMapPhotoCapture(this)">
             
             <button class="map-fab-btn" onclick="document.getElementById('loopmap-cam-input').click()" style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #8B5CF6, #6D28D9); color: white; border: none; padding: 16px 24px; border-radius: 30px; font-weight: bold; font-size: 16px; box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.4); cursor: pointer; display: flex; align-items: center; gap: 10px; z-index: 100; transition: 0.2s;">
                 📸 Haritaya Anı Bırak
             </button>
         </div>
     `;
+};
+
+// Konum iznini doğrudan butona bağladık (Safari'nin istediği yöntem)
+window.requestLocationAndInitMap = function() {
+    const btn = document.getElementById('start-map-btn');
+    if(btn) {
+        btn.innerText = "⏳ Konum Aranıyor...";
+        btn.disabled = true;
+    }
 
     if (navigator.geolocation) {
-        // Konum bulma motorunu güçlendirdik: Yüksek doğruluk ve maksimum 10 sn bekleme
         const options = {
-            enableHighAccuracy: true,
-            timeout: 10000,
+            enableHighAccuracy: false, // Apple'ın Tam Konum engeline takılmamak için
+            timeout: 15000,
             maximumAge: 0
         };
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
+                // Konum bulundu, örtüyü kaldır ve haritayı çiz!
+                document.getElementById('map-auth-overlay').style.display = 'none';
                 userCurrentLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
                 window.initGoogleMap(userCurrentLocation);
             },
             (error) => {
-                let hataMesaji = "Konum alınamadı.";
-                if(error.code === 1) hataMesaji = "Tarayıcıdan konum iznini reddettiniz (veya cihaz ayarlarınız engelliyor).";
-                if(error.code === 2) hataMesaji = "Konum bilgisi cihazdan okunamıyor (GPS kapalı olabilir).";
-                if(error.code === 3) hataMesaji = "Konum bulma işlemi zaman aşımına uğradı (İnternet veya GPS yavaş).";
+                console.error("Konum Hatası:", error);
+                document.getElementById('map-auth-overlay').style.display = 'none';
+                
+                let detay = "";
+                if(error.code === 1) detay = "Tarayıcınızın veya cihazınızın ayarlarından konum izni reddedildi.";
+                if(error.code === 2) detay = "Cihazınızdan konum okunamıyor (GPS kapalı olabilir).";
+                if(error.code === 3) detay = "Bağlantı zaman aşımına uğradı.";
 
-                alert(hataMesaji + "\\n\\nHarita varsayılan konuma ayarlanıyor.");
+                alert("Uyarı: " + detay + "\n\nHarita varsayılan konuma ayarlanıyor. (API anahtarınız doğruysa harita açılacaktır)");
                 window.initGoogleMap({ lat: 39.92077, lng: 32.85411 }); 
             },
             options
         );
     } else {
-        alert("Tarayıcınız konum servisini desteklemiyor.");
+        alert("Tarayıcınız konum desteklemiyor.");
+        document.getElementById('map-auth-overlay').style.display = 'none';
         window.initGoogleMap({ lat: 39.92077, lng: 32.85411 });
     }
 };
@@ -2311,11 +2332,12 @@ window.triggerAvatarCrop = function(inputEl) {
             const image = document.getElementById('cropper-image');
             if (window.cropperInstance) { window.cropperInstance.destroy(); }
             
+            // Yuvarlak ve estetik bir kırpma alanı
             window.cropperInstance = new Cropper(image, {
-                aspectRatio: 1, 
-                viewMode: 1, 
-                dragMode: 'move', 
-                guides: false, 
+                aspectRatio: 1, // Kare referans
+                viewMode: 1, // Sınırların dışına çıkmayı engelle
+                dragMode: 'move', // Resmi kaydırarak kırp
+                guides: false, // Kılavuz çizgileri gizle
                 center: false,
                 highlight: false,
                 cropBoxMovable: true,
@@ -2331,6 +2353,7 @@ window.triggerAvatarCrop = function(inputEl) {
                 statusEl.style.display = 'block';
                 statusEl.innerText = 'Fotoğraf işleniyor ve yükleniyor...';
                 
+                // Canvas'ı PNG formatında ve şeffaf arkaplanlı olarak al
                 window.cropperInstance.getCroppedCanvas({
                     width: 400,
                     height: 400,
