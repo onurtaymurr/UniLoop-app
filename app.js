@@ -53,6 +53,41 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
+window.userProfile = { 
+    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", bio: "", avatarUrl: "", age: "", isPremium: false 
+};
+
+window.joinedFaculties = [];
+let marketDB = [];
+let confessionsDB = [];
+let qaDB = [];
+let chatsDB = [];
+let loopMapDB = []; // Yeni: LoopMap verileri
+let currentChatId = null;
+let googleMap = null; // Yeni: Google Map
+let userCurrentLocation = null; // Yeni: Konum
+
+window.resetCurrentChatId = function() { currentChatId = null; };
+
+const FACULTY_PASSCODES = {
+    "Tıp Fakültesi": "tıpfak100", 
+    "Hukuk Fakültesi": "hukuk1000", 
+    "Diş Hekimliği Fakültesi": "dis1000",
+    "Bilgisayar Fakültesi": "comp100",
+    "Eczacılık Fakültesi": "ecza100"
+};
+
+const globalUniversities = [
+    "Yakın Doğu Üniversitesi (NEU)", "Doğu Akdeniz Üniversitesi (EMU)", "Girne Amerikan Üniversitesi (GAU)", "Uluslararası Kıbrıs Üniversitesi (CIU)",
+    "Orta Doğu Teknik Üniversitesi (ODTÜ)", "Boğaziçi Üniversitesi", "İstanbul Teknik Üniversitesi (İTÜ)", "Bilkent Üniversitesi", "Koç Üniversitesi"
+];
+
+const authScreen = document.getElementById('auth-screen');
+const appScreen = document.getElementById('app-screen');
+const mainContent = document.getElementById('main-content');
+const modal = document.getElementById('app-modal');
+
 function initializeUniLoop() {
 
 // ✂️ CROPPER.JS ENJEKSİYONU (INSTAGRAM TARZI PROFİL KIRPMA İÇİN)
@@ -69,37 +104,18 @@ document.head.appendChild(cropperJs);
 const styleFix = document.createElement('style');
 styleFix.innerHTML = `
     html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
-    
-    #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) {
-        opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important;
-    }
-    #app-modal.active, #lightbox.active, .modal.active {
-        opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important;
-    }
-    
+    #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; }
+    #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; }
     #auth-screen { position: relative; z-index: 1000 !important; }
-    #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select {
-        pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important;
-    }
-
-    button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { 
-        cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; 
-    }
-    
-    #sidebar { 
-        overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; 
-        justify-content: flex-start !important; align-items: stretch !important; max-height: 100vh !important;
-        top: 0 !important; padding-top: 75px !important; padding-bottom: 40px !important;
-    }
-    
+    #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important; }
+    button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; }
+    #sidebar { overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; justify-content: flex-start !important; align-items: stretch !important; max-height: 100vh !important; top: 0 !important; padding-top: 75px !important; padding-bottom: 40px !important; }
     #chat-layout-container { height: calc(100vh - 120px) !important; max-height: 800px; overflow: hidden !important; display: flex; flex-direction: row; }
     .chat-sidebar { overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; }
     .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; }
     #chat-messages-scroll { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; scroll-behavior: smooth; }
-    
     #qa-feed, #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; }
     .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; scroll-behavior: smooth; }
-    
     .feed-layout-container { height: calc(100vh - 80px); display: flex; flex-direction: column; overflow: hidden; margin: -20px; background: #F3F4F6; }
     #conf-feed { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; max-width: 600px !important; margin: 0 auto !important; width: 100%;}
     .feed-post { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 16px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
@@ -113,21 +129,15 @@ styleFix.innerHTML = `
     .feed-post-actions { display: flex; border-top: 1px solid #E5E7EB; padding-top: 12px; gap: 20px; }
     .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
     .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
-
-    /* ANA SAYFA GRID */
     .user-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; width: 100%; }
     .user-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; justify-content: center; min-height: 160px;}
     .user-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); border-color: var(--primary); }
-
-    /* CROPPER JS YUVARLAK REFERANS STİLİ */
     .cropper-view-box, .cropper-face { border-radius: 50%; }
     .cropper-view-box { outline: 0; box-shadow: 0 0 0 1px #39f; }
-
     .premium-glow { animation: glowPulse 2s infinite alternate; }
     @keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); } 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); } }
     .premium-upgrade-btn { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 15px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); display: inline-flex; align-items: center; gap: 8px; }
     .premium-upgrade-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(245, 158, 11, 0.4); }
-    
     body.dark-mode, .dark-mode #main-content { background-color: #121212 !important; color: #e5e7eb !important; }
     .dark-mode .card, .dark-mode .feed-post, .dark-mode .item-card, .dark-mode .chat-sidebar-header, .dark-mode .user-card { background-color: #1e1e1e !important; border-color: #374151 !important; color: #e5e7eb !important; }
     .dark-mode .card > div { border-color: #374151 !important; }
@@ -143,13 +153,10 @@ styleFix.innerHTML = `
     .dark-mode .menu-item.active { background: #374151 !important; color: var(--primary) !important; }
     .dark-mode #app-header { background: #1e1e1e !important; border-bottom-color: #374151 !important; }
     .dark-mode #sidebar { background: #1e1e1e !important; border-right-color: #374151 !important; }
-
     #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
     #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
     #app-header > :last-child, .header-right-menu { display: flex !important; align-items: center !important; justify-content: flex-end !important; flex-wrap: nowrap !important; }
-
     #profile-btn, #nav-premium-action { font-size: 12px !important; padding: 0 10px !important; height: 32px !important; line-height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; flex-shrink: 0 !important; margin: 0 !important; border-radius: 8px !important; }
-
     @media (max-width: 1024px) {
         #chat-layout-container { height: calc(100vh - 160px) !important; }
         .chat-sidebar { width: 100%; display: block; }
@@ -157,15 +164,12 @@ styleFix.innerHTML = `
         .chat-main { display: none !important; }
         .chat-active .chat-main { display: flex !important; }
     }
-
     .accordion-section { margin-bottom: 12px; background: transparent; }
     .accordion-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 14px 16px; font-weight: bold; font-size: 15px; transition: 0.2s; color: var(--text-dark);}
     .accordion-header:hover { background: #EEF2FF; color: var(--primary); border-radius: 12px; }
-    
     .accordion-content { max-height: 0; overflow: hidden; padding: 0 16px; background: transparent; transition: max-height 0.3s ease, padding 0.3s ease; }
     .accordion-content.open { max-height: 600px; padding: 10px 16px; }
     .accordion-icon { display: inline-block; margin-left: auto; font-size: 12px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-gray); }
-    
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 10px; }
@@ -211,38 +215,6 @@ const bind = (id, event, callback) => {
     const el = document.getElementById(id); 
     if (el) { el.addEventListener(event, callback); }
 };
-
-// --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
-window.userProfile = { 
-    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", bio: "", avatarUrl: "", age: "", isPremium: false 
-};
-
-window.joinedFaculties = [];
-let marketDB = [];
-let confessionsDB = [];
-let qaDB = [];
-let chatsDB = [];
-let currentChatId = null;
-
-window.resetCurrentChatId = function() { currentChatId = null; };
-
-const FACULTY_PASSCODES = {
-    "Tıp Fakültesi": "tıpfak100", 
-    "Hukuk Fakültesi": "hukuk1000", 
-    "Diş Hekimliği Fakültesi": "dis1000",
-    "Bilgisayar Fakültesi": "comp100",
-    "Eczacılık Fakültesi": "ecza100"
-};
-
-const globalUniversities = [
-    "Yakın Doğu Üniversitesi (NEU)", "Doğu Akdeniz Üniversitesi (EMU)", "Girne Amerikan Üniversitesi (GAU)", "Uluslararası Kıbrıs Üniversitesi (CIU)",
-    "Orta Doğu Teknik Üniversitesi (ODTÜ)", "Boğaziçi Üniversitesi", "İstanbul Teknik Üniversitesi (İTÜ)", "Bilkent Üniversitesi", "Koç Üniversitesi"
-];
-
-const authScreen = document.getElementById('auth-screen');
-const appScreen = document.getElementById('app-screen');
-const mainContent = document.getElementById('main-content');
-const modal = document.getElementById('app-modal');
 
 // ============================================================================
 // 🌟 HTML YAPI ENTEGRASYONU: MENÜ DÜZENLEME VE "BANA ÖZEL" SIRALAMASI
@@ -610,6 +582,7 @@ window.addEventListener("beforeunload", () => {
 function initRealtimeListeners(currentUid) {
     const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
 
+    // SADECE MARKET İLANLARI DİNLENİYOR (Housing çıkarıldı)
     onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc")), (snapshot) => {
         marketDB = [];
         snapshot.forEach(doc => { marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
@@ -617,7 +590,13 @@ function initRealtimeListeners(currentUid) {
         
         const activeTab = document.querySelector('.menu-item.active');
         if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market', 'market');
-        if(activeTab && activeTab.getAttribute('data-target') === 'housing') window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt', 'housing');
+    });
+
+    // YENİ: LOOPMAP SNAPSHOT
+    onSnapshot(collection(db, "loopmap_posts"), (snapshot) => {
+        loopMapDB = [];
+        snapshot.forEach(doc => loopMapDB.push({ id: doc.id, ...doc.data() }));
+        if(googleMap) window.drawMapMarkers();
     });
 
     onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc")), (snapshot) => {
@@ -985,12 +964,10 @@ window.renderHome = async function() {
         let usersHtml = '';
         let count = 0;
         
-        // Mevcut ilişkileri çıkar (Arkadaş olanları veya istek bekleyenleri ana sayfada gösterme)
         const interactedUids = chatsDB.map(c => c.otherUid);
         
         querySnapshot.forEach((doc) => {
             const u = doc.data();
-            // Kendisi değilse ve interactedUids içinde (chatsDB'de) yoksa listele
             if(u.uid !== window.userProfile.uid && !interactedUids.includes(u.uid) && count < 10) {
                 count++;
                 const initial = u.surname ? u.surname.charAt(0) + '.' : '';
@@ -1016,10 +993,124 @@ window.renderHome = async function() {
     }
 };
 
-function getHomeContent() {
-    window.renderHome();
-    return `<div style="text-align:center; padding: 50px; color:var(--text-gray);">Kampüsünüz hazırlanıyor...</div>`;
+// ============================================================================
+// 🌍 YENİ: LOOPMAP ENTEGRASYONU
+// ============================================================================
+
+window.renderLoopMap = function() {
+    mainContent.innerHTML = `
+        <div id="loopmap-container" style="width: 100%; height: calc(100vh - 120px); border-radius: 16px; overflow: hidden; position: relative; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <div id="map" style="width: 100%; height: 100%;"></div>
+            
+            <input type="file" id="loopmap-cam-input" accept="image/*" capture="environment" style="display:none;" onchange="window.handleMapPhotoCapture(this)">
+            
+            <button class="map-fab-btn" onclick="document.getElementById('loopmap-cam-input').click()" style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #8B5CF6, #6D28D9); color: white; border: none; padding: 16px 24px; border-radius: 30px; font-weight: bold; font-size: 16px; box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.4); cursor: pointer; display: flex; align-items: center; gap: 10px; z-index: 100; transition: 0.2s;">
+                📸 Haritaya Anı Bırak
+            </button>
+        </div>
+    `;
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                userCurrentLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+                initGoogleMap(userCurrentLocation);
+            },
+            (error) => {
+                alert("Konum izni reddedildi veya alınamadı. Harita varsayılan konuma ayarlanıyor.");
+                initGoogleMap({ lat: 39.92077, lng: 32.85411 }); 
+            }
+        );
+    } else {
+        alert("Tarayıcınız konum servisini desteklemiyor.");
+        initGoogleMap({ lat: 39.92077, lng: 32.85411 });
+    }
+};
+
+function initGoogleMap(centerLoc) {
+    if(typeof google === 'undefined') {
+        document.getElementById('map').innerHTML = `<div style="padding:40px; text-align:center; color:gray; font-weight:bold;">Google Maps API yüklenemedi.<br><br>Lütfen index.html dosyasındaki script etiketine kendi API Key'inizi girin.</div>`;
+        return;
+    }
+    
+    googleMap = new google.maps.Map(document.getElementById("map"), {
+        center: centerLoc,
+        zoom: 16,
+        disableDefaultUI: true,
+        styles: [ { "featureType": "poi", "elementType": "labels", "stylers": [{ "visibility": "off" }] } ]
+    });
+
+    new google.maps.Marker({
+        position: centerLoc,
+        map: googleMap,
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4F46E5", fillOpacity: 1, strokeWeight: 2, strokeColor: "white" }
+    });
+
+    window.drawMapMarkers();
 }
+
+window.drawMapMarkers = function() {
+    if(!googleMap) return;
+    
+    loopMapDB.forEach(post => {
+        const marker = new google.maps.Marker({
+            position: { lat: post.lat, lng: post.lng },
+            map: googleMap,
+            animation: google.maps.Animation.DROP
+        });
+
+        marker.addListener("click", () => {
+            window.openMapSnapModal(post);
+        });
+    });
+};
+
+window.handleMapPhotoCapture = async function(input) {
+    if(!input.files || input.files.length === 0) return;
+    if(!userCurrentLocation) { alert("Konumunuz alınamadan haritaya anı bırakamazsınız!"); return; }
+
+    const file = input.files[0];
+    window.openModal("Fotoğraf Yükleniyor", `<div style="text-align:center; padding: 20px;"><p style="font-weight:bold; font-size:16px;">Haritaya anı bırakılıyor, lütfen bekleyin... 🚀</p></div>`);
+
+    try {
+        const fileName = "loopmap_" + window.userProfile.uid + "_" + Date.now() + ".jpg";
+        const storageRef = ref(storage, 'loopmap/' + fileName);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+
+        await addDoc(collection(db, "loopmap_posts"), {
+            uid: window.userProfile.uid,
+            userName: window.userProfile.name + " " + window.userProfile.surname,
+            lat: userCurrentLocation.lat,
+            lng: userCurrentLocation.lng,
+            imgUrl: url,
+            timestamp: serverTimestamp()
+        });
+
+        window.closeModal();
+        alert("Anınız haritaya başarıyla bırakıldı!");
+    } catch(err) {
+        window.closeModal();
+        alert("Fotoğraf yüklenirken hata oluştu: " + err.message);
+    }
+};
+
+window.openMapSnapModal = function(post) {
+    let actionBtnHtml = '';
+    if(post.uid === window.userProfile.uid) {
+        actionBtnHtml = `<button class="btn-primary" style="background:#6B7280; width:100%; padding:12px; font-size:15px; border-radius:12px;" onclick="window.closeModal()">Bu Senin Anın</button>`;
+    } else {
+        actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.viewUserProfile('${post.uid}')">👤 Profile Git</button>`;
+    }
+
+    window.openModal('Kampüs Anısı', `
+        <div style="text-align:center;">
+            <img src="${post.imgUrl}" style="width:100%; max-height:400px; border-radius:12px; object-fit:cover; margin-bottom:15px; border:1px solid #E5E7EB;">
+            <p style="font-size:16px; font-weight:bold; margin-bottom:15px; color:var(--text-dark);">📸 ${post.userName} buradaydı!</p>
+            ${actionBtnHtml}
+        </div>
+    `);
+};
 
 // ============================================================================
 // 5. TAM EKRAN FOTOĞRAF GALERİSİ (LIGHTBOX) MANTIĞI
@@ -1057,14 +1148,11 @@ window.updateLightboxView = function() {
     }
 };
 
-let touchstartX = 0;
-let touchendX = 0;
-
+let touchstartX = 0; let touchendX = 0;
 function handleSwipe() {
     if (touchendX < touchstartX - 40) window.changeLightboxImage(1); 
     if (touchendX > touchstartX + 40) window.changeLightboxImage(-1); 
 }
-
 const lb = document.getElementById('lightbox');
 if(lb) {
     lb.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
@@ -1072,11 +1160,10 @@ if(lb) {
 }
 
 // ============================================================================
-// 6. İLAN YÖNETİMİ (MARKET VE LIGHTBOX ENTEGRASYONU)
+// 6. İLAN YÖNETİMİ (SADECE MARKET, HOUSING KALDIRILDI)
 // ============================================================================
 
 window.renderListings = function(type, title) {
-    const buttonTextType = type === 'market' ? 'market' : 'housing';
     let html = `
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
@@ -1089,15 +1176,15 @@ window.renderListings = function(type, title) {
     `;
     
     mainContent.innerHTML = html;
-    window.drawListingsGrid(type, buttonTextType, '');
+    window.drawListingsGrid(type, '');
     
     const searchInput = document.getElementById('local-search-input');
     if(searchInput) {
-        searchInput.addEventListener('input', (e) => { window.drawListingsGrid(type, buttonTextType, e.target.value.toLowerCase()); }); 
+        searchInput.addEventListener('input', (e) => { window.drawListingsGrid(type, e.target.value.toLowerCase()); }); 
     }
 };
 
-window.drawListingsGrid = function(type, buttonTextType, filterText) {
+window.drawListingsGrid = function(type, filterText) {
     const container = document.getElementById('listings-grid-container');
     if(!container) return;
 
@@ -1124,7 +1211,7 @@ window.drawListingsGrid = function(type, buttonTextType, filterText) {
         }
 
         gridHtml += `
-            <div class="item-card" onclick="window.openListingDetail('${item.id}', '${buttonTextType}')">
+            <div class="item-card" onclick="window.openListingDetail('${item.id}')">
                 <div class="item-img-large">${imgHtml}</div>
                 <div class="item-details">
                     <div class="item-title">${item.title}</div>
@@ -1136,7 +1223,7 @@ window.drawListingsGrid = function(type, buttonTextType, filterText) {
     container.innerHTML = gridHtml;
 };
 
-window.openListingDetail = function(docId, type) {
+window.openListingDetail = function(docId) {
     const item = marketDB.find(i => i.id === docId);
     if(!item) return;
 
@@ -1165,7 +1252,6 @@ window.openListingDetail = function(docId, type) {
     const safeTitle = item.title.replace(/'/g, "\\'"); 
     const existingChat = chatsDB.find(c => c.otherUid === item.sellerId);
 
-    // Kendi İlanıysa Düzenle/Sil. Başkasınınsa Arkadaşlık Kontrolü yap.
     if (item.sellerId === currentUid) {
          actionButtonsHtml = `
             <div style="display:flex; gap:10px; margin-top: 20px;">
@@ -1174,13 +1260,10 @@ window.openListingDetail = function(docId, type) {
             </div>
          `;
     } else if (existingChat && existingChat.status === 'accepted') {
-         // Zaten arkadaşlar, mesaj ekranına git
          actionButtonsHtml = `<button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">💬 Mesaj Gönder</button>`;
     } else if (existingChat && existingChat.status === 'pending') {
-         // İstek zaten bekliyor
          actionButtonsHtml = `<button class="btn-primary" disabled style="margin-top: 20px; padding:12px; font-size:15px; background:#9CA3AF;">⏳ İstek Bekleniyor</button>`;
     } else {
-         // Arkadaş değiller, istek gönderilecek
          actionButtonsHtml = `<button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="window.sendFriendRequest('${item.sellerId}', '${item.sellerName}'); window.closeModal();">➕ İstek Gönder</button>`;
     }
 
@@ -1211,14 +1294,10 @@ window.editListing = async function(docId, oldTitle, oldPrice) {
 };
 
 window.openListingForm = function(type) {
-    const formTitle = type === 'market' ? '🛒 Kampüs Market İlanı Ekle' : '🔑 Ev Arkadaşı & Yurt İlanı Ekle';
-    const titlePlaceholder = type === 'market' ? 'İlan Başlığı (Örn: Temiz Çalışma Masası veya Çıkmış Sorular)' : 'İlan Başlığı (Örn: Acil Ev Arkadaşı Aranıyor)';
-    const descPlaceholder = type === 'market' ? 'Ürünün durumu ve detayları...' : 'Evin kuralları, konumu ve aranan özellikler...';
-
-    window.openModal(formTitle, `
-        <div class="form-group"><input type="text" id="new-item-title" placeholder="${titlePlaceholder}"></div>
+    window.openModal('🛒 Kampüs Market İlanı Ekle', `
+        <div class="form-group"><input type="text" id="new-item-title" placeholder="İlan Başlığı (Örn: Temiz Çalışma Masası)"></div>
         <div class="form-group" style="display: flex; gap: 10px;">
-            <input type="number" id="new-item-price" placeholder="Fiyat / Kira Bedeli" style="flex: 2;">
+            <input type="number" id="new-item-price" placeholder="Fiyat" style="flex: 2;">
             <select id="new-item-currency" style="flex: 1;">
                 <option value="₺">TL (₺)</option>
                 <option value="$">Dolar ($)</option>
@@ -1226,7 +1305,7 @@ window.openListingForm = function(type) {
                 <option value="£">Sterlin (£)</option>
             </select>
         </div>
-        <div class="form-group"><textarea id="new-item-desc" rows="3" placeholder="${descPlaceholder}"></textarea></div>
+        <div class="form-group"><textarea id="new-item-desc" rows="3" placeholder="Ürünün durumu ve detayları..."></textarea></div>
         <div class="upload-btn-wrapper">
             <button class="action-btn" id="photo-trigger-btn" style="width:100%; justify-content:center;">📷 Fotoğraf veya 📄 PDF Seç</button>
             <input type="file" id="new-item-photo" accept="image/*, application/pdf" multiple style="display:none;" />
@@ -1282,9 +1361,7 @@ window.submitListing = async function(type) {
     if(files.length === 0) { alert("Lütfen en az 1 dosya veya fotoğraf seçin."); return; }
 
     let isPdf = false;
-    if(files.length > 0 && files[0].type === "application/pdf") {
-        isPdf = true;
-    }
+    if(files.length > 0 && files[0].type === "application/pdf") { isPdf = true; }
 
     btn.disabled = true;
     statusEl.style.display = 'block';
@@ -1294,7 +1371,7 @@ window.submitListing = async function(type) {
     let imgUrlsArray = [];
 
     try {
-        const uploadTimeout = new Promise((_, reject) => { setTimeout(() => reject(new Error("Yükleme süresi doldu. Firebase Storage izinlerinizi kontrol edin.")), 15000); });
+        const uploadTimeout = new Promise((_, reject) => { setTimeout(() => reject(new Error("Yükleme süresi doldu.")), 15000); });
         const uploadProcess = async () => {
             for (let file of files) {
                 const fileName = Date.now() + '_' + file.name.replace(/\s/g, ''); 
@@ -1317,7 +1394,6 @@ window.submitListing = async function(type) {
         window.closeModal();
         alert("İlanınız başarıyla yayınlandı!");
     } catch (error) {
-        console.error("İlan eklenirken hata:", error);
         statusEl.innerText = "HATA: " + error.message; 
         statusEl.style.color = "red";
         alert("İlan yayınlanamadı! Hata: " + error.message);
@@ -1331,7 +1407,6 @@ window.submitListing = async function(type) {
 // 7. ARKADAŞLARIM, BİLDİRİMLER VE MESAJLAŞMA SİSTEMİ
 // ============================================================================
 
-// 🌟 ARKADAŞLARIM SAYFASI
 window.renderFriends = function() {
     const acceptedFriends = chatsDB.filter(c => c.status === 'accepted');
     
@@ -2060,8 +2135,9 @@ window.loadPage = function(pageName) {
     window.scrollTo(0,0);
 
     if (pageName === 'home') window.renderHome();
+    else if (pageName === 'loopmap') window.renderLoopMap();
     else if (pageName === 'market') window.renderListings('market', '🛒 Kampüs Market');
-    else if (pageName === 'housing') window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt');
+    // Housing silindi
     else if (pageName === 'confessions') window.renderConfessions();
     else if (pageName === 'qa') window.renderQA(); 
     else if (pageName === 'messages') window.renderMessages(); 
@@ -2172,12 +2248,11 @@ window.triggerAvatarCrop = function(inputEl) {
             const image = document.getElementById('cropper-image');
             if (window.cropperInstance) { window.cropperInstance.destroy(); }
             
-            // Yuvarlak ve estetik bir kırpma alanı
             window.cropperInstance = new Cropper(image, {
-                aspectRatio: 1, // Kare referans
-                viewMode: 1, // Sınırların dışına çıkmayı engelle
-                dragMode: 'move', // Resmi kaydırarak kırp
-                guides: false, // Kılavuz çizgileri gizle
+                aspectRatio: 1, 
+                viewMode: 1, 
+                dragMode: 'move', 
+                guides: false, 
                 center: false,
                 highlight: false,
                 cropBoxMovable: true,
@@ -2193,7 +2268,6 @@ window.triggerAvatarCrop = function(inputEl) {
                 statusEl.style.display = 'block';
                 statusEl.innerText = 'Fotoğraf işleniyor ve yükleniyor...';
                 
-                // Canvas'ı PNG formatında ve şeffaf arkaplanlı olarak al
                 window.cropperInstance.getCroppedCanvas({
                     width: 400,
                     height: 400,
