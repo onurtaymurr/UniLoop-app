@@ -60,15 +60,27 @@ const styleFix = document.createElement('style');
 styleFix.innerHTML = `
     html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
     
-    #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; }
-    #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; }
+    #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) {
+        opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important;
+    }
+    #app-modal.active, #lightbox.active, .modal.active {
+        opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important;
+    }
     
     #auth-screen { position: relative; z-index: 1000 !important; }
-    #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important; }
+    #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select {
+        pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important;
+    }
 
-    button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; }
+    button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { 
+        cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; 
+    }
     
-    #sidebar { overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; justify-content: flex-start !important; align-items: stretch !important; max-height: 100vh !important; top: 0 !important; padding-top: 75px !important; padding-bottom: 40px !important; }
+    #sidebar { 
+        overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; 
+        justify-content: flex-start !important; align-items: stretch !important; max-height: 100vh !important;
+        top: 0 !important; padding-top: 75px !important; padding-bottom: 40px !important;
+    }
     
     #chat-layout-container { height: calc(100vh - 120px) !important; max-height: 800px; overflow: hidden !important; display: flex; flex-direction: row; }
     .chat-sidebar { overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; }
@@ -80,7 +92,7 @@ styleFix.innerHTML = `
     .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; scroll-behavior: smooth; }
     
     .feed-layout-container { height: calc(100vh - 80px); display: flex; flex-direction: column; overflow: hidden; margin: -20px; background: #F3F4F6; }
-    #conf-feed { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; max-width: 600px !important; margin: 0 auto !important; width: 100%; }
+    #conf-feed { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; max-width: 600px !important; margin: 0 auto !important; width: 100%;}
     .feed-post { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 16px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
     .feed-post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
     .feed-post-avatar { font-size: 24px; width: 44px; height: 44px; background: #F3F4F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0; border: 1px solid #E5E7EB; }
@@ -134,11 +146,11 @@ styleFix.innerHTML = `
         .chat-active .chat-main { display: flex !important; }
     }
 
-    .accordion-section { margin-bottom: 12px; border: 1px solid transparent; border-radius: 12px; overflow: hidden; background: transparent; }
+    .accordion-section { margin-bottom: 12px; background: transparent; }
     .accordion-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 14px 16px; font-weight: bold; font-size: 15px; transition: 0.2s; color: var(--text-dark);}
     .accordion-header:hover { background: #EEF2FF; color: var(--primary); border-radius: 12px; }
     
-    .accordion-content { max-height: 0; overflow: hidden; padding: 0 16px; background: transparent; transition: max-height 0.3s ease, padding 0.3s ease, border-color 0.3s ease; border-top: 1px solid transparent; }
+    .accordion-content { max-height: 0; overflow: hidden; padding: 0 16px; background: transparent; transition: max-height 0.3s ease, padding 0.3s ease; }
     .accordion-content.open { max-height: 600px; padding: 10px 16px; }
     .accordion-icon { display: inline-block; margin-left: auto; font-size: 12px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-gray); }
     
@@ -156,8 +168,11 @@ window.setLanguage = function(lang) {
 
 window.toggleTheme = function(theme) {
     localStorage.setItem('uniloop_theme', theme);
-    if(theme === 'dark') { document.body.classList.add('dark-mode'); } 
-    else { document.body.classList.remove('dark-mode'); }
+    if(theme === 'dark') {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
 };
 
 const savedTheme = localStorage.getItem('uniloop_theme') || 'light';
@@ -185,7 +200,7 @@ const bind = (id, event, callback) => {
     if (el) { el.addEventListener(event, callback); }
 };
 
-// --- SİSTEM HAFIZASI ---
+// --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
 window.userProfile = { 
     uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", isPremium: false 
 };
@@ -195,12 +210,11 @@ let marketDB = [];
 let confessionsDB = [];
 let qaDB = [];
 let chatsDB = [];
-let pastExamsDB = []; // YENİ: Çıkmış Sorular Havuzu Veritabanı
+let pastExamsDB = []; // YENİ: Çıkmış Sorular Havuzu
 let currentChatId = null;
 
 window.resetCurrentChatId = function() { currentChatId = null; };
 
-// KULÜPLER SİLİNDİ, SADECE FAKÜLTELER
 const FACULTY_PASSCODES = {
     "Tıp Fakültesi": "tıpfak100", 
     "Hukuk Fakültesi": "hukuk1000", 
@@ -211,8 +225,7 @@ const FACULTY_PASSCODES = {
 
 const globalUniversities = [
     "Yakın Doğu Üniversitesi (NEU)", "Doğu Akdeniz Üniversitesi (EMU)", "Girne Amerikan Üniversitesi (GAU)", "Uluslararası Kıbrıs Üniversitesi (CIU)",
-    "Orta Doğu Teknik Üniversitesi (ODTÜ)", "Boğaziçi Üniversitesi", "İstanbul Teknik Üniversitesi (İTÜ)", "Bilkent Üniversitesi", "Koç Üniversitesi",
-    "Stanford University", "Massachusetts Institute of Technology (MIT)", "Harvard University"
+    "Orta Doğu Teknik Üniversitesi (ODTÜ)", "Boğaziçi Üniversitesi", "İstanbul Teknik Üniversitesi (İTÜ)", "Bilkent Üniversitesi", "Koç Üniversitesi"
 ];
 
 const authScreen = document.getElementById('auth-screen');
@@ -222,16 +235,20 @@ const modal = document.getElementById('app-modal');
 
 // 🌟 YENİ: BANA ÖZEL VE FAKÜLTELER ACCORDION
 window.renderSidebarAccordions = function() {
+    const sidebarContainer = document.getElementById('sidebar-networks-container');
+    const rightContainer = document.getElementById('right-networks-container');
+    
     const accordionHTML = `
         <div id="bana-ozel-container"></div>
-        <div class="accordion-section" style="margin-top: 15px;">
-            <div class="accordion-header menu-item" style="padding:12px 15px; margin-bottom:5px; border-radius:12px; background:var(--card-bg);">
+        
+        <div class="accordion-section" style="margin-top: 20px;">
+            <div class="accordion-header menu-item" style="padding:12px 15px; margin-bottom:5px; border-radius:12px;">
                 <span style="font-weight:bold;">🏢 Tüm Fakülteler</span>
                 <span class="accordion-icon">▶</span>
             </div>
-            <div class="accordion-content" style="padding-left:15px;">
+            <div class="accordion-content">
                 <div class="menu-item community-link" data-name="Tıp Fakültesi" data-icon="🩺" data-color="linear-gradient(135deg, #EF4444, #B91C1C)">🩺 Tıp Fakültesi</div>
-                <div class="menu-item community-link" data-name="Diş Hekimliği Fakültesi" data-icon="🦷" data-color="linear-gradient(135deg, #06B6D4, #0891B2)">🦷 Diş Hekimliği Fakültesi</div>
+                <div class="menu-item community-link" data-name="Diş Hekimliği Fakültesi" data-icon="🦷" data-color="linear-gradient(135deg, #06B6D4, #0891B2)">🦷 Diş Fakültesi</div>
                 <div class="menu-item community-link" data-name="Bilgisayar Fakültesi" data-icon="💻" data-color="linear-gradient(135deg, #3B82F6, #1D4ED8)">💻 Bilgisayar Fakültesi</div>
                 <div class="menu-item community-link" data-name="Eczacılık Fakültesi" data-icon="💊" data-color="linear-gradient(135deg, #10B981, #047857)">💊 Eczacılık Fakültesi</div>
                 <div class="menu-item community-link" data-name="Hukuk Fakültesi" data-icon="⚖️" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">⚖️ Hukuk Fakültesi</div>
@@ -239,32 +256,45 @@ window.renderSidebarAccordions = function() {
         </div>
     `;
     
-    const sidebarContainer = document.getElementById('sidebar-networks-container');
-    const rightContainer = document.getElementById('right-networks-container');
-    
     if(sidebarContainer) sidebarContainer.innerHTML = accordionHTML;
     if(rightContainer) rightContainer.innerHTML = accordionHTML;
     
     window.updateMyFacultiesSidebar();
+
+    // Çıkmış Sorular butonunu menüye Soru & Cevap'tan sonra dinamik olarak ekle
+    setTimeout(() => {
+        const qaMenuBtn = document.querySelector('.menu-item[data-target="qa"]');
+        if (qaMenuBtn && !document.querySelector('.menu-item[data-target="past-exams"]')) {
+            qaMenuBtn.insertAdjacentHTML('afterend', `
+                <div class="menu-item" data-target="past-exams" onclick="window.loadPage('past-exams')" style="background: linear-gradient(135deg, #10B981, #059669); color: white; font-weight: bold; margin-top: 5px;">
+                    📚 Çıkmış SORULAR
+                </div>
+            `);
+        }
+    }, 500);
 };
 
 window.updateMyFacultiesSidebar = function() {
     const container = document.getElementById('bana-ozel-container');
     if(!container) return;
     
+    let html = `<div style="margin-top:15px; margin-bottom: 5px; font-weight:900; color:var(--text-gray); font-size:12px; letter-spacing: 1px; padding-left:15px;">BANA ÖZEL</div>`;
+    
     if(window.userProfile && window.userProfile.faculty) {
-        container.innerHTML = `
-            <div style="margin-top:15px; margin-bottom: 5px; font-weight:900; color:var(--text-gray); font-size:12px; letter-spacing: 1px; padding-left:16px;">BANA ÖZEL</div>
+        html += `
             <div class="menu-item community-link active" data-name="${window.userProfile.faculty}" data-icon="🏢" data-color="linear-gradient(135deg, #1E3A8A, #4F46E5)" style="background:#EEF2FF; color:var(--primary); font-weight:bold; border-left: 4px solid var(--primary);">
-                📌 ${window.userProfile.faculty} (Aktif)
+                📌 ${window.userProfile.faculty}
             </div>
         `;
-    } else {
-        container.innerHTML = '';
     }
+    
+    html += `
+        <div class="menu-item" data-target="messages" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('messages');">💬 Mesajlarım</div>
+        <div class="menu-item" data-target="notifications" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('notifications');">🔔 Bildirimler <span id="notif-badge" class="badge" style="display:none; background:#EF4444; color:white; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:auto;">0</span></div>
+    `;
+    
+    container.innerHTML = html;
 };
-
-window.renderSidebarAccordions();
 
 // ============================================================================
 // 1. GİRİŞ, KAYIT, ONAY VE ŞİFREMİ UNUTTUM
@@ -515,24 +545,6 @@ onAuthStateChanged(auth, async (user) => {
             appScreen.style.display = 'block';
         }
 
-        if (!document.getElementById('nav-notifications-btn')) {
-            const msgBtn = document.getElementById('nav-messages-btn');
-            if (msgBtn) {
-                const notifBtnHTML = `
-                    <div class="menu-item" id="nav-notifications-btn" data-target="notifications">
-                        ↳ Bildirimler <span id="notif-badge" class="badge" style="display:none; background:#EF4444; color:white; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:auto;">0</span>
-                    </div>
-                `;
-                msgBtn.insertAdjacentHTML('afterend', notifBtnHTML);
-                
-                document.getElementById('nav-notifications-btn').addEventListener('click', (e) => {
-                    document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
-                    e.currentTarget.classList.add('active');
-                    window.loadPage('notifications');
-                });
-            }
-        }
-
         try {
             const userDocRef = doc(db, "users", user.uid);
             const docSnap = await getDoc(userDocRef);
@@ -553,6 +565,8 @@ onAuthStateChanged(auth, async (user) => {
 
             await window.ensureWelcomeMessage(user, window.userProfile.name);
             await updateDoc(userDocRef, { isOnline: true });
+            
+            window.renderSidebarAccordions(); // Menüyü hazırla ve Bana Özel'i güncelle
             initRealtimeListeners(user.uid);
 
             const activeTab = document.querySelector('.menu-item.active');
@@ -569,10 +583,6 @@ onAuthStateChanged(auth, async (user) => {
                         </div>
                     `);
                 }
-            }
-
-            if(window.userProfile.faculty && typeof window.updateMyFacultiesSidebar === 'function') {
-                window.updateMyFacultiesSidebar();
             }
 
         } catch(error) { 
@@ -625,13 +635,13 @@ function initRealtimeListeners(currentUid) {
         }
     });
 
-    // 🌟 YENİ: ÇIKMIŞ SORULAR DİNLENMESİ
+    // 🌟 ÇIKMIŞ SORULAR DİNLENMESİ
     onSnapshot(query(collection(db, "past_exams"), orderBy("createdAt", "desc")), (snapshot) => {
         pastExamsDB = [];
         snapshot.forEach(doc => { pastExamsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
         
         const activeTab = document.querySelector('.menu-item.active');
-        if(activeTab && activeTab.getAttribute('data-target') === 'qa' && document.getElementById('current-exam-faculty')) {
+        if(activeTab && activeTab.getAttribute('data-target') === 'past-exams' && document.getElementById('current-exam-faculty')) {
             const currentFac = document.getElementById('current-exam-faculty').value;
             if(currentFac) window.drawPastExamsList(currentFac, document.getElementById('exam-search-input')?.value || '');
         }
@@ -747,8 +757,9 @@ window.upgradeToPremium = async function() {
 // ============================================================================
 
 window.goToMessages = function() {
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
     const msgTab = document.querySelector('[data-target="messages"]');
-    if(msgTab) { msgTab.click(); }
+    if(msgTab) { msgTab.classList.add('active'); window.loadPage('messages'); }
 };
 
 window.openModal = function(title, contentHTML) { 
@@ -864,12 +875,16 @@ window.sendFriendRequest = async function(targetUserId, targetUserName) {
                 messages: [{ senderId: "system", text: "Arkadaşlık isteği gönderildi.", time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), read: false }]
             });
             alert("Arkadaşlık isteği başarıyla gönderildi!");
+            document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
+            document.querySelector('[data-target="messages"]').classList.add('active');
             window.loadPage('messages');
         } else {
             if(existingChat.status === 'pending') {
                 alert("Bu kişiye zaten bir istek gönderilmiş veya ondan sana istek gelmiş. Lütfen Bildirimlerinizi kontrol edin.");
             } else {
                 alert("Bu kişiyle zaten arkadaşsınız.");
+                document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
+                document.querySelector('[data-target="messages"]').classList.add('active');
                 window.loadPage('messages');
                 setTimeout(() => window.openChatView(existingChat.id), 500); 
             }
@@ -1058,7 +1073,8 @@ if(lb) {
 // 6. İLAN YÖNETİMİ (MARKET VE LIGHTBOX ENTEGRASYONU)
 // ============================================================================
 
-window.renderListings = function(type, title, buttonTextType) {
+window.renderListings = function(type, title) {
+    const buttonTextType = type === 'market' ? 'market' : 'housing';
     let html = `
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
@@ -1317,6 +1333,8 @@ window.startMarketChat = async function(targetUserId, targetUserName, autoText) 
                 status: 'accepted', messages: arrayUnion({ senderId: myUid, text: autoText, time: timeStr, read: false }), lastUpdated: serverTimestamp()
             });
         }
+        document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
+        document.querySelector('[data-target="messages"]').classList.add('active');
         window.loadPage('messages');
         setTimeout(() => window.openChatView(existingChatId), 500); 
     } catch (error) {
@@ -1380,7 +1398,7 @@ window.renderMessagesSidebarOnly = function() {
     if(!sidebar) return;
     
     const visibleChats = chatsDB.filter(c => c.status === 'accepted' || (c.status === 'pending' && c.initiator === window.userProfile.uid));
-    let html = `<div class="chat-sidebar-header" style="position:sticky; top:0; background:white; z-index:10;">Mesajlarım</div>`;
+    let html = `<div class="chat-sidebar-header" style="position:sticky; top:0; background:white; z-index:10; padding:15px; border-bottom:1px solid var(--border-color); font-weight:bold;">Mesajlarım</div>`;
     
     if (visibleChats.length === 0) html += `<p style="text-align:center; padding:20px; color:var(--text-gray); font-size:13px;">Aktif mesajınız bulunmuyor.</p>`;
 
@@ -1392,11 +1410,11 @@ window.renderMessagesSidebarOnly = function() {
         const previewMsg = rawLastMsg.replace(/<br>/g, ' ').substring(0, 35) + (rawLastMsg.length > 35 ? "..." : "");
 
         html += `
-            <div class="chat-contact ${isActive}" data-id="${chat.id}" onclick="window.openChatView('${chat.id}')">
-                <div class="avatar">${chat.avatar}</div>
-                <div class="chat-contact-info">
-                    <div class="chat-contact-top"><span class="chat-contact-name">${chat.name}</span><span class="chat-contact-time">${lastMsgObj ? lastMsgObj.time : ""}</span></div>
-                    <div class="chat-contact-last">${previewMsg}</div>
+            <div class="chat-contact ${isActive}" data-id="${chat.id}" onclick="window.openChatView('${chat.id}')" style="padding:15px; border-bottom:1px solid #E5E7EB; display:flex; gap:10px;">
+                <div class="avatar" style="width:40px; height:40px; font-size:20px; margin:0;">${chat.avatar}</div>
+                <div class="chat-contact-info" style="flex:1;">
+                    <div class="chat-contact-top" style="display:flex; justify-content:space-between; margin-bottom:4px;"><span class="chat-contact-name" style="font-weight:bold; font-size:14px;">${chat.name}</span><span class="chat-contact-time" style="font-size:11px; color:#9CA3AF;">${lastMsgObj ? lastMsgObj.time : ""}</span></div>
+                    <div class="chat-contact-last" style="font-size:13px; color:#6B7280;">${previewMsg}</div>
                 </div>
             </div>
         `;
@@ -1416,10 +1434,10 @@ window.updateChatMessagesOnly = function(chatId) {
         const type = msg.senderId === window.userProfile.uid ? 'sent' : 'received';
         let ticks = '';
         if (type === 'sent') {
-            if (msg.read) ticks = '<span class="ticks" title="Okundu" style="color:#3B82F6; font-weight:bold; margin-left:6px; font-size:12px;">✓✓</span>';
+            if (msg.read) ticks = '<span class="ticks" title="Okundu" style="color:#D1D5DB; font-weight:bold; margin-left:6px; font-size:12px;">✓✓</span>';
             else ticks = '<span class="ticks" title="İletildi" style="color:#9CA3AF; font-weight:bold; margin-left:6px; font-size:12px;">✓</span>';
         }
-        chatHTML += `<div class="bubble ${type}"><div class="msg-text">${msg.text}</div><div class="msg-time" style="display:flex; align-items:center; justify-content:flex-end;">${msg.time} ${ticks}</div></div>`; 
+        chatHTML += `<div class="bubble ${type}"><div class="msg-text">${msg.text}</div><div class="msg-time" style="display:flex; align-items:center; justify-content:flex-end; font-size:10px; opacity:0.7; margin-top:4px;">${msg.time} ${ticks}</div></div>`; 
     });
     scrollBox.innerHTML = chatHTML;
     scrollBox.scrollTop = scrollBox.scrollHeight;
@@ -1431,11 +1449,11 @@ window.renderMessages = function() {
     let html = `
         <div class="card" style="padding:0; border:none; background:transparent;">
             <div class="chat-layout" id="chat-layout-container">
-                <div class="chat-sidebar" id="sidebar-container"></div>
-                <div class="chat-main" id="chat-main-view">
+                <div class="chat-sidebar" id="sidebar-container" style="background:white; border-radius:12px 0 0 12px; overflow:hidden;"></div>
+                <div class="chat-main" id="chat-main-view" style="background:#F9FAFB; border-radius:0 12px 12px 0;">
                     <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-gray); opacity:0.7;">
                         <div style="font-size:48px; margin-bottom:10px;">💬</div>
-                        <div>Mesajlaşmaya veya istekleri görüntülemeye başlamak için sol taraftan bir kişi seçin.</div>
+                        <div>Mesajlaşmaya başlamak için sol taraftan bir kişi seçin.</div>
                     </div>
                 </div>
             </div>
@@ -1469,24 +1487,24 @@ window.openChatView = function(chatId) {
     document.getElementById('chat-layout-container').classList.add('chat-active');
 
     let chatHTML = `
-        <div class="chat-header">
-            <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); window.resetCurrentChatId();">←</button>
+        <div class="chat-header" style="padding:15px; border-bottom:1px solid #E5E7EB; background:white; display:flex; align-items:center; gap:15px;">
+            <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); window.resetCurrentChatId();" style="border:none; background:none; font-size:20px; cursor:pointer;">←</button>
             <div class="avatar" style="width:42px; height:42px; font-size:20px; margin:0;">${activeChat.avatar}</div>
             <div class="chat-header-info">
-                <div class="chat-header-name">${activeChat.name}</div>
-                <div class="chat-header-status">UniLoop Ağı</div>
+                <div class="chat-header-name" style="font-weight:bold; font-size:16px;">${activeChat.name}</div>
+                <div class="chat-header-status" style="font-size:12px; color:#10B981;">UniLoop Ağı</div>
             </div>
         </div>
-        <div class="chat-messages" id="chat-messages-scroll"></div>
+        <div class="chat-messages" id="chat-messages-scroll" style="flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column;"></div>
     `;
     
     if (activeChat.status === 'pending' && activeChat.initiator === window.userProfile.uid) {
-         chatHTML += `<div style="padding: 20px; text-align: center; color: var(--text-gray); background: #F9FAFB; border-top: 1px solid var(--border-color); font-weight:bold;">⏳ Arkadaşlık isteğinizin karşı tarafça kabul edilmesi bekleniyor...</div>`;
+         chatHTML += `<div style="padding: 20px; text-align: center; color: var(--text-gray); background: white; border-top: 1px solid var(--border-color); font-weight:bold;">⏳ Arkadaşlık isteğinizin karşı tarafça kabul edilmesi bekleniyor...</div>`;
     } else {
          chatHTML += `
-            <div class="chat-input-area">
-                <div class="chat-input-wrapper"><input type="text" id="chat-input-field" placeholder="Bir mesaj yazın..."></div>
-                <button class="chat-send-btn" onclick="window.sendMsg('${chatId}')">➤</button>
+            <div class="chat-input-area" style="padding:15px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:10px;">
+                <div class="chat-input-wrapper" style="flex:1;"><input type="text" id="chat-input-field" placeholder="Bir mesaj yazın..." style="width:100%; padding:12px; border-radius:20px; border:1px solid #D1D5DB; background:#F9FAFB; outline:none;"></div>
+                <button class="chat-send-btn" onclick="window.sendMsg('${chatId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:44px; height:44px; cursor:pointer;">➤</button>
             </div>
         `;
     }
@@ -1735,43 +1753,24 @@ window.submitConfessionComment = async function(docId) {
 };
 
 // ============================================================================
-// 9. SORU VE CEVAP (Q&A) VE ÇIKMIŞ SORULAR HAVUZU EKLENTİSİ
+// 9. SORU VE CEVAP (Q&A)
 // ============================================================================
 
 window.renderQA = function() {
-    let html = `
+    mainContent.innerHTML = `
         <div class="card" style="padding: 20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
-                <h2 style="margin:0;">Kampüs Soru & Cevap</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                <h2 style="margin:0;">❓ Kampüs Soru & Cevap</h2>
+                <button class="action-btn" style="width:auto; padding: 8px 20px; font-weight:bold; background:var(--primary); color:white; border-radius:12px;" onclick="window.openQAForm()">+ Yeni Soru Sor</button>
             </div>
-            
-            <div style="display:flex; gap:15px; margin-bottom:25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
-                <button class="btn-primary" style="flex:1; border-radius:12px; padding: 12px; font-size: 15px;" onclick="window.renderQAMain()">❓ Soru Sor & Cevapla</button>
-                <button class="action-btn" style="flex:1; background:linear-gradient(135deg, #10B981, #059669); color:white; border-radius:12px; padding: 12px; font-size: 15px; font-weight:bold; border:none; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);" onclick="window.renderPastExamsPool()">📚 Çıkmış Sorular Havuzu</button>
+            <div class="qa-filters" id="qa-filters-container">
+                <button class="qa-filter-btn active" data-filter="Genel" onclick="window.filterQA(this, 'Genel')">Genel</button>
+                <button class="qa-filter-btn" data-filter="Yurtlar" onclick="window.filterQA(this, 'Yurtlar')">Yurtlar</button>
+                <button class="qa-filter-btn" data-filter="Ders" onclick="window.filterQA(this, 'Ders')">Ders</button>
+                <button class="qa-filter-btn" data-filter="Kampüs Yaşamı" onclick="window.filterQA(this, 'Kampüs Yaşamı')">Kampüs Yaşamı</button>
             </div>
-            
-            <div id="qa-dynamic-content"></div>
+            <div id="qa-feed"></div>
         </div>
-    `;
-    mainContent.innerHTML = html;
-    window.renderQAMain(); 
-};
-
-// Soru-Cevap Ana Akış
-window.renderQAMain = function() {
-    const container = document.getElementById('qa-dynamic-content');
-    container.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-size: 18px;">Genel Soru & Cevap</h3>
-            <button class="action-btn" style="width:auto; padding: 8px 20px; font-weight:bold; background:var(--primary); color:white; border-radius:12px;" onclick="window.openQAForm()">+ Yeni Soru Sor</button>
-        </div>
-        <div class="qa-filters" id="qa-filters-container">
-            <button class="qa-filter-btn active" data-filter="Genel" onclick="window.filterQA(this, 'Genel')">Genel</button>
-            <button class="qa-filter-btn" data-filter="Yurtlar" onclick="window.filterQA(this, 'Yurtlar')">Yurtlar</button>
-            <button class="qa-filter-btn" data-filter="Ders" onclick="window.filterQA(this, 'Ders')">Ders</button>
-            <button class="qa-filter-btn" data-filter="Kampüs Yaşamı" onclick="window.filterQA(this, 'Kampüs Yaşamı')">Kampüs Yaşamı</button>
-        </div>
-        <div id="qa-feed"></div>
     `;
     window.drawQAGrid('Genel');
 };
@@ -1866,50 +1865,55 @@ window.submitAnswer = async function(docId) {
     }
 };
 
-// 🌟 YENİ: Çıkmış Sorular Havuzu Mantığı
+// ============================================================================
+// 10. ÇIKMIŞ SORULAR HAVUZU
+// ============================================================================
+
 window.renderPastExamsPool = function() {
-    const container = document.getElementById('qa-dynamic-content');
-    container.innerHTML = `
-        <h3 style="margin-bottom:15px; padding-bottom:10px; font-size:18px; color:var(--text-dark);">📚 Hangi Havuza Erişmek İstiyorsun?</h3>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="item-card" style="padding:25px; text-align:center; cursor:pointer; background:#F9FAFB; border:1px solid #E5E7EB; border-radius: 16px;" onclick="window.openPastExamsFaculty('Tıp Fakültesi')">
-                <div style="font-size:40px; margin-bottom:10px;">🩺</div>
-                <strong style="font-size:15px; color:var(--text-dark);">Tıp Fakültesi</strong>
-            </div>
-            <div class="item-card" style="padding:25px; text-align:center; cursor:pointer; background:#F9FAFB; border:1px solid #E5E7EB; border-radius: 16px;" onclick="window.openPastExamsFaculty('Diş Hekimliği Fakültesi')">
-                <div style="font-size:40px; margin-bottom:10px;">🦷</div>
-                <strong style="font-size:15px; color:var(--text-dark);">Diş Fakültesi</strong>
-            </div>
-            <div class="item-card" style="padding:25px; text-align:center; cursor:pointer; background:#F9FAFB; border:1px solid #E5E7EB; border-radius: 16px;" onclick="window.openPastExamsFaculty('Bilgisayar Fakültesi')">
-                <div style="font-size:40px; margin-bottom:10px;">💻</div>
-                <strong style="font-size:15px; color:var(--text-dark);">Bilgisayar Fakültesi</strong>
-            </div>
-            <div class="item-card" style="padding:25px; text-align:center; cursor:pointer; background:#F9FAFB; border:1px solid #E5E7EB; border-radius: 16px;" onclick="window.openPastExamsFaculty('Eczacılık Fakültesi')">
-                <div style="font-size:40px; margin-bottom:10px;">💊</div>
-                <strong style="font-size:15px; color:var(--text-dark);">Eczacılık Fakültesi</strong>
+    mainContent.innerHTML = `
+        <div class="card" style="padding:20px;">
+            <h2 style="margin-bottom:15px; padding-bottom:10px; font-size:20px; color:var(--text-dark);">📚 Hangi Havuza Erişmek İstiyorsun?</h2>
+            <div class="exam-grid">
+                <div class="exam-card" onclick="window.openPastExamsFaculty('Tıp Fakültesi')">
+                    <div style="font-size:40px; margin-bottom:10px;">🩺</div>
+                    <strong style="font-size:15px; color:var(--text-dark);">Tıp Fakültesi</strong>
+                </div>
+                <div class="exam-card" onclick="window.openPastExamsFaculty('Diş Hekimliği Fakültesi')">
+                    <div style="font-size:40px; margin-bottom:10px;">🦷</div>
+                    <strong style="font-size:15px; color:var(--text-dark);">Diş Fakültesi</strong>
+                </div>
+                <div class="exam-card" onclick="window.openPastExamsFaculty('Bilgisayar Fakültesi')">
+                    <div style="font-size:40px; margin-bottom:10px;">💻</div>
+                    <strong style="font-size:15px; color:var(--text-dark);">Bilgisayar Fakültesi</strong>
+                </div>
+                <div class="exam-card" onclick="window.openPastExamsFaculty('Eczacılık Fakültesi')">
+                    <div style="font-size:40px; margin-bottom:10px;">💊</div>
+                    <strong style="font-size:15px; color:var(--text-dark);">Eczacılık Fakültesi</strong>
+                </div>
             </div>
         </div>
     `;
 };
 
 window.openPastExamsFaculty = function(facultyName) {
-    const container = document.getElementById('qa-dynamic-content');
-    container.innerHTML = `
-        <input type="hidden" id="current-exam-faculty" value="${facultyName}">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; padding-bottom:10px; border-bottom:1px solid var(--border-color);">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <button class="action-btn" style="width:auto; padding:6px 12px; background:#F3F4F6; border-radius:8px;" onclick="window.renderPastExamsPool()">← Geri</button>
-                <h3 style="margin:0; font-size:18px; color:var(--text-dark);">📂 ${facultyName} Havuzu</h3>
+    mainContent.innerHTML = `
+        <div class="card" style="padding:20px;">
+            <input type="hidden" id="current-exam-faculty" value="${facultyName}">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; padding-bottom:10px; border-bottom:1px solid var(--border-color);">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <button class="action-btn" style="width:auto; padding:6px 12px; background:#F3F4F6; border-radius:8px;" onclick="window.renderPastExamsPool()">← Geri</button>
+                    <h3 style="margin:0; font-size:18px; color:var(--text-dark);">📂 ${facultyName} Havuzu</h3>
+                </div>
+                <button class="btn-primary" style="width:auto; padding:10px 18px; border-radius:12px; box-shadow:0 2px 4px rgba(79, 70, 229, 0.2);" onclick="window.openPdfUploadForm('${facultyName}')">+ PDF Yükle</button>
             </div>
-            <button class="btn-primary" style="width:auto; padding:10px 18px; border-radius:12px; box-shadow:0 2px 4px rgba(79, 70, 229, 0.2);" onclick="window.openPdfUploadForm('${facultyName}')">+ PDF Yükle</button>
+            
+            <div style="display:flex; background:#F3F4F6; border-radius:12px; padding:0 12px; border:1px solid transparent; transition:0.2s; margin-bottom:15px;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';">
+                <span style="font-size:18px; margin-right:8px; display:flex; align-items:center;">🔍</span>
+                <input type="text" id="exam-search-input" placeholder="Ders adı, sınıf veya yıl ara (Örn: Anatomi, 2. Sınıf)..." style="border:none; background:transparent; width:100%; padding:14px 8px; outline:none; font-size:14px;" oninput="window.drawPastExamsList('${facultyName}', this.value)">
+            </div>
+            
+            <div id="past-exams-list" style="display:flex; flex-direction:column; gap:12px; overflow-y:auto; max-height:400px; padding-right:5px; scroll-behavior:smooth;"></div>
         </div>
-        
-        <div style="display:flex; background:#F3F4F6; border-radius:12px; padding:0 12px; border:1px solid transparent; transition:0.2s; margin-bottom:15px;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';">
-            <span style="font-size:18px; margin-right:8px; display:flex; align-items:center;">🔍</span>
-            <input type="text" id="exam-search-input" placeholder="Ders adı, sınıf veya yıl ara (Örn: Anatomi, 2. Sınıf)..." style="border:none; background:transparent; width:100%; padding:14px 8px; outline:none; font-size:14px;" oninput="window.drawPastExamsList('${facultyName}', this.value)">
-        </div>
-        
-        <div id="past-exams-list" style="display:flex; flex-direction:column; gap:12px; overflow-y:auto; max-height:400px; padding-right:5px; scroll-behavior:smooth;"></div>
     `;
     window.drawPastExamsList(facultyName, '');
 };
@@ -2022,25 +2026,14 @@ window.submitPdfUpload = async function(facultyName) {
     }
 };
 
-
 // ============================================================================
-// 10. FAKÜLTE FORUM SİSTEMİ ("BANA ÖZEL" BİLDİRİM MANTIĞI)
+// 11. FAKÜLTE FORUM SİSTEMİ
 // ============================================================================
 
-window.currentFacultyPosts = [
-    { 
-        id: 1, 
-        user: "Sistem Moderatörü", 
-        avatar: "🤖", 
-        text: "Fakülte forumuna hoş geldin! Bu alan sadece senin fakültendeki öğrencilere özeldir. Ders notları, sınav takvimleri ve fakülte duyuruları buradan paylaşılacak.", 
-        time: "Bugün", 
-        likes: 12, 
-        replies: 0 
-    }
-];
+window.currentFacultyPosts = [];
 
 window.handleFacultyClick = async function(name, icon, bgColor) {
-    document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
     if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
 
     const isJoined = window.joinedFaculties.some(f => f.name === name) || window.userProfile.faculty === name;
@@ -2074,8 +2067,6 @@ window.verifyFacultyCode = async function(name, icon, bgColor) {
 };
 
 window.loadFacultyFeed = async function(name, icon, bgColor) {
-    window.currentFacultyName = name;
-    
     mainContent.innerHTML = `
         <div style="display:flex; flex-direction:column; gap:20px;">
             <div style="padding:20px; background:${bgColor}; color:white; border-radius:16px; display:flex; align-items:center; gap:15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
@@ -2099,6 +2090,10 @@ window.loadFacultyFeed = async function(name, icon, bgColor) {
             <div id="faculty-posts-container" style="display:flex; flex-direction:column; gap:15px;"></div>
         </div>
     `;
+    
+    if(window.currentFacultyPosts.length === 0) {
+        window.currentFacultyPosts.push({ id: 1, user: "Sistem Moderatörü", avatar: "🤖", text: "Fakülte forumuna hoş geldin! Bu alan sadece senin fakültendeki öğrencilere özeldir.", time: "Bugün", likes: 12, replies: 0 });
+    }
     window.renderFacultyPosts();
 };
 
@@ -2154,15 +2149,16 @@ window.renderFacultyPosts = function() {
 };
 
 // ============================================================================
-// 11. SAYFA YÖNLENDİRME (ROUTING) VE PROFİL YÖNETİMİ
+// 12. SAYFA YÖNLENDİRME (ROUTING) VE PROFİL YÖNETİMİ
 // ============================================================================
 
 window.loadPage = function(pageName) {
     if (pageName === 'home') mainContent.innerHTML = getHomeContent();
-    else if (pageName === 'market') window.renderListings('market', '🛒 Kampüs Market', 'market');
-    else if (pageName === 'housing') window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt', 'housing');
+    else if (pageName === 'market') window.renderListings('market', '🛒 Kampüs Market');
+    else if (pageName === 'housing') window.renderListings('housing', '🔑 Ev Arkadaşı & Yurt');
     else if (pageName === 'confessions') window.renderConfessions();
     else if (pageName === 'qa') window.renderQA(); 
+    else if (pageName === 'past-exams') window.renderPastExamsPool(); 
     else if (pageName === 'messages') window.renderMessages(); 
     else if (pageName === 'notifications') window.renderNotifications();
     else if (pageName === 'settings') window.renderSettings();
@@ -2175,7 +2171,7 @@ window.loadPage = function(pageName) {
 document.querySelectorAll('.menu-item[data-target]').forEach(item => {
     item.addEventListener('click', (e) => {
         if(e.currentTarget.getAttribute('data-target')) {
-            document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             e.currentTarget.classList.add('active'); 
             window.loadPage(e.currentTarget.getAttribute('data-target'));
         }
@@ -2183,13 +2179,13 @@ document.querySelectorAll('.menu-item[data-target]').forEach(item => {
 });
 
 bind('logo-btn', 'click', () => { 
-    document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active')); 
     document.querySelector('[data-target="home"]').classList.add('active'); 
     window.loadPage('home'); 
 });
 
 bind('profile-btn', 'click', () => { 
-    document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active')); 
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active')); 
     window.loadPage('profile'); 
 });
 
