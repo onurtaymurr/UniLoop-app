@@ -55,139 +55,33 @@ const storage = getStorage(app);
 
 function initializeUniLoop() {
 
-// 🎨 DINAMIK CSS ENJEKSIYONU: Yumuşak Kaydırma, Yeni Akış, PREMIUM, BUTON FIX ve ACCORDION Stilleri
+// 🎨 DINAMIK CSS ENJEKSIYONU
 const styleFix = document.createElement('style');
 styleFix.innerHTML = `
-    /* Sert kaydırmayı engeller ve estetik yumuşak kaydırma sağlar */
-    html, body { 
-        scroll-behavior: smooth !important; 
-        -webkit-overflow-scrolling: touch; 
-    }
+    html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
     
-    /* 🚨 TIKLAMA VE BUTON ÇALIŞMAMA PROBLEMİ İÇİN KESİN ÇÖZÜM (OVERLAY FIX) 🚨 */
-    /* Görünmez modalların tıklamaları sömürmesini engeller */
-    #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-        z-index: -999 !important;
-    }
-    #app-modal.active, #lightbox.active, .modal.active {
-        opacity: 1 !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-        z-index: 99999 !important;
-    }
+    #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; }
+    #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; }
     
-    /* Auth Screen (Giriş/Kayıt) Ekranı Tıklama Garantisi */
-    #auth-screen {
-        position: relative;
-        z-index: 1000 !important;
-    }
-    #auth-screen button, 
-    #auth-screen a, 
-    #auth-screen input, 
-    #auth-screen select {
-        pointer-events: auto !important;
-        cursor: pointer !important;
-        position: relative;
-        z-index: 1001 !important;
-    }
+    #auth-screen { position: relative; z-index: 1000 !important; }
+    #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important; }
 
-    /* Butonların genel tıklanabilirliğini garanti eder */
-    button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { 
-        cursor: pointer !important; 
-        position: relative; 
-        pointer-events: auto !important;
-        z-index: 10; 
-    }
+    button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; }
     
-    /* 🚨 NAVİGASYON YAZISI GİZLENME PROBLEMİ FIX (PADDING-TOP EKLENDİ) 🚨 */
-    /* Mobilde Sidebar Kaydırma Fix - Dışarı Taşmayı ve Kesilmeyi Engeller */
-    #sidebar { 
-        overflow-y: auto !important; 
-        -webkit-overflow-scrolling: touch !important; 
-        overscroll-behavior: contain; 
-        justify-content: flex-start !important; 
-        align-items: stretch !important;
-        max-height: 100vh !important;
-        top: 0 !important;
-        padding-top: 75px !important; /* Header'ın altında kalmasını önler */
-        padding-bottom: 40px !important;
-    }
+    #sidebar { overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; justify-content: flex-start !important; align-items: stretch !important; max-height: 100vh !important; top: 0 !important; padding-top: 75px !important; padding-bottom: 40px !important; }
     
-    /* Mesajlar: Sayfanın kaymamasını sağlayan Fix */
-    #chat-layout-container { 
-        height: calc(100vh - 120px) !important; 
-        max-height: 800px; 
-        overflow: hidden !important; 
-        display: flex; 
-        flex-direction: row; 
-    }
-    .chat-sidebar { 
-        overflow-y: auto !important; 
-        height: 100% !important; 
-        -webkit-overflow-scrolling: touch !important; 
-        flex-shrink: 0; 
-    }
-    .chat-main { 
-        height: 100% !important; 
-        display: flex !important; 
-        flex-direction: column !important; 
-        overflow: hidden !important; 
-        flex: 1; 
-    }
-    #chat-messages-scroll { 
-        flex: 1 !important; 
-        overflow-y: auto !important; 
-        -webkit-overflow-scrolling: touch !important; 
-        scroll-behavior: smooth; 
-    }
+    #chat-layout-container { height: calc(100vh - 120px) !important; max-height: 800px; overflow: hidden !important; display: flex; flex-direction: row; }
+    .chat-sidebar { overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; }
+    .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; }
+    #chat-messages-scroll { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; scroll-behavior: smooth; }
     
-    /* Soru Cevap ve Market İçin Liste Scroll Fix */
-    #qa-feed, #listings-grid-container { 
-        max-height: calc(100vh - 200px) !important; 
-        overflow-y: auto !important; 
-        -webkit-overflow-scrolling: touch !important; 
-        padding-right: 8px; 
-    }
+    #qa-feed, #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; }
     
-    /* Detaylardaki Yorumlar */
-    .answers-container { 
-        max-height: 250px !important; 
-        overflow-y: auto !important; 
-        -webkit-overflow-scrolling: touch !important; 
-        padding-right: 8px; 
-        scroll-behavior: smooth; 
-    }
+    .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; scroll-behavior: smooth; }
     
-    /* 📱 Instagram / Twitter Tarzı Akış (Feed) Stilleri */
-    .feed-layout-container { 
-        height: calc(100vh - 80px); 
-        display: flex; 
-        flex-direction: column; 
-        overflow: hidden; 
-        margin: -20px; 
-        background: #F3F4F6; 
-    }
-    #conf-feed { 
-        flex: 1; 
-        overflow-y: auto; 
-        padding: 15px; 
-        scroll-behavior: smooth; 
-        -webkit-overflow-scrolling: touch; 
-        max-width: 600px !important;
-        margin: 0 auto !important;
-        width: 100%;
-    }
-    .feed-post { 
-        background: #fff; 
-        border: 1px solid #E5E7EB; 
-        border-radius: 16px; 
-        padding: 16px; 
-        margin-bottom: 24px; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.04); 
-    }
+    .feed-layout-container { height: calc(100vh - 80px); display: flex; flex-direction: column; overflow: hidden; margin: -20px; background: #F3F4F6; }
+    #conf-feed { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; max-width: 600px !important; margin: 0 auto !important; width: 100%; }
+    .feed-post { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 16px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
     .feed-post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
     .feed-post-avatar { font-size: 24px; width: 44px; height: 44px; background: #F3F4F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0; border: 1px solid #E5E7EB; }
     .feed-post-meta { display: flex; flex-direction: column; }
@@ -199,66 +93,16 @@ styleFix.innerHTML = `
     .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
     .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
 
-    /* 🌟 YENİ: PREMIUM BÖLÜMÜ VE KİLİTLİ İÇERİK STİLLERİ */
-    .premium-glow {
-        animation: glowPulse 2s infinite alternate;
-    }
-    @keyframes glowPulse {
-        0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); }
-        100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); }
-    }
-    .premium-upgrade-btn {
-        background: linear-gradient(135deg, #F59E0B, #D97706);
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 12px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 15px;
-        transition: transform 0.2s, box-shadow 0.2s;
-        box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .premium-upgrade-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(245, 158, 11, 0.4);
-    }
-    .premium-match-card {
-        border: 2px solid #F59E0B !important;
-        background: linear-gradient(to bottom right, #fff, #FEF3C7) !important;
-    }
-    .locked-blur {
-        filter: blur(5px);
-        pointer-events: none;
-        user-select: none;
-    }
-    .locked-container {
-        position: relative;
-        overflow: hidden;
-        border-radius: 16px;
-    }
-    .locked-overlay {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(255, 255, 255, 0.8);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 5;
-        text-align: center;
-        padding: 10px;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-    .locked-overlay:hover {
-        background: rgba(255, 255, 255, 0.9);
-    }
+    .premium-glow { animation: glowPulse 2s infinite alternate; }
+    @keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); } 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); } }
+    .premium-upgrade-btn { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 15px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); display: inline-flex; align-items: center; gap: 8px; }
+    .premium-upgrade-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(245, 158, 11, 0.4); }
+    .premium-match-card { border: 2px solid #F59E0B !important; background: linear-gradient(to bottom right, #fff, #FEF3C7) !important; }
+    .locked-blur { filter: blur(5px); pointer-events: none; user-select: none; }
+    .locked-container { position: relative; overflow: hidden; border-radius: 16px; }
+    .locked-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; text-align: center; padding: 10px; cursor: pointer; transition: background 0.3s; }
+    .locked-overlay:hover { background: rgba(255, 255, 255, 0.9); }
 
-    /* GERÇEK ÇALIŞAN KARANLIK MOD (DARK MODE) DESTEĞİ */
     body.dark-mode, .dark-mode #main-content { background-color: #121212 !important; color: #e5e7eb !important; }
     .dark-mode .card, .dark-mode .feed-post, .dark-mode .item-card, .dark-mode .chat-sidebar-header { background-color: #1e1e1e !important; border-color: #374151 !important; color: #e5e7eb !important; }
     .dark-mode .card > div { border-color: #374151 !important; }
@@ -276,41 +120,11 @@ styleFix.innerHTML = `
     .dark-mode #sidebar { background: #1e1e1e !important; border-right-color: #374151 !important; }
     .dark-mode .locked-overlay { background: rgba(30, 30, 30, 0.8); }
 
-    /* 🌟 GÖRSEL DÜZELTME: HEADER TEK SATIR & KÜÇÜLTÜLMÜŞ BUTONLAR */
-    #app-header, header {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        flex-wrap: nowrap !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        padding: 5px 15px !important;
-    }
-    
-    #app-header > :first-child, .logo, .logo-title, #logo-btn { 
-        flex-shrink: 0 !important; 
-    }
-    
-    #app-header > :last-child, .header-right-menu {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-end !important;
-        flex-wrap: nowrap !important;
-    }
+    #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
+    #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
+    #app-header > :last-child, .header-right-menu { display: flex !important; align-items: center !important; justify-content: flex-end !important; flex-wrap: nowrap !important; }
 
-    #profile-btn, #nav-premium-action {
-        font-size: 12px !important;
-        padding: 0 10px !important;
-        height: 32px !important;
-        line-height: 32px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        white-space: nowrap !important;
-        flex-shrink: 0 !important;
-        margin: 0 !important;
-        border-radius: 8px !important;
-    }
+    #profile-btn, #nav-premium-action { font-size: 12px !important; padding: 0 10px !important; height: 32px !important; line-height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; flex-shrink: 0 !important; margin: 0 !important; border-radius: 8px !important; }
 
     @media (max-width: 1024px) {
         #chat-layout-container { height: calc(100vh - 160px) !important; }
@@ -320,38 +134,14 @@ styleFix.innerHTML = `
         .chat-active .chat-main { display: flex !important; }
     }
 
-    /* 🌟 YENİ: ACCORDION VE ORGANİZASYON STİLLERİ 🌟 */
-    .accordion-section { margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: var(--card-bg); }
+    .accordion-section { margin-bottom: 12px; border: 1px solid transparent; border-radius: 12px; overflow: hidden; background: transparent; }
     .accordion-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 14px 16px; font-weight: bold; font-size: 15px; transition: 0.2s; color: var(--text-dark);}
-    .accordion-header:hover { background: #EEF2FF; color: var(--primary); }
+    .accordion-header:hover { background: #EEF2FF; color: var(--primary); border-radius: 12px; }
     
-    /* 🔥 PÜRÜZSÜZ AŞAĞI AÇILAN ACCORDION STİLİ 🔥 */
-    .accordion-content { 
-        max-height: 0; 
-        overflow: hidden; 
-        padding: 0 16px; 
-        background: #F9FAFB; 
-        transition: max-height 0.3s ease, padding 0.3s ease, border-color 0.3s ease; 
-        border-top: 1px solid transparent; 
-    }
-    .accordion-content.open { 
-        max-height: 600px; 
-        padding: 10px 16px; 
-        border-top: 1px solid var(--border-color); 
-    }
-    .accordion-icon { 
-        display: inline-block; 
-        margin-left: auto; 
-        font-size: 12px; 
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-        color: var(--text-gray); 
-    }
+    .accordion-content { max-height: 0; overflow: hidden; padding: 0 16px; background: transparent; transition: max-height 0.3s ease, padding 0.3s ease, border-color 0.3s ease; border-top: 1px solid transparent; }
+    .accordion-content.open { max-height: 600px; padding: 10px 16px; }
+    .accordion-icon { display: inline-block; margin-left: auto; font-size: 12px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-gray); }
     
-    .org-link { padding: 10px 0; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--text-dark); transition: 0.2s; border-bottom: 1px solid #E5E7EB; }
-    .org-link:last-child { border-bottom: none; }
-    .org-link:hover { color: var(--primary); transform: translateX(5px); }
-    
-    /* Yeni Meeting Arayüzü Scrollbar Ayarları */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 10px; }
@@ -359,7 +149,6 @@ styleFix.innerHTML = `
 `;
 document.head.appendChild(styleFix);
 
-// YENİ: DİL VE TEMA DESTEĞİ İÇİN GLOBAL SİSTEM FONKSİYONLARI
 window.setLanguage = function(lang) {
     localStorage.setItem('uniloop_lang', lang);
     window.renderSettings(); 
@@ -367,24 +156,18 @@ window.setLanguage = function(lang) {
 
 window.toggleTheme = function(theme) {
     localStorage.setItem('uniloop_theme', theme);
-    if(theme === 'dark') {
-        document.body.classList.add('dark-mode');
-    } else {
-        document.body.classList.remove('dark-mode');
-    }
+    if(theme === 'dark') { document.body.classList.add('dark-mode'); } 
+    else { document.body.classList.remove('dark-mode'); }
 };
 
-// YENİ: SİSTEM AÇILDIĞINDA KAYITLI TEMAYI YÜKLE
 const savedTheme = localStorage.getItem('uniloop_theme') || 'light';
 window.toggleTheme(savedTheme);
 
-// YENİ: ÇEVİRİ SÖZLÜĞÜ (Ayarlar ve Temel Metinler İçin)
 const TRANSLATIONS = {
     'tr': { settingsTitle: '⚙️ Uygulama Ayarları', langLabel: 'Dil Seçimi', themeLabel: 'Tema', lightMode: 'Aydınlık Mod', darkMode: 'Karanlık Mod', logoutBtn: '🚪 Güvenli Çıkış Yap' },
     'en': { settingsTitle: '⚙️ App Settings', langLabel: 'Language', themeLabel: 'Theme', lightMode: 'Light Mode', darkMode: 'Dark Mode', logoutBtn: '🚪 Secure Logout' }
 };
 
-// 🔒 Mobilde Sidebar dışına tıklandığında menüyü kapatma garantisi
 const closeSidebarIfOutside = (e) => {
     const sidebar = document.getElementById('sidebar');
     const mobileBtn = document.getElementById('mobile-menu-btn');
@@ -402,55 +185,34 @@ const bind = (id, event, callback) => {
     if (el) { el.addEventListener(event, callback); }
 };
 
-// --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
+// --- SİSTEM HAFIZASI ---
 window.userProfile = { 
-    uid: "", 
-    name: "", 
-    surname: "", 
-    username: "",
-    email: "", 
-    university: "", 
-    avatar: "👨‍🎓", 
-    faculty: "",
-    organization: "",
-    isPremium: false 
+    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", isPremium: false 
 };
 
 window.joinedFaculties = [];
-window.joinedOrganizations = [];
 let marketDB = [];
 let confessionsDB = [];
 let qaDB = [];
 let chatsDB = [];
+let pastExamsDB = []; // YENİ: Çıkmış Sorular Havuzu Veritabanı
 let currentChatId = null;
 
 window.resetCurrentChatId = function() { currentChatId = null; };
 
+// KULÜPLER SİLİNDİ, SADECE FAKÜLTELER
 const FACULTY_PASSCODES = {
     "Tıp Fakültesi": "tıpfak100", 
     "Hukuk Fakültesi": "hukuk1000", 
-    "Diş Hekimliği Fakültesi": "dis1000"
-};
-
-const ORGANIZATION_PASSCODES = {
-    "Spor Kulübü": "spor100", 
-    "Tiyatro Kulübü": "tiyatro100", 
-    "Sağlık Kulübü": "saglik100"
+    "Diş Hekimliği Fakültesi": "dis1000",
+    "Bilgisayar Fakültesi": "comp100",
+    "Eczacılık Fakültesi": "ecza100"
 };
 
 const globalUniversities = [
-    "Yakın Doğu Üniversitesi (NEU)", 
-    "Doğu Akdeniz Üniversitesi (EMU)", 
-    "Girne Amerikan Üniversitesi (GAU)", 
-    "Uluslararası Kıbrıs Üniversitesi (CIU)",
-    "Orta Doğu Teknik Üniversitesi (ODTÜ)", 
-    "Boğaziçi Üniversitesi", 
-    "İstanbul Teknik Üniversitesi (İTÜ)", 
-    "Bilkent Üniversitesi", 
-    "Koç Üniversitesi",
-    "Stanford University", 
-    "Massachusetts Institute of Technology (MIT)", 
-    "Harvard University"
+    "Yakın Doğu Üniversitesi (NEU)", "Doğu Akdeniz Üniversitesi (EMU)", "Girne Amerikan Üniversitesi (GAU)", "Uluslararası Kıbrıs Üniversitesi (CIU)",
+    "Orta Doğu Teknik Üniversitesi (ODTÜ)", "Boğaziçi Üniversitesi", "İstanbul Teknik Üniversitesi (İTÜ)", "Bilkent Üniversitesi", "Koç Üniversitesi",
+    "Stanford University", "Massachusetts Institute of Technology (MIT)", "Harvard University"
 ];
 
 const authScreen = document.getElementById('auth-screen');
@@ -458,29 +220,21 @@ const appScreen = document.getElementById('app-screen');
 const mainContent = document.getElementById('main-content');
 const modal = document.getElementById('app-modal');
 
-// 🌟 YENİ: ACCORDION MENÜLERİ RENDER ETME 🌟
+// 🌟 YENİ: BANA ÖZEL VE FAKÜLTELER ACCORDION
 window.renderSidebarAccordions = function() {
     const accordionHTML = `
-        <div class="accordion-section">
-            <div class="accordion-header">
-                <span>🏢 Fakülteler</span>
+        <div id="bana-ozel-container"></div>
+        <div class="accordion-section" style="margin-top: 15px;">
+            <div class="accordion-header menu-item" style="padding:12px 15px; margin-bottom:5px; border-radius:12px; background:var(--card-bg);">
+                <span style="font-weight:bold;">🏢 Tüm Fakülteler</span>
                 <span class="accordion-icon">▶</span>
             </div>
-            <div class="accordion-content">
+            <div class="accordion-content" style="padding-left:15px;">
                 <div class="menu-item community-link" data-name="Tıp Fakültesi" data-icon="🩺" data-color="linear-gradient(135deg, #EF4444, #B91C1C)">🩺 Tıp Fakültesi</div>
-                <div class="menu-item community-link" data-name="Hukuk Fakültesi" data-icon="⚖️" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">⚖️ Hukuk Fakültesi</div>
                 <div class="menu-item community-link" data-name="Diş Hekimliği Fakültesi" data-icon="🦷" data-color="linear-gradient(135deg, #06B6D4, #0891B2)">🦷 Diş Hekimliği Fakültesi</div>
-            </div>
-        </div>
-        <div class="accordion-section">
-            <div class="accordion-header">
-                <span>🎭 Kulüp ve Organizasyonlar</span>
-                <span class="accordion-icon">▶</span>
-            </div>
-            <div class="accordion-content">
-                <div class="menu-item org-link" data-name="Spor Kulübü" data-icon="⚽" data-color="linear-gradient(135deg, #10B981, #059669)">⚽ Spor Kulübü</div>
-                <div class="menu-item org-link" data-name="Sağlık Kulübü" data-icon="🏥" data-color="linear-gradient(135deg, #EF4444, #B91C1C)">🏥 Sağlık Kulübü</div>
-                <div class="menu-item org-link" data-name="Tiyatro Kulübü" data-icon="🎭" data-color="linear-gradient(135deg, #8B5CF6, #4C1D95)">🎭 Tiyatro Kulübü</div>
+                <div class="menu-item community-link" data-name="Bilgisayar Fakültesi" data-icon="💻" data-color="linear-gradient(135deg, #3B82F6, #1D4ED8)">💻 Bilgisayar Fakültesi</div>
+                <div class="menu-item community-link" data-name="Eczacılık Fakültesi" data-icon="💊" data-color="linear-gradient(135deg, #10B981, #047857)">💊 Eczacılık Fakültesi</div>
+                <div class="menu-item community-link" data-name="Hukuk Fakültesi" data-icon="⚖️" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)">⚖️ Hukuk Fakültesi</div>
             </div>
         </div>
     `;
@@ -488,8 +242,26 @@ window.renderSidebarAccordions = function() {
     const sidebarContainer = document.getElementById('sidebar-networks-container');
     const rightContainer = document.getElementById('right-networks-container');
     
-    if(sidebarContainer) sidebarContainer.innerHTML = '<br><h3 style="margin-bottom: 15px;">🌐 Ağlarım</h3>' + accordionHTML;
-    if(rightContainer) rightContainer.innerHTML = '<h2 style="margin-bottom: 15px;">🌐 Ağlarım</h2>' + accordionHTML;
+    if(sidebarContainer) sidebarContainer.innerHTML = accordionHTML;
+    if(rightContainer) rightContainer.innerHTML = accordionHTML;
+    
+    window.updateMyFacultiesSidebar();
+};
+
+window.updateMyFacultiesSidebar = function() {
+    const container = document.getElementById('bana-ozel-container');
+    if(!container) return;
+    
+    if(window.userProfile && window.userProfile.faculty) {
+        container.innerHTML = `
+            <div style="margin-top:15px; margin-bottom: 5px; font-weight:900; color:var(--text-gray); font-size:12px; letter-spacing: 1px; padding-left:16px;">BANA ÖZEL</div>
+            <div class="menu-item community-link active" data-name="${window.userProfile.faculty}" data-icon="🏢" data-color="linear-gradient(135deg, #1E3A8A, #4F46E5)" style="background:#EEF2FF; color:var(--primary); font-weight:bold; border-left: 4px solid var(--primary);">
+                📌 ${window.userProfile.faculty} (Aktif)
+            </div>
+        `;
+    } else {
+        container.innerHTML = '';
+    }
 };
 
 window.renderSidebarAccordions();
@@ -578,7 +350,6 @@ bind('register-btn', 'click', async (e) => {
             avatar: "👨‍🎓", 
             isOnline: false, 
             faculty: "",
-            organization: "",
             isPremium: false 
         }).then(() => {
             window.ensureWelcomeMessage(user, name);
@@ -771,13 +542,10 @@ onAuthStateChanged(auth, async (user) => {
                 if(window.userProfile.isPremium === undefined) {
                     window.userProfile.isPremium = false;
                 }
-                if(window.userProfile.organization === undefined) {
-                    window.userProfile.organization = "";
-                }
             } else {
                 window.userProfile = { 
                     uid: user.uid, name: "Öğrenci", surname: "", username: "",
-                    email: user.email, university: "UniLoop Kampüsü", avatar: "👨‍🎓", faculty: "", organization: "", 
+                    email: user.email, university: "UniLoop Kampüsü", avatar: "👨‍🎓", faculty: "", 
                     isOnline: true, isPremium: false
                 };
                 await setDoc(userDocRef, window.userProfile);
@@ -804,16 +572,11 @@ onAuthStateChanged(auth, async (user) => {
             }
 
             if(window.userProfile.faculty && typeof window.updateMyFacultiesSidebar === 'function') {
-                window.joinedFaculties = [{ name: window.userProfile.faculty, icon: "🏢", color: "linear-gradient(135deg, #1E3A8A, #4F46E5)" }];
                 window.updateMyFacultiesSidebar();
             }
 
         } catch(error) { 
-            window.userProfile = { 
-                uid: user.uid, name: "Misafir", surname: "", username: "", email: user.email, 
-                university: "Lütfen Firestore'u Test Moduna Alın", avatar: "⚠️", faculty: "", organization: "", isOnline: true, isPremium: false 
-            };
-            if(typeof window.loadPage === 'function') { window.loadPage('home'); }
+            console.error(error);
         }
     }
 });
@@ -856,9 +619,21 @@ function initRealtimeListeners(currentUid) {
         qaDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
         
         const activeTab = document.querySelector('.menu-item.active');
-        if(activeTab && activeTab.getAttribute('data-target') === 'qa') {
+        if(activeTab && activeTab.getAttribute('data-target') === 'qa' && document.getElementById('qa-feed')) {
             const activeFilter = document.querySelector('.qa-filter-btn.active');
             window.drawQAGrid(activeFilter ? activeFilter.getAttribute('data-filter') : 'Genel');
+        }
+    });
+
+    // 🌟 YENİ: ÇIKMIŞ SORULAR DİNLENMESİ
+    onSnapshot(query(collection(db, "past_exams"), orderBy("createdAt", "desc")), (snapshot) => {
+        pastExamsDB = [];
+        snapshot.forEach(doc => { pastExamsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
+        
+        const activeTab = document.querySelector('.menu-item.active');
+        if(activeTab && activeTab.getAttribute('data-target') === 'qa' && document.getElementById('current-exam-faculty')) {
+            const currentFac = document.getElementById('current-exam-faculty').value;
+            if(currentFac) window.drawPastExamsList(currentFac, document.getElementById('exam-search-input')?.value || '');
         }
     });
 
@@ -916,7 +691,7 @@ function initRealtimeListeners(currentUid) {
 }
 
 // ============================================================================
-// 🌟 YENİ: PREMIUM ABONELİK MODAL VE MANTIK
+// PREMIUM ABONELİK MODAL VE MANTIK
 // ============================================================================
 window.openPremiumModal = function() {
     window.openModal('🌟 UniLoop Premium', `
@@ -1002,7 +777,6 @@ bind('mobile-menu-btn', 'click', () => {
 });
 
 document.body.addEventListener('click', (e) => {
-    // 🌟 YENİ: Accordion Toggle Mantığı 🌟
     const accordionHeader = e.target.closest('.accordion-header');
     if(accordionHeader) {
         const content = accordionHeader.nextElementSibling;
@@ -1026,20 +800,10 @@ document.body.addEventListener('click', (e) => {
         if(typeof window.handleFacultyClick === 'function') window.handleFacultyClick(name, icon, color);
         return;
     }
-
-    // 🌟 YENİ: Organizasyon Tıklaması 🌟
-    const orgLink = e.target.closest('.org-link');
-    if(orgLink) {
-        const name = orgLink.getAttribute('data-name');
-        const icon = orgLink.getAttribute('data-icon');
-        const color = orgLink.getAttribute('data-color');
-        if(typeof window.handleOrganizationClick === 'function') window.handleOrganizationClick(name, icon, color);
-        return;
-    }
 });
 
 // ============================================================================
-// 4. ARKADAŞ ARAMA MOTORU VE ANA SAYFA (YENİ ŞEFFAF AI RADAR ENTEGRELİ)
+// 4. ARKADAŞ ARAMA MOTORU VE ANA SAYFA
 // ============================================================================
 
 window.searchAndAddFriend = async function() {
@@ -1160,7 +924,6 @@ function getHomeContent() {
             </div>
         `;
     } else {
-        // 🔥 YENİ: KISALTILMIŞ VE İLGİ ÇEKİCİ METİN
         aiRadarContent = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
                 <h2 style="margin:0; color:#DC2626;">🔥 Kampüs Tespitleri</h2>
@@ -1972,27 +1735,45 @@ window.submitConfessionComment = async function(docId) {
 };
 
 // ============================================================================
-// 9. SORU VE CEVAP (Q&A)
+// 9. SORU VE CEVAP (Q&A) VE ÇIKMIŞ SORULAR HAVUZU EKLENTİSİ
 // ============================================================================
 
 window.renderQA = function() {
     let html = `
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; flex-wrap:wrap; gap:10px;">
-                <h2 style="margin:0;">❓ Kampüs Soru & Cevap</h2>
-                <button class="btn-primary" style="width:auto; padding: 10px 24px;" onclick="window.openQAForm()">+ Soru Sor</button>
+        <div class="card" style="padding: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
+                <h2 style="margin:0;">Kampüs Soru & Cevap</h2>
             </div>
-            <div class="qa-filters" id="qa-filters-container">
-                <button class="qa-filter-btn active" data-filter="Genel" onclick="window.filterQA(this, 'Genel')">Genel</button>
-                <button class="qa-filter-btn" data-filter="Yurtlar" onclick="window.filterQA(this, 'Yurtlar')">Yurtlar</button>
-                <button class="qa-filter-btn" data-filter="Ders" onclick="window.filterQA(this, 'Ders')">Ders</button>
-                <button class="qa-filter-btn" data-filter="Kampüs Yaşamı" onclick="window.filterQA(this, 'Kampüs Yaşamı')">Kampüs Yaşamı</button>
+            
+            <div style="display:flex; gap:15px; margin-bottom:25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                <button class="btn-primary" style="flex:1; border-radius:12px; padding: 12px; font-size: 15px;" onclick="window.renderQAMain()">❓ Soru Sor & Cevapla</button>
+                <button class="action-btn" style="flex:1; background:linear-gradient(135deg, #10B981, #059669); color:white; border-radius:12px; padding: 12px; font-size: 15px; font-weight:bold; border:none; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);" onclick="window.renderPastExamsPool()">📚 Çıkmış Sorular Havuzu</button>
             </div>
-            <div id="qa-feed"></div>
+            
+            <div id="qa-dynamic-content"></div>
         </div>
     `;
     mainContent.innerHTML = html;
-    window.drawQAGrid('Genel'); 
+    window.renderQAMain(); 
+};
+
+// Soru-Cevap Ana Akış
+window.renderQAMain = function() {
+    const container = document.getElementById('qa-dynamic-content');
+    container.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+            <h3 style="margin:0; font-size: 18px;">Genel Soru & Cevap</h3>
+            <button class="action-btn" style="width:auto; padding: 8px 20px; font-weight:bold; background:var(--primary); color:white; border-radius:12px;" onclick="window.openQAForm()">+ Yeni Soru Sor</button>
+        </div>
+        <div class="qa-filters" id="qa-filters-container">
+            <button class="qa-filter-btn active" data-filter="Genel" onclick="window.filterQA(this, 'Genel')">Genel</button>
+            <button class="qa-filter-btn" data-filter="Yurtlar" onclick="window.filterQA(this, 'Yurtlar')">Yurtlar</button>
+            <button class="qa-filter-btn" data-filter="Ders" onclick="window.filterQA(this, 'Ders')">Ders</button>
+            <button class="qa-filter-btn" data-filter="Kampüs Yaşamı" onclick="window.filterQA(this, 'Kampüs Yaşamı')">Kampüs Yaşamı</button>
+        </div>
+        <div id="qa-feed"></div>
+    `;
+    window.drawQAGrid('Genel');
 };
 
 window.filterQA = function(btn, filterName) {
@@ -2085,11 +1866,167 @@ window.submitAnswer = async function(docId) {
     }
 };
 
+// 🌟 YENİ: Çıkmış Sorular Havuzu Mantığı
+window.renderPastExamsPool = function() {
+    const container = document.getElementById('qa-dynamic-content');
+    container.innerHTML = `
+        <h3 style="margin-bottom:15px; padding-bottom:10px; font-size:18px; color:var(--text-dark);">📚 Hangi Havuza Erişmek İstiyorsun?</h3>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="item-card" style="padding:25px; text-align:center; cursor:pointer; background:#F9FAFB; border:1px solid #E5E7EB; border-radius: 16px;" onclick="window.openPastExamsFaculty('Tıp Fakültesi')">
+                <div style="font-size:40px; margin-bottom:10px;">🩺</div>
+                <strong style="font-size:15px; color:var(--text-dark);">Tıp Fakültesi</strong>
+            </div>
+            <div class="item-card" style="padding:25px; text-align:center; cursor:pointer; background:#F9FAFB; border:1px solid #E5E7EB; border-radius: 16px;" onclick="window.openPastExamsFaculty('Diş Hekimliği Fakültesi')">
+                <div style="font-size:40px; margin-bottom:10px;">🦷</div>
+                <strong style="font-size:15px; color:var(--text-dark);">Diş Fakültesi</strong>
+            </div>
+            <div class="item-card" style="padding:25px; text-align:center; cursor:pointer; background:#F9FAFB; border:1px solid #E5E7EB; border-radius: 16px;" onclick="window.openPastExamsFaculty('Bilgisayar Fakültesi')">
+                <div style="font-size:40px; margin-bottom:10px;">💻</div>
+                <strong style="font-size:15px; color:var(--text-dark);">Bilgisayar Fakültesi</strong>
+            </div>
+            <div class="item-card" style="padding:25px; text-align:center; cursor:pointer; background:#F9FAFB; border:1px solid #E5E7EB; border-radius: 16px;" onclick="window.openPastExamsFaculty('Eczacılık Fakültesi')">
+                <div style="font-size:40px; margin-bottom:10px;">💊</div>
+                <strong style="font-size:15px; color:var(--text-dark);">Eczacılık Fakültesi</strong>
+            </div>
+        </div>
+    `;
+};
+
+window.openPastExamsFaculty = function(facultyName) {
+    const container = document.getElementById('qa-dynamic-content');
+    container.innerHTML = `
+        <input type="hidden" id="current-exam-faculty" value="${facultyName}">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; padding-bottom:10px; border-bottom:1px solid var(--border-color);">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <button class="action-btn" style="width:auto; padding:6px 12px; background:#F3F4F6; border-radius:8px;" onclick="window.renderPastExamsPool()">← Geri</button>
+                <h3 style="margin:0; font-size:18px; color:var(--text-dark);">📂 ${facultyName} Havuzu</h3>
+            </div>
+            <button class="btn-primary" style="width:auto; padding:10px 18px; border-radius:12px; box-shadow:0 2px 4px rgba(79, 70, 229, 0.2);" onclick="window.openPdfUploadForm('${facultyName}')">+ PDF Yükle</button>
+        </div>
+        
+        <div style="display:flex; background:#F3F4F6; border-radius:12px; padding:0 12px; border:1px solid transparent; transition:0.2s; margin-bottom:15px;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';">
+            <span style="font-size:18px; margin-right:8px; display:flex; align-items:center;">🔍</span>
+            <input type="text" id="exam-search-input" placeholder="Ders adı, sınıf veya yıl ara (Örn: Anatomi, 2. Sınıf)..." style="border:none; background:transparent; width:100%; padding:14px 8px; outline:none; font-size:14px;" oninput="window.drawPastExamsList('${facultyName}', this.value)">
+        </div>
+        
+        <div id="past-exams-list" style="display:flex; flex-direction:column; gap:12px; overflow-y:auto; max-height:400px; padding-right:5px; scroll-behavior:smooth;"></div>
+    `;
+    window.drawPastExamsList(facultyName, '');
+};
+
+window.drawPastExamsList = function(facultyName, filterText = '') {
+    const listContainer = document.getElementById('past-exams-list');
+    if(!listContainer) return;
+    
+    const filtered = pastExamsDB.filter(e => e.faculty === facultyName && (e.course.toLowerCase().includes(filterText.toLowerCase()) || e.grade.toLowerCase().includes(filterText.toLowerCase())));
+    
+    if(filtered.length === 0) {
+        listContainer.innerHTML = `
+            <div style="text-align:center; padding:40px 20px; background:#F9FAFB; border-radius:12px; border:1px dashed #D1D5DB;">
+                <div style="font-size:40px; margin-bottom:10px;">📄</div>
+                <div style="color:var(--text-gray); font-size:15px; font-weight:bold;">Bu fakülte için havuza henüz dosya eklenmemiş.</div>
+                <div style="color:var(--text-gray); font-size:13px; margin-top:5px;">Aradığını bulamadıysan ilk PDF'i sen yükleyebilirsin!</div>
+            </div>`;
+        return;
+    }
+    
+    let html = '';
+    filtered.forEach(doc => {
+        html += `
+            <div style="border:1px solid #E5E7EB; border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center; background:white; transition:0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+                <div>
+                    <div style="font-weight:800; font-size:16px; color:var(--text-dark); margin-bottom:4px;">${doc.course}</div>
+                    <div style="font-size:13px; color:var(--text-gray); display:flex; align-items:center; gap:10px;">
+                        <span style="background:#F3F4F6; padding:2px 8px; border-radius:6px; font-weight:600;">Sınıf/Yıl: ${doc.grade}</span> 
+                        <span>Yükleyen: <strong>${doc.uploaderName}</strong></span>
+                    </div>
+                </div>
+                <a href="${doc.pdfUrl}" target="_blank" class="btn-primary" style="text-decoration:none; width:auto; padding:10px 20px; border-radius:10px; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+                    📥 İndir / Görüntüle
+                </a>
+            </div>
+        `;
+    });
+    listContainer.innerHTML = html;
+};
+
+window.openPdfUploadForm = function(facultyName) {
+    window.openModal('📄 Dosya Havuza Ekle', `
+        <div class="form-group">
+            <label style="font-weight:bold; color:var(--text-dark);">Kayıt Edilecek Havuz (Fakülte)</label>
+            <input type="text" disabled value="${facultyName}" style="background:#F3F4F6; border:1px solid #E5E7EB; border-radius:8px; padding:12px; font-weight:bold;">
+        </div>
+        <div class="form-group" style="margin-top:15px;">
+            <label style="font-weight:bold; color:var(--text-dark);">Hangi Sınıf / Yıl? (Örn: 1. Sınıf, 2023-2024)</label>
+            <input type="text" id="pdf-grade" placeholder="Bu notlar hangi döneme ait?" style="border-radius:8px; padding:12px; border:1px solid #D1D5DB;">
+        </div>
+        <div class="form-group" style="margin-top:15px;">
+            <label style="font-weight:bold; color:var(--text-dark);">Ders Adı (Örn: Anatomi, Veri Yapıları)</label>
+            <input type="text" id="pdf-course" placeholder="Dersin adını tam yazınız..." style="border-radius:8px; padding:12px; border:1px solid #D1D5DB;">
+        </div>
+        <div class="upload-btn-wrapper" style="margin-top:20px;">
+            <button class="action-btn" id="pdf-trigger-btn" style="width:100%; justify-content:center; padding:14px; background:#EEF2FF; border:1px dashed var(--primary); color:var(--primary); font-weight:bold; border-radius:12px; font-size:15px;">📂 Cihazdan PDF Seç</button>
+            <input type="file" id="pdf-file-input" accept="application/pdf" style="display:none;" />
+        </div>
+        <div id="pdf-file-name" style="margin-top:12px; font-size:14px; font-weight:bold; color:#10B981; text-align:center;"></div>
+        
+        <button class="btn-primary" id="publish-pdf-btn" style="margin-top:25px; padding:14px; border-radius:12px; font-size:16px; font-weight:bold; box-shadow:0 4px 6px rgba(79, 70, 229, 0.3);" onclick="window.submitPdfUpload('${facultyName}')">Dosyayı Havuza Yükle</button>
+        <p id="pdf-upload-status" style="font-size:13px; color:var(--primary); text-align:center; margin-top:15px; display:none; font-weight:bold;">PDF Yükleniyor, lütfen ayrılmayın...</p>
+    `);
+    
+    setTimeout(() => {
+        const btn = document.getElementById('pdf-trigger-btn');
+        const input = document.getElementById('pdf-file-input');
+        const nameDisplay = document.getElementById('pdf-file-name');
+        if(btn && input) {
+            btn.addEventListener('click', () => input.click());
+            input.addEventListener('change', (e) => {
+                if(e.target.files.length > 0) { nameDisplay.innerText = "✅ Seçilen Dosya: " + e.target.files[0].name; }
+            });
+        }
+    }, 100);
+};
+
+window.submitPdfUpload = async function(facultyName) {
+    const grade = document.getElementById('pdf-grade').value.trim();
+    const course = document.getElementById('pdf-course').value.trim();
+    const fileInput = document.getElementById('pdf-file-input');
+    const btn = document.getElementById('publish-pdf-btn');
+    const status = document.getElementById('pdf-upload-status');
+    
+    if(!grade || !course) { alert("Lütfen sınıf ve ders adını doldur."); return; }
+    if(!fileInput.files || fileInput.files.length === 0) { alert("Lütfen cihazından bir PDF dosyası seç."); return; }
+    
+    const file = fileInput.files[0];
+    if(file.type !== "application/pdf") { alert("Havuzun bütünlüğü için sadece PDF formatında dosya yükleyebilirsin."); return; }
+    
+    btn.disabled = true; status.style.display = 'block';
+    
+    try {
+        const fileName = Date.now() + '_' + file.name.replace(/\s/g, ''); 
+        const storageRef = ref(storage, 'past_exams/' + window.userProfile.uid + '/' + fileName);
+        await uploadBytes(storageRef, file);
+        const pdfUrl = await getDownloadURL(storageRef);
+        
+        await addDoc(collection(db, "past_exams"), {
+            faculty: facultyName, grade: grade, course: course, pdfUrl: pdfUrl,
+            uploaderId: window.userProfile.uid, uploaderName: window.userProfile.name + " " + window.userProfile.surname,
+            createdAt: serverTimestamp()
+        });
+        
+        window.closeModal();
+        alert("Harika! PDF başarıyla havuza eklendi, artık herkes faydalanabilir.");
+    } catch(e) {
+        alert("Dosya yüklenirken hata oluştu: " + e.message);
+        btn.disabled = false; status.style.display = 'none';
+    }
+};
+
+
 // ============================================================================
-// 10. FAKÜLTE VE ORGANİZASYON SİSTEMİ (YENİ ACCORDION & FORUM/MEETING ENTEGRELİ)
+// 10. FAKÜLTE FORUM SİSTEMİ ("BANA ÖZEL" BİLDİRİM MANTIĞI)
 // ============================================================================
 
-// --- 🌟 KURAL 3: Fakülte Fonksiyonları (FORUM YAPISI) 🌟 ---
 window.currentFacultyPosts = [
     { 
         id: 1, 
@@ -2111,10 +2048,14 @@ window.handleFacultyClick = async function(name, icon, bgColor) {
     if(isJoined) { window.loadFacultyFeed(name, icon, bgColor); } 
     else {
         mainContent.innerHTML = `
-            <div class="join-faculty-box">
-                <div class="icon">${icon}</div><h2>${name} Ağına Hoş Geldin</h2><p>Bu alan kapalı bir ağdır. Girmek için fakülte kodunu girmelisin.</p>
-                <div style="max-width: 300px; margin: 0 auto 20px auto;"><input type="text" id="faculty-passcode-input" class="form-group" style="width: 100%; text-align:center; font-size:18px; font-weight:bold; letter-spacing:2px; padding: 15px; border: 2px solid var(--border-color); border-radius: 12px; outline:none;" placeholder="Giriş Kodunu Yazın"></div>
-                <button class="btn-primary" style="max-width:250px; font-size:16px; padding:12px;" onclick="window.verifyFacultyCode('${name}', '${icon}', '${bgColor}')">Ağa Katıl</button>
+            <div class="join-faculty-box" style="text-align:center; padding:40px 20px; background:white; border-radius:16px; border:1px solid var(--border-color); margin-top:20px;">
+                <div class="icon" style="font-size:60px; margin-bottom:20px;">${icon}</div>
+                <h2 style="font-size:24px; color:var(--text-dark); margin-bottom:10px;">${name} Ağına Hoş Geldin</h2>
+                <p style="color:var(--text-gray); font-size:15px; margin-bottom:25px;">Bu alan kapalı bir ağdır. Girmek ve bildirimleri sol taraftaki <strong>Bana Özel</strong> sekmesine sabitlemek için fakülte kodunu girmelisin.</p>
+                <div style="max-width: 300px; margin: 0 auto 20px auto;">
+                    <input type="text" id="faculty-passcode-input" class="form-group" style="width: 100%; text-align:center; font-size:18px; font-weight:bold; letter-spacing:2px; padding: 15px; border: 2px solid var(--border-color); border-radius: 12px; outline:none;" placeholder="Giriş Kodunu Yazın">
+                </div>
+                <button class="btn-primary" style="max-width:250px; font-size:16px; padding:14px; border-radius:12px; box-shadow:0 4px 6px rgba(79, 70, 229, 0.3);" onclick="window.verifyFacultyCode('${name}', '${icon}', '${bgColor}')">Ağa Katıl ve Kaydet</button>
             </div>
         `;
         window.scrollTo(0,0);
@@ -2127,6 +2068,7 @@ window.verifyFacultyCode = async function(name, icon, bgColor) {
         window.userProfile.faculty = name; 
         window.joinedFaculties = [{name: name, icon: icon, color: bgColor}]; 
         await updateDoc(doc(db, "users", window.userProfile.uid), { faculty: name });
+        window.updateMyFacultiesSidebar();
         window.loadFacultyFeed(name, icon, bgColor);
     } else { alert("Hatalı kod girdiniz. Lütfen tekrar deneyin."); }
 };
@@ -2139,8 +2081,8 @@ window.loadFacultyFeed = async function(name, icon, bgColor) {
             <div style="padding:20px; background:${bgColor}; color:white; border-radius:16px; display:flex; align-items:center; gap:15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <div style="font-size:40px; background:rgba(255,255,255,0.2); width:60px; height:60px; display:flex; align-items:center; justify-content:center; border-radius:50%;">${icon}</div>
                 <div>
-                    <h2 style="margin:0; font-size:22px;">${name} Forumu</h2>
-                    <span style="font-size:14px; opacity:0.9;">Fakültendeki diğer öğrencilerle anlık gönderi paylaş</span>
+                    <h2 style="margin:0; font-size:22px;">${name} Özel Forumu</h2>
+                    <span style="font-size:14px; opacity:0.9;">Bu fakülte artık "Bana Özel" bölümüne sabitlendi.</span>
                 </div>
             </div>
             
@@ -2210,203 +2152,6 @@ window.renderFacultyPosts = function() {
     });
     container.innerHTML = html;
 };
-
-
-// --- 🌟 KURAL 4: Kulüp ve Organizasyonlar Fonksiyonları (YENİ: LOBİ -> TOPLANTI GEÇİŞİ) 🌟 ---
-window.handleOrganizationClick = async function(name, icon, bgColor) {
-    document.querySelectorAll('.menu-item[data-target]').forEach(m => m.classList.remove('active'));
-    if(window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
-
-    const isJoined = window.joinedOrganizations.some(o => o.name === name) || window.userProfile.organization === name;
-
-    if(isJoined) { window.loadOrganizationFeed(name, icon, bgColor); } 
-    else {
-        mainContent.innerHTML = `
-            <div class="join-faculty-box">
-                <div class="icon">${icon}</div><h2>${name} Ağına Hoş Geldin</h2><p>Bu kulüp kapalı bir organizasyondur. Katılmak için giriş kodunu girmelisin.</p>
-                <div style="max-width: 300px; margin: 0 auto 20px auto;"><input type="text" id="org-passcode-input" class="form-group" style="width: 100%; text-align:center; font-size:18px; font-weight:bold; letter-spacing:2px; padding: 15px; border: 2px solid var(--border-color); border-radius: 12px; outline:none;" placeholder="Katılım Kodunu Yazın"></div>
-                <button class="btn-primary" style="max-width:250px; font-size:16px; padding:12px;" onclick="window.verifyOrganizationCode('${name}', '${icon}', '${bgColor}')">Organizasyona Katıl</button>
-            </div>
-        `;
-        window.scrollTo(0,0);
-    }
-};
-
-window.verifyOrganizationCode = async function(name, icon, bgColor) {
-    const inputCode = document.getElementById('org-passcode-input').value.trim();
-    if (ORGANIZATION_PASSCODES[name] && inputCode.toLowerCase() === ORGANIZATION_PASSCODES[name].toLowerCase()) {
-        window.userProfile.organization = name; 
-        window.joinedOrganizations = [{name: name, icon: icon, color: bgColor}]; 
-        await updateDoc(doc(db, "users", window.userProfile.uid), { organization: name });
-        // Doğrulamadan sonra Lobiye yönlendir!
-        window.loadOrganizationFeed(name, icon, bgColor);
-    } else { alert("Hatalı kod girdiniz. Lütfen kulüp yönetimi ile iletişime geçin."); }
-};
-
-window.sendReaction = function() {
-    const emoji = document.createElement('div');
-    emoji.innerText = '😄';
-    emoji.style.cssText = 'position:fixed; bottom:100px; right:50%; font-size:48px; z-index:99999; animation: flyUpAndFade 2s ease-out forwards; pointer-events:none; transform: translateX(50%);';
-    document.body.appendChild(emoji);
-    setTimeout(() => emoji.remove(), 2000);
-};
-
-// YENİ: KULÜP LOBİSİ (DUYURULAR, SOHBET VE TOPLANTI OLUŞTURMA ALANI)
-window.loadOrganizationFeed = async function(name, icon, bgColor) {
-    mainContent.innerHTML = `
-        <div style="display:flex; flex-direction:column; height:calc(100vh - 90px); background:var(--card-bg); border-radius:16px; overflow:hidden; border:1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-            
-            <div style="padding:20px; background:${bgColor}; color:white; display:flex; justify-content:space-between; align-items:center;">
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <span style="font-size:32px; background:rgba(255,255,255,0.2); width:50px; height:50px; display:flex; align-items:center; justify-content:center; border-radius:50%;">${icon}</span>
-                    <div>
-                        <h2 style="margin:0; font-size:20px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">${name} Lobisi</h2>
-                        <span style="font-size:13px; opacity:0.9;">Duyurular, Yazılı Sohbet ve Canlı Toplantılar</span>
-                    </div>
-                </div>
-            </div>
-
-            <div style="display:flex; flex:1; overflow:hidden; flex-wrap:wrap;">
-                
-                <div style="flex:1; min-width:300px; padding:20px; border-right:1px solid var(--border-color); overflow-y:auto; background:#F9FAFB;">
-                    
-                    <h3 style="margin-bottom:15px; font-size:16px; display:flex; align-items:center; gap:8px;">📢 Güncel Duyurular</h3>
-                    <div style="background:white; padding:15px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:25px;">
-                        <strong style="color:var(--primary); font-size:14px;">Kulüp Yönetimi</strong>
-                        <p style="font-size:14px; margin-top:5px; color:var(--text-dark);">Hoş geldiniz! İletişimi buradan sağlayabilir, anlık toplantılar başlatabilirsiniz. Kameraları test etmeyi unutmayın!</p>
-                        <span style="font-size:11px; color:var(--text-gray); display:block; margin-top:8px;">Bugün, 09:00</span>
-                    </div>
-
-                    <h3 style="margin-bottom:15px; font-size:16px; display:flex; align-items:center; gap:8px;">🎙️ Sesli & Görüntülü Odalar</h3>
-                    
-                    <div style="background:white; padding:20px; border-radius:12px; border:1px solid #E5E7EB; text-align:center; margin-bottom:15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                        <div style="font-size:40px; margin-bottom:10px;">👥</div>
-                        <h4 style="margin-bottom:5px; color:var(--text-dark);">Yeni Toplantı Başlat</h4>
-                        <p style="font-size:13px; color:var(--text-gray); margin-bottom:15px;">Şu an kimse konuşmuyor. İlk başlatan sen ol!</p>
-                        <button class="btn-primary" style="width:100%; border-radius:12px; font-size:15px;" onclick="window.joinLiveMeeting('${name}', '${icon}', '${bgColor}')">🎙️ Konuşma Oluştur</button>
-                    </div>
-
-                    <div style="background:#F0FDF4; padding:15px; border-radius:12px; border:1px solid #86EFAC; display:flex; justify-content:space-between; align-items:center;">
-                        <div style="text-align:left;">
-                            <div style="color:#059669; font-weight:800; font-size:14px; display:flex; align-items:center; gap:6px;">
-                                <span style="width:10px; height:10px; background:#10B981; border-radius:50%; display:inline-block; animation: pulse 1.5s infinite;"></span> Aktif Konuşma Var
-                            </div>
-                            <div style="font-size:12px; color:#047857; margin-top:4px; font-weight:600;">Moderatör ve 2 kişi içeride</div>
-                        </div>
-                        <button style="background:#10B981; color:white; border:none; padding:10px 16px; border-radius:10px; font-weight:bold; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'" onclick="window.joinLiveMeeting('${name}', '${icon}', '${bgColor}')">Katıl ➤</button>
-                    </div>
-
-                </div>
-
-                <div style="flex:1; min-width:300px; display:flex; flex-direction:column; background:white;">
-                    <div style="padding:15px; border-bottom:1px solid var(--border-color); font-weight:bold; display:flex; justify-content:space-between; background:#F9FAFB;">
-                        <span>💬 Genel Yazılı Sohbet</span>
-                    </div>
-                    
-                    <div style="flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:12px;">
-                        <div style="font-size:13px; line-height:1.5; background:#EEF2FF; padding:12px 16px; border-radius:16px; border-bottom-left-radius:0; align-self:flex-start; max-width:85%;">
-                            <strong style="color:var(--primary); display:block; margin-bottom:4px;">Sistem Moderatörü</strong>
-                            Kulüp sohbet odasına katıldınız. Küfür, argo ve saygısızlık yasaktır.
-                            <div style="font-size:10px; color:#6B7280; text-align:right; margin-top:4px;">Şimdi</div>
-                        </div>
-                    </div>
-
-                    <div style="padding:15px; border-top:1px solid var(--border-color); display:flex; gap:10px; background:white; align-items:center;">
-                        <input type="text" placeholder="Kulübe bir şeyler yaz..." style="flex:1; padding:12px 16px; border-radius:24px; border:1px solid #D1D5DB; background:#F9FAFB; outline:none; font-size:14px; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';">
-                        <button class="btn-primary" style="width:auto; border-radius:24px; padding:10px 20px; font-size:14px;" onclick="alert('Gerçek zamanlı yazılı sohbet entegrasyon aşamasındadır.')">➤</button>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    `;
-};
-
-// YENİ: AKTİF TOPLANTI ODASINA GİRİŞ (KAMERALI/SESLİ EKRAN)
-window.joinLiveMeeting = async function(name, icon, bgColor) {
-    mainContent.innerHTML = `
-        <div style="display:flex; flex-direction:column; height:calc(100vh - 90px); background:#111827; border-radius:16px; overflow:hidden; color:white; font-family: system-ui, -apple-system, sans-serif;">
-            
-            <div style="padding:15px 20px; background:#1F2937; border-bottom:1px solid #374151; display:flex; justify-content:space-between; align-items:center;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:24px;">${icon}</span>
-                    <h2 style="margin:0; font-size:18px; font-weight:600;">${name} - Canlı Toplantı Odası</h2>
-                </div>
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <span style="background:rgba(239, 68, 68, 0.2); color:#FCA5A5; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:bold; display:flex; align-items:center; gap:6px;">
-                        <div style="width:8px; height:8px; background:#EF4444; border-radius:50%; animation: pulse 1.5s infinite;"></div> CANLI
-                    </span>
-                </div>
-            </div>
-
-            <div style="display:flex; flex:1; overflow:hidden; flex-wrap:wrap;">
-                
-                <div style="flex:2; min-width:300px; padding:20px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:15px; overflow-y:auto; background:#111827; align-content:start;">
-                    
-                    <div style="background:#374151; border-radius:12px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; aspect-ratio: 16/9; border:2px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
-                        <div style="font-size:50px;">${window.userProfile.avatar}</div>
-                        <div style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.7); padding:4px 10px; border-radius:6px; font-size:12px; font-weight:bold;">Sen</div>
-                        <div style="position:absolute; top:10px; right:10px; background:#10B981; width:12px; height:12px; border-radius:50%; box-shadow:0 0 5px #10B981;"></div>
-                    </div>
-
-                    <div style="background:#1F2937; border-radius:12px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; aspect-ratio: 16/9; border:1px solid #374151;">
-                        <div style="width:70px; height:70px; background:#4B5563; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:30px; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);">👤</div>
-                        <div style="position:absolute; top:15px; font-size:12px; color:#10B981; font-weight:bold;">🎙️ Konuşuyor...</div>
-                        <div style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.7); padding:4px 10px; border-radius:6px; font-size:12px; font-weight:bold;">Moderatör</div>
-                    </div>
-
-                    <div style="background:#1F2937; border-radius:12px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; aspect-ratio: 16/9; border:1px solid #374151;">
-                        <div style="width:70px; height:70px; background:#4B5563; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:30px;">👩‍🎓</div>
-                        <div style="position:absolute; bottom:10px; right:10px; font-size:14px; background:rgba(239,68,68,0.2); border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center;">🔇</div>
-                        <div style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.7); padding:4px 10px; border-radius:6px; font-size:12px;">Ayşe Y.</div>
-                    </div>
-
-                </div>
-
-                <div style="flex:1; min-width:300px; max-width:400px; background:#1F2937; border-left:1px solid #374151; display:flex; flex-direction:column;">
-                    <div style="padding:15px; border-bottom:1px solid #374151; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-                        <span>Toplantı Sohbeti</span>
-                        <span style="font-size:12px; background:#374151; padding:2px 8px; border-radius:10px;">👥 3 Kişi</span>
-                    </div>
-                    
-                    <div style="flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:12px;">
-                        <div style="font-size:13px; line-height:1.5;">
-                            <strong style="color:#60A5FA;">Moderatör:</strong> Herkese merhaba, kulüp etkinlik planlaması için saat 20:00'de ajandayı paylaşacağım.
-                            <div style="font-size:10px; color:#9CA3AF; margin-top:2px;">19:55</div>
-                        </div>
-                        <div style="font-size:13px; line-height:1.5;">
-                            <strong style="color:#FCA5A5;">Ayşe Y.:</strong> Harika, bekliyoruz! Kamera açamıyorum şu an kusura bakmayın.
-                            <div style="font-size:10px; color:#9CA3AF; margin-top:2px;">19:57</div>
-                        </div>
-                    </div>
-
-                    <div style="padding:15px; border-top:1px solid #374151; display:flex; gap:10px;">
-                        <input type="text" placeholder="Mesaj yaz..." style="flex:1; padding:10px 12px; border-radius:8px; border:none; background:#374151; color:white; outline:none; font-size:13px;">
-                        <button style="background:var(--primary); border:none; color:white; border-radius:8px; padding:0 15px; cursor:pointer;" onclick="alert('Mesaj sistemi entegrasyon aşamasında.')">➤</button>
-                    </div>
-                </div>
-            </div>
-
-            <div style="padding:15px 20px; background:#1F2937; border-top:1px solid #374151; display:flex; justify-content:center; align-items:center; gap:20px; flex-wrap:wrap;">
-                <button style="width:50px; height:50px; border-radius:50%; border:none; background:#374151; color:white; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;" onmouseover="this.style.background='#4B5563'" onmouseout="this.style.background='#374151'" title="Sesi Kapat/Aç">🎙️</button>
-                <button style="width:50px; height:50px; border-radius:50%; border:none; background:#374151; color:white; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;" onmouseover="this.style.background='#4B5563'" onmouseout="this.style.background='#374151'" title="Kamerayı Kapat/Aç">📹</button>
-                <button style="width:50px; height:50px; border-radius:50%; border:none; background:#374151; color:white; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;" onmouseover="this.style.background='#4B5563'" onmouseout="this.style.background='#374151'" title="Ekran Paylaş">💻</button>
-                <button style="width:50px; height:50px; border-radius:50%; border:none; background:#374151; color:white; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;" onmouseover="this.style.background='#4B5563'" onmouseout="this.style.background='#374151'" title="Reaksiyon Gönder" onclick="window.sendReaction()">✋</button>
-                
-                <button style="padding:0 25px; height:50px; border-radius:25px; border:none; background:#EF4444; color:white; font-size:15px; font-weight:bold; cursor:pointer; transition:0.2s; margin-left:auto;" onmouseover="this.style.background='#DC2626'" onmouseout="this.style.background='#EF4444'" onclick="window.loadOrganizationFeed('${name}', '${icon}', '${bgColor}')">Odadan Ayrıl 📵</button>
-            </div>
-
-            <style>
-                @keyframes pulse {
-                    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-                    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-                    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-                }
-            </style>
-        </div>
-    `;
-};
-
 
 // ============================================================================
 // 11. SAYFA YÖNLENDİRME (ROUTING) VE PROFİL YÖNETİMİ
@@ -2528,7 +2273,6 @@ window.renderSettings = function() {
         </div>
     `;
 };
-
 
 }
 if (document.readyState === 'loading') {
