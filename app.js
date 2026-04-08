@@ -1,50 +1,50 @@
 // ============================================================================
-// 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
+// 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE & MAPS) 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 import {
-getAuth,
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword,
-sendEmailVerification,
-sendPasswordResetEmail,
-signOut,
-onAuthStateChanged
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    sendEmailVerification,
+    sendPasswordResetEmail,
+    signOut,
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
-getFirestore,
-collection,
-addDoc,
-onSnapshot,
-query,
-orderBy,
-serverTimestamp,
-doc,
-setDoc,
-getDoc,
-updateDoc,
-arrayUnion,
-where,
-getDocs,
-deleteDoc
+    getFirestore,
+    collection,
+    addDoc,
+    onSnapshot,
+    query,
+    orderBy,
+    serverTimestamp,
+    doc,
+    setDoc,
+    getDoc,
+    updateDoc,
+    arrayUnion,
+    where,
+    getDocs,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
-getStorage,
-ref,
-uploadBytes,
-getDownloadURL
+    getStorage,
+    ref,
+    uploadBytes,
+    getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // — GÜNCEL FIREBASE YAPILANDIRMASI —
 const firebaseConfig = {
-apiKey: "AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
-authDomain: "uniloop-app.firebaseapp.com",
-projectId: "uniloop-app",
-storageBucket: "uniloop-app.firebasestorage.app",
-messagingSenderId: "272654005890",
-appId: "1:272654005890:web:0b1dd388364e86d22f269b",
-measurementId: "G-PJ0XE1PXH5"
+    apiKey: "AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
+    authDomain: "uniloop-app.firebaseapp.com",
+    projectId: "uniloop-app",
+    storageBucket: "uniloop-app.firebasestorage.app",
+    messagingSenderId: "272654005890",
+    appId: "1:272654005890:web:0b1dd388364e86d22f269b",
+    measurementId: "G-PJ0XE1PXH5"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -63,21 +63,22 @@ let marketDB = [];
 let confessionsDB = [];
 let qaDB = [];
 let chatsDB = [];
-let loopMapDB = []; // YENİ: LoopMap verileri
+let loopMapDB = []; 
 let currentChatId = null;
-let googleMap = null; // YENİ: Google Harita objesi
-let userCurrentLocation = null; // YENİ: Kullanıcı konumu
+let googleMap = null; 
+let userCurrentLocation = null; 
 
 // ============================================================================
-// 📍 GOOGLE MAPS YÜKLEYİCİ (ÇAKIŞMA ÖNLEYİCİ İLE GÜNCELLENDİ)
+// 📍 GOOGLE MAPS YÜKLEYİCİ (ÇAKIŞMA ÖNLEYİCİ VE GÜVENLİ)
 // ============================================================================
 function loadGoogleMapsScript() {
-    if (document.getElementById('google-maps-script')) return; // Zaten eklendiyse tekrar ekleme
+    if (document.getElementById('google-maps-script')) return; 
     if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') return; 
     
+    // Doğruladığın Google Maps API Anahtarın
     const apiKey = "AIzaSyC3vVgQCI8a5ctJ45fefAh1hKTwpCIYboE"; 
     
-    if (!apiKey || apiKey === "AIzaSyC3vVgQCI8a5ctJ45fefAh1hKTwpCIYboE") {
+    if (!apiKey) {
         console.error("HATA: Google Maps API Key eksik.");
         return;
     }
@@ -112,7 +113,7 @@ const modal = document.getElementById('app-modal');
 
 function initializeUniLoop() {
 
-// Harita motorunu başlat
+// Harita motorunu arka planda başlat
 loadGoogleMapsScript();
 
 // ✂️ CROPPER.JS ENJEKSİYONU (INSTAGRAM TARZI PROFİL KIRPMA İÇİN)
@@ -129,37 +130,18 @@ document.head.appendChild(cropperJs);
 const styleFix = document.createElement('style');
 styleFix.innerHTML = `
     html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
-    
-    #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) {
-        opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important;
-    }
-    #app-modal.active, #lightbox.active, .modal.active {
-        opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important;
-    }
-    
+    #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; }
+    #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; }
     #auth-screen { position: relative; z-index: 1000 !important; }
-    #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select {
-        pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important;
-    }
-
-    button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { 
-        cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; 
-    }
-    
-    #sidebar { 
-        overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; 
-        justify-content: flex-start !important; align-items: stretch !important; max-height: 100vh !important;
-        top: 0 !important; padding-top: 75px !important; padding-bottom: 40px !important;
-    }
-    
+    #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important; }
+    button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; }
+    #sidebar { overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; justify-content: flex-start !important; align-items: stretch !important; max-height: 100vh !important; top: 0 !important; padding-top: 75px !important; padding-bottom: 40px !important; }
     #chat-layout-container { height: calc(100vh - 120px) !important; max-height: 800px; overflow: hidden !important; display: flex; flex-direction: row; }
     .chat-sidebar { overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; }
     .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; }
     #chat-messages-scroll { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; scroll-behavior: smooth; }
-    
     #qa-feed, #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; }
     .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; scroll-behavior: smooth; }
-    
     .feed-layout-container { height: calc(100vh - 80px); display: flex; flex-direction: column; overflow: hidden; margin: -20px; background: #F3F4F6; }
     #conf-feed { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; max-width: 600px !important; margin: 0 auto !important; width: 100%;}
     .feed-post { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 16px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
@@ -173,21 +155,15 @@ styleFix.innerHTML = `
     .feed-post-actions { display: flex; border-top: 1px solid #E5E7EB; padding-top: 12px; gap: 20px; }
     .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
     .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
-
-    /* ANA SAYFA GRID */
     .user-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; width: 100%; }
     .user-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; justify-content: center; min-height: 160px;}
     .user-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); border-color: var(--primary); }
-
-    /* CROPPER JS YUVARLAK REFERANS STİLİ */
     .cropper-view-box, .cropper-face { border-radius: 50%; }
     .cropper-view-box { outline: 0; box-shadow: 0 0 0 1px #39f; }
-
     .premium-glow { animation: glowPulse 2s infinite alternate; }
     @keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); } 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); } }
     .premium-upgrade-btn { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 15px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); display: inline-flex; align-items: center; gap: 8px; }
     .premium-upgrade-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(245, 158, 11, 0.4); }
-    
     body.dark-mode, .dark-mode #main-content { background-color: #121212 !important; color: #e5e7eb !important; }
     .dark-mode .card, .dark-mode .feed-post, .dark-mode .item-card, .dark-mode .chat-sidebar-header, .dark-mode .user-card { background-color: #1e1e1e !important; border-color: #374151 !important; color: #e5e7eb !important; }
     .dark-mode .card > div { border-color: #374151 !important; }
@@ -203,13 +179,10 @@ styleFix.innerHTML = `
     .dark-mode .menu-item.active { background: #374151 !important; color: var(--primary) !important; }
     .dark-mode #app-header { background: #1e1e1e !important; border-bottom-color: #374151 !important; }
     .dark-mode #sidebar { background: #1e1e1e !important; border-right-color: #374151 !important; }
-
     #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
     #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
     #app-header > :last-child, .header-right-menu { display: flex !important; align-items: center !important; justify-content: flex-end !important; flex-wrap: nowrap !important; }
-
     #profile-btn, #nav-premium-action { font-size: 12px !important; padding: 0 10px !important; height: 32px !important; line-height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; flex-shrink: 0 !important; margin: 0 !important; border-radius: 8px !important; }
-
     @media (max-width: 1024px) {
         #chat-layout-container { height: calc(100vh - 160px) !important; }
         .chat-sidebar { width: 100%; display: block; }
@@ -217,15 +190,12 @@ styleFix.innerHTML = `
         .chat-main { display: none !important; }
         .chat-active .chat-main { display: flex !important; }
     }
-
     .accordion-section { margin-bottom: 12px; background: transparent; }
     .accordion-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 14px 16px; font-weight: bold; font-size: 15px; transition: 0.2s; color: var(--text-dark);}
     .accordion-header:hover { background: #EEF2FF; color: var(--primary); border-radius: 12px; }
-    
     .accordion-content { max-height: 0; overflow: hidden; padding: 0 16px; background: transparent; transition: max-height 0.3s ease, padding 0.3s ease; }
     .accordion-content.open { max-height: 600px; padding: 10px 16px; }
     .accordion-icon { display: inline-block; margin-left: auto; font-size: 12px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-gray); }
-    
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 10px; }
@@ -1056,7 +1026,7 @@ function getHomeContent() {
 }
 
 // ============================================================================
-// 🌍 YENİ: LOOPMAP ENTEGRASYONU (SAFARİ ENGELİNİ AŞAN GÜNCELLEME)
+// 🌍 YENİ: LOOPMAP ENTEGRASYONU (SESSİZ FALLBACK / YEDEK KONUM SİSTEMİ)
 // ============================================================================
 
 window.renderLoopMap = function() {
@@ -1066,7 +1036,7 @@ window.renderLoopMap = function() {
             <div id="map-auth-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; background:white; z-index:500; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
                 <div style="font-size:50px; margin-bottom:15px;">📍</div>
                 <h3 style="margin-bottom:10px; color:var(--text-dark);">Kampüs Haritası</h3>
-                <p style="color:var(--text-gray); margin-bottom:25px; font-size:14px; max-width:80%;">Tarayıcınızın haritayı güvenle yükleyebilmesi için konum bağlantısını başlatın.</p>
+                <p style="color:var(--text-gray); margin-bottom:25px; font-size:14px; max-width:80%;">Haritayı görüntülemek ve anı bırakmak için başlatın.</p>
                 <button class="btn-primary" id="start-map-btn" onclick="window.requestLocationAndInitMap()" style="width:auto; padding:14px 28px; border-radius:24px; font-size:16px; box-shadow:0 4px 12px rgba(79,70,229,0.3);">🚀 Haritayı Başlat</button>
             </div>
 
@@ -1081,52 +1051,57 @@ window.renderLoopMap = function() {
     `;
 };
 
-// Konum iznini doğrudan butona bağladık (Safari'nin istediği yöntem)
 window.requestLocationAndInitMap = function() {
     const btn = document.getElementById('start-map-btn');
     if(btn) {
-        btn.innerText = "⏳ Konum Aranıyor...";
+        btn.innerText = "⏳ Harita Yükleniyor...";
         btn.disabled = true;
     }
 
+    // 🔥 GÜÇLÜ YEDEK (FALLBACK) KONUM - Hata alınırsa burası çalışacak
+    const fallbackLocation = { lat: 39.92077, lng: 32.85411 }; // Ankara
+
     if (navigator.geolocation) {
         const options = {
-            enableHighAccuracy: false, // Apple'ın Tam Konum engeline takılmamak için
-            timeout: 15000,
+            enableHighAccuracy: false, 
+            timeout: 8000, // 8 saniye içinde cevap alamazsa varsayılana geçer
             maximumAge: 0
         };
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                // Konum bulundu, örtüyü kaldır ve haritayı çiz!
-                document.getElementById('map-auth-overlay').style.display = 'none';
+                // BAŞARILI: Kullanıcı izin verdi, gerçek konumu alındı
+                const overlay = document.getElementById('map-auth-overlay');
+                if(overlay) overlay.style.display = 'none';
+                
                 userCurrentLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
                 window.initGoogleMap(userCurrentLocation);
             },
             (error) => {
-                console.error("Konum Hatası:", error);
-                document.getElementById('map-auth-overlay').style.display = 'none';
+                // HATA/ENGEL DURUMU: Sessizce yedek konuma geçiş yapılır
+                console.warn("Konum engellendi veya bulunamadı, yedek konuma geçiliyor.");
+                const overlay = document.getElementById('map-auth-overlay');
+                if(overlay) overlay.style.display = 'none';
                 
-                let detay = "";
-                if(error.code === 1) detay = "Tarayıcınızın veya cihazınızın ayarlarından konum izni reddedildi.";
-                if(error.code === 2) detay = "Cihazınızdan konum okunamıyor (GPS kapalı olabilir).";
-                if(error.code === 3) detay = "Bağlantı zaman aşımına uğradı.";
-
-                alert("Uyarı: " + detay + "\n\nHarita varsayılan konuma ayarlanıyor. (API anahtarınız doğruysa harita açılacaktır)");
-                window.initGoogleMap({ lat: 39.92077, lng: 32.85411 }); 
+                // Artık çökme veya uyarı mesajı yok!
+                userCurrentLocation = fallbackLocation; 
+                window.initGoogleMap(fallbackLocation); 
             },
             options
         );
     } else {
-        alert("Tarayıcınız konum desteklemiyor.");
-        document.getElementById('map-auth-overlay').style.display = 'none';
-        window.initGoogleMap({ lat: 39.92077, lng: 32.85411 });
+        // Tarayıcı desteklemiyorsa
+        const overlay = document.getElementById('map-auth-overlay');
+        if(overlay) overlay.style.display = 'none';
+        
+        userCurrentLocation = fallbackLocation;
+        window.initGoogleMap(fallbackLocation);
     }
 };
 
 window.initGoogleMap = function(centerLoc) {
-    if(typeof google === 'undefined') {
-        document.getElementById('map').innerHTML = `<div style="padding:40px; text-align:center; color:gray; font-weight:bold;">Google Maps API yüklenemedi.<br><br>Lütfen internet bağlantınızı ve şifrenizi kontrol edin.</div>`;
+    if(typeof google === 'undefined' || typeof google.maps === 'undefined') {
+        document.getElementById('map').innerHTML = `<div style="padding:40px; text-align:center; color:gray; font-weight:bold;">Google Maps API yüklenemedi.<br><br>Lütfen internet bağlantınızı kontrol edin.</div>`;
         return;
     }
     
@@ -1137,7 +1112,7 @@ window.initGoogleMap = function(centerLoc) {
         styles: [ { "featureType": "poi", "elementType": "labels", "stylers": [{ "visibility": "off" }] } ]
     });
 
-    // Kullanıcının kendi konumunu küçük bir mavi noktayla göster
+    // Kullanıcının (gerçek veya yedek) konumunu küçük bir mavi noktayla göster
     new google.maps.Marker({
         position: centerLoc,
         map: googleMap,
@@ -1165,7 +1140,7 @@ window.drawMapMarkers = function() {
 
 window.handleMapPhotoCapture = async function(input) {
     if(!input.files || input.files.length === 0) return;
-    if(!userCurrentLocation) { alert("Konumunuz alınamadan haritaya anı bırakamazsınız!"); return; }
+    if(!userCurrentLocation) { alert("Konum sistemi başlatılamadı!"); return; }
 
     const file = input.files[0];
     
@@ -2246,7 +2221,6 @@ window.loadPage = function(pageName) {
     if (pageName === 'home') window.renderHome();
     else if (pageName === 'loopmap') window.renderLoopMap();
     else if (pageName === 'market') window.renderListings('market', '🛒 Kampüs Market');
-    // Housing tamamen silindi!
     else if (pageName === 'confessions') window.renderConfessions();
     else if (pageName === 'qa') window.renderQA(); 
     else if (pageName === 'messages') window.renderMessages(); 
@@ -2357,12 +2331,11 @@ window.triggerAvatarCrop = function(inputEl) {
             const image = document.getElementById('cropper-image');
             if (window.cropperInstance) { window.cropperInstance.destroy(); }
             
-            // Yuvarlak ve estetik bir kırpma alanı
             window.cropperInstance = new Cropper(image, {
-                aspectRatio: 1, // Kare referans
-                viewMode: 1, // Sınırların dışına çıkmayı engelle
-                dragMode: 'move', // Resmi kaydırarak kırp
-                guides: false, // Kılavuz çizgileri gizle
+                aspectRatio: 1, 
+                viewMode: 1, 
+                dragMode: 'move', 
+                guides: false, 
                 center: false,
                 highlight: false,
                 cropBoxMovable: true,
@@ -2378,7 +2351,6 @@ window.triggerAvatarCrop = function(inputEl) {
                 statusEl.style.display = 'block';
                 statusEl.innerText = 'Fotoğraf işleniyor ve yükleniyor...';
                 
-                // Canvas'ı PNG formatında ve şeffaf arkaplanlı olarak al
                 window.cropperInstance.getCroppedCanvas({
                     width: 400,
                     height: 400,
