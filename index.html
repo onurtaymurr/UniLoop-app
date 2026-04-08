@@ -1,134 +1,184 @@
-<!DOCTYPE html><html lang="tr">
+<!DOCTYPE html>
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>UniLoop - Global Campus Network</title>
+    <title>CampusMate</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="auth-screen">
-    <div class="auth-card" id="login-card">
-        <div class="auth-logo">🌍 UniLoop</div>
-        <p class="auth-subtitle">Kampüs ağına giriş yap, döngüde kal.</p>
-        
-        <div class="form-group">
-            <input type="email" id="login-email" placeholder="E-posta Adresiniz">
-        </div>
-        <div class="form-group" style="margin-bottom: 8px;">
-            <input type="password" id="login-password" placeholder="Şifren">
-        </div>
-        
-        <div style="text-align: right; margin-bottom: 20px;">
-            <span id="forgot-password-btn" style="font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 600;">Şifremi Unuttum</span>
-        </div>
-        
-        <button class="btn-primary" id="login-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Giriş Yap</button>
-        <button class="action-btn" id="show-register-btn" style="padding: 12px; font-size: 16px;">Yeni Hesap Oluştur</button>
-        
-        <p style="font-size: 12px; color: var(--text-gray); margin-top: 20px;">Sisteme giriş için e-posta onayı gereklidir.</p>
-    </div>
-
-    <div class="auth-card" id="register-card" style="display: none;">
-        <div class="auth-logo" style="font-size: 28px;">🌍 Ağa Katıl</div>
-        <p class="auth-subtitle" style="margin-bottom: 20px;">Üniversiteni seç ve kendi kampüs ağına bağlan.</p>
-        
-        <div class="grid-2col" style="margin-top: 0; margin-bottom: 0;">
-            <div class="form-group"><input type="text" id="reg-name" placeholder="Ad"></div>
-            <div class="form-group"><input type="text" id="reg-surname" placeholder="Soyad"></div>
-        </div>
-        
-        <div class="form-group autocomplete">
-            <input type="text" id="reg-uni" placeholder="Üniversiteni Ara (Örn: Stanford, ODTÜ...)" autocomplete="off">
-            <div id="uni-autocomplete-list" class="autocomplete-items"></div>
-        </div>
-
-        <div class="form-group">
-            <input type="email" id="reg-email" placeholder="E-posta Adresiniz">
-        </div>
-        <div class="form-group">
-            <input type="password" id="reg-password" placeholder="Güçlü Bir Şifre Belirle">
-        </div>
-        
-        <button class="btn-primary" id="register-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Oluştur</button>
-        <button class="action-btn" id="show-login-btn" style="padding: 12px; font-size: 16px; background: transparent; border: 1px solid var(--border-color);">Zaten hesabım var</button>
-    </div>
-
-    <div class="auth-card" id="verify-card" style="display: none;">
-        <div class="auth-logo" style="font-size: 28px;">📧 Hesabı Doğrula</div>
-        <p class="auth-subtitle" style="margin-bottom: 20px;">E-posta adresinize gönderilen onay kodunu girin veya maildeki doğrulama linkine tıklayın.</p>
-        
-        <div class="form-group">
-            <input type="text" id="verify-code-input" placeholder="6 Haneli Kod (Varsa)" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 5px; font-weight: bold; border: 2px solid var(--primary);">
-        </div>
-        
-        <button class="btn-primary" id="verify-code-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Aktifleştir</button>
-        <p style="font-size: 12px; color: var(--text-gray); margin-top: 15px;">Maildeki linke tıkladıysanız doğrudan butona basabilirsiniz.</p>
-    </div>
-</div>
-
-<div id="app-screen" style="display: none;">
-    <header>
-        <div class="logo-area">
-            <div id="mobile-menu-btn">☰</div>
-            <div class="logo" id="logo-btn">🌍 UniLoop</div>
-        </div>
-        <div class="user-menu">
-            <button class="btn-primary" id="profile-btn" style="width: auto; padding: 10px 20px; border-radius: 20px;">👤 Profilim</button>
-        </div>
-    </header>
-
-    <div class="container">
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-top">
-                <h3>Navigasyon</h3>
-                <div class="menu-item active" data-target="home">🏠 Ana Sayfa</div>
-                <div class="menu-item" data-target="loopmap">📍 LoopMap</div>
-                <div class="menu-item" data-target="market">🛒 Kampüs Market</div>
-                <div class="menu-item" data-target="confessions">🤫 Anonim Kampüs</div>
-                <div class="menu-item" data-target="qa">❓ Soru & Cevap</div>
-                
-                <br>
-                <h3>Bana Özel</h3>
-                <div class="menu-item" id="nav-messages-btn" data-target="messages">💬 Mesajlarım <span id="msg-badge" class="badge" style="display:none;">0</span></div>
-                
-                <div id="sidebar-networks-container"></div>
+    <!-- AUTH / ONBOARDING -->
+    <div id="auth-screen">
+        <div class="auth-shell">
+            <div class="auth-brand">
+                <div class="brand-icon">🎓</div>
+                <h1>CampusMate</h1>
+                <p>Kampüsündeki herkesle tanış 👋</p>
             </div>
-            
-            <div class="sidebar-bottom">
-                <div class="menu-item" data-target="settings">⚙️ Ayarlar</div>
+
+            <div class="auth-card" id="login-card">
+                <h2>Giriş yap</h2>
+                <p class="auth-desc">E-posta ile hesabına giriş yap</p>
+
+                <div class="form-group">
+                    <input type="email" id="login-email" placeholder="E-posta">
+                </div>
+                <div class="form-group password-group">
+                    <input type="password" id="login-password" placeholder="Şifre">
+                </div>
+
+                <div class="auth-inline-link">
+                    <span id="forgot-password-btn">Şifremi Unuttum</span>
+                </div>
+
+                <button class="btn-primary large-btn" id="login-btn">Giriş Yap</button>
+                <button class="btn-soft large-btn" id="show-register-btn">Yeni Hesap Oluştur</button>
             </div>
-        </aside>
 
-        <main class="main-feed" id="main-content"></main>
+            <div class="auth-card" id="register-card" style="display:none;">
+                <h2>Hesap oluştur</h2>
+                <p class="auth-desc">E-posta ile yeni hesap oluştur</p>
 
-        <aside class="right-panel">
-            <div class="card sticky-card" style="padding: 15px;">
-                <div id="right-networks-container"></div>
+                <div class="form-group">
+                    <input type="email" id="reg-email" placeholder="E-posta">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="reg-password" placeholder="Şifre">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="reg-password-repeat" placeholder="Şifre tekrar">
+                </div>
+
+                <label class="checkbox-row">
+                    <input type="checkbox" id="reg-terms">
+                    <span>Okudum ve <strong>Kullanım Şartları</strong>'nı ve <strong>Gizlilik Politikası</strong>'nı kabul ediyorum.</span>
+                </label>
+
+                <button class="btn-primary large-btn" id="register-btn">Devam Et →</button>
+                <div class="auth-bottom-switch">
+                    Hesabın var mı? <span id="show-login-btn">Giriş yap</span>
+                </div>
             </div>
-        </aside>
-    </div>
-</div>
 
-<div id="app-modal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 id="modal-title">Başlık</h3>
-            <span class="close-btn" id="modal-close">&times;</span>
+            <div class="auth-card" id="verify-card" style="display:none;">
+                <h2>Hesabı doğrula</h2>
+                <p class="auth-desc">E-posta adresine gelen doğrulama linkini onayla, sonra devam et.</p>
+
+                <div class="form-group">
+                    <input type="text" id="verify-code-input" placeholder="6 haneli kod (varsa)" maxlength="6">
+                </div>
+
+                <button class="btn-primary large-btn" id="verify-code-btn">Hesabımı Aktifleştir</button>
+                <p class="verify-helper">Maildeki bağlantıya tıkladıysan doğrudan bu butona basabilirsin.</p>
+            </div>
+
+            <!-- ONBOARDING -->
+            <div class="onboarding-card" id="onboarding-card" style="display:none;">
+                <div class="onboarding-top">
+                    <button class="back-icon-btn" id="onboarding-back-btn">←</button>
+                    <div class="step-title-wrap">
+                        <div class="step-mini" id="onboarding-step-mini">Adım 1 / 4</div>
+                        <h2 id="onboarding-step-title">Temel Bilgiler</h2>
+                    </div>
+                </div>
+
+                <div class="step-progress">
+                    <span class="step-bar active"></span>
+                    <span class="step-bar"></span>
+                    <span class="step-bar"></span>
+                    <span class="step-bar"></span>
+                </div>
+
+                <div id="onboarding-content"></div>
+
+                <button class="btn-primary large-btn onboarding-next-btn" id="onboarding-next-btn">Devam Et →</button>
+            </div>
         </div>
-        <div class="modal-body" id="modal-body"></div>
     </div>
-</div>
 
-<div id="lightbox" class="lightbox">
-    <span class="lightbox-close" onclick="window.closeLightbox()">&times;</span>
-    <span class="lightbox-counter" id="lightbox-counter">1/3</span>
-    <button class="lightbox-prev" onclick="window.changeLightboxImage(-1)">&#10094;</button>
-    <img class="lightbox-content" id="lightbox-img" src="">
-    <button class="lightbox-next" onclick="window.changeLightboxImage(1)">&#10095;</button>
-</div>
+    <!-- APP -->
+    <div id="app-screen" style="display:none;">
+        <header class="app-header">
+            <div class="header-left">
+                <button id="mobile-menu-btn">☰</button>
+                <div class="logo" id="logo-btn">
+                    <span class="logo-icon">🎓</span>
+                    <span>CampusMate</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="profile-chip" id="profile-btn">Profilim</button>
+            </div>
+        </header>
 
-<script type="module" src="app.js"></script>
+        <div class="app-layout">
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-section">
+                    <h3>Menü</h3>
+                    <div class="menu-item active" data-target="home">🏠 Ana Sayfa</div>
+                    <div class="menu-item" data-target="confessions">🤫 Anonim Kampüs</div>
+                    <div class="menu-item" data-target="messages">💬 Mesajlar</div>
+                    <div class="menu-item" data-target="faculties">🏛️ Fakülteler</div>
+                    <div class="menu-item" data-target="profile">👤 Profil</div>
+                    <div class="menu-item" data-target="market">🛒 Campus Market</div>
+                    <div class="menu-item" data-target="settings">⚙️ Ayarlar</div>
+                </div>
 
+                <div class="sidebar-section">
+                    <h3>Benim Fakültem</h3>
+                    <div id="sidebar-faculty-box"></div>
+                </div>
+            </aside>
+
+            <main class="main-feed" id="main-content"></main>
+        </div>
+
+        <!-- MOBILE BOTTOM NAV -->
+        <nav class="bottom-nav">
+            <button class="bottom-nav-item active" data-target="home">
+                <span>🏠</span>
+                <small>Ana Sayfa</small>
+            </button>
+            <button class="bottom-nav-item" data-target="confessions">
+                <span>🤫</span>
+                <small>Anonim Kampüs</small>
+            </button>
+            <button class="bottom-nav-item" data-target="messages">
+                <span>💬</span>
+                <small>Mesajlar</small>
+            </button>
+            <button class="bottom-nav-item" data-target="faculties">
+                <span>🏛️</span>
+                <small>Fakülteler</small>
+            </button>
+            <button class="bottom-nav-item" data-target="profile">
+                <span>👤</span>
+                <small>Profil</small>
+            </button>
+        </nav>
+    </div>
+
+    <!-- MODAL -->
+    <div id="app-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Başlık</h3>
+                <span class="close-btn" id="modal-close">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div id="lightbox" class="lightbox">
+        <span class="lightbox-close" onclick="window.closeLightbox()">&times;</span>
+        <span class="lightbox-counter" id="lightbox-counter">1/1</span>
+        <button class="lightbox-prev" onclick="window.changeLightboxImage(-1)">&#10094;</button>
+        <img class="lightbox-content" id="lightbox-img" src="">
+        <button class="lightbox-next" onclick="window.changeLightboxImage(1)">&#10095;</button>
+    </div>
+
+    <script type="module" src="app.js"></script>
 </body>
 </html>
