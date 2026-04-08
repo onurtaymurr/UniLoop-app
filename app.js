@@ -109,45 +109,64 @@ styleFix.innerHTML = `
     /* ESKİ SIDEBAR VE MOBİL MENÜ GİZLENDİ */
     #sidebar { display: none !important; }
     #mobile-menu-btn { display: none !important; }
-    #main-content { padding-bottom: 90px !important; } /* Alt bar için boşluk */
+    #main-content { padding-bottom: 75px !important; } /* Alt bar için boşluk (İnceltildi) */
 
-    /* YENİ INSTAGRAM TARZI ALT BAR (BOTTOM NAV) */
+    /* YENİ ESTETİK, İNCE VE PROFESYONEL ALT BAR (BOTTOM NAV) */
     .bottom-nav {
         position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
-        background: #fff;
-        border-top: 1px solid #E5E7EB;
+        background: #ffffff;
+        border-top: 1px solid #f1f1f1;
         display: flex;
         justify-content: space-around;
         align-items: center;
-        padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+        padding-bottom: env(safe-area-inset-bottom); /* iOS güvenli alan */
+        height: 60px; /* Çok daha ince ve şık */
         z-index: 9999;
-        box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
     }
     .bottom-nav-item {
         display: flex;
         flex-direction: column;
         align-items: center;
-        color: #9CA3AF;
-        font-size: 11px;
+        justify-content: center;
+        color: #8E8E93; /* Soft gri */
+        font-size: 10px; /* Daha ufak ve estetik font */
         text-decoration: none;
         cursor: pointer;
         transition: 0.2s;
         flex: 1;
         background: transparent !important;
         border: none !important;
-        font-weight: 600;
+        font-weight: 500;
         -webkit-tap-highlight-color: transparent;
+        height: 100%;
     }
-    .bottom-nav-item.active { color: var(--primary) !important; }
+    .bottom-nav-item.active { 
+        color: #6366f1 !important; /* Modern soft mor/mavi aktif rengi */
+        font-weight: 600; 
+    }
     .bottom-nav-icon {
-        font-size: 24px;
-        margin-bottom: 3px;
-        transition: transform 0.2s;
+        width: 22px;
+        height: 22px;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-    .bottom-nav-item.active .bottom-nav-icon { transform: scale(1.1); }
+    .bottom-nav-icon svg {
+        width: 100%;
+        height: 100%;
+        transition: 0.2s;
+    }
+    .bottom-nav-item.active .bottom-nav-icon svg.fill-active {
+        fill: currentColor;
+    }
+    .bottom-nav-item.active .bottom-nav-icon svg {
+        stroke-width: 2.2; /* Aktifken çizgiler biraz kalınlaşır */
+    }
 
     #chat-layout-container { height: calc(100vh - 120px) !important; max-height: 800px; overflow: hidden !important; display: flex; flex-direction: row; }
     .chat-sidebar { overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; }
@@ -190,7 +209,7 @@ styleFix.innerHTML = `
     .dark-mode .chat-input-wrapper input { background: #374151 !important; color: #e5e7eb !important; }
     .dark-mode .modal-content { background-color: #1e1e1e !important; color: #e5e7eb !important; border-color: #374151 !important;}
     .dark-mode .bottom-nav { background: #1e1e1e !important; border-top-color: #374151 !important; }
-    .dark-mode .bottom-nav-item.active { color: #3B82F6 !important; }
+    .dark-mode .bottom-nav-item.active { color: #6366f1 !important; }
     
     #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
     #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
@@ -244,7 +263,7 @@ const bind = (id, event, callback) => {
 };
 
 // ============================================================================
-// 🌟 YENİ: KAMPÜS SEKME ENTEGRASYONU (ESKİ SIDEBAR ÖZELLİKLERİ BURADA)
+// 🌟 KAMPÜS SEKME ENTEGRASYONU (ESKİ SIDEBAR ÖZELLİKLERİ BURADA)
 // ============================================================================
 window.renderSidebarAccordions = function() {
     const container = document.getElementById('sidebar-networks-container');
@@ -541,7 +560,7 @@ window.logout = async function() {
 };
 
 // ============================================================================
-// 2. OTURUM DURUMU KONTROLÜ VE BİLDİRİM SEKME ENTEGRASYONU
+// 2. OTURUM DURUMU KONTROLÜ VE YENİ STİLİZASYONLU ALT BAR
 // ============================================================================
 
 onAuthStateChanged(auth, async (user) => {
@@ -573,37 +592,41 @@ onAuthStateChanged(auth, async (user) => {
             await window.ensureWelcomeMessage(user, window.userProfile.name);
             await updateDoc(userDocRef, { isOnline: true });
             
-            // INSTAGRAM TARZI BOTTOM NAVIGASYON (ALT BAR) OLUŞTURMA
+            // YENİ, İNCE VE SVG İKONLU BOTTOM NAVIGASYON (KAMPÜS KALDIRILDI)
             if (!document.getElementById('uniloop-bottom-nav')) {
                 const bottomNav = document.createElement('div');
                 bottomNav.id = 'uniloop-bottom-nav';
                 bottomNav.className = 'bottom-nav';
                 bottomNav.innerHTML = `
                     <div class="menu-item bottom-nav-item active" data-target="home" onclick="window.loadPage('home')">
-                        <div class="bottom-nav-icon">🏠</div>
+                        <div class="bottom-nav-icon">
+                            <svg class="fill-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        </div>
                         <span>Ana Sayfa</span>
                     </div>
                     <div class="menu-item bottom-nav-item" data-target="confessions" onclick="window.loadPage('confessions')">
-                        <div class="bottom-nav-icon">🧭</div>
+                        <div class="bottom-nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                        </div>
                         <span>Keşfet</span>
                     </div>
-                    <div class="menu-item bottom-nav-item" data-target="campus" onclick="window.loadPage('campus')">
-                        <div class="bottom-nav-icon">🏢</div>
-                        <span>Kampüs</span>
-                    </div>
                     <div class="menu-item bottom-nav-item" data-target="market" onclick="window.loadPage('market')">
-                        <div class="bottom-nav-icon">🛒</div>
+                        <div class="bottom-nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                        </div>
                         <span>Market</span>
                     </div>
                     <div class="menu-item bottom-nav-item" data-target="messages" onclick="window.loadPage('messages')">
                         <div class="bottom-nav-icon" style="position:relative;">
-                            💬
-                            <span id="notif-badge" style="display:none; position:absolute; top:-5px; right:-10px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold;">0</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            <span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-6px; background:#EF4444; color:white; border-radius:50%; width:14px; height:14px; font-size:9px; align-items:center; justify-content:center; font-weight:bold; border: 2px solid white;">0</span>
                         </div>
                         <span>Mesajlar</span>
                     </div>
                     <div class="menu-item bottom-nav-item" data-target="profile" onclick="window.loadPage('profile')">
-                        <div class="bottom-nav-icon">👤</div>
+                        <div class="bottom-nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        </div>
                         <span>Profil</span>
                     </div>
                 `;
@@ -1813,148 +1836,6 @@ window.submitConfessionComment = async function(docId) {
 };
 
 // ============================================================================
-// 10. KAMPÜS SEKME GÖRÜNÜMÜ & FAKÜLTE FORUM SİSTEMİ
-// ============================================================================
-
-window.renderCampus = function() {
-    mainContent.innerHTML = `
-        <div class="card" style="padding: 20px; min-height: calc(100vh - 140px);">
-            <h2 style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">🏢 Kampüs Ağları</h2>
-            <div id="sidebar-networks-container"></div>
-        </div>
-    `;
-    window.renderSidebarAccordions();
-};
-
-window.currentFacultyPosts = [];
-
-window.handleFacultyClick = async function(name, icon, bgColor) {
-    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-
-    const isJoined = window.joinedFaculties.some(f => f.name === name) || window.userProfile.faculty === name;
-
-    if(isJoined) { window.loadFacultyFeed(name, icon, bgColor); } 
-    else {
-        mainContent.innerHTML = `
-            <div class="join-faculty-box" style="text-align:center; padding:40px 20px; background:white; border-radius:16px; border:1px solid var(--border-color); margin-top:20px;">
-                <div class="icon" style="font-size:60px; margin-bottom:20px;">${icon}</div>
-                <h2 style="font-size:24px; color:var(--text-dark); margin-bottom:10px;">${name} Ağına Hoş Geldin</h2>
-                <p style="color:var(--text-gray); font-size:15px; margin-bottom:25px;">Bu alan kapalı bir ağdır. Girmek ve bildirimleri sol taraftaki <strong>Bana Özel</strong> sekmesine sabitlemek için fakülte kodunu girmelisin.</p>
-                <div style="max-width: 300px; margin: 0 auto 20px auto;">
-                    <input type="text" id="faculty-passcode-input" class="form-group" style="width: 100%; text-align:center; font-size:18px; font-weight:bold; letter-spacing:2px; padding: 15px; border: 2px solid var(--border-color); border-radius: 12px; outline:none;" placeholder="Giriş Kodunu Yazın">
-                </div>
-                <button class="btn-primary" style="max-width:250px; font-size:16px; padding:14px; border-radius:12px; box-shadow:0 4px 6px rgba(79, 70, 229, 0.3);" onclick="window.verifyFacultyCode('${name}', '${icon}', '${bgColor}')">Ağa Katıl ve Kaydet</button>
-            </div>
-        `;
-        window.scrollTo(0,0);
-    }
-};
-
-window.verifyFacultyCode = async function(name, icon, bgColor) {
-    const inputCode = document.getElementById('faculty-passcode-input').value.trim();
-    if (FACULTY_PASSCODES[name] && inputCode.toLowerCase() === FACULTY_PASSCODES[name].toLowerCase()) {
-        window.userProfile.faculty = name; 
-        window.joinedFaculties = [{name: name, icon: icon, color: bgColor}]; 
-        await updateDoc(doc(db, "users", window.userProfile.uid), { faculty: name });
-        window.updateMyFacultiesSidebar();
-        window.loadFacultyFeed(name, icon, bgColor);
-    } else { alert("Hatalı kod girdiniz. Lütfen tekrar deneyin."); }
-};
-
-window.loadFacultyFeed = async function(name, icon, bgColor) {
-    const activeUsersCount = Math.floor(Math.random() * 80) + 20; 
-    
-    mainContent.innerHTML = `
-        <div style="display:flex; flex-direction:column; gap:20px;">
-            <div style="padding:20px; background:${bgColor}; color:white; border-radius:16px; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <div style="font-size:40px; background:rgba(255,255,255,0.2); width:60px; height:60px; display:flex; align-items:center; justify-content:center; border-radius:50%;">${icon}</div>
-                    <div>
-                        <h2 style="margin:0; font-size:22px;">${name} Forumu</h2>
-                        <span style="font-size:14px; opacity:0.9;">Sadece bu fakültedeki öğrencilere özel alan.</span>
-                    </div>
-                </div>
-                <div style="background: rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 12px; font-weight: bold; font-size: 13px;">
-                    🟢 ${activeUsersCount} Aktif Öğrenci
-                </div>
-            </div>
-            
-            <div class="card" style="padding:15px; display:flex; gap:15px; align-items:flex-start;">
-                <div class="avatar" style="width:40px; height:40px; font-size:20px; margin:0;">${window.userProfile.avatar}</div>
-                <div style="flex:1;">
-                    <textarea id="faculty-post-input" placeholder="Fakülteye özel bir şeyler paylaş..." style="width:100%; border:none; resize:none; outline:none; font-size:15px; font-family:inherit; background:transparent; min-height:60px;"></textarea>
-                    <div style="display:flex; justify-content:flex-end; border-top:1px solid var(--border-color); padding-top:10px; margin-top:10px;">
-                        <button class="btn-primary" style="width:auto; padding:8px 20px; border-radius:20px;" onclick="window.submitFacultyPost()">Gönderiyi Yayınla</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="faculty-posts-container" style="display:flex; flex-direction:column; gap:15px;"></div>
-        </div>
-    `;
-    
-    if(window.currentFacultyPosts.length === 0) {
-        window.currentFacultyPosts.push({ id: 1, user: "Sistem Moderatörü", avatar: "🤖", text: "Fakülte forumuna hoş geldin! Bu alan sadece senin fakültendeki öğrencilere özeldir.", time: "Bugün", likes: 12, replies: 0 });
-    }
-    window.renderFacultyPosts();
-};
-
-window.submitFacultyPost = function() {
-    const input = document.getElementById('faculty-post-input');
-    if(!input || input.value.trim() === '') return;
-    
-    window.currentFacultyPosts.unshift({
-        id: Date.now(),
-        user: window.userProfile.name + " " + window.userProfile.surname,
-        avatar: window.userProfile.avatar,
-        text: input.value.trim(),
-        time: "Az önce",
-        likes: 0,
-        replies: 0
-    });
-    input.value = '';
-    window.renderFacultyPosts();
-};
-
-window.renderFacultyPosts = function() {
-    const container = document.getElementById('faculty-posts-container');
-    if(!container) return;
-    
-    let html = '';
-    window.currentFacultyPosts.forEach(post => {
-        let avatarHtml = post.avatar.startsWith('http') 
-            ? `<img src="${post.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">` 
-            : post.avatar;
-
-        html += `
-            <div class="card" style="padding:15px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div class="avatar" style="width:40px; height:40px; font-size:20px; margin:0; display:flex; align-items:center; justify-content:center;">${avatarHtml}</div>
-                        <div>
-                            <div style="font-weight:bold; font-size:15px;">${post.user}</div>
-                            <div style="font-size:12px; color:var(--text-gray);">${post.time}</div>
-                        </div>
-                    </div>
-                </div>
-                <div style="font-size:15px; line-height:1.5; color:var(--text-dark); margin-bottom:15px;">
-                    ${post.text.replace(/\n/g, '<br>')}
-                </div>
-                <div style="display:flex; gap:15px; border-top:1px solid var(--border-color); padding-top:10px;">
-                    <button style="background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:5px; color:var(--text-gray); font-weight:600; font-size:13px;" onclick="this.style.color='var(--primary)'; this.innerHTML='💙 Beğenildi (${post.likes + 1})';">
-                        🤍 Beğen (${post.likes})
-                    </button>
-                    <button style="background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:5px; color:var(--text-gray); font-weight:600; font-size:13px;" onclick="alert('Fakülte içi yorum özelliği yakında aktif edilecek!')">
-                        💬 Yorum Yap (${post.replies})
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-    container.innerHTML = html;
-};
-
-// ============================================================================
 // 11. PROFİL, AYARLAR VE FOTOĞRAF YÖNETİMİ
 // ============================================================================
 
@@ -2181,7 +2062,6 @@ window.loadPage = function(page) {
     switch (page) {
         case 'home': window.renderHome(); break;
         case 'confessions': window.renderConfessions(); break;
-        case 'campus': window.renderCampus(); break;
         case 'market': window.renderListings('market', '🛒 Kampüs Market'); break;
         case 'messages': window.renderMessages(); break;
         case 'profile': window.renderProfile(); break;
@@ -2197,4 +2077,3 @@ window.loadPage = function(page) {
 document.addEventListener('DOMContentLoaded', () => {
     initializeUniLoop();
 });
-
