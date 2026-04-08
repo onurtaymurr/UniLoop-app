@@ -1,9 +1,36 @@
-<!DOCTYPE html><html lang="tr">
+<!DOCTYPE html>
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>UniLoop - Global Campus Network</title>
     <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* Alt Navigasyon (Bottom Nav) İkonlarını ve Metinlerini Aşağı Çekme / Ortalama Düzeltmesi */
+        .bottom-nav {
+            align-items: flex-end !important; /* İçerikleri alt kısma hizalar */
+            padding-bottom: calc(env(safe-area-inset-bottom) + 8px) !important;
+            padding-top: 5px !important;
+        }
+        .bottom-nav-item {
+            justify-content: flex-end !important; /* İkon ve yazıyı aşağıya iter */
+            gap: 2px !important; /* İkon ve yazı arasındaki boşluğu daraltır */
+        }
+        .bottom-nav-icon {
+            margin-bottom: 2px !important; /* İkonun altındaki fazla boşluğu alır */
+            margin-top: 4px !important; /* İkonu yukarıdan biraz daha aşağı iter */
+        }
+        
+        /* Üst Bar Premium Butonu Animasyonu */
+        .premium-glow {
+            animation: glowPulse 2s infinite alternate;
+        }
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); }
+            100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); }
+        }
+    </style>
 </head>
 <body>
 
@@ -68,18 +95,24 @@
 </div>
 
 <div id="app-screen" style="display: none;">
-    <header>
+    <header id="app-header">
         <div class="logo-area">
-            <div id="mobile-menu-btn">☰</div>
-            <div class="logo" id="logo-btn">🌍 UniLoop</div>
+            <div id="mobile-menu-btn" style="display: none;">☰</div>
+            <div class="logo" id="logo-btn" onclick="window.loadPage('home')" style="cursor:pointer;">🌍 UniLoop</div>
         </div>
-        <div class="user-menu">
-            <button class="btn-primary" id="profile-btn" style="width: auto; padding: 10px 20px; border-radius: 20px;">👤 Profilim</button>
+        <div class="header-right-menu" style="display: flex; align-items: center; gap: 12px;">
+            <div class="menu-item premium-glow" id="nav-premium-action" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; font-weight: bold; cursor: pointer; padding: 6px 14px; border-radius: 20px; font-size: 13px; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.4);" onclick="window.openPremiumModal()">
+                🌟 Premium
+            </div>
+            <div id="notif-btn-top" onclick="window.loadPage('notifications')" style="position: relative; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; transition: 0.2s;" title="Bildirimler">
+                🔔 
+                <span id="notif-badge-top" style="display:none; position:absolute; top:-2px; right:-2px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span>
+            </div>
         </div>
     </header>
 
     <div class="container">
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar" style="display: none;">
             <div class="sidebar-top">
                 <h3>Navigasyon</h3>
                 <div class="menu-item active" data-target="home">🏠 Ana Sayfa</div>
@@ -102,7 +135,7 @@
 
         <main class="main-feed" id="main-content"></main>
 
-        <aside class="right-panel">
+        <aside class="right-panel" style="display:none;">
             <div class="card sticky-card" style="padding: 15px;">
                 <div id="right-networks-container"></div>
             </div>
