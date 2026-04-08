@@ -7,20 +7,22 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* --- TEMEL DÜZELTMELER --- */
+        /* Alt Navigasyon (Bottom Nav) İkonlarını ve Metinlerini Aşağı Çekme / Ortalama Düzeltmesi */
         .bottom-nav {
-            align-items: flex-end !important;
+            align-items: flex-end !important; /* İçerikleri alt kısma hizalar */
             padding-bottom: calc(env(safe-area-inset-bottom) + 8px) !important;
             padding-top: 5px !important;
         }
         .bottom-nav-item {
-            justify-content: flex-end !important;
-            gap: 2px !important;
+            justify-content: flex-end !important; /* İkon ve yazıyı aşağıya iter */
+            gap: 2px !important; /* İkon ve yazı arasındaki boşluğu daraltır */
         }
         .bottom-nav-icon {
-            margin-bottom: 2px !important;
-            margin-top: 4px !important;
+            margin-bottom: 2px !important; /* İkonun altındaki fazla boşluğu alır */
+            margin-top: 4px !important; /* İkonu yukarıdan biraz daha aşağı iter */
         }
+        
+        /* Üst Bar Premium Butonu Animasyonu */
         .premium-glow {
             animation: glowPulse 2s infinite alternate;
         }
@@ -28,93 +30,6 @@
             0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); }
             100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); }
         }
-
-        /* --- 1. BİLDİRİMLER ŞABLONU (Kompakt ve Estetik) --- */
-        #notification-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 1000; display: none;
-            backdrop-filter: blur(3px);
-        }
-        .compact-notif-modal {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; max-width: 400px; max-height: 70vh; background: #fff;
-            border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            z-index: 1001; display: none; flex-direction: column; overflow: hidden;
-        }
-        .notif-header {
-            padding: 15px 20px; border-bottom: 1px solid #eee; display: flex;
-            justify-content: space-between; align-items: center; background: #f8fafc;
-        }
-        .notif-body {
-            padding: 10px; overflow-y: auto; flex-grow: 1;
-        }
-        .notif-item {
-            padding: 12px; border-bottom: 1px solid #f1f5f9; display: flex; gap: 10px; align-items: center;
-        }
-        .notif-item:last-child { border-bottom: none; }
-
-        /* --- 4. HESAP OLUŞTURMA SİHİRBAZI (Stepper) --- */
-        #profile-setup-screen {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #f4f7f6; z-index: 2000; overflow-y: auto; padding: 20px;
-        }
-        .stepper-container {
-            max-width: 450px; margin: 40px auto; background: #fff; border-radius: 20px;
-            padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative;
-        }
-        .step-indicator {
-            font-size: 14px; color: var(--primary, #3b82f6); font-weight: bold; margin-bottom: 20px; text-align: center;
-        }
-        .step-content {
-            display: none; animation: slideIn 0.4s ease forwards;
-        }
-        .step-content.active { display: block; }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        /* Seçim Butonları (Sınıf, İlgi Alanları, Amaç) */
-        .chip-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
-        .chip-btn {
-            padding: 8px 16px; border: 2px solid #e2e8f0; border-radius: 20px;
-            background: #fff; cursor: pointer; transition: 0.2s; font-weight: 500;
-        }
-        .chip-btn.selected {
-            background: var(--primary, #3b82f6); color: #fff; border-color: var(--primary, #3b82f6);
-        }
-
-        /* Fotoğraf Yükleme Çerçevesi (Instagram Tarzı) */
-        .avatar-upload {
-            width: 120px; height: 120px; border-radius: 50%; border: 3px dashed #cbd5e1;
-            margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; overflow: hidden; position: relative; background: #f8fafc;
-        }
-        .avatar-upload img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        
-        /* --- PROFiL KARTI --- */
-        .profile-card {
-            display: flex; align-items: center; gap: 20px; padding: 20px;
-            background: linear-gradient(135deg, #ffffff, #f1f5f9); border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-top: 20px;
-        }
-        .profile-card-left img {
-            width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #3b82f6;
-        }
-        .profile-card-right h3 { margin: 0 0 5px 0; font-size: 18px; color: #1e293b; }
-        .profile-card-right p { margin: 2px 0; font-size: 13px; color: #64748b; }
-        .profile-hobbies { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
-        .hobby-tag { background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
-
-        /* Stepper İleri Geri Butonları */
-        .stepper-actions { display: flex; justify-content: space-between; margin-top: 30px; }
-        .stepper-actions button { padding: 10px 20px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-prev { background: #e2e8f0; color: #475569; }
-        .btn-next { background: var(--primary, #3b82f6); color: white; }
-
-        /* Uygulama İçi Butonlar */
-        .btn-market-msg { background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-        .btn-market-msg:disabled { background: #9ca3af; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -123,139 +38,130 @@
     <div class="auth-card" id="login-card">
         <div class="auth-logo">🌍 UniLoop</div>
         <p class="auth-subtitle">Kampüs ağına giriş yap, döngüde kal.</p>
-        <div class="form-group"><input type="email" id="login-email" placeholder="E-posta Adresiniz"></div>
-        <div class="form-group" style="margin-bottom: 8px;"><input type="password" id="login-password" placeholder="Şifren"></div>
-        <button class="btn-primary" id="login-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px; width: 100%;">Giriş Yap</button>
-        <button class="action-btn" id="show-register-btn" style="padding: 12px; font-size: 16px; width: 100%;">Yeni Hesap Oluştur</button>
+        
+        <div class="form-group">
+            <input type="email" id="login-email" placeholder="E-posta Adresiniz">
+        </div>
+        <div class="form-group" style="margin-bottom: 8px;">
+            <input type="password" id="login-password" placeholder="Şifren">
+        </div>
+        
+        <div style="text-align: right; margin-bottom: 20px;">
+            <span id="forgot-password-btn" style="font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 600;">Şifremi Unuttum</span>
+        </div>
+        
+        <button class="btn-primary" id="login-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Giriş Yap</button>
+        <button class="action-btn" id="show-register-btn" style="padding: 12px; font-size: 16px;">Yeni Hesap Oluştur</button>
+        
+        <p style="font-size: 12px; color: var(--text-gray); margin-top: 20px;">Sisteme giriş için e-posta onayı gereklidir.</p>
     </div>
 
     <div class="auth-card" id="register-card" style="display: none;">
         <div class="auth-logo" style="font-size: 28px;">🌍 Ağa Katıl</div>
-        <div class="form-group"><input type="email" id="reg-email" placeholder="E-posta Adresiniz"></div>
-        <div class="form-group"><input type="password" id="reg-password" placeholder="Güçlü Bir Şifre Belirle"></div>
-        <button class="btn-primary" id="register-btn" style="margin-bottom: 10px; padding: 12px; width: 100%;">Hesabımı Oluştur</button>
-    </div>
-</div>
-
-<div id="profile-setup-screen">
-    <div class="stepper-container">
-        <div class="step-indicator" id="step-indicator">Adım 1 / 5</div>
+        <p class="auth-subtitle" style="margin-bottom: 20px;">Üniversiteni seç ve kendi kampüs ağına bağlan.</p>
         
-        <div class="step-content active" id="step-1">
-            <h2 style="margin-bottom: 15px; color: #1e293b;">Kendinden Bahset 👋</h2>
-            <div class="form-group"><input type="text" id="setup-name" placeholder="Adın ve Soyadın"></div>
-            <div class="form-group"><input type="number" id="setup-age" placeholder="Yaşın" min="17" max="40"></div>
+        <div class="grid-2col" style="margin-top: 0; margin-bottom: 0;">
+            <div class="form-group"><input type="text" id="reg-name" placeholder="Ad"></div>
+            <div class="form-group"><input type="text" id="reg-surname" placeholder="Soyad"></div>
+        </div>
+        
+        <div class="form-group autocomplete">
+            <input type="text" id="reg-uni" placeholder="Üniversiteni Ara (Örn: Stanford, ODTÜ...)" autocomplete="off">
+            <div id="uni-autocomplete-list" class="autocomplete-items"></div>
         </div>
 
-        <div class="step-content" id="step-2">
-            <h2 style="margin-bottom: 15px; color: #1e293b;">Eğitim Durumun 🎓</h2>
-            <div class="form-group">
-                <select id="setup-faculty" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
-                    <option value="">Fakülteni Seç</option>
-                    <option value="Mühendislik">Mühendislik Fakültesi</option>
-                    <option value="Tıp">Tıp Fakültesi</option>
-                    <option value="Hukuk">Hukuk Fakültesi</option>
-                    <option value="İktisadi ve İdari Bilimler">İktisadi ve İdari Bilimler</option>
-                    <option value="Mimarlık">Mimarlık Fakültesi</option>
-                    <option value="Eğitim">Eğitim Fakültesi</option>
-                </select>
-            </div>
-            <p style="margin-top: 15px; font-weight: bold; font-size: 14px;">Kaçıncı Sınıfsın?</p>
-            <div class="chip-group" id="grade-group">
-                <div class="chip-btn" data-value="Hazırlık">Hazırlık</div>
-                <div class="chip-btn" data-value="1. Sınıf">1. Sınıf</div>
-                <div class="chip-btn" data-value="2. Sınıf">2. Sınıf</div>
-                <div class="chip-btn" data-value="3. Sınıf">3. Sınıf</div>
-                <div class="chip-btn" data-value="4. Sınıf">4. Sınıf</div>
-                <div class="chip-btn" data-value="5. Sınıf">5. Sınıf</div>
-                <div class="chip-btn" data-value="6. Sınıf (Tıp)">6. Sınıf</div>
-            </div>
+        <div class="form-group">
+            <input type="email" id="reg-email" placeholder="E-posta Adresiniz">
         </div>
+        <div class="form-group">
+            <input type="password" id="reg-password" placeholder="Güçlü Bir Şifre Belirle">
+        </div>
+        
+        <button class="btn-primary" id="register-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Oluştur</button>
+        <button class="action-btn" id="show-login-btn" style="padding: 12px; font-size: 16px; background: transparent; border: 1px solid var(--border-color);">Zaten hesabım var</button>
+    </div>
 
-        <div class="step-content" id="step-3">
-            <h2 style="margin-bottom: 15px; color: #1e293b;">Nelerden Hoşlanırsın? 🎸</h2>
-            <p style="font-size: 13px; color: #64748b;">Birden fazla seçebilirsin.</p>
-            <div class="chip-group" id="hobbies-group">
-                <div class="chip-btn" data-value="Müzik">Müzik</div>
-                <div class="chip-btn" data-value="Spor">Spor</div>
-                <div class="chip-btn" data-value="Kitap">Kitap</div>
-                <div class="chip-btn" data-value="Sinema">Sinema</div>
-                <div class="chip-btn" data-value="Oyun">Oyun</div>
-                <div class="chip-btn" data-value="Yazılım">Yazılım</div>
-                <div class="chip-btn" data-value="Gezmek">Gezmek</div>
-                <div class="chip-btn" data-value="Fotoğrafçılık">Fotoğrafçılık</div>
-            </div>
+    <div class="auth-card" id="verify-card" style="display: none;">
+        <div class="auth-logo" style="font-size: 28px;">📧 Hesabı Doğrula</div>
+        <p class="auth-subtitle" style="margin-bottom: 20px;">E-posta adresinize gönderilen onay kodunu girin veya maildeki doğrulama linkine tıklayın.</p>
+        
+        <div class="form-group">
+            <input type="text" id="verify-code-input" placeholder="6 Haneli Kod (Varsa)" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 5px; font-weight: bold; border: 2px solid var(--primary);">
         </div>
-
-        <div class="step-content" id="step-4">
-            <h2 style="margin-bottom: 15px; color: #1e293b;">Buradaki Amacın Ne? 🎯</h2>
-            <div class="chip-group" id="purpose-group">
-                <div class="chip-btn" data-value="Sosyalleşmek">Sosyalleşmek İstiyorum</div>
-                <div class="chip-btn" data-value="Arkadaş">Yeni Arkadaşlar Arıyorum</div>
-                <div class="chip-btn" data-value="Ders">Ders Çalışacak Arkadaş</div>
-                <div class="chip-btn" data-value="Etkinlik">Kampüs Etkinlikleri</div>
-            </div>
-        </div>
-
-        <div class="step-content" id="step-5">
-            <h2 style="margin-bottom: 15px; text-align:center; color: #1e293b;">Son Dokunuş 📸</h2>
-            <div class="avatar-upload" id="avatar-trigger">
-                <span id="avatar-text" style="color: #64748b; font-size: 13px;">Fotoğraf Ekle</span>
-                <img id="avatar-preview" src="">
-                <input type="file" id="avatar-input" style="display:none;" accept="image/*">
-            </div>
-            
-            <p style="text-align:center; font-weight:bold; margin-top:20px;">Profil Kartın Böyle Görünecek:</p>
-            <div class="profile-card" id="final-profile-card">
-                </div>
-        </div>
-
-        <div class="stepper-actions">
-            <button class="btn-prev" id="btn-prev" style="visibility: hidden;">Geri</button>
-            <button class="btn-next" id="btn-next">Devam Et</button>
-        </div>
+        
+        <button class="btn-primary" id="verify-code-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Aktifleştir</button>
+        <p style="font-size: 12px; color: var(--text-gray); margin-top: 15px;">Maildeki linke tıkladıysanız doğrudan butona basabilirsiniz.</p>
     </div>
 </div>
 
 <div id="app-screen" style="display: none;">
     <header id="app-header">
         <div class="logo-area">
+            <div id="mobile-menu-btn" style="display: none;">☰</div>
             <div class="logo" id="logo-btn" onclick="window.loadPage('home')" style="cursor:pointer;">🌍 UniLoop</div>
         </div>
         <div class="header-right-menu" style="display: flex; align-items: center; gap: 12px;">
-            <div class="menu-item premium-glow" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px;">🌟 Premium</div>
-            <div id="notif-btn-top" onclick="window.openNotifications()" style="position: relative; cursor: pointer; font-size: 20px; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; display:flex; align-items:center; justify-content:center;">
-                🔔 <span id="notif-badge-top" style="display:none; position:absolute; top:-2px; right:-2px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold;">0</span>
+            <div class="menu-item premium-glow" id="nav-premium-action" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; font-weight: bold; cursor: pointer; padding: 6px 14px; border-radius: 20px; font-size: 13px; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.4);" onclick="window.openPremiumModal()">
+                🌟 Premium
+            </div>
+            <div id="notif-btn-top" onclick="window.loadPage('notifications')" style="position: relative; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; transition: 0.2s;" title="Bildirimler">
+                🔔 
+                <span id="notif-badge-top" style="display:none; position:absolute; top:-2px; right:-2px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span>
             </div>
         </div>
     </header>
 
     <div class="container">
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar" style="display: none;">
             <div class="sidebar-top">
-                <div class="menu-item active" onclick="window.loadPage('home')">🏠 Ana Sayfa</div>
-                <div class="menu-item" onclick="window.loadPage('market')">🛒 Kampüs Market</div>
-                <div class="menu-item" onclick="window.loadPage('profile')">👤 Profilim</div>
-                <div class="menu-item" onclick="window.loadPage('friends')">👥 Arkadaşlarım</div>
+                <h3>Navigasyon</h3>
+                <div class="menu-item active" data-target="home">🏠 Ana Sayfa</div>
+                <div class="menu-item" data-target="loopmap">📍 LoopMap</div>
+                <div class="menu-item" data-target="market">🛒 Kampüs Market</div>
+                <div class="menu-item" data-target="confessions">🤫 Anonim Kampüs</div>
+                <div class="menu-item" data-target="qa">❓ Soru & Cevap</div>
+                
+                <br>
+                <h3>Bana Özel</h3>
+                <div class="menu-item" id="nav-messages-btn" data-target="messages">💬 Mesajlarım <span id="msg-badge" class="badge" style="display:none;">0</span></div>
+                
+                <div id="sidebar-networks-container"></div>
+            </div>
+            
+            <div class="sidebar-bottom">
+                <div class="menu-item" data-target="settings">⚙️ Ayarlar</div>
             </div>
         </aside>
 
-        <main class="main-feed" id="main-content">
-            </main>
+        <main class="main-feed" id="main-content"></main>
+
+        <aside class="right-panel" style="display:none;">
+            <div class="card sticky-card" style="padding: 15px;">
+                <div id="right-networks-container"></div>
+            </div>
+        </aside>
     </div>
 </div>
 
-<div id="notification-overlay" onclick="window.closeNotifications()"></div>
-<div class="compact-notif-modal" id="notification-modal">
-    <div class="notif-header">
-        <h3 style="margin:0; font-size:16px;">Bildirimler & İstekler</h3>
-        <span style="font-size:20px; cursor:pointer;" onclick="window.closeNotifications()">&times;</span>
+<div id="app-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">Başlık</h3>
+            <span class="close-btn" id="modal-close">&times;</span>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
     </div>
-    <div class="notif-body" id="notif-body-content">
-        <p style="text-align:center; color:#94a3b8; font-size:13px; margin-top:20px;">Henüz bir bildirim yok.</p>
-    </div>
+</div>
+
+<div id="lightbox" class="lightbox">
+    <span class="lightbox-close" onclick="window.closeLightbox()">&times;</span>
+    <span class="lightbox-counter" id="lightbox-counter">1/3</span>
+    <button class="lightbox-prev" onclick="window.changeLightboxImage(-1)">&#10094;</button>
+    <img class="lightbox-content" id="lightbox-img" src="">
+    <button class="lightbox-next" onclick="window.changeLightboxImage(1)">&#10095;</button>
 </div>
 
 <script type="module" src="app.js"></script>
+
 </body>
 </html>
