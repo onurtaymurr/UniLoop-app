@@ -65,17 +65,20 @@ let qaDB = [];
 let chatsDB = [];
 let loopMapDB = []; 
 let currentChatId = null;
+
+// HARİTA MOTORU İÇİN ÖZEL DEĞİŞKENLER
 let googleMap = null; 
 let userCurrentLocation = null; 
+let activeUserMarker = null; // Canlı konum işaretçisi
+let currentMapMarkers = []; // Haritaya eklenen fotoğraflı pinler
 
 // ============================================================================
-// 📍 GOOGLE MAPS YÜKLEYİCİ (ÇAKIŞMA ÖNLEYİCİ VE GÜVENLİ)
+// 📍 GOOGLE MAPS YÜKLEYİCİ
 // ============================================================================
 function loadGoogleMapsScript() {
     if (document.getElementById('google-maps-script')) return; 
     if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') return; 
     
-    // Doğruladığın Google Maps API Anahtarın
     const apiKey = "AIzaSyC3vVgQCI8a5ctJ45fefAh1hKTwpCIYboE"; 
     
     if (!apiKey) {
@@ -1026,7 +1029,7 @@ function getHomeContent() {
 }
 
 // ============================================================================
-// 🌍 YENİ: LOOPMAP ENTEGRASYONU (SESSİZ FALLBACK / YEDEK KONUM SİSTEMİ)
+// 🌍 YENİ: LOOPMAP ENTEGRASYONU (CANLI TAKİP VE FOTOĞRAFLI PİNLER)
 // ============================================================================
 
 window.renderLoopMap = function() {
@@ -1036,7 +1039,7 @@ window.renderLoopMap = function() {
             <div id="map-auth-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; background:white; z-index:500; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
                 <div style="font-size:50px; margin-bottom:15px;">📍</div>
                 <h3 style="margin-bottom:10px; color:var(--text-dark);">Kampüs Haritası</h3>
-                <p style="color:var(--text-gray); margin-bottom:25px; font-size:14px; max-width:80%;">Haritayı görüntülemek ve anı bırakmak için başlatın.</p>
+                <p style="color:var(--text-gray); margin-bottom:25px; font-size:14px; max-width:80%;">Aktif konumunuzu açarak çevredeki anıları ve insanları keşfedin.</p>
                 <button class="btn-primary" id="start-map-btn" onclick="window.requestLocationAndInitMap()" style="width:auto; padding:14px 28px; border-radius:24px; font-size:16px; box-shadow:0 4px 12px rgba(79,70,229,0.3);">🚀 Haritayı Başlat</button>
             </div>
 
@@ -1054,46 +1057,47 @@ window.renderLoopMap = function() {
 window.requestLocationAndInitMap = function() {
     const btn = document.getElementById('start-map-btn');
     if(btn) {
-        btn.innerText = "⏳ Harita Yükleniyor...";
+        btn.innerText = "⏳ Konum Aranıyor...";
         btn.disabled = true;
     }
 
-    // 🔥 GÜÇLÜ YEDEK (FALLBACK) KONUM - Hata alınırsa burası çalışacak
-    const fallbackLocation = { lat: 39.92077, lng: 32.85411 }; // Ankara
+    // Sessiz Yedek Konum (Hata anında sistem çökmesin diye)
+    const fallbackLocation = { lat: 39.92077, lng: 32.85411 }; 
 
     if (navigator.geolocation) {
-        const options = {
-            enableHighAccuracy: false, 
-            timeout: 8000, // 8 saniye içinde cevap alamazsa varsayılana geçer
-            maximumAge: 0
-        };
-
-        navigator.geolocation.getCurrentPosition(
+        // AKTİF KONUM TAKİBİ: Artık bir kere almıyor, sürekli takip ediyor!
+        window.watchId = navigator.geolocation.watchPosition(
             (position) => {
-                // BAŞARILI: Kullanıcı izin verdi, gerçek konumu alındı
                 const overlay = document.getElementById('map-auth-overlay');
                 if(overlay) overlay.style.display = 'none';
                 
                 userCurrentLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
-                window.initGoogleMap(userCurrentLocation);
+                
+                if(!googleMap) {
+                    // Harita ilk defa açılıyorsa kur
+                    window.initGoogleMap(userCurrentLocation);
+                } else {
+                    // Harita zaten açıksa, sadece senin yerini (Yeşil Noktayı) güncelle
+                    if(activeUserMarker) {
+                        activeUserMarker.setPosition(userCurrentLocation);
+                    }
+                }
             },
             (error) => {
-                // HATA/ENGEL DURUMU: Sessizce yedek konuma geçiş yapılır
-                console.warn("Konum engellendi veya bulunamadı, yedek konuma geçiliyor.");
-                const overlay = document.getElementById('map-auth-overlay');
-                if(overlay) overlay.style.display = 'none';
-                
-                // Artık çökme veya uyarı mesajı yok!
-                userCurrentLocation = fallbackLocation; 
-                window.initGoogleMap(fallbackLocation); 
+                // EĞER İZİN VERİLMEZSE HATA BASMADAN YEDEK KONUMA GEÇ
+                console.warn("Konum engellendi. Yedek konuma geçiliyor.");
+                if(!googleMap) {
+                    const overlay = document.getElementById('map-auth-overlay');
+                    if(overlay) overlay.style.display = 'none';
+                    userCurrentLocation = fallbackLocation; 
+                    window.initGoogleMap(fallbackLocation); 
+                }
             },
-            options
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // Yüksek hassasiyet (Canlı Takip İçin)
         );
     } else {
-        // Tarayıcı desteklemiyorsa
         const overlay = document.getElementById('map-auth-overlay');
         if(overlay) overlay.style.display = 'none';
-        
         userCurrentLocation = fallbackLocation;
         window.initGoogleMap(fallbackLocation);
     }
@@ -1107,16 +1111,24 @@ window.initGoogleMap = function(centerLoc) {
     
     googleMap = new google.maps.Map(document.getElementById("map"), {
         center: centerLoc,
-        zoom: 16,
+        zoom: 17, // Canlı takip için daha yakın zoom
         disableDefaultUI: true,
         styles: [ { "featureType": "poi", "elementType": "labels", "stylers": [{ "visibility": "off" }] } ]
     });
 
-    // Kullanıcının (gerçek veya yedek) konumunu küçük bir mavi noktayla göster
-    new google.maps.Marker({
+    // KULLANICININ AKTİF KONUMUNU GÖSTEREN YEŞİL NOKTA
+    activeUserMarker = new google.maps.Marker({
         position: centerLoc,
         map: googleMap,
-        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4F46E5", fillOpacity: 1, strokeWeight: 2, strokeColor: "white" }
+        title: "Buradasın",
+        icon: { 
+            path: google.maps.SymbolPath.CIRCLE, 
+            scale: 10, 
+            fillColor: "#10B981", // Canlı yeşil
+            fillOpacity: 1, 
+            strokeWeight: 3, 
+            strokeColor: "white" 
+        }
     });
 
     window.drawMapMarkers();
@@ -1125,22 +1137,33 @@ window.initGoogleMap = function(centerLoc) {
 window.drawMapMarkers = function() {
     if(!googleMap) return;
     
+    // Eski pinleri temizle (Haritanın kasmasını ve pinlerin üst üste binmesini engeller)
+    currentMapMarkers.forEach(m => m.setMap(null));
+    currentMapMarkers = [];
+
     loopMapDB.forEach(post => {
+        // FOTOĞRAFLI PİN (THUMBNAIL) OLUŞTURMA
         const marker = new google.maps.Marker({
             position: { lat: post.lat, lng: post.lng },
             map: googleMap,
-            animation: google.maps.Animation.DROP
+            animation: google.maps.Animation.DROP,
+            icon: {
+                url: post.imgUrl, // Pinin resmi kullanıcının çektiği fotoğraf!
+                scaledSize: new google.maps.Size(40, 40) // Boyutlandırma
+            }
         });
 
         marker.addListener("click", () => {
             window.openMapSnapModal(post);
         });
+
+        currentMapMarkers.push(marker); // Hafızada tut
     });
 };
 
 window.handleMapPhotoCapture = async function(input) {
     if(!input.files || input.files.length === 0) return;
-    if(!userCurrentLocation) { alert("Konum sistemi başlatılamadı!"); return; }
+    if(!userCurrentLocation) { alert("Konum alınamadı, lütfen haritayı yenileyin."); return; }
 
     const file = input.files[0];
     
@@ -1155,7 +1178,7 @@ window.handleMapPhotoCapture = async function(input) {
         await addDoc(collection(db, "loopmap_posts"), {
             uid: window.userProfile.uid,
             userName: window.userProfile.name + " " + window.userProfile.surname,
-            lat: userCurrentLocation.lat,
+            lat: userCurrentLocation.lat, // AKTİF KONUMA BIRAKILIR
             lng: userCurrentLocation.lng,
             imgUrl: url,
             createdAt: serverTimestamp()
@@ -1163,6 +1186,7 @@ window.handleMapPhotoCapture = async function(input) {
 
         window.closeModal();
         alert("Anınız haritaya başarıyla bırakıldı!");
+        if(googleMap) googleMap.panTo(userCurrentLocation); // Fotoğrafı çektikten sonra haritayı o noktaya odaklar
     } catch(err) {
         window.closeModal();
         alert("Fotoğraf yüklenirken hata oluştu: " + err.message);
