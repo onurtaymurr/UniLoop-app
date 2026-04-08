@@ -1073,14 +1073,9 @@ window.requestLocationAndInitMap = function() {
         return;
     }
 
-    // ÇOK AGRESİF KONUM ARAMA STRATEJİSİ (Canlı Takip)
-    const options = {
-        enableHighAccuracy: true, // Nokta atışı (GPS)
-        timeout: 20000, // 20 saniye bekle
-        maximumAge: 0
-    };
-
-    window.watchId = navigator.geolocation.watchPosition(
+    // 1. AŞAMA: HIZLI PİNG (GPS OLMASA BİLE Wİ-Fİ'DEN ANINDA BULUR)
+    // Kapalı alanda veya PC'de çökmeyi önleyen can kurtaran kod burası.
+    navigator.geolocation.getCurrentPosition(
         (position) => {
             const overlay = document.getElementById('map-auth-overlay');
             if(overlay) overlay.style.display = 'none';
@@ -1089,28 +1084,31 @@ window.requestLocationAndInitMap = function() {
                 lat: position.coords.latitude, 
                 lng: position.coords.longitude 
             };
-            
-            if(!googleMap) {
-                // İlk defa açılıyorsa haritayı kur
-                window.initGoogleMap(userCurrentLocation);
-            } else if (activeUserMarker) {
-                // Harita zaten açıksa, sadece senin yerini (Mavi Noktayı) güncelle
-                activeUserMarker.position = userCurrentLocation;
-            }
+            window.initGoogleMap(userCurrentLocation);
+
+            // 2. AŞAMA: HARİTA AÇILDIKTAN SONRA ARKADA YÜKSEK HASSASİYETLİ TAKİBİ BAŞLAT
+            window.watchId = navigator.geolocation.watchPosition(
+                (newPos) => {
+                    userCurrentLocation = { lat: newPos.coords.latitude, lng: newPos.coords.longitude };
+                    if(activeUserMarker) {
+                        activeUserMarker.position = userCurrentLocation;
+                    }
+                },
+                (err) => { console.warn("Canlı takip güncellenemedi, mevcut konumda kalınıyor.", err); },
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+            );
         },
         (error) => {
-            console.error("GPS Hatası:", error);
-            // KIRMIZI ALARM UYARISI
-            alert("⚠️ TARAYICINIZ KONUMU ENGELLİYOR!\n\nLütfen adres çubuğundaki KİLİT (🔒) simgesine tıklayıp konuma İZİN VERİN ve sayfayı yenileyin.\n\nSistem zorunlu olarak yedek konuma (Lefkoşa/Gönyeli) yönlendiriliyor.");
+            console.error("İlk Konum Hatası:", error);
+            // SİTE İZİN VERMİŞ OLSA BİLE CİHAZIN GPS'İ KAPALIYSA BURASI ÇALIŞIR
+            alert("⚠️ DİKKAT: Tarayıcınızda izin verilmiş görünse bile CİHAZINIZIN (Telefon/Bilgisayar) kendi konum servisi kapalı veya bulunduğunuz yerde uydudan sinyal alınamıyor.\n\nSistem zorunlu olarak yedek konuma (Lefkoşa/Gönyeli) yönlendiriliyor.");
             
-            if(!googleMap) {
-                const overlay = document.getElementById('map-auth-overlay');
-                if(overlay) overlay.style.display = 'none';
-                userCurrentLocation = fallbackLocation; 
-                window.initGoogleMap(userCurrentLocation); 
-            }
+            const overlay = document.getElementById('map-auth-overlay');
+            if(overlay) overlay.style.display = 'none';
+            userCurrentLocation = fallbackLocation; 
+            window.initGoogleMap(userCurrentLocation); 
         },
-        options
+        { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 } // false olması kapalı alan çökmesini %100 çözer!
     );
 };
 
@@ -2370,7 +2368,7 @@ window.triggerAvatarCrop = function(inputEl) {
     const file = inputEl.files[0];
     const reader = new FileReader();
     
-    reader.onload = function(e) {
+        reader.onload = function(e) {
         window.openModal('Profil Fotoğrafını Kırp', `
             <div style="width: 100%; max-height: 400px; margin-bottom: 20px; display:flex; justify-content:center;">
                 <img id="cropper-image" src="${e.target.result}" style="max-width: 100%; display:block;">
@@ -2496,3 +2494,4 @@ if (document.readyState === 'loading') {
 } else {
     initializeUniLoop();
 }
+
