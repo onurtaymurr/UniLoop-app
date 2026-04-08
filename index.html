@@ -56,42 +56,8 @@
         <p style="font-size: 12px; color: var(--text-gray); margin-top: 20px;">Sisteme giriş için e-posta onayı gereklidir.</p>
     </div>
 
-    <div class="auth-card" id="register-card" style="display: none;">
-        <div class="auth-logo" style="font-size: 28px;">🌍 Ağa Katıl</div>
-        <p class="auth-subtitle" style="margin-bottom: 20px;">Üniversiteni seç ve kendi kampüs ağına bağlan.</p>
-        
-        <div class="grid-2col" style="margin-top: 0; margin-bottom: 0;">
-            <div class="form-group"><input type="text" id="reg-name" placeholder="Ad"></div>
-            <div class="form-group"><input type="text" id="reg-surname" placeholder="Soyad"></div>
-        </div>
-        
-        <div class="form-group autocomplete">
-            <input type="text" id="reg-uni" placeholder="Üniversiteni Ara (Örn: Stanford, ODTÜ...)" autocomplete="off">
-            <div id="uni-autocomplete-list" class="autocomplete-items"></div>
-        </div>
-
-        <div class="form-group">
-            <input type="email" id="reg-email" placeholder="E-posta Adresiniz">
-        </div>
-        <div class="form-group">
-            <input type="password" id="reg-password" placeholder="Güçlü Bir Şifre Belirle">
-        </div>
-        
-        <button class="btn-primary" id="register-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Oluştur</button>
-        <button class="action-btn" id="show-login-btn" style="padding: 12px; font-size: 16px; background: transparent; border: 1px solid var(--border-color);">Zaten hesabım var</button>
-    </div>
-
-    <div class="auth-card" id="verify-card" style="display: none;">
-        <div class="auth-logo" style="font-size: 28px;">📧 Hesabı Doğrula</div>
-        <p class="auth-subtitle" style="margin-bottom: 20px;">E-posta adresinize gönderilen onay kodunu girin veya maildeki doğrulama linkine tıklayın.</p>
-        
-        <div class="form-group">
-            <input type="text" id="verify-code-input" placeholder="6 Haneli Kod (Varsa)" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 5px; font-weight: bold; border: 2px solid var(--primary);">
-        </div>
-        
-        <button class="btn-primary" id="verify-code-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Hesabımı Aktifleştir</button>
-        <p style="font-size: 12px; color: var(--text-gray); margin-top: 15px;">Maildeki linke tıkladıysanız doğrudan butona basabilirsiniz.</p>
-    </div>
+    <div id="register-card" style="display: none;"></div>
+    <div id="verify-card" style="display: none;"></div>
 </div>
 
 <div id="app-screen" style="display: none;">
