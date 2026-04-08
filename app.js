@@ -4,47 +4,47 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    sendEmailVerification,
-    sendPasswordResetEmail,
-    signOut,
-    onAuthStateChanged
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+sendEmailVerification,
+sendPasswordResetEmail,
+signOut,
+onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
-    getFirestore,
-    collection,
-    addDoc,
-    onSnapshot,
-    query,
-    orderBy,
-    serverTimestamp,
-    doc,
-    setDoc,
-    getDoc,
-    updateDoc,
-    arrayUnion,
-    where,
-    getDocs,
-    deleteDoc
+getFirestore,
+collection,
+addDoc,
+onSnapshot,
+query,
+orderBy,
+serverTimestamp,
+doc,
+setDoc,
+getDoc,
+updateDoc,
+arrayUnion,
+where,
+getDocs,
+deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
-    getStorage,
-    ref,
-    uploadBytes,
-    getDownloadURL
+getStorage,
+ref,
+uploadBytes,
+getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // — GÜNCEL FIREBASE YAPILANDIRMASI —
 const firebaseConfig = {
-    apiKey: "AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
-    authDomain: "uniloop-app.firebaseapp.com",
-    projectId: "uniloop-app",
-    storageBucket: "uniloop-app.firebasestorage.app",
-    messagingSenderId: "272654005890",
-    appId: "1:272654005890:web:0b1dd388364e86d22f269b",
-    measurementId: "G-PJ0XE1PXH5"
+apiKey: "AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
+authDomain: "uniloop-app.firebaseapp.com",
+projectId: "uniloop-app",
+storageBucket: "uniloop-app.firebasestorage.app",
+messagingSenderId: "272654005890",
+appId: "1:272654005890:web:0b1dd388364e86d22f269b",
+measurementId: "G-PJ0XE1PXH5"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -63,17 +63,17 @@ let marketDB = [];
 let confessionsDB = [];
 let qaDB = [];
 let chatsDB = [];
-let loopMapDB = []; 
+let loopMapDB = []; // YENİ: LoopMap verileri
 let currentChatId = null;
 
-// HARİTA MOTORU İÇİN ÖZEL DEĞİŞKENLER
+// --- HARİTA DEĞİŞKENLERİ ---
 let googleMap = null; 
 let userCurrentLocation = null; 
-let activeUserMarker = null; // Canlı konum işaretçisi
-let currentMapMarkers = []; // Haritaya eklenen fotoğraflı pinler
+let activeUserMarker = null; 
+let currentMapMarkers = []; 
 
 // ============================================================================
-// 📍 GOOGLE MAPS YÜKLEYİCİ
+// 📍 GOOGLE MAPS YÜKLEYİCİ (GELİŞMİŞ İŞARETÇİLER DESTEĞİ İLE)
 // ============================================================================
 function loadGoogleMapsScript() {
     if (document.getElementById('google-maps-script')) return; 
@@ -88,7 +88,8 @@ function loadGoogleMapsScript() {
 
     const script = document.createElement('script');
     script.id = 'google-maps-script';
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    // DİKKAT: 'marker' kütüphanesi eklendi (Fotoğraflı estetik pinler için şart)
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,marker`;
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
@@ -133,18 +134,37 @@ document.head.appendChild(cropperJs);
 const styleFix = document.createElement('style');
 styleFix.innerHTML = `
     html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
-    #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; }
-    #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; }
+    
+    #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) {
+        opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important;
+    }
+    #app-modal.active, #lightbox.active, .modal.active {
+        opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important;
+    }
+    
     #auth-screen { position: relative; z-index: 1000 !important; }
-    #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important; }
-    button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; }
-    #sidebar { overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; justify-content: flex-start !important; align-items: stretch !important; max-height: 100vh !important; top: 0 !important; padding-top: 75px !important; padding-bottom: 40px !important; }
+    #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select {
+        pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important;
+    }
+
+    button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { 
+        cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; 
+    }
+    
+    #sidebar { 
+        overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain; 
+        justify-content: flex-start !important; align-items: stretch !important; max-height: 100vh !important;
+        top: 0 !important; padding-top: 75px !important; padding-bottom: 40px !important;
+    }
+    
     #chat-layout-container { height: calc(100vh - 120px) !important; max-height: 800px; overflow: hidden !important; display: flex; flex-direction: row; }
     .chat-sidebar { overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; }
     .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; }
     #chat-messages-scroll { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; scroll-behavior: smooth; }
+    
     #qa-feed, #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; }
     .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; scroll-behavior: smooth; }
+    
     .feed-layout-container { height: calc(100vh - 80px); display: flex; flex-direction: column; overflow: hidden; margin: -20px; background: #F3F4F6; }
     #conf-feed { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; max-width: 600px !important; margin: 0 auto !important; width: 100%;}
     .feed-post { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 16px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
@@ -158,15 +178,21 @@ styleFix.innerHTML = `
     .feed-post-actions { display: flex; border-top: 1px solid #E5E7EB; padding-top: 12px; gap: 20px; }
     .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
     .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
+
+    /* ANA SAYFA GRID */
     .user-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; width: 100%; }
     .user-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; justify-content: center; min-height: 160px;}
     .user-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); border-color: var(--primary); }
+
+    /* CROPPER JS YUVARLAK REFERANS STİLİ */
     .cropper-view-box, .cropper-face { border-radius: 50%; }
     .cropper-view-box { outline: 0; box-shadow: 0 0 0 1px #39f; }
+
     .premium-glow { animation: glowPulse 2s infinite alternate; }
     @keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); } 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); } }
     .premium-upgrade-btn { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 15px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); display: inline-flex; align-items: center; gap: 8px; }
     .premium-upgrade-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(245, 158, 11, 0.4); }
+    
     body.dark-mode, .dark-mode #main-content { background-color: #121212 !important; color: #e5e7eb !important; }
     .dark-mode .card, .dark-mode .feed-post, .dark-mode .item-card, .dark-mode .chat-sidebar-header, .dark-mode .user-card { background-color: #1e1e1e !important; border-color: #374151 !important; color: #e5e7eb !important; }
     .dark-mode .card > div { border-color: #374151 !important; }
@@ -182,10 +208,13 @@ styleFix.innerHTML = `
     .dark-mode .menu-item.active { background: #374151 !important; color: var(--primary) !important; }
     .dark-mode #app-header { background: #1e1e1e !important; border-bottom-color: #374151 !important; }
     .dark-mode #sidebar { background: #1e1e1e !important; border-right-color: #374151 !important; }
+
     #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
     #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
     #app-header > :last-child, .header-right-menu { display: flex !important; align-items: center !important; justify-content: flex-end !important; flex-wrap: nowrap !important; }
+
     #profile-btn, #nav-premium-action { font-size: 12px !important; padding: 0 10px !important; height: 32px !important; line-height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; flex-shrink: 0 !important; margin: 0 !important; border-radius: 8px !important; }
+
     @media (max-width: 1024px) {
         #chat-layout-container { height: calc(100vh - 160px) !important; }
         .chat-sidebar { width: 100%; display: block; }
@@ -193,12 +222,15 @@ styleFix.innerHTML = `
         .chat-main { display: none !important; }
         .chat-active .chat-main { display: flex !important; }
     }
+
     .accordion-section { margin-bottom: 12px; background: transparent; }
     .accordion-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 14px 16px; font-weight: bold; font-size: 15px; transition: 0.2s; color: var(--text-dark);}
     .accordion-header:hover { background: #EEF2FF; color: var(--primary); border-radius: 12px; }
+    
     .accordion-content { max-height: 0; overflow: hidden; padding: 0 16px; background: transparent; transition: max-height 0.3s ease, padding 0.3s ease; }
     .accordion-content.open { max-height: 600px; padding: 10px 16px; }
     .accordion-icon { display: inline-block; margin-left: auto; font-size: 12px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-gray); }
+    
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 10px; }
@@ -1029,7 +1061,7 @@ function getHomeContent() {
 }
 
 // ============================================================================
-// 🌍 YENİ: LOOPMAP ENTEGRASYONU (CANLI TAKİP VE FOTOĞRAFLI PİNLER)
+// 🌍 YENİ: LOOPMAP (FOTOĞRAFLI YUVARLAK PİNLER VE CANLI KONUM - EKSİKSİZ)
 // ============================================================================
 
 window.renderLoopMap = function() {
@@ -1057,107 +1089,132 @@ window.renderLoopMap = function() {
 window.requestLocationAndInitMap = function() {
     const btn = document.getElementById('start-map-btn');
     if(btn) {
-        btn.innerText = "⏳ Konum Aranıyor...";
+        btn.innerText = "⏳ Uyduya Bağlanılıyor...";
         btn.disabled = true;
     }
 
-    // Sessiz Yedek Konum (Hata anında sistem çökmesin diye)
-    const fallbackLocation = { lat: 39.92077, lng: 32.85411 }; 
+    // YEDEK KONUM (LEFKOŞA) - Eğer cihaz izin vermezse sistem çökmez, burayı açar.
+    const fallbackLocation = { lat: 35.1953, lng: 33.3103 }; 
 
-    if (navigator.geolocation) {
-        // AKTİF KONUM TAKİBİ: Artık bir kere almıyor, sürekli takip ediyor!
-        window.watchId = navigator.geolocation.watchPosition(
-            (position) => {
-                const overlay = document.getElementById('map-auth-overlay');
-                if(overlay) overlay.style.display = 'none';
-                
-                userCurrentLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
-                
-                if(!googleMap) {
-                    // Harita ilk defa açılıyorsa kur
-                    window.initGoogleMap(userCurrentLocation);
-                } else {
-                    // Harita zaten açıksa, sadece senin yerini (Yeşil Noktayı) güncelle
-                    if(activeUserMarker) {
-                        activeUserMarker.setPosition(userCurrentLocation);
-                    }
-                }
-            },
-            (error) => {
-                // EĞER İZİN VERİLMEZSE HATA BASMADAN YEDEK KONUMA GEÇ
-                console.warn("Konum engellendi. Yedek konuma geçiliyor.");
-                if(!googleMap) {
-                    const overlay = document.getElementById('map-auth-overlay');
-                    if(overlay) overlay.style.display = 'none';
-                    userCurrentLocation = fallbackLocation; 
-                    window.initGoogleMap(fallbackLocation); 
-                }
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // Yüksek hassasiyet (Canlı Takip İçin)
-        );
-    } else {
+    if (!navigator.geolocation) {
+        alert("Cihazınız konum özelliğini desteklemiyor!");
         const overlay = document.getElementById('map-auth-overlay');
         if(overlay) overlay.style.display = 'none';
-        userCurrentLocation = fallbackLocation;
-        window.initGoogleMap(fallbackLocation);
+        window.initGoogleMap(fallbackLocation); 
+        return;
     }
+
+    // ÇOK AGRESİF KONUM ARAMA STRATEJİSİ (Canlı Takip)
+    const options = {
+        enableHighAccuracy: true, // Nokta atışı (GPS)
+        timeout: 20000, // 20 saniye bekle
+        maximumAge: 0
+    };
+
+    window.watchId = navigator.geolocation.watchPosition(
+        (position) => {
+            const overlay = document.getElementById('map-auth-overlay');
+            if(overlay) overlay.style.display = 'none';
+            
+            userCurrentLocation = { 
+                lat: position.coords.latitude, 
+                lng: position.coords.longitude 
+            };
+            
+            if(!googleMap) {
+                // İlk defa açılıyorsa haritayı kur
+                window.initGoogleMap(userCurrentLocation);
+            } else if (activeUserMarker) {
+                // Harita zaten açıksa, sadece senin yerini (Mavi Noktayı) güncelle
+                activeUserMarker.position = userCurrentLocation;
+            }
+        },
+        (error) => {
+            console.error("GPS Hatası:", error);
+            alert("⚠️ HASSAS KONUM ALINAMADI!\n\nLütfen cihazınızın GPS'ini açın ve tarayıcıdan izin verdiğinize emin olun. Eğer kapalı alandaysanız uydular sizi bulamıyor olabilir.\n\nSistem zorunlu olarak Lefkoşa merkezden başlatılıyor.");
+            if(!googleMap) {
+                const overlay = document.getElementById('map-auth-overlay');
+                if(overlay) overlay.style.display = 'none';
+                userCurrentLocation = fallbackLocation; 
+                window.initGoogleMap(userCurrentLocation); 
+            }
+        },
+        options
+    );
 };
 
-window.initGoogleMap = function(centerLoc) {
+window.initGoogleMap = async function(centerLoc) {
     if(typeof google === 'undefined' || typeof google.maps === 'undefined') {
-        document.getElementById('map').innerHTML = `<div style="padding:40px; text-align:center; color:gray; font-weight:bold;">Google Maps API yüklenemedi.<br><br>Lütfen internet bağlantınızı kontrol edin.</div>`;
+        document.getElementById('map').innerHTML = `<div style="padding:40px; text-align:center; color:gray; font-weight:bold;">Google Maps motoru yüklenemedi. Lütfen internetinizi kontrol edin.</div>`;
         return;
     }
     
-    googleMap = new google.maps.Map(document.getElementById("map"), {
+    // Gelişmiş İşaretçi (AdvancedMarker) kütüphanesini içeri aktarıyoruz
+    const { Map } = await google.maps.importLibrary("maps");
+    const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
+    googleMap = new Map(document.getElementById("map"), {
         center: centerLoc,
         zoom: 17, // Canlı takip için daha yakın zoom
+        mapId: "DEMO_MAP_ID", // Estetik pinler için zorunlu
         disableDefaultUI: true,
         styles: [ { "featureType": "poi", "elementType": "labels", "stylers": [{ "visibility": "off" }] } ]
     });
 
-    // KULLANICININ AKTİF KONUMUNU GÖSTEREN YEŞİL NOKTA
-    activeUserMarker = new google.maps.Marker({
-        position: centerLoc,
+    // 🔴 KENDİ CANLI KONUMUN İÇİN PARLAYAN MAVİ NOKTA
+    const myPin = document.createElement("div");
+    myPin.style.width = "18px";
+    myPin.style.height = "18px";
+    myPin.style.borderRadius = "50%";
+    myPin.style.backgroundColor = "#3B82F6"; // Parlak mavi
+    myPin.style.border = "3px solid white";
+    myPin.style.boxShadow = "0 0 12px rgba(59, 130, 246, 0.9)";
+    
+    activeUserMarker = new AdvancedMarkerElement({
         map: googleMap,
-        title: "Buradasın",
-        icon: { 
-            path: google.maps.SymbolPath.CIRCLE, 
-            scale: 10, 
-            fillColor: "#10B981", // Canlı yeşil
-            fillOpacity: 1, 
-            strokeWeight: 3, 
-            strokeColor: "white" 
-        }
+        position: centerLoc,
+        content: myPin,
+        title: "Buradasın"
     });
 
     window.drawMapMarkers();
 };
 
-window.drawMapMarkers = function() {
+window.drawMapMarkers = async function() {
     if(!googleMap) return;
     
-    // Eski pinleri temizle (Haritanın kasmasını ve pinlerin üst üste binmesini engeller)
-    currentMapMarkers.forEach(m => m.setMap(null));
+    const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
+    // Eski pinleri haritadan sil (Kasmayı önler)
+    currentMapMarkers.forEach(m => m.map = null);
     currentMapMarkers = [];
 
     loopMapDB.forEach(post => {
-        // FOTOĞRAFLI PİN (THUMBNAIL) OLUŞTURMA
-        const marker = new google.maps.Marker({
-            position: { lat: post.lat, lng: post.lng },
-            map: googleMap,
-            animation: google.maps.Animation.DROP,
-            icon: {
-                url: post.imgUrl, // Pinin resmi kullanıcının çektiği fotoğraf!
-                scaledSize: new google.maps.Size(40, 40) // Boyutlandırma
-            }
-        });
+        // 📸 FOTOĞRAFLI ESTETİK PİN (SNAPCHAT/ZENLY TARZI)
+        const pinContainer = document.createElement("div");
+        pinContainer.style.width = "56px";
+        pinContainer.style.height = "56px";
+        pinContainer.style.borderRadius = "50%";
+        pinContainer.style.border = "3px solid #10B981"; // Çerçeve rengi (Yeşil)
+        pinContainer.style.backgroundImage = `url(${post.imgUrl})`;
+        pinContainer.style.backgroundSize = "cover";
+        pinContainer.style.backgroundPosition = "center";
+        pinContainer.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
+        pinContainer.style.cursor = "pointer";
 
-        marker.addListener("click", () => {
+        // Pine tıklandığında anıyı büyük aç
+        pinContainer.addEventListener("click", () => {
             window.openMapSnapModal(post);
         });
 
-        currentMapMarkers.push(marker); // Hafızada tut
+        const marker = new AdvancedMarkerElement({
+            map: googleMap,
+            position: { lat: post.lat, lng: post.lng },
+            content: pinContainer,
+            title: post.userName
+        });
+
+        currentMapMarkers.push(marker);
     });
 };
 
@@ -1185,7 +1242,7 @@ window.handleMapPhotoCapture = async function(input) {
         });
 
         window.closeModal();
-        alert("Anınız haritaya başarıyla bırakıldı!");
+        alert("Anınız haritaya başarıyla eklendi! Etraftaki herkes artık bunu görebilecek.");
         if(googleMap) googleMap.panTo(userCurrentLocation); // Fotoğrafı çektikten sonra haritayı o noktaya odaklar
     } catch(err) {
         window.closeModal();
