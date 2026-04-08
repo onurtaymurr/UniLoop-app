@@ -69,21 +69,21 @@ let googleMap = null; // YENİ: Google Harita objesi
 let userCurrentLocation = null; // YENİ: Kullanıcı konumu
 
 // ============================================================================
-// 📍 GOOGLE MAPS YÜKLEYİCİ (DÜZELTİLDİ: SAF JS İÇİN)
+// 📍 GOOGLE MAPS YÜKLEYİCİ (ÇAKIŞMA ÖNLEYİCİ İLE GÜNCELLENDİ)
 // ============================================================================
 function loadGoogleMapsScript() {
-    if (typeof google !== 'undefined') return; 
+    if (document.getElementById('google-maps-script')) return; // Zaten eklendiyse tekrar ekleme
+    if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') return; 
     
-    // DİKKAT: Anahtarını buraya yapıştır!
-    // Güvenliği zaten Google Cloud panelinde domain kısıtlaması yaparak sağladık.
     const apiKey = "AIzaSyC3vVgQCI8a5ctJ45fefAh1hKTwpCIYboE"; 
     
     if (!apiKey || apiKey === "AIzaSyC3vVgQCI8a5ctJ45fefAh1hKTwpCIYboE") {
-        console.error("HATA: Google Maps API Key eksik. Lütfen koddaki ilgili alana anahtarınızı yazın.");
+        console.error("HATA: Google Maps API Key eksik.");
         return;
     }
 
     const script = document.createElement('script');
+    script.id = 'google-maps-script';
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;
     script.defer = true;
