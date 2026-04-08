@@ -121,6 +121,7 @@ styleFix.innerHTML = `
     body.no-scroll-messages { overflow: hidden !important; }
     /* Bottom nav yüksekliği (60px) + app-header yüksekliği (ortalama 50px) ve alt güvenli alan çıkarıldı */
     .no-scroll-messages #main-content { padding: 0 !important; margin: 0 !important; height: calc(100dvh - 110px - env(safe-area-inset-bottom)); overflow: hidden; }
+    body.full-screen-chat #main-content { height: 100dvh !important; }
 
     #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
     #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; transition: opacity 0.3s ease;}
@@ -148,7 +149,9 @@ styleFix.innerHTML = `
         height: 60px;
         z-index: 9999;
         box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
+        transition: transform 0.3s ease;
     }
+    .bottom-nav.hidden { transform: translateY(100%); }
     .bottom-nav-item {
         display: flex;
         flex-direction: column;
@@ -172,6 +175,13 @@ styleFix.innerHTML = `
     .bottom-nav-icon svg { width: 100%; height: 100%; transition: 0.2s; }
     .bottom-nav-item.active .bottom-nav-icon svg.fill-active { fill: currentColor; }
     .bottom-nav-item.active .bottom-nav-icon svg { stroke-width: 2.2; }
+
+    /* YENİ ANA SAYFA KARTLARI */
+    .home-feature-cards { display: flex; gap: 10px; margin-bottom: 15px; }
+    .feature-card { flex: 1; background: linear-gradient(135deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px 10px; text-align: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .feature-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.06); border-color: var(--primary); }
+    .feature-card-icon { font-size: 32px; margin-bottom: 8px; }
+    .feature-card-title { font-size: 13px; font-weight: 800; color: #1e293b; }
 
     /* STEPPER & PROFIL KARTI & BİLDİRİM PANELİ */
     .stepper-container { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 400px; margin: 0 auto; width: 100%; animation: fadeIn 0.4s ease-out; }
@@ -211,11 +221,12 @@ styleFix.innerHTML = `
 
     /* PROFESYONEL MESAJLAR TASARIMI */
     #chat-layout-container { height: 100% !important; max-height: none !important; display: flex; flex-direction: row; background: #fff; border:none; border-radius:0; box-shadow:none; }
-    .chat-sidebar { width: 320px; overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; border-right: 1px solid #e5e7eb; }
-    .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
+    .chat-sidebar { width: 320px; overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; border-right: 1px solid #e5e7eb; padding-bottom: 60px; }
+    .chat-main { height: 100dvh !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; z-index:10000; }
     #chat-messages-scroll { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; scroll-behavior: smooth; padding: 15px; }
     .chat-contact.active { background: #EEF2FF; border-left: 4px solid var(--primary); }
     .chat-contact:hover { background: #F9FAFB; }
+    .chat-input-area { padding-bottom: calc(15px + env(safe-area-inset-bottom)); }
 
     #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; }
     .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; scroll-behavior: smooth; }
@@ -274,7 +285,7 @@ styleFix.innerHTML = `
     @media (max-width: 1024px) {
         .chat-sidebar { width: 100%; display: block; border-right: none; }
         .chat-active .chat-sidebar { display: none !important; }
-        .chat-main { display: none !important; }
+        .chat-main { display: none !important; width: 100%; }
         .chat-active .chat-main { display: flex !important; }
     }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -319,6 +330,20 @@ window.toggleTheme = function(theme) {
 const savedTheme = localStorage.getItem('uniloop_theme') || 'light';
 window.toggleTheme(savedTheme);
 
+// Alt Barı Gizleme / Gösterme Fonksiyonu (Tam ekran hissiyatı için)
+window.toggleBottomNav = function(show) {
+    const nav = document.getElementById('uniloop-bottom-nav');
+    const header = document.getElementById('app-header');
+    if(nav) {
+        if(show) nav.classList.remove('hidden');
+        else nav.classList.add('hidden');
+    }
+    if(header) {
+        if(show) header.style.display = 'flex';
+        else header.style.display = 'none';
+    }
+};
+
 const TRANSLATIONS = {
     'tr': { settingsTitle: '⚙️ Uygulama Ayarları', langLabel: 'Dil Seçimi', themeLabel: 'Tema', lightMode: 'Aydınlık Mod', darkMode: 'Karanlık Mod', logoutBtn: '🚪 Güvenli Çıkış Yap' },
     'en': { settingsTitle: '⚙️ App Settings', langLabel: 'Language', themeLabel: 'Theme', lightMode: 'Light Mode', darkMode: 'Dark Mode', logoutBtn: '🚪 Secure Logout' }
@@ -330,7 +355,7 @@ const bind = (id, event, callback) => {
 };
 
 // ============================================================================
-// 1. GİRİŞ VE YENİ STEPPER KAYIT SİSTEMİ (ŞİFRE ONAYI VE KULLANICI ADI EKLENDİ)
+// 1. GİRİŞ VE YENİ STEPPER KAYIT SİSTEMİ 
 // ============================================================================
 
 bind('show-login-btn', 'click', (e) => {
@@ -342,7 +367,6 @@ bind('show-login-btn', 'click', (e) => {
     document.getElementById('login-card').style.display = 'block';
 });
 
-// KAYIT OL BUTONUNA TIKLANINCA YENİ STEPPER AÇILACAK
 bind('show-register-btn', 'click', (e) => {
     if(e) e.preventDefault();
     document.getElementById('login-card').style.display = 'none'; 
@@ -467,7 +491,6 @@ window.renderStep = function(step) {
     wrapper.innerHTML = html;
 };
 
-// Stepper Buton Tıklama Mantıkları
 window.selectGrade = function(btn, grade) {
     document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -493,7 +516,7 @@ window.selectPurpose = function(btn, purpose) {
 // CROPPER İŞLEMLERİ (INSTAGRAM TARZI KIRPMA)
 // ============================================================================
 
-window.currentCropperContext = ''; // 'register' veya 'profile'
+window.currentCropperContext = ''; 
 
 window.openCropper = function(event, context) {
     const file = event.target.files[0];
@@ -523,7 +546,7 @@ window.openCropper = function(event, context) {
         });
     };
     reader.readAsDataURL(file);
-    event.target.value = ''; // inputu sıfırla
+    event.target.value = ''; 
 };
 
 window.closeCropper = function() {
@@ -532,18 +555,31 @@ window.closeCropper = function() {
 };
 
 window.saveCroppedImage = async function() {
-    if(!cropper) return;
+    if(!cropper) {
+        alert("Lütfen görselin yüklenmesini bekleyin.");
+        return;
+    }
     
-    const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
-    const base64Image = canvas.toDataURL('image/jpeg', 0.8);
-    
-    if (window.currentCropperContext === 'register') {
-        window.registrationData.avatarDataUrl = base64Image;
-        document.getElementById('preview-pc-avatar-container').innerHTML = `<img src="${base64Image}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-        window.closeCropper();
-    } else if (window.currentCropperContext === 'profile') {
-        window.closeCropper();
-        await window.uploadProfileAvatarDirect(base64Image);
+    try {
+        const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+        if(!canvas) {
+            alert("Görsel kırpılamadı. Lütfen geçerli bir dosya seçin.");
+            return;
+        }
+        
+        const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+        
+        if (window.currentCropperContext === 'register') {
+            window.registrationData.avatarDataUrl = base64Image;
+            document.getElementById('preview-pc-avatar-container').innerHTML = `<img src="${base64Image}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+            window.closeCropper();
+        } else if (window.currentCropperContext === 'profile') {
+            window.closeCropper();
+            await window.uploadProfileAvatarDirect(base64Image);
+        }
+    } catch(err) {
+        console.error("Cropper hatası:", err);
+        alert("Fotoğraf kaydedilirken bir hata oluştu.");
     }
 };
 
@@ -676,7 +712,7 @@ window.finalizeRegistration = async function() {
             faculty: d.faculty, 
             grade: d.grade, 
             age: d.age, 
-            bio: "", // Biyografi tamamen yok edildi, boş string bırakılıyor
+            bio: "",
             interests: d.interests, 
             purpose: d.purpose,
             avatar: "👨‍🎓", 
@@ -999,7 +1035,6 @@ function initRealtimeListeners(currentUid) {
             window.renderFriends();
         }
         
-        // Eğer bildirimler açıkken canlı güncelleme gelirse yenile (Modal açıksa)
         if (document.getElementById('app-modal').classList.contains('active') && document.getElementById('modal-title').innerText.includes('Bildirimler')) {
             window.renderNotifications();
         }
@@ -1229,13 +1264,24 @@ window.renderHome = async function() {
             </p>
         </div>
         
-        <div class="card" style="padding: 10px 15px; display:flex; align-items:center; gap:10px; margin-bottom: 6px !important; border-radius: 12px;">
+        <div class="card" style="padding: 10px 15px; display:flex; align-items:center; gap:10px; margin-bottom: 12px !important; border-radius: 12px;">
             <div style="font-size:16px;">🔍</div>
             <div style="display:flex; flex:1; align-items:center; background:#F3F4F6; border-radius:10px; padding:0 10px; border:1px solid transparent; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='transparent'; this.style.background='#F3F4F6';">
                 <span style="color:var(--primary); font-weight:800; font-size:15px;">#</span>
                 <input type="text" id="friend-search-input" style="border:none; background:transparent; width:100%; padding:8px 6px; outline:none; font-size:14px; font-weight:600; color:var(--text-dark);" placeholder="arkadasini_bul" onkeypress="if(event.key==='Enter') window.searchAndAddFriend()">
             </div>
             <button class="btn-primary" id="friend-search-btn" style="width:auto; padding:8px 14px; border-radius:10px; font-size:13px;" onclick="window.searchAndAddFriend()">Ekle</button>
+        </div>
+        
+        <div class="home-feature-cards">
+            <div class="feature-card" onclick="window.loadPage('faculties')">
+                <div class="feature-card-icon">🏛️</div>
+                <div class="feature-card-title">Fakülteler</div>
+            </div>
+            <div class="feature-card" onclick="window.loadPage('clubs')">
+                <div class="feature-card-icon">🎭</div>
+                <div class="feature-card-title">Spor & Kulüpler</div>
+            </div>
         </div>
         
         <div class="card" style="padding: 15px; margin-bottom: 6px !important; border-radius: 12px;">
@@ -1345,11 +1391,9 @@ window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listi
         const msgText = `Merhaba, "${itemTitle}" başlıklı ilanınızla ilgileniyorum. Durumu nedir?`;
         const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
-        // Aynı satıcıyla var olan herhangi bir sohbeti bul (İlanı fark etmez)
         const existingChat = chatsDB.find(c => c.otherUid === sellerId);
 
         if (existingChat) {
-            // Zaten konuşuyorsak, yeni mesajı o sohbetin içine at!
             await updateDoc(doc(db, "chats", existingChat.id), {
                 messages: arrayUnion({ senderId: myUid, text: msgText, time: timeStr, read: false }),
                 lastUpdated: serverTimestamp()
@@ -1358,7 +1402,6 @@ window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listi
             window.loadPage('messages');
             setTimeout(() => window.openChatView(existingChat.id), 300);
         } else {
-            // İlk defa konuşuyorsak yeni sohbet aç
             const newChatRef = await addDoc(collection(db, "chats"), {
                 participants: [myUid, sellerId],
                 participantNames: { [myUid]: window.userProfile.name, [sellerId]: sellerName },
@@ -1675,7 +1718,6 @@ window.openChatViewDirect = function(chatId) {
     setTimeout(() => window.openChatView(chatId), 200);
 };
 
-// GÜNCELLEME: BİLDİRİMLER ARTIK KÜÇÜK ESTETİK BİR MODAL OLARAK AÇILACAK
 window.renderNotifications = function() {
     const incomingRequests = chatsDB.filter(c => c.status === 'pending' && c.initiator !== window.userProfile.uid);
     let html = '';
@@ -1796,13 +1838,13 @@ window.updateChatMessagesOnly = function(chatId) {
 
 // KAYMAYI ENGELLEYEN PROFESYONEL (FIXED) MESAJLAR EKRANI
 window.renderMessages = function() {
-    // Sayfa kaymasını kilitler
     document.body.classList.add('no-scroll-messages');
+    window.toggleBottomNav(true); 
 
     let html = `
-        <div style="height: 100%; width: 100%; box-sizing: border-box; background: var(--bg-color);">
+        <div style="height: 100dvh; width: 100%; box-sizing: border-box; background: var(--bg-color);">
             <div class="chat-layout" id="chat-layout-container">
-                <div class="chat-sidebar" id="sidebar-container"></div>
+                <div class="chat-sidebar" id="sidebar-container" style="padding-bottom: 60px;"></div>
                 <div class="chat-main" id="chat-main-view">
                     <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-gray); opacity:0.6;">
                         <div style="font-size:60px; margin-bottom:15px;">💬</div>
@@ -1820,6 +1862,12 @@ window.renderMessages = function() {
 
 window.openChatView = function(chatId) {
     currentChatId = chatId;
+    
+    if(window.innerWidth <= 1024) {
+        window.toggleBottomNav(false);
+        document.body.classList.add('full-screen-chat');
+    }
+
     const activeChat = chatsDB.find(c => c.id === chatId);
     if(!activeChat) return;
 
@@ -1844,8 +1892,8 @@ window.openChatView = function(chatId) {
         : `<div style="width:42px; height:42px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; margin:0;">${activeChat.avatar}</div>`;
 
     let chatHTML = `
-        <div class="chat-header" style="padding:15px 20px; border-bottom:1px solid #E5E7EB; background:#fff; display:flex; align-items:center; gap:15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index:10;">
-            <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); window.resetCurrentChatId();" style="border:none; background:#F3F4F6; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;">←</button>
+        <div class="chat-header" style="padding:15px 20px; padding-top: calc(15px + env(safe-area-inset-top)); border-bottom:1px solid #E5E7EB; background:#fff; display:flex; align-items:center; gap:15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index:10;">
+            <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); window.resetCurrentChatId(); if(window.innerWidth <= 1024) { window.toggleBottomNav(true); document.body.classList.remove('full-screen-chat'); }" style="border:none; background:#F3F4F6; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;">←</button>
             ${avatarHtml}
             <div class="chat-header-info">
                 <div class="chat-header-name" style="font-weight:800; font-size:16px; color:#111827; cursor:pointer;" onclick="window.viewUserProfile('${activeChat.otherUid}')">${activeChat.name}</div>
@@ -1859,7 +1907,7 @@ window.openChatView = function(chatId) {
          chatHTML += `<div style="padding: 15px; text-align: center; color: #6B7280; background: white; border-top: 1px solid #E5E7EB; font-weight:600; font-size:13px;">⏳ Karşı tarafın onaylaması bekleniyor...</div>`;
     } else {
          chatHTML += `
-            <div class="chat-input-area" style="padding:15px 20px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:12px; align-items:center;">
+            <div class="chat-input-area" style="padding:15px 20px; padding-bottom: calc(15px + env(safe-area-inset-bottom)); background:white; border-top:1px solid #E5E7EB; display:flex; gap:12px; align-items:center;">
                 <input type="text" id="chat-input-field" placeholder="Bir mesaj yazın..." style="flex:1; padding:14px 20px; border-radius:25px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:15px;">
                 <button class="chat-send-btn" onclick="window.sendMsg('${chatId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(79,70,229,0.3);">➤</button>
             </div>
@@ -2136,7 +2184,7 @@ window.submitConfessionComment = async function(docId) {
 };
 
 // ============================================================================
-// 9. PROFİL YÖNETİMİ VE AYARLAR (BİYOGRAFİ ALANI KALDIRILDI)
+// 9. PROFİL YÖNETİMİ VE AYARLAR
 // ============================================================================
 
 window.renderProfile = function() {
@@ -2275,7 +2323,154 @@ window.renderSettings = function() {
 };
 
 // ============================================================================
-// 10. SAYFA YÖNLENDİRİCİSİ (ROUTER) VE SİSTEMİ BAŞLATMA
+// 10. YENİ SAYFALAR: FAKÜLTELER VE SPOR KULÜPLERİ OLUŞTURULDU
+// ============================================================================
+
+window.renderFaculties = function() {
+    let html = `
+        <div class="card" style="padding: 20px; min-height: calc(100vh - 100px); border-radius: 16px;">
+            <h2 style="margin-bottom:15px; display:flex; align-items:center; gap:10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px;">
+                <button onclick="window.loadPage('home')" style="background:#f3f4f6; border:none; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer;">←</button>
+                <span style="font-size:20px; font-weight:800;">🏛️ Fakülte Ağları</span>
+            </h2>
+            <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px;">Kendi fakültene katıl, güncel duyuruları takip et ve bölümdaşlarınla sohbet et.</p>
+            <div style="display:grid; grid-template-columns: 1fr; gap:12px; padding-bottom: 80px;">
+    `;
+    allFaculties.forEach(fac => {
+        html += `
+            <div onclick="window.openFacultyRoom('${fac}')" style="background:#f9fafb; border:1px solid #e5e7eb; padding:16px; border-radius:16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <span style="font-weight:700; color:#1f2937; font-size:15px;">${fac}</span>
+                <span style="background:var(--primary); color:white; font-size:12px; padding:6px 14px; border-radius:20px; font-weight:bold;">Ağa Katıl ➔</span>
+            </div>
+        `;
+    });
+    html += `</div></div>`;
+    mainContent.innerHTML = html;
+};
+
+window.renderClubs = function() {
+    const clubs = ["⚽ Spor Kulübü", "🎭 Tiyatro ve Sanat", "💻 Bilişim & Yazılım", "🩺 Sağlık Kulübü", "📸 Fotoğrafçılık", "🌍 Erasmus & Gezi", "🎸 Müzik Kulübü", "🌱 Çevre Kulübü"];
+    let html = `
+        <div class="card" style="padding: 20px; min-height: calc(100vh - 100px); border-radius: 16px;">
+            <h2 style="margin-bottom:15px; display:flex; align-items:center; gap:10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px;">
+                <button onclick="window.loadPage('home')" style="background:#f3f4f6; border:none; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer;">←</button>
+                <span style="font-size:20px; font-weight:800;">🎭 Kulüpler & Etkinlikler</span>
+            </h2>
+            <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px;">Topluluklara katıl, canlı toplantılara (Meeting) gir ve sosyalleş.</p>
+            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; padding-bottom: 80px;">
+    `;
+    clubs.forEach(club => {
+        const icon = club.split(' ')[0];
+        const name = club.substring(club.indexOf(' ')+1);
+        html += `
+            <div onclick="window.openClubMeeting('${club}')" style="background:linear-gradient(135deg, #4f46e5, #818cf8); color:white; padding:25px 15px; border-radius:20px; text-align:center; cursor:pointer; box-shadow:0 4px 12px rgba(79,70,229,0.3);">
+                <div style="font-size:36px; margin-bottom:12px;">${icon}</div>
+                <div style="font-weight:800; font-size:14px;">${name}</div>
+                <div style="margin-top:10px; font-size:11px; background:rgba(0,0,0,0.2); padding:4px; border-radius:10px;">🟢 Canlı Odalar</div>
+            </div>
+        `;
+    });
+    html += `</div></div>`;
+    mainContent.innerHTML = html;
+};
+
+// FAKÜLTE AĞI İÇİ SOHBET EKRANI (TAM EKRAN)
+window.openFacultyRoom = function(facName) {
+    window.toggleBottomNav(false); 
+    document.body.classList.add('no-scroll-messages');
+    
+    let html = `
+        <div style="height: 100dvh; display:flex; flex-direction:column; background:#f9fafb; position:relative; z-index:10000;">
+            <div style="background:white; padding:15px 20px; padding-top: calc(15px + env(safe-area-inset-top)); border-bottom:1px solid #e5e7eb; display:flex; align-items:center; gap:15px; z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.02);">
+                <button onclick="window.toggleBottomNav(true); window.loadPage('faculties')" style="background:#f3f4f6; border:none; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;">←</button>
+                <div>
+                    <div style="font-weight:800; font-size:16px;">${facName} Ağı</div>
+                    <div style="font-size:12px; color:#10b981; font-weight:600;">● 124 Öğrenci Çevrimiçi</div>
+                </div>
+            </div>
+            
+            <div style="background:#fefce8; padding:12px 20px; font-size:13px; color:#a16207; border-bottom:1px solid #fef08a; display:flex; align-items:center; gap:10px;">
+                <span style="font-size:18px;">📌</span> <div><strong>Dekanlık Duyurusu:</strong> Vize programları OBS sistemine yüklenmiştir.</div>
+            </div>
+            
+            <div style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px;">
+                <div style="align-self:center; background:#e5e7eb; padding:6px 14px; border-radius:12px; font-size:11px; font-weight:bold; color:#4b5563;">Bugün</div>
+                
+                <div style="display:flex; gap:12px;">
+                    <div style="width:40px; height:40px; border-radius:50%; background:#d1d5db; display:flex; align-items:center; justify-content:center; font-size:20px;">👩‍🦰</div>
+                    <div style="background:white; padding:12px 16px; border-radius:16px; border-bottom-left-radius:0; box-shadow:0 2px 4px rgba(0,0,0,0.04); max-width:75%;">
+                        <div style="font-size:12px; font-weight:800; color:var(--primary); margin-bottom:4px;">Ayşe Yılmaz</div>
+                        <div style="font-size:14px; color:#1f2937; line-height:1.4;">Arkadaşlar 3. sınıf notlarını paylaşabilecek olan var mı? Yarına acil lazım.</div>
+                    </div>
+                </div>
+                
+                <div style="display:flex; gap:12px; flex-direction:row-reverse;">
+                    <div style="background:var(--primary); color:white; padding:12px 16px; border-radius:16px; border-bottom-right-radius:0; box-shadow:0 2px 4px rgba(0,0,0,0.1); max-width:75%;">
+                        <div style="font-size:14px; line-height:1.4;">Ben de var, birazdan pdf olarak gruba atıyorum bekle. 👍</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="padding:15px 20px; background:white; border-top:1px solid #e5e7eb; padding-bottom: calc(15px + env(safe-area-inset-bottom));">
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <input type="text" placeholder="Fakülte grubuna mesaj gönder..." style="flex:1; padding:14px 20px; border-radius:25px; border:1px solid #e5e7eb; outline:none; background:#f9fafb; font-size:15px;">
+                    <button style="background:var(--primary); color:white; border:none; width:48px; height:48px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(79,70,229,0.3);">➤</button>
+                </div>
+            </div>
+        </div>
+    `;
+    mainContent.innerHTML = html;
+};
+
+// KULÜP TOPLANTISI EKRANI (TAM EKRAN ZOOM/DISCORD TARZI)
+window.openClubMeeting = function(clubName) {
+    window.toggleBottomNav(false); 
+    document.body.classList.add('no-scroll-messages');
+    
+    let html = `
+        <div style="height: 100dvh; background:#111827; color:white; display:flex; flex-direction:column; position:relative; z-index:10000;">
+            <div style="padding:15px 20px; padding-top: calc(15px + env(safe-area-inset-top)); display:flex; align-items:center; justify-content:space-between; background:#1f2937; border-bottom:1px solid #374151;">
+                <button onclick="window.toggleBottomNav(true); window.loadPage('clubs')" style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;">←</button>
+                <div style="font-weight:800; font-size:16px;">${clubName} Odası</div>
+                <div style="background:#ef4444; padding:6px 10px; border-radius:12px; font-size:11px; font-weight:900; letter-spacing:1px; box-shadow:0 0 10px rgba(239, 68, 68, 0.6);">🔴 CANLI</div>
+            </div>
+            
+            <div style="flex:1; padding:15px; display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; overflow-y:auto; align-content:start;">
+                <div style="grid-column: 1 / -1; height: 250px; background:#374151; border-radius:16px; position:relative; overflow:hidden; border:2px solid var(--primary); box-shadow:0 0 15px rgba(99, 102, 241, 0.4);">
+                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:80px; background:linear-gradient(135deg, #1f2937, #111827);">👨‍🏫</div>
+                    <div style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.6); border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-size:14px;">🎤</div>
+                    <div style="position:absolute; bottom:15px; left:15px; background:rgba(0,0,0,0.7); padding:6px 12px; border-radius:12px; font-size:13px; font-weight:bold;">Kulüp Başkanı</div>
+                </div>
+                
+                <div style="height: 140px; background:#1f2937; border-radius:16px; position:relative; display:flex; align-items:center; justify-content:center; font-size:50px; border:1px solid #374151;">👩‍🦰
+                    <div style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; font-size:11px; font-weight:bold;">Elif (Sen)</div>
+                </div>
+                <div style="height: 140px; background:#1f2937; border-radius:16px; position:relative; display:flex; align-items:center; justify-content:center; font-size:50px; border:1px solid #374151;">👨‍💻
+                    <div style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; font-size:11px; font-weight:bold;">Burak</div>
+                </div>
+                <div style="height: 140px; background:#1f2937; border-radius:16px; position:relative; display:flex; align-items:center; justify-content:center; font-size:50px; border:1px solid #374151; opacity:0.7;">👱‍♀️
+                    <div style="position:absolute; top:10px; right:10px; background:#ef4444; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:10px;">🔇</div>
+                    <div style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; font-size:11px; font-weight:bold;">Zeynep</div>
+                </div>
+                <div style="height: 140px; background:#1f2937; border-radius:16px; position:relative; display:flex; align-items:center; justify-content:center; font-size:50px; border:1px solid #374151; opacity:0.7;">🧔
+                    <div style="position:absolute; top:10px; right:10px; background:#ef4444; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:10px;">🔇</div>
+                    <div style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; font-size:11px; font-weight:bold;">Ahmet</div>
+                </div>
+            </div>
+
+            <div style="background:#1f2937; padding:20px 15px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); display:flex; justify-content:space-around; align-items:center; border-top:1px solid #374151;">
+                <button style="width:56px; height:56px; border-radius:50%; background:#374151; border:none; color:white; font-size:22px; cursor:pointer;">🎤</button>
+                <button style="width:56px; height:56px; border-radius:50%; background:#374151; border:none; color:white; font-size:22px; cursor:pointer;">📹</button>
+                <button style="width:56px; height:56px; border-radius:50%; background:#374151; border:none; color:white; font-size:22px; cursor:pointer;">💬</button>
+                <button onclick="window.toggleBottomNav(true); window.loadPage('clubs')" style="width:64px; height:64px; border-radius:32px; background:#ef4444; border:none; color:white; font-size:26px; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(239, 68, 68, 0.4);">📞</button>
+            </div>
+        </div>
+    `;
+    mainContent.innerHTML = html;
+};
+
+// ============================================================================
+// 11. SAYFA YÖNLENDİRİCİSİ (ROUTER) VE SİSTEMİ BAŞLATMA
 // ============================================================================
 
 window.loadPage = function(page) {
@@ -2283,14 +2478,16 @@ window.loadPage = function(page) {
     const activeNav = document.querySelector(`.bottom-nav-item[data-target="${page}"]`);
     if(activeNav) activeNav.classList.add('active');
 
-    // Sayfa değiştirirken body scroll kilidini sıfırla (Mesajlar hariç)
-    if (page !== 'messages') {
+    if (page !== 'messages' && page !== 'faculties' && page !== 'clubs') {
         document.body.classList.remove('no-scroll-messages');
+        document.body.classList.remove('full-screen-chat');
+        window.toggleBottomNav(true); 
+    } else if (page === 'messages') {
+        window.toggleBottomNav(true); 
     }
 
     mainContent.innerHTML = '';
     
-    // Mesaj görünümünü sıfırla
     const chatLayout = document.getElementById('chat-layout-container');
     if (chatLayout) chatLayout.classList.remove('chat-active');
     window.resetCurrentChatId();
@@ -2304,14 +2501,14 @@ window.loadPage = function(page) {
         case 'messages': window.renderMessages(); break;
         case 'profile': window.renderProfile(); break;
         case 'friends': window.renderFriends(); break;
+        case 'faculties': window.renderFaculties(); break;
+        case 'clubs': window.renderClubs(); break;
         default: window.renderHome(); break;
     }
 };
 
 } // initializeUniLoop fonksiyonunun son kapanış parantezi
 
-// DOM yüklendiğinde sistemi başlat
 document.addEventListener("DOMContentLoaded", () => {
     initializeUniLoop();
 });
-
