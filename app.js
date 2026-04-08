@@ -33,6 +33,7 @@ import {
     getStorage,
     ref,
     uploadBytes,
+    uploadString,
     getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
@@ -96,6 +97,9 @@ const appScreen = document.getElementById('app-screen');
 const mainContent = document.getElementById('main-content');
 const modal = document.getElementById('app-modal');
 
+// Cropper referansı
+let cropper = null;
+
 function initializeUniLoop() {
 
 // ✂️ CROPPER.JS ENJEKSİYONU (INSTAGRAM TARZI PROFİL KIRPMA İÇİN)
@@ -112,6 +116,11 @@ document.head.appendChild(cropperJs);
 const styleFix = document.createElement('style');
 styleFix.innerHTML = `
     html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
+    
+    /* MESAJLAR SAYFASI (SCROLL KİLİTLİ PROFESYONEL) */
+    body.no-scroll-messages { overflow: hidden !important; }
+    .no-scroll-messages #main-content { padding: 0 !important; margin: 0 !important; height: calc(100dvh - 60px - env(safe-area-inset-bottom) - 46px); overflow: hidden; }
+
     #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
     #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; transition: opacity 0.3s ease;}
     #auth-screen { position: relative; z-index: 1000 !important; }
@@ -175,7 +184,7 @@ styleFix.innerHTML = `
     .id-card { background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); max-width: 400px; margin: 0 auto 20px auto; position: relative; overflow: hidden; }
     .id-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--primary), #818cf8); }
     .id-card-left { flex-shrink: 0; }
-    .id-card-avatar { width: 100px; height: 100px; border-radius: 16px; object-fit: cover; border: 3px solid #e5e7eb; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .id-card-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e5e7eb; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow:hidden;}
     .id-card-right { flex: 1; text-align: left; }
     .id-card-name { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
     .id-card-faculty { font-size: 13px; color: var(--primary); font-weight: 700; margin-bottom: 8px; }
@@ -187,12 +196,24 @@ styleFix.innerHTML = `
     .notif-compact-panel { max-height: 400px; overflow-y: auto; padding-right: 5px; scroll-behavior: smooth; }
     .notif-compact-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 12px; border-radius: 16px; border: 1px solid #f1f5f9; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); flex-wrap: wrap; gap: 10px; transition: transform 0.2s; }
     .notif-compact-item:hover { transform: translateY(-2px); border-color: #e2e8f0; }
-    /* ======================================================== */
 
-    #chat-layout-container { height: calc(100vh - 120px) !important; max-height: 800px; overflow: hidden !important; display: flex; flex-direction: row; }
-    .chat-sidebar { overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; }
-    .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; }
-    #chat-messages-scroll { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; scroll-behavior: smooth; }
+    /* CROPPER MODAL STİLLERİ */
+    .cropper-modal-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 100000; display: none; flex-direction: column; }
+    .cropper-modal-container.active { display: flex; }
+    .cropper-header { display: flex; justify-content: space-between; padding: 15px; background: #111; color: white; }
+    .cropper-body { flex: 1; position: relative; background: #000; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+    .cropper-footer { padding: 20px; background: #111; display: flex; justify-content: center; }
+    .cropper-view-box, .cropper-face { border-radius: 50%; }
+    .cropper-view-box { outline: 0; box-shadow: 0 0 0 1px #39f; }
+
+    /* PROFESYONEL MESAJLAR TASARIMI */
+    #chat-layout-container { height: 100% !important; max-height: none !important; display: flex; flex-direction: row; background: #fff; border:none; border-radius:0; box-shadow:none; }
+    .chat-sidebar { width: 320px; overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; border-right: 1px solid #e5e7eb; }
+    .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
+    #chat-messages-scroll { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; scroll-behavior: smooth; padding: 15px; }
+    .chat-contact.active { background: #EEF2FF; border-left: 4px solid var(--primary); }
+    .chat-contact:hover { background: #F9FAFB; }
+
     #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; }
     .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; scroll-behavior: smooth; }
     .feed-layout-container { height: calc(100vh - 80px); display: flex; flex-direction: column; overflow: hidden; margin: -20px; background: #F3F4F6; }
@@ -211,8 +232,6 @@ styleFix.innerHTML = `
     .user-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; width: 100%; }
     .user-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 15px 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; justify-content: center; min-height: 140px;}
     .user-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); border-color: var(--primary); }
-    .cropper-view-box, .cropper-face { border-radius: 50%; }
-    .cropper-view-box { outline: 0; box-shadow: 0 0 0 1px #39f; }
     .premium-glow { animation: glowPulse 2s infinite alternate; }
     @keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); } 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); } }
     .premium-upgrade-btn { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 15px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); display: inline-flex; align-items: center; gap: 8px; }
@@ -234,6 +253,10 @@ styleFix.innerHTML = `
     .dark-mode .modal-content { background-color: #1e1e1e !important; color: #e5e7eb !important; border-color: #374151 !important;}
     .dark-mode .bottom-nav { background: #1e1e1e !important; border-top-color: #374151 !important; }
     .dark-mode .bottom-nav-item.active { color: #6366f1 !important; }
+    .dark-mode .chat-layout { background: #1e1e1e !important; border-color: #374151 !important; }
+    .dark-mode .chat-sidebar { background: #1e1e1e !important; border-color: #374151 !important; }
+    .dark-mode .chat-main { background: #121212 !important; }
+    .dark-mode .chat-contact.active { background: #374151 !important; border-color: #6366f1 !important; }
     
     #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
     #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
@@ -246,8 +269,7 @@ styleFix.innerHTML = `
     #nav-premium-action { font-size: 13px !important; padding: 0 12px !important; height: 32px !important; line-height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; flex-shrink: 0 !important; margin: 0 !important; border-radius: 8px !important; }
     
     @media (max-width: 1024px) {
-        #chat-layout-container { height: calc(100vh - 160px) !important; }
-        .chat-sidebar { width: 100%; display: block; }
+        .chat-sidebar { width: 100%; display: block; border-right: none; }
         .chat-active .chat-sidebar { display: none !important; }
         .chat-main { display: none !important; }
         .chat-active .chat-main { display: flex !important; }
@@ -258,6 +280,24 @@ styleFix.innerHTML = `
     ::-webkit-scrollbar-thumb:hover { background: rgba(107, 114, 128, 0.8); }
 `;
 document.head.appendChild(styleFix);
+
+// CROPPER İÇİN MODAL HTML'İ SAYFAYA EKLENİYOR
+const cropperModalHtml = `
+    <div id="cropper-modal" class="cropper-modal-container">
+        <div class="cropper-header">
+            <span style="font-weight:bold; font-size:16px;">Fotoğrafı Kırp</span>
+            <button onclick="window.closeCropper()" style="background:none; border:none; color:white; font-size:24px;">&times;</button>
+        </div>
+        <div class="cropper-body">
+            <img id="cropper-image" src="" style="max-width: 100%; display: block;">
+        </div>
+        <div class="cropper-footer">
+            <button class="btn-primary" style="width: 100%; padding: 15px; font-size: 16px; border-radius: 12px; background: #6366f1;" onclick="window.saveCroppedImage()">Kırp ve Kaydet</button>
+        </div>
+    </div>
+`;
+document.body.insertAdjacentHTML('beforeend', cropperModalHtml);
+
 
 window.setLanguage = function(lang) {
     localStorage.setItem('uniloop_lang', lang);
@@ -287,7 +327,7 @@ const bind = (id, event, callback) => {
 };
 
 // ============================================================================
-// 1. GİRİŞ VE YENİ STEPPER KAYIT SİSTEMİ (EKSİKSİZ YENİ AKIŞ)
+// 1. GİRİŞ VE YENİ STEPPER KAYIT SİSTEMİ (ŞİFRE ONAYI VE KULLANICI ADI EKLENDİ)
 // ============================================================================
 
 bind('show-login-btn', 'click', (e) => {
@@ -334,7 +374,8 @@ window.renderStep = function(step) {
             <p style="text-align:center; font-size:13px; color:#6b7280; margin-bottom:15px;">Okul e-postan ile güvenli bir şekilde başla.</p>
             
             <input type="email" id="reg-email" placeholder="E-posta Adresin" style="margin-bottom:10px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; box-sizing:border-box; font-size:15px;">
-            <input type="password" id="reg-password" placeholder="Şifre Belirle" style="margin-bottom:20px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; box-sizing:border-box; font-size:15px;">
+            <input type="password" id="reg-password" placeholder="Şifre Belirle" style="margin-bottom:10px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; box-sizing:border-box; font-size:15px;">
+            <input type="password" id="reg-password-confirm" placeholder="Şifreni Tekrar Gir" style="margin-bottom:20px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; box-sizing:border-box; font-size:15px;">
             
             <button id="step1-btn" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:12px;" onclick="window.processStep(1)">Kayıt Ol ve Doğrulama Kodu Gönder</button>
             <p style="text-align:center; margin-top:15px; font-size:13px;">
@@ -357,6 +398,8 @@ window.renderStep = function(step) {
             <div class="step-header">Adım 3 / 6</div>
             <div class="step-title">Seni Tanıyalım 🎓</div>
             
+            <input type="text" id="reg-username" placeholder="Kullanıcı Adı Belirle (Örn: mutlucocuk)" style="margin-bottom:10px; width:100%; padding:14px; border-radius:12px; border:1px solid var(--primary); outline:none; box-sizing:border-box; font-size:15px; background:#EEF2FF;">
+
             <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <input type="text" id="reg-name" placeholder="Adın" style="flex:1; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; font-size:15px;">
                 <input type="text" id="reg-surname" placeholder="Soyadın" style="flex:1; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; font-size:15px;">
@@ -374,7 +417,7 @@ window.renderStep = function(step) {
                 ${[1, 2, 3, 4, 5, 6].map(g => `<button class="grade-btn" onclick="window.selectGrade(this, '${g}')">${g}. Sınıf</button>`).join('')}
             </div>
             
-            <button class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:12px;" onclick="window.processStep(3)">Devam Et →</button>
+            <button id="step3-btn" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:12px;" onclick="window.processStep(3)">Devam Et →</button>
         `;
     } else if (step === 4) {
         const interests = ['🎵 Müzik', '⚽ Spor', '📚 Kitap', '🎮 Oyun', '✈️ Seyahat', '🎨 Sanat', '💻 Yazılım', '☕ Kahve', '🎬 Sinema', '🧘‍♀️ Yoga', '🍕 Yemek', '📸 Fotoğraf'];
@@ -412,7 +455,7 @@ window.renderStep = function(step) {
                     <div id="preview-pc-avatar-container" class="id-card-avatar" style="width:130px; height:130px; border-radius:50%; border:4px solid var(--primary);">👤</div>
                     <div style="position:absolute; bottom:0; right:0; background:var(--primary); color:white; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:16px; border:3px solid white; z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.2);">📷</div>
                 </div>
-                <input type="file" id="final-avatar-upload" accept="image/*" style="display:none;" onchange="window.previewFinalAvatar(event)">
+                <input type="file" id="final-avatar-upload" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'register')">
             </div>
             
             <button id="final-register-btn" class="btn-primary" style="width:100%; padding:16px; font-size:16px; font-weight:bold; border-radius:12px; background:linear-gradient(135deg, var(--primary), #818cf8);" onclick="window.finalizeRegistration()">Profili Tamamla ve Giriş Yap ✨</button>
@@ -443,23 +486,92 @@ window.selectPurpose = function(btn, purpose) {
     window.registrationData.purpose = purpose;
 };
 
-window.previewFinalAvatar = function(event) {
+// ============================================================================
+// CROPPER İŞLEMLERİ (INSTAGRAM TARZI KIRPMA)
+// ============================================================================
+
+window.currentCropperContext = ''; // 'register' veya 'profile'
+
+window.openCropper = function(event, context) {
     const file = event.target.files[0];
-    if(file) {
-        window.registrationData.avatarFile = file;
-        const reader = new FileReader();
-        reader.onload = function(e) { 
-            document.getElementById('preview-pc-avatar-container').innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`; 
-        }
-        reader.readAsDataURL(file);
+    if(!file) return;
+    
+    window.currentCropperContext = context;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('cropper-image').src = e.target.result;
+        document.getElementById('cropper-modal').classList.add('active');
+        
+        if(cropper) { cropper.destroy(); }
+        
+        const image = document.getElementById('cropper-image');
+        cropper = new Cropper(image, {
+            aspectRatio: 1, 
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 0.9,
+            restore: false,
+            guides: false,
+            center: false,
+            highlight: false,
+            cropBoxMovable: false,
+            cropBoxResizable: false,
+            toggleDragModeOnDblclick: false,
+        });
+    };
+    reader.readAsDataURL(file);
+    event.target.value = ''; // inputu sıfırla
+};
+
+window.closeCropper = function() {
+    document.getElementById('cropper-modal').classList.remove('active');
+    if(cropper) { cropper.destroy(); cropper = null; }
+};
+
+window.saveCroppedImage = async function() {
+    if(!cropper) return;
+    
+    const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+    const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+    
+    if (window.currentCropperContext === 'register') {
+        window.registrationData.avatarDataUrl = base64Image;
+        document.getElementById('preview-pc-avatar-container').innerHTML = `<img src="${base64Image}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+        window.closeCropper();
+    } else if (window.currentCropperContext === 'profile') {
+        window.closeCropper();
+        await window.uploadProfileAvatarDirect(base64Image);
     }
 };
+
+window.uploadProfileAvatarDirect = async function(base64Image) {
+    try {
+        const fileName = window.userProfile.uid + '_avatar_' + Date.now() + '.jpg';
+        const storageRef = ref(storage, 'avatars/' + fileName);
+        
+        await uploadString(storageRef, base64Image, 'data_url');
+        const url = await getDownloadURL(storageRef);
+        
+        await updateDoc(doc(db, "users", window.userProfile.uid), { avatarUrl: url });
+        window.userProfile.avatarUrl = url;
+        window.renderProfile();
+        alert("Profil fotoğrafınız başarıyla kırpılıp güncellendi!");
+    } catch(e) {
+        console.error(e);
+        alert("Fotoğraf yüklenirken hata oluştu: " + e.message);
+    }
+};
+
 
 window.processStep = async function(step) {
     if (step === 1) {
         const e = document.getElementById('reg-email').value.trim();
         const p = document.getElementById('reg-password').value;
-        if(!e || !p) return alert("Lütfen e-posta ve şifrenizi girin.");
+        const pConf = document.getElementById('reg-password-confirm').value;
+        
+        if(!e || !p || !pConf) return alert("Lütfen e-posta ve şifrenizi girin.");
+        if(p !== pConf) return alert("Şifreler eşleşmiyor! Lütfen aynı şifreyi iki kez girdiğinizden emin olun.");
+        if(p.length < 6) return alert("Şifre en az 6 karakter olmalıdır.");
         
         const btn = document.getElementById('step1-btn');
         btn.innerText = "İşleniyor...";
@@ -496,12 +608,34 @@ window.processStep = async function(step) {
             btn.disabled = false;
         }
     } else if (step === 3) {
+        const uInput = document.getElementById('reg-username').value.trim().toLowerCase().replace(/\s+/g, '');
         const n = document.getElementById('reg-name').value.trim();
         const s = document.getElementById('reg-surname').value.trim();
         const a = document.getElementById('reg-age').value.trim();
         const f = document.getElementById('reg-faculty').value;
+        
+        if(!uInput) return alert("Lütfen bir kullanıcı adı belirleyin.");
         if(!n || !s || !a || !f || !window.registrationData.grade) return alert("Lütfen tüm kişisel bilgilerinizi eksiksiz doldurun.");
-        window.registrationData = { ...window.registrationData, name: n, surname: s, age: a, faculty: f };
+        
+        const finalUsername = '#' + uInput;
+        const btn = document.getElementById('step3-btn');
+        btn.innerText = "Kullanıcı Adı Kontrol Ediliyor...";
+        btn.disabled = true;
+        
+        try {
+            const q = query(collection(db, "users"), where("username", "==", finalUsername));
+            const snap = await getDocs(q);
+            if(!snap.empty) {
+                alert("Bu kullanıcı adı zaten alınmış. Lütfen başka bir tane seçin.");
+                btn.innerText = "Devam Et →";
+                btn.disabled = false;
+                return;
+            }
+        } catch(e) {
+            console.error(e);
+        }
+
+        window.registrationData = { ...window.registrationData, username: finalUsername, name: n, surname: s, age: a, faculty: f };
         window.renderStep(4);
     } else if (step === 4) {
         if(window.registrationData.interests.length < 2) return alert("Lütfen en az 2 ilgi alanı seçin.");
@@ -522,26 +656,24 @@ window.finalizeRegistration = async function() {
     let finalAvatarUrl = "";
 
     try {
-        if (d.avatarFile) {
-            const fileName = user.uid + '_avatar_' + Date.now();
+        if (d.avatarDataUrl) {
+            const fileName = user.uid + '_avatar_' + Date.now() + '.jpg';
             const storageRef = ref(storage, 'avatars/' + fileName);
-            await uploadBytes(storageRef, d.avatarFile);
+            await uploadString(storageRef, d.avatarDataUrl, 'data_url');
             finalAvatarUrl = await getDownloadURL(storageRef);
         }
-
-        const bioText = `Amacım: ${d.purpose}. İlgi Alanlarım: ${d.interests.join(', ')}`;
 
         await setDoc(doc(db, "users", user.uid), {
             uid: user.uid, 
             name: d.name, 
             surname: d.surname, 
-            username: "", 
+            username: d.username,
             email: d.email, 
             university: "UniLoop Kampüsü", 
             faculty: d.faculty, 
             grade: d.grade, 
             age: d.age, 
-            bio: bioText, 
+            bio: "", // Biyografi tamamen yok edildi, boş string bırakılıyor
             interests: d.interests, 
             purpose: d.purpose,
             avatar: "👨‍🎓", 
@@ -551,7 +683,7 @@ window.finalizeRegistration = async function() {
         });
 
         alert("Harika! Profilin başarıyla oluşturuldu. Şimdi uygulamaya yönlendiriliyorsun.");
-        window.location.reload(); // App'i başlatması için sayfayı yeniler
+        window.location.reload(); 
         
     } catch (error) {
         alert("Profil kaydedilirken bir hata oluştu: " + error.message);
@@ -583,7 +715,6 @@ bind('login-btn', 'click', async (e) => {
             btn.disabled = false;
             return;
         }
-        // Giriş başarılı, onAuthStateChanged devralacak.
     } catch (error) {
         console.error("Giriş Hatası:", error);
         alert("Giriş başarısız! E-posta veya şifreniz yanlış.");
@@ -615,7 +746,7 @@ window.ensureWelcomeMessage = async function(user, userName) {
         if (!chatSnap.exists()) {
             const systemMessageText = `
                 Merhaba ${userName}! Dünyanın en yenilikçi kampüs ağı UniLoop'a hoş geldin. 🎓✨<br><br>
-                Burası senin alanın. Hemen "Profil" sekmesine giderek kendine estetik bir biyografi ve profil fotoğrafı ekle!
+                Burası senin alanın. Hemen insanlarla tanışmaya başla!
             `;
             
             await setDoc(chatRef, {
@@ -679,17 +810,14 @@ onAuthStateChanged(auth, async (user) => {
             const docSnap = await getDoc(userDocRef);
             
             if(!docSnap.exists()) {
-                // Kullanıcı e-postasını doğrulamış ama Stepper'ı tamamlamamış!
-                // Stepper'ı Adım 3'ten itibaren başlat.
                 authScreen.style.display = 'flex';
                 appScreen.style.display = 'none';
                 document.getElementById('login-card').style.display = 'none';
                 window.registrationData.email = user.email;
                 startRegistrationStepper(3);
-                return; // Buradan sonrasına geçme
+                return; 
             }
 
-            // Normal Başarılı Giriş
             if(authScreen && appScreen) {
                 authScreen.style.display = 'none';
                 appScreen.style.display = 'block';
@@ -704,7 +832,6 @@ onAuthStateChanged(auth, async (user) => {
             await window.ensureWelcomeMessage(user, window.userProfile.name);
             await updateDoc(userDocRef, { isOnline: true });
             
-            // ÜST BAR BİLDİRİMLER BUTONU VE PREMIUM
             const headerRightMenu = document.querySelector('.header-right-menu');
             if (headerRightMenu) {
                 headerRightMenu.innerHTML = ''; 
@@ -724,7 +851,6 @@ onAuthStateChanged(auth, async (user) => {
                 `);
             }
 
-            // YENİ, İNCE VE SVG İKONLU BOTTOM NAVIGASYON
             if (!document.getElementById('uniloop-bottom-nav')) {
                 const bottomNav = document.createElement('div');
                 bottomNav.id = 'uniloop-bottom-nav';
@@ -949,7 +1075,7 @@ window.openModal = function(title, contentHTML) {
 window.closeModal = function() { 
     modal.classList.remove('active'); 
     document.getElementById('modal-body').innerHTML = ''; 
-    if (!document.getElementById('lightbox').classList.contains('active')) {
+    if (!document.getElementById('lightbox').classList.contains('active') && !document.body.classList.contains('no-scroll-messages')) {
         document.body.style.overflow = 'auto'; 
     }
 };
@@ -1051,7 +1177,6 @@ window.viewUserProfile = async function(targetUid) {
                 ? `<img src="${u.avatarUrl}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid #E5E7EB;">` 
                 : `<div style="width:100px; height:100px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:40px; border:3px solid #E5E7EB; margin:0 auto;">${u.avatar || '👤'}</div>`;
             
-            const bioText = u.bio ? u.bio : "Henüz bir biyografi eklemedi.";
             const ageText = u.age ? u.age + " yaşında" : "Yaş belirtilmemiş";
             const facText = u.faculty ? u.faculty : "Fakülte belirtilmemiş";
 
@@ -1071,13 +1196,7 @@ window.viewUserProfile = async function(targetUid) {
                     ${avatarHtml}
                     <h3 style="margin: 10px 0 5px 0; font-size:18px; color:var(--text-dark);">${u.name} ${initial}</h3>
                     <p style="color:var(--primary); font-size:14px; margin-bottom: 5px; font-weight:bold;">${facText}</p>
-                    <p style="color:var(--text-gray); font-size:13px; margin-bottom: 15px;">${ageText}</p>
-                    
-                    <div style="background:#F9FAFB; padding:15px; border-radius:12px; text-align:left; margin-bottom: 20px; border:1px solid #E5E7EB;">
-                        <strong style="font-size:12px; color:#6B7280; text-transform:uppercase; letter-spacing:1px;">Hobiler / Biyografi</strong>
-                        <p style="font-size:14px; margin-top:5px; color:var(--text-dark); line-height:1.5;">${bioText}</p>
-                    </div>
-
+                    <p style="color:var(--text-gray); font-size:13px; margin-bottom: 20px;">${ageText}</p>
                     ${actionBtnHtml}
                 </div>
             `);
@@ -1180,7 +1299,7 @@ window.openLightbox = function(imagesJsonStr, index) {
 
 window.closeLightbox = function() {
     document.getElementById('lightbox').classList.remove('active');
-    if(!document.getElementById('app-modal').classList.contains('active')) document.body.style.overflow = 'auto';
+    if(!document.getElementById('app-modal').classList.contains('active') && !document.body.classList.contains('no-scroll-messages')) document.body.style.overflow = 'auto';
 };
 
 window.changeLightboxImage = function(step) {
@@ -1214,7 +1333,7 @@ if(lb) {
 }
 
 // ============================================================================
-// 6. İLAN YÖNETİMİ (MARKET)
+// 6. İLAN YÖNETİMİ (MARKET) - TEK SOHBET KUTUSU MANTIĞI
 // ============================================================================
 
 window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listingId) {
@@ -1223,20 +1342,35 @@ window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listi
         const msgText = `Merhaba, "${itemTitle}" başlıklı ilanınızla ilgileniyorum. Durumu nedir?`;
         const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
-        await addDoc(collection(db, "chats"), {
-            participants: [myUid, sellerId],
-            participantNames: { [myUid]: window.userProfile.name, [sellerId]: sellerName },
-            participantAvatars: { [myUid]: window.userProfile.avatarUrl || window.userProfile.avatar || "👨‍🎓", [sellerId]: "👤" },
-            lastUpdated: serverTimestamp(), 
-            status: 'pending', 
-            initiator: myUid,
-            isMarketChat: true,
-            listingId: listingId,
-            messages: [{ senderId: myUid, text: msgText, time: timeStr, read: false }]
-        });
-        
-        alert("Satıcıya mesaj isteği başarıyla gönderildi!");
-        window.loadPage('messages');
+        // GÜNCELLEME: Aynı satıcıyla var olan herhangi bir sohbeti bul (İlanı fark etmez)
+        const existingChat = chatsDB.find(c => c.otherUid === sellerId);
+
+        if (existingChat) {
+            // Zaten konuşuyorsak, yeni mesajı o sohbetin içine at!
+            await updateDoc(doc(db, "chats", existingChat.id), {
+                messages: arrayUnion({ senderId: myUid, text: msgText, time: timeStr, read: false }),
+                lastUpdated: serverTimestamp()
+            });
+            alert("Mesajınız satıcıyla olan mevcut sohbetinize eklendi ve gönderildi!");
+            window.loadPage('messages');
+            setTimeout(() => window.openChatView(existingChat.id), 300);
+        } else {
+            // İlk defa konuşuyorsak yeni sohbet aç
+            const newChatRef = await addDoc(collection(db, "chats"), {
+                participants: [myUid, sellerId],
+                participantNames: { [myUid]: window.userProfile.name, [sellerId]: sellerName },
+                participantAvatars: { [myUid]: window.userProfile.avatarUrl || window.userProfile.avatar || "👨‍🎓", [sellerId]: "👤" },
+                lastUpdated: serverTimestamp(), 
+                status: 'pending', 
+                initiator: myUid,
+                isMarketChat: true,
+                listingId: listingId,
+                messages: [{ senderId: myUid, text: msgText, time: timeStr, read: false }]
+            });
+            alert("Satıcıya mesaj isteği başarıyla gönderildi!");
+            window.loadPage('messages');
+            setTimeout(() => window.openChatView(newChatRef.id), 300);
+        }
     } catch (error) {
         alert("Hata oluştu: " + error.message);
     }
@@ -1330,7 +1464,8 @@ window.openListingDetail = function(docId) {
     const currentUid = window.userProfile.uid || (auth.currentUser ? auth.currentUser.uid : null);
     const safeTitle = item.title.replace(/'/g, "\\'"); 
     
-    const hasMessagedBefore = chatsDB.find(c => c.otherUid === item.sellerId && c.listingId === item.id);
+    // Satıcıyla aramızda var olan bir sohbet var mı?
+    const existingChat = chatsDB.find(c => c.otherUid === item.sellerId);
 
     if (item.sellerId === currentUid) {
          actionButtonsHtml = `
@@ -1338,12 +1473,6 @@ window.openListingDetail = function(docId) {
                 <button class="action-btn" style="flex:1; padding:12px;" onclick="window.editListing('${item.id}', '${safeTitle}', '${item.price}')">✏️ Fiyatı Güncelle</button>
                 <button class="btn-danger" style="flex:1; padding:12px;" onclick="window.deleteListing('${item.id}'); window.closeModal();">🗑️ Sil</button>
             </div>
-         `;
-    } else if (hasMessagedBefore) {
-         actionButtonsHtml = `
-            <button class="btn-primary" disabled style="margin-top: 20px; width:100%; padding:12px; font-size:15px; background:#9CA3AF; cursor:not-allowed;">
-                ✅ Bu İlan İçin Mesaj Gönderildi
-            </button>
          `;
     } else {
          actionButtonsHtml = `
@@ -1609,9 +1738,9 @@ window.renderMessagesSidebarOnly = function() {
     
     const visibleChats = chatsDB.filter(c => c.status === 'accepted' || (c.status === 'pending' && c.initiator === window.userProfile.uid && c.isMarketChat));
     
-    let html = `<div class="chat-sidebar-header" style="position:sticky; top:0; background:white; z-index:10; padding:15px; border-bottom:1px solid var(--border-color); font-weight:bold;">Mesajlarım</div>`;
+    let html = `<div class="chat-sidebar-header" style="position:sticky; top:0; background:white; z-index:10; padding:15px 20px; border-bottom:1px solid #E5E7EB; font-weight:800; font-size:18px; color:#111827;">💬 Sohbetler</div>`;
     
-    if (visibleChats.length === 0) html += `<p style="text-align:center; padding:20px; color:var(--text-gray); font-size:13px;">Aktif mesajınız bulunmuyor.</p>`;
+    if (visibleChats.length === 0) html += `<div style="text-align:center; padding:30px 20px; color:#9CA3AF; font-size:14px;"><div style="font-size:30px; margin-bottom:10px;">📭</div>Aktif mesajınız bulunmuyor.</div>`;
 
     visibleChats.forEach(chat => {
         const lastMsgObj = chat.messages[chat.messages.length - 1];
@@ -1621,15 +1750,15 @@ window.renderMessagesSidebarOnly = function() {
         const previewMsg = rawLastMsg.replace(/<br>/g, ' ').substring(0, 35) + (rawLastMsg.length > 35 ? "..." : "");
 
         let avatarHtml = chat.avatar.startsWith('http') 
-            ? `<img src="${chat.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">` 
-            : `<div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; margin:0;">${chat.avatar}</div>`;
+            ? `<img src="${chat.avatar}" style="width:48px; height:48px; border-radius:50%; object-fit:cover;">` 
+            : `<div style="width:48px; height:48px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0;">${chat.avatar}</div>`;
 
         html += `
-            <div class="chat-contact ${isActive}" data-id="${chat.id}" onclick="window.openChatView('${chat.id}')" style="padding:15px; border-bottom:1px solid #E5E7EB; display:flex; gap:10px; cursor:pointer;">
+            <div class="chat-contact ${isActive}" data-id="${chat.id}" onclick="window.openChatView('${chat.id}')" style="padding:15px 20px; border-bottom:1px solid #F3F4F6; display:flex; gap:15px; cursor:pointer; align-items:center; transition: background 0.2s;">
                 ${avatarHtml}
-                <div class="chat-contact-info" style="flex:1;">
-                    <div class="chat-contact-top" style="display:flex; justify-content:space-between; margin-bottom:4px;"><span class="chat-contact-name" style="font-weight:bold; font-size:14px;">${chat.name}</span><span class="chat-contact-time" style="font-size:11px; color:#9CA3AF;">${lastMsgObj ? lastMsgObj.time : ""}</span></div>
-                    <div class="chat-contact-last" style="font-size:13px; color:#6B7280;">${previewMsg}</div>
+                <div class="chat-contact-info" style="flex:1; overflow:hidden;">
+                    <div class="chat-contact-top" style="display:flex; justify-content:space-between; margin-bottom:4px;"><span class="chat-contact-name" style="font-weight:700; font-size:15px; color:#111827;">${chat.name}</span><span class="chat-contact-time" style="font-size:11px; color:#9CA3AF; font-weight:600;">${lastMsgObj ? lastMsgObj.time : ""}</span></div>
+                    <div class="chat-contact-last" style="font-size:13px; color:#6B7280; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${previewMsg}</div>
                 </div>
             </div>
         `;
@@ -1654,26 +1783,28 @@ window.updateChatMessagesOnly = function(chatId) {
         }
         
         if(msg.senderId === 'system') {
-            chatHTML += `<div style="align-self:center; background:#FEF3C7; color:#92400E; font-size:12px; padding:6px 12px; border-radius:12px; margin-bottom:10px; text-align:center;">${msg.text}</div>`;
+            chatHTML += `<div style="align-self:center; background:#FEF3C7; color:#92400E; font-size:12px; padding:6px 12px; border-radius:12px; margin-bottom:15px; text-align:center; font-weight:600;">${msg.text}</div>`;
         } else {
-            chatHTML += `<div class="bubble ${type}"><div class="msg-text">${msg.text}</div><div class="msg-time" style="display:flex; align-items:center; justify-content:flex-end; font-size:10px; opacity:0.7; margin-top:4px;">${msg.time} ${ticks}</div></div>`; 
+            chatHTML += `<div class="bubble ${type}"><div class="msg-text">${msg.text}</div><div class="msg-time" style="display:flex; align-items:center; justify-content:flex-end; font-size:10px; opacity:0.7; margin-top:6px;">${msg.time} ${ticks}</div></div>`; 
         }
     });
     scrollBox.innerHTML = chatHTML;
     scrollBox.scrollTop = scrollBox.scrollHeight;
 };
 
+// KAYMAYI ENGELLEYEN PROFESYONEL (FIXED) MESAJLAR EKRANI
 window.renderMessages = function() {
-    const visibleChats = chatsDB.filter(c => c.status === 'accepted' || (c.status === 'pending' && c.initiator === window.userProfile.uid));
+    // Sayfa kaymasını kilitler
+    document.body.classList.add('no-scroll-messages');
 
     let html = `
-        <div class="card" style="padding:0; border:none; background:transparent;">
+        <div style="height: 100%; width: 100%; box-sizing: border-box; background: var(--bg-color);">
             <div class="chat-layout" id="chat-layout-container">
-                <div class="chat-sidebar" id="sidebar-container" style="background:white; border-radius:12px 0 0 12px; overflow:hidden;"></div>
-                <div class="chat-main" id="chat-main-view" style="background:#F9FAFB; border-radius:0 12px 12px 0;">
-                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-gray); opacity:0.7;">
-                        <div style="font-size:48px; margin-bottom:10px;">💬</div>
-                        <div>Mesajlaşmaya başlamak için sol taraftan bir kişi seçin.</div>
+                <div class="chat-sidebar" id="sidebar-container"></div>
+                <div class="chat-main" id="chat-main-view">
+                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-gray); opacity:0.6;">
+                        <div style="font-size:60px; margin-bottom:15px;">💬</div>
+                        <div style="font-size:16px; font-weight:600;">Sohbet başlatmak için soldan bir kişi seçin.</div>
                     </div>
                 </div>
             </div>
@@ -1682,7 +1813,7 @@ window.renderMessages = function() {
     
     mainContent.innerHTML = html;
     window.renderMessagesSidebarOnly(); 
-    if(currentChatId && visibleChats.find(c => c.id === currentChatId)) window.openChatView(currentChatId);
+    if(currentChatId && chatsDB.find(c => c.id === currentChatId)) window.openChatView(currentChatId);
 };
 
 window.openChatView = function(chatId) {
@@ -1711,24 +1842,24 @@ window.openChatView = function(chatId) {
         : `<div style="width:42px; height:42px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; margin:0;">${activeChat.avatar}</div>`;
 
     let chatHTML = `
-        <div class="chat-header" style="padding:15px; border-bottom:1px solid #E5E7EB; background:white; display:flex; align-items:center; gap:15px;">
-            <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); window.resetCurrentChatId();" style="border:none; background:none; font-size:20px; cursor:pointer;">←</button>
+        <div class="chat-header" style="padding:15px 20px; border-bottom:1px solid #E5E7EB; background:#fff; display:flex; align-items:center; gap:15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index:10;">
+            <button class="back-btn" onclick="document.getElementById('chat-layout-container').classList.remove('chat-active'); window.resetCurrentChatId();" style="border:none; background:#F3F4F6; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;">←</button>
             ${avatarHtml}
             <div class="chat-header-info">
-                <div class="chat-header-name" style="font-weight:bold; font-size:16px; cursor:pointer;" onclick="window.viewUserProfile('${activeChat.otherUid}')">${activeChat.name}</div>
-                <div class="chat-header-status" style="font-size:12px; color:#10B981;">UniLoop Ağı</div>
+                <div class="chat-header-name" style="font-weight:800; font-size:16px; color:#111827; cursor:pointer;" onclick="window.viewUserProfile('${activeChat.otherUid}')">${activeChat.name}</div>
+                <div class="chat-header-status" style="font-size:12px; color:#10B981; font-weight:600;">● Çevrimiçi</div>
             </div>
         </div>
-        <div class="chat-messages" id="chat-messages-scroll" style="flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column;"></div>
+        <div class="chat-messages" id="chat-messages-scroll" style="flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; background:#f9fafb;"></div>
     `;
     
     if (activeChat.status === 'pending' && activeChat.initiator === window.userProfile.uid) {
-         chatHTML += `<div style="padding: 20px; text-align: center; color: var(--text-gray); background: white; border-top: 1px solid var(--border-color); font-weight:bold;">⏳ Karşı tarafın mesaj/bağlantı isteğini kabul etmesi bekleniyor...</div>`;
+         chatHTML += `<div style="padding: 15px; text-align: center; color: #6B7280; background: white; border-top: 1px solid #E5E7EB; font-weight:600; font-size:13px;">⏳ Karşı tarafın onaylaması bekleniyor...</div>`;
     } else {
          chatHTML += `
-            <div class="chat-input-area" style="padding:15px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:10px;">
-                <div class="chat-input-wrapper" style="flex:1;"><input type="text" id="chat-input-field" placeholder="Bir mesaj yazın..." style="width:100%; padding:12px; border-radius:20px; border:1px solid #D1D5DB; background:#F9FAFB; outline:none;"></div>
-                <button class="chat-send-btn" onclick="window.sendMsg('${chatId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:44px; height:44px; cursor:pointer;">➤</button>
+            <div class="chat-input-area" style="padding:15px 20px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:12px; align-items:center;">
+                <input type="text" id="chat-input-field" placeholder="Bir mesaj yazın..." style="flex:1; padding:14px 20px; border-radius:25px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:15px;">
+                <button class="chat-send-btn" onclick="window.sendMsg('${chatId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(79,70,229,0.3);">➤</button>
             </div>
         `;
     }
@@ -2003,7 +2134,7 @@ window.submitConfessionComment = async function(docId) {
 };
 
 // ============================================================================
-// 9. PROFİL YÖNETİMİ VE AYARLAR (YENİ KİMLİK KARTI TASARIMI)
+// 9. PROFİL YÖNETİMİ VE AYARLAR (BİYOGRAFİ ALANI KALDIRILDI)
 // ============================================================================
 
 window.renderProfile = function() {
@@ -2029,7 +2160,7 @@ window.renderProfile = function() {
                 <div class="id-card-left" style="position:relative;">
                     ${avatarHtml}
                     <button onclick="document.getElementById('profile-avatar-upload-input').click()" style="position:absolute; bottom:-5px; right:-5px; background:var(--primary); color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:14px; box-shadow:0 2px 4px rgba(0,0,0,0.2); border: 2px solid #fff;">📷</button>
-                    <input type="file" id="profile-avatar-upload-input" accept="image/*" style="display:none;" onchange="window.uploadProfileAvatar(event)">
+                    <input type="file" id="profile-avatar-upload-input" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
                 </div>
                 <div class="id-card-right">
                     <div class="id-card-name">${u.name} ${u.surname}</div>
@@ -2049,41 +2180,9 @@ window.renderProfile = function() {
                 <button class="btn-primary" style="flex:1; max-width:200px; padding:12px; border-radius:12px;" onclick="window.editProfile()">✏️ Profili Düzenle</button>
                 <button class="action-btn" style="flex:1; max-width:200px; padding:12px; border-radius:12px;" onclick="window.loadPage('friends')">👥 Arkadaşlarım</button>
             </div>
-            
-            <div style="text-align:left; background:#F9FAFB; padding:20px; border-radius:16px; border:1px solid #E5E7EB; max-width: 400px; margin: 0 auto;">
-                <h4 style="margin-bottom:10px; color:#6B7280; text-transform:uppercase; font-size:12px; letter-spacing:1px; font-weight: 800;">Hakkımda / Biyografi</h4>
-                <p style="font-size:15px; color:var(--text-dark); line-height:1.6; white-space:pre-wrap;">${u.bio || 'Henüz bir biyografi eklemediniz. Düzenle butonuna tıklayarak kendinizden bahsedin!'}</p>
-            </div>
         </div>
     `;
     mainContent.innerHTML = html;
-};
-
-window.uploadProfileAvatar = async function(event) {
-    const file = event.target.files[0];
-    if(!file) return;
-
-    const btn = event.target.previousElementSibling;
-    const originalText = btn.innerText;
-    btn.innerText = "⏳";
-    btn.disabled = true;
-    
-    try {
-        const fileName = window.userProfile.uid + '_avatar_' + Date.now();
-        const storageRef = ref(storage, 'avatars/' + fileName);
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-        
-        await updateDoc(doc(db, "users", window.userProfile.uid), { avatarUrl: url });
-        window.userProfile.avatarUrl = url;
-        window.renderProfile();
-        alert("Profil fotoğrafınız başarıyla güncellendi!");
-    } catch(e) {
-        console.error(e);
-        alert("Fotoğraf yüklenirken hata oluştu: " + e.message);
-        btn.innerText = originalText;
-        btn.disabled = false;
-    }
 };
 
 window.editProfile = function() {
@@ -2106,10 +2205,6 @@ window.editProfile = function() {
             <label style="font-weight:bold; font-size:13px; color:var(--text-gray);">Yaş</label>
             <input type="number" id="edit-age" value="${u.age || ''}" placeholder="Örn: 21" style="width:100%; padding:12px; border-radius:12px; border:1px solid #D1D5DB; outline:none;">
         </div>
-        <div class="form-group">
-            <label style="font-weight:bold; font-size:13px; color:var(--text-gray);">Biyografi / İlgi Alanları</label>
-            <textarea id="edit-bio" rows="4" placeholder="Kendinden, hobilerinden ve neler aradığından bahset..." style="width:100%; padding:12px; border-radius:12px; border:1px solid #D1D5DB; outline:none; resize:none;">${u.bio || ''}</textarea>
-        </div>
         <button class="btn-primary" style="width:100%; padding:14px; font-size:15px; border-radius:12px;" onclick="window.saveProfileInfo()">💾 Değişiklikleri Kaydet</button>
     `);
 };
@@ -2118,7 +2213,6 @@ window.saveProfileInfo = async function() {
     let rawUsername = document.getElementById('edit-username').value.trim().toLowerCase().replace(/\s+/g, '');
     const faculty = document.getElementById('edit-faculty').value.trim();
     const age = document.getElementById('edit-age').value.trim();
-    const bio = document.getElementById('edit-bio').value.trim();
 
     let finalUsername = "";
     if (rawUsername) finalUsername = '#' + rawUsername;
@@ -2136,14 +2230,12 @@ window.saveProfileInfo = async function() {
         await updateDoc(doc(db, "users", window.userProfile.uid), {
             username: finalUsername,
             faculty: faculty,
-            age: age,
-            bio: bio
+            age: age
         });
 
         window.userProfile.username = finalUsername;
         window.userProfile.faculty = faculty;
         window.userProfile.age = age;
-        window.userProfile.bio = bio;
 
         window.closeModal();
         window.renderProfile();
@@ -2189,6 +2281,11 @@ window.loadPage = function(page) {
     const activeNav = document.querySelector(`.bottom-nav-item[data-target="${page}"]`);
     if(activeNav) activeNav.classList.add('active');
 
+    // Sayfa değiştirirken body scroll kilidini sıfırla (Mesajlar hariç)
+    if (page !== 'messages') {
+        document.body.classList.remove('no-scroll-messages');
+    }
+
     mainContent.innerHTML = '';
     
     // Mesaj görünümünü sıfırla
@@ -2205,7 +2302,6 @@ window.loadPage = function(page) {
         case 'messages': window.renderMessages(); break;
         case 'profile': window.renderProfile(); break;
         case 'friends': window.renderFriends(); break;
-        // Bildirimler modal üzerinden çalışacağı için routerdan çıkarıldı.
         default: window.renderHome(); break;
     }
 };
