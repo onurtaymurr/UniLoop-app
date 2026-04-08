@@ -131,9 +131,9 @@ styleFix.innerHTML = `
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        color: #8E8E93; /* Soft gri */
-        font-size: 10px; /* Daha ufak ve estetik font */
+        justify-content: flex-end; /* İkon ve yazıyı birbirine yaklaştırır */
+        color: #8E8E93; 
+        font-size: 10px; 
         text-decoration: none;
         cursor: pointer;
         transition: 0.2s;
@@ -143,15 +143,16 @@ styleFix.innerHTML = `
         font-weight: 500;
         -webkit-tap-highlight-color: transparent;
         height: 100%;
+        padding-bottom: 8px; /* Alt boşluk */
     }
     .bottom-nav-item.active { 
-        color: #6366f1 !important; /* Modern soft mor/mavi aktif rengi */
+        color: #6366f1 !important; 
         font-weight: 600; 
     }
     .bottom-nav-icon {
         width: 22px;
         height: 22px;
-        margin-bottom: 4px;
+        margin-bottom: 2px; /* İkon ile yazı arasındaki boşluk azaltıldı */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -165,7 +166,7 @@ styleFix.innerHTML = `
         fill: currentColor;
     }
     .bottom-nav-item.active .bottom-nav-icon svg {
-        stroke-width: 2.2; /* Aktifken çizgiler biraz kalınlaşır */
+        stroke-width: 2.2;
     }
 
     #chat-layout-container { height: calc(100vh - 120px) !important; max-height: 800px; overflow: hidden !important; display: flex; flex-direction: row; }
@@ -187,7 +188,7 @@ styleFix.innerHTML = `
     .feed-post-actions { display: flex; border-top: 1px solid #E5E7EB; padding-top: 12px; gap: 20px; }
     .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
     .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
-    .user-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; width: 100%; }
+    .user-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 10px; width: 100%; }
     .user-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; justify-content: center; min-height: 160px;}
     .user-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); border-color: var(--primary); }
     .cropper-view-box, .cropper-face { border-radius: 50%; }
@@ -213,8 +214,13 @@ styleFix.innerHTML = `
     
     #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
     #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
-    #app-header > :last-child, .header-right-menu { display: flex !important; align-items: center !important; justify-content: flex-end !important; flex-wrap: nowrap !important; }
-    #profile-btn, #nav-premium-action { font-size: 12px !important; padding: 0 10px !important; height: 32px !important; line-height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; flex-shrink: 0 !important; margin: 0 !important; border-radius: 8px !important; }
+    #app-header > :last-child, .header-right-menu { display: flex !important; align-items: center !important; justify-content: flex-end !important; flex-wrap: nowrap !important; gap: 8px; }
+    
+    /* Yeni Üst Bar Bildirim Butonu Stili */
+    #notif-btn-top { font-size: 13px !important; padding: 0 12px !important; height: 32px !important; line-height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; flex-shrink: 0 !important; margin: 0 !important; border-radius: 8px !important; background: #F3F4F6; color: var(--text-dark); border: 1px solid #E5E7EB; cursor: pointer; position: relative;}
+    
+    #nav-premium-action { font-size: 12px !important; padding: 0 10px !important; height: 32px !important; line-height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; flex-shrink: 0 !important; margin: 0 !important; border-radius: 8px !important; }
+    
     @media (max-width: 1024px) {
         #chat-layout-container { height: calc(100vh - 160px) !important; }
         .chat-sidebar { width: 100%; display: block; }
@@ -262,58 +268,6 @@ const bind = (id, event, callback) => {
     if (el) { el.addEventListener(event, callback); }
 };
 
-// ============================================================================
-// 🌟 KAMPÜS SEKME ENTEGRASYONU (ESKİ SIDEBAR ÖZELLİKLERİ BURADA)
-// ============================================================================
-window.renderSidebarAccordions = function() {
-    const container = document.getElementById('sidebar-networks-container');
-    if(!container) return;
-    
-    const accordionHTML = `
-        <div id="bana-ozel-container"></div>
-        <div class="accordion-section" style="margin-top: 15px;">
-            <div class="accordion-header">
-                <span>🏢 Tüm Fakülteler</span>
-                <span class="accordion-icon">▶</span>
-            </div>
-            <div class="accordion-content">
-                <div class="menu-item community-link" data-name="Tıp Fakültesi" data-icon="🩺" data-color="linear-gradient(135deg, #EF4444, #B91C1C)" style="padding:12px; margin-bottom:5px; border-radius:8px; cursor:pointer;">🩺 Tıp Fakültesi</div>
-                <div class="menu-item community-link" data-name="Diş Hekimliği Fakültesi" data-icon="🦷" data-color="linear-gradient(135deg, #06B6D4, #0891B2)" style="padding:12px; margin-bottom:5px; border-radius:8px; cursor:pointer;">🦷 Diş Fakültesi</div>
-                <div class="menu-item community-link" data-name="Bilgisayar Fakültesi" data-icon="💻" data-color="linear-gradient(135deg, #3B82F6, #1D4ED8)" style="padding:12px; margin-bottom:5px; border-radius:8px; cursor:pointer;">💻 Bilgisayar Fakültesi</div>
-                <div class="menu-item community-link" data-name="Eczacılık Fakültesi" data-icon="💊" data-color="linear-gradient(135deg, #10B981, #047857)" style="padding:12px; margin-bottom:5px; border-radius:8px; cursor:pointer;">💊 Eczacılık Fakültesi</div>
-                <div class="menu-item community-link" data-name="Hukuk Fakültesi" data-icon="⚖️" data-color="linear-gradient(135deg, #8B5CF6, #6D28D9)" style="padding:12px; margin-bottom:5px; border-radius:8px; cursor:pointer;">⚖️ Hukuk Fakültesi</div>
-            </div>
-        </div>
-    `;
-    container.innerHTML = accordionHTML;
-    window.updateMyFacultiesSidebar();
-};
-
-window.updateMyFacultiesSidebar = function() {
-    const container = document.getElementById('bana-ozel-container');
-    if(!container) return;
-    
-    let html = ``;
-    
-    if(window.userProfile && window.userProfile.faculty) {
-        html += `
-            <div class="menu-item community-link" data-name="${window.userProfile.faculty}" style="padding:14px; background:#F9FAFB; border-radius:12px; margin-bottom:12px; border:1px solid #E5E7EB; font-weight:bold; cursor:pointer;">
-                📌 ${window.userProfile.faculty}
-            </div>
-        `;
-    }
-    
-    html += `
-        <div class="menu-item" data-target="notifications" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('notifications');" style="padding:14px; display:flex; justify-content:space-between; background:white; border:1px solid #E5E7EB; border-radius:12px; margin-bottom:12px; cursor:pointer; font-weight:bold;">
-            <span>🔔 Bildirimler</span> <span id="notif-badge-top" class="badge" style="display:none; background:#EF4444; color:white; padding:2px 8px; border-radius:12px; font-size:11px;">0</span>
-        </div>
-        <div class="menu-item" data-target="friends" onclick="document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); this.classList.add('active'); window.loadPage('friends');" style="padding:14px; background:white; border:1px solid #E5E7EB; border-radius:12px; cursor:pointer; font-weight:bold;">
-            👥 Arkadaşlarım
-        </div>
-    `;
-    
-    container.innerHTML = html;
-};
 
 // ============================================================================
 // 1. GİRİŞ, KAYIT, ONAY VE ŞİFREMİ UNUTTUM
@@ -553,6 +507,10 @@ window.logout = async function() {
             // Alt barı temizle
             const bottomNav = document.getElementById('uniloop-bottom-nav');
             if(bottomNav) bottomNav.remove();
+            
+            // Üst bar butonunu temizle
+            const topNotifBtn = document.getElementById('notif-btn-top');
+            if(topNotifBtn) topNotifBtn.remove();
         }
     } catch(error) {
         console.error("Çıkış hatası:", error);
@@ -592,6 +550,22 @@ onAuthStateChanged(auth, async (user) => {
             await window.ensureWelcomeMessage(user, window.userProfile.name);
             await updateDoc(userDocRef, { isOnline: true });
             
+            // ÜST BAR BİLDİRİMLER BUTONU ENTEGRASYONU (Profil butonu yerine)
+            const headerRightMenu = document.querySelector('.header-right-menu');
+            if (headerRightMenu) {
+                const oldProfileBtn = document.getElementById('profile-btn');
+                if(oldProfileBtn) oldProfileBtn.style.display = 'none'; // Eskisini gizle
+                
+                if (!document.getElementById('notif-btn-top')) {
+                    const notifBtnHtml = `
+                        <div id="notif-btn-top" onclick="window.loadPage('notifications')">
+                            🔔 Bildirimler <span id="notif-badge-top" style="display:none; position:absolute; top:-5px; right:-5px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold;">0</span>
+                        </div>
+                    `;
+                    headerRightMenu.insertAdjacentHTML('beforeend', notifBtnHtml);
+                }
+            }
+
             // YENİ, İNCE VE SVG İKONLU BOTTOM NAVIGASYON (KAMPÜS KALDIRILDI)
             if (!document.getElementById('uniloop-bottom-nav')) {
                 const bottomNav = document.createElement('div');
@@ -641,9 +615,9 @@ onAuthStateChanged(auth, async (user) => {
             }
             
             if (!document.getElementById('nav-premium-action') && !window.userProfile.isPremium) {
-                const profileBtn = document.getElementById('profile-btn');
-                if (profileBtn) {
-                    profileBtn.insertAdjacentHTML('beforebegin', `
+                const headerMenu = document.querySelector('.header-right-menu');
+                if (headerMenu) {
+                    headerMenu.insertAdjacentHTML('afterbegin', `
                         <div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold; margin-right: 10px;" onclick="window.openPremiumModal()">
                             🌟 Premium
                         </div>
@@ -717,18 +691,18 @@ function initRealtimeListeners(currentUid) {
         chatsDB.sort((a, b) => b.lastUpdatedTS - a.lastUpdatedTS);
         
         const notifBadge = document.getElementById('notif-badge'); // Alt bardaki (Mesajlar sekmesi)
-        const notifBadgeTop = document.getElementById('notif-badge-top'); // Kampüs sekmesindeki
+        const notifBadgeTop = document.getElementById('notif-badge-top'); // Üst bardaki Bildirim sekmesi
         
         if(notifBadge) {
             if(pendingRequestsCount > 0) { notifBadge.style.display = 'flex'; notifBadge.innerText = pendingRequestsCount; } 
             else { notifBadge.style.display = 'none'; }
         }
         if(notifBadgeTop) {
-            if(pendingRequestsCount > 0) { notifBadgeTop.style.display = 'inline-block'; notifBadgeTop.innerText = pendingRequestsCount; } 
+            if(pendingRequestsCount > 0) { notifBadgeTop.style.display = 'flex'; notifBadgeTop.innerText = pendingRequestsCount; } 
             else { notifBadgeTop.style.display = 'none'; }
         }
 
-        const activeTab = document.querySelector('.menu-item.active');
+        const activeTab = document.querySelector('.bottom-nav-item.active') || document.querySelector('.menu-item.active');
         if(activeTab && activeTab.getAttribute('data-target') === 'messages') {
             const inputField = document.getElementById('chat-input-field');
             const isFocused = inputField && inputField === document.activeElement;
@@ -808,8 +782,8 @@ window.upgradeToPremium = async function() {
 // ============================================================================
 
 window.goToMessages = function() {
-    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-    const msgTab = document.querySelector('[data-target="messages"]');
+    document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
+    const msgTab = document.querySelector('.bottom-nav-item[data-target="messages"]');
     if(msgTab) { msgTab.classList.add('active'); window.loadPage('messages'); }
 };
 
@@ -848,15 +822,6 @@ document.body.addEventListener('click', (e) => {
         }
         return;
     }
-
-    const link = e.target.closest('.community-link');
-    if(link) {
-        const name = link.getAttribute('data-name');
-        const icon = link.getAttribute('data-icon');
-        const color = link.getAttribute('data-color');
-        if(typeof window.handleFacultyClick === 'function') window.handleFacultyClick(name, icon, color);
-        return;
-    }
 });
 
 // ============================================================================
@@ -870,12 +835,12 @@ window.searchAndAddFriend = async function() {
         
         let rawSearch = searchInput.value.trim().toLowerCase();
         if(!rawSearch) { alert("Lütfen bir kullanıcı adı yazın."); return; }
-        if (!window.userProfile.username) { alert("Arkadaş eklemeden önce lütfen profilinizden bir kullanıcı adı belirleyin!"); return; }
+        if (!window.userProfile.username) { alert("Bağlantı kurmadan önce lütfen profilinizden bir kullanıcı adı belirleyin!"); return; }
 
         rawSearch = rawSearch.replace(/^#/, '');
         const searchVal = '#' + rawSearch;
         
-        if(searchVal === window.userProfile.username) { alert("Kendinizi arkadaş olarak ekleyemezsiniz :)"); return; }
+        if(searchVal === window.userProfile.username) { alert("Kendinize istek gönderemezsiniz :)"); return; }
 
         const btn = document.getElementById('friend-search-btn');
         const origText = btn.innerText;
@@ -901,7 +866,7 @@ window.searchAndAddFriend = async function() {
     }
 };
 
-window.sendFriendRequest = async function(targetUserId, targetUserName) {
+window.sendFriendRequest = async function(targetUserId, targetUserName, customMsg = "Sizinle bağlantı kurmak istiyor.") {
     try {
         const myUid = auth.currentUser.uid;
         const q = query(collection(db, "chats"), where("participants", "array-contains", myUid));
@@ -918,14 +883,14 @@ window.sendFriendRequest = async function(targetUserId, targetUserName) {
                 participantNames: { [myUid]: window.userProfile.name, [targetUserId]: targetUserName },
                 participantAvatars: { [myUid]: window.userProfile.avatarUrl || window.userProfile.avatar || "👨‍🎓", [targetUserId]: "👤" },
                 lastUpdated: serverTimestamp(), status: 'pending', initiator: myUid, 
-                messages: [{ senderId: "system", text: "Sizi arkadaş olarak eklemek istiyor.", time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), read: false }]
+                messages: [{ senderId: "system", text: customMsg, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), read: false }]
             });
-            alert("Arkadaşlık isteği başarıyla gönderildi! Karşı taraf onayladığında bildirim alacaksınız.");
+            alert("İstek başarıyla gönderildi! Karşı taraf onayladığında bildirim alacaksınız.");
         } else {
             if(existingChat.status === 'pending') {
                 alert("Bu kişiye zaten bir istek gönderilmiş veya ondan sana istek gelmiş.");
             } else {
-                alert("Bu kişiyle zaten arkadaşsınız.");
+                alert("Bu kişiyle zaten bağlantınız var.");
             }
         }
     } catch (error) {
@@ -957,7 +922,7 @@ window.viewUserProfile = async function(targetUid) {
             } else if (existingChat && existingChat.status === 'pending') {
                 actionBtnHtml = `<button class="btn-primary" disabled style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:#9CA3AF; box-shadow:none;">⏳ İstek Bekleniyor</button>`;
             } else {
-                actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendFriendRequest('${u.uid}', '${u.name} ${initial}'); window.closeModal();">➕ Arkadaş Ekle</button>`;
+                actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendFriendRequest('${u.uid}', '${u.name} ${initial}'); window.closeModal();">➕ İstek Gönder</button>`;
             }
 
             window.openModal('Kullanıcı Profili', `
@@ -986,7 +951,7 @@ window.renderHome = async function() {
     let usernameWarning = '';
     if (!window.userProfile.username) {
         usernameWarning = `
-            <div style="background: #FEF2F2; color: #DC2626; padding: 15px; border-radius: 12px; border: 1px solid #FCA5A5; margin-bottom: 20px; font-weight: bold; text-align: center; cursor:pointer;" onclick="window.loadPage('profile')">
+            <div style="background: #FEF2F2; color: #DC2626; padding: 15px; border-radius: 12px; border: 1px solid #FCA5A5; margin-bottom: 16px; font-weight: bold; text-align: center; cursor:pointer;" onclick="window.loadPage('profile')">
                 ⚠️ Lütfen profilinden bir kullanıcı adı belirle! Arkadaşlarının seni bulabilmesi için bu zorunludur. (Tıkla ve Belirle)
             </div>
         `;
@@ -994,14 +959,14 @@ window.renderHome = async function() {
 
     let html = `
         ${usernameWarning}
-        <div class="card" style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; border:none;">
+        <div class="card" style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; border:none; margin-bottom: 16px;">
             <h2 style="font-size:24px; margin-bottom:8px;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
             <p style="opacity:0.9; font-size:15px;">
                 <strong style="color:#D9FDD3;">${window.userProfile.university}</strong> ağındasın. Kampüsündeki öğrencileri keşfet.
             </p>
         </div>
         
-        <div class="card" style="padding: 12px 20px; display:flex; align-items:center; gap:12px; margin-bottom: 24px; border-radius: 16px;">
+        <div class="card" style="padding: 12px 20px; display:flex; align-items:center; gap:12px; margin-bottom: 16px; border-radius: 16px;">
             <div style="font-size:18px;">🔍</div>
             <div style="display:flex; flex:1; align-items:center; background:#F3F4F6; border-radius:12px; padding:0 12px; border:1px solid transparent; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='transparent'; this.style.background='#F3F4F6';">
                 <span style="color:var(--primary); font-weight:800; font-size:16px;">#</span>
@@ -1010,7 +975,7 @@ window.renderHome = async function() {
             <button class="btn-primary" id="friend-search-btn" style="width:auto; padding:10px 18px; border-radius:12px;" onclick="window.searchAndAddFriend()">Ekle</button>
         </div>
         
-        <div class="card" style="padding: 20px;">
+        <div class="card" style="padding: 20px; margin-bottom: 16px;">
             <h2 style="margin-bottom:15px; font-size:18px; display:flex; align-items:center; justify-content:space-between;">
                 <span>🔥 Önerilen Kişiler</span>
                 <span style="font-size:12px; background:var(--primary); color:white; padding:4px 8px; border-radius:8px;">Yeni</span>
@@ -1108,7 +1073,7 @@ if(lb) {
 }
 
 // ============================================================================
-// 6. İLAN YÖNETİMİ (MARKET)
+// 6. İLAN YÖNETİMİ (MARKET) - Direkt Mesaj Güncellemesi
 // ============================================================================
 
 window.renderListings = function(type, title) {
@@ -1200,6 +1165,7 @@ window.openListingDetail = function(docId) {
     const safeTitle = item.title.replace(/'/g, "\\'"); 
     const existingChat = chatsDB.find(c => c.otherUid === item.sellerId);
 
+    // MARKET İÇİN MESAJ GÖNDERME MANTIĞI GÜNCELLENDİ
     if (item.sellerId === currentUid) {
          actionButtonsHtml = `
             <div style="display:flex; gap:10px; margin-top: 20px;">
@@ -1210,9 +1176,9 @@ window.openListingDetail = function(docId) {
     } else if (existingChat && existingChat.status === 'accepted') {
          actionButtonsHtml = `<button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">💬 Mesaj Gönder</button>`;
     } else if (existingChat && existingChat.status === 'pending') {
-         actionButtonsHtml = `<button class="btn-primary" disabled style="margin-top: 20px; padding:12px; font-size:15px; background:#9CA3AF;">⏳ İstek Bekleniyor</button>`;
+         actionButtonsHtml = `<button class="btn-primary" disabled style="margin-top: 20px; padding:12px; font-size:15px; background:#9CA3AF;">⏳ Mesaj İsteği Bekleniyor</button>`;
     } else {
-         actionButtonsHtml = `<button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="window.sendFriendRequest('${item.sellerId}', '${item.sellerName}'); window.closeModal();">➕ İstek Gönder</button>`;
+         actionButtonsHtml = `<button class="btn-primary" style="margin-top: 20px; padding:12px; font-size:15px;" onclick="window.sendFriendRequest('${item.sellerId}', '${item.sellerName}', 'Market ilanınız (${safeTitle}) için sizinle iletişime geçmek istiyorum.'); window.closeModal();">💬 Satıcıya Mesaj Gönder</button>`;
     }
 
     window.openModal(item.title, `
@@ -1368,13 +1334,14 @@ window.renderFriends = function() {
     let html = `
         <div class="card" style="padding: 20px; min-height: calc(100vh - 120px);">
             <h2 style="margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px; display:flex; align-items:center; gap:10px;">
-                <span>👥 Arkadaşlarım</span>
+                <button onclick="window.renderProfile()" style="background:none; border:none; font-size:20px; cursor:pointer; padding-right:10px;">←</button>
+                <span>👥 Arkadaşlarım / Bağlantılarım</span>
                 <span style="font-size:14px; background:#EEF2FF; color:var(--primary); padding:4px 12px; border-radius:12px;">${acceptedFriends.length} Kişi</span>
             </h2>
     `;
     
     if (acceptedFriends.length === 0) {
-        html += `<div style="text-align:center; padding: 40px 20px; color:var(--text-gray);">Henüz ekli bir arkadaşın yok. Ana sayfadan yeni insanlarla tanışabilirsin!</div>`;
+        html += `<div style="text-align:center; padding: 40px 20px; color:var(--text-gray);">Henüz ekli bir bağlantınız yok. Ana sayfadan yeni insanlarla tanışabilirsin!</div>`;
     } else {
         html += `<div class="user-grid">`;
         acceptedFriends.forEach(friend => {
@@ -1399,7 +1366,7 @@ window.renderFriends = function() {
 };
 
 window.openChatViewDirect = function(chatId) {
-    document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
+    document.querySelectorAll('.bottom-nav-item').forEach(m=>m.classList.remove('active'));
     document.querySelector('.bottom-nav-item[data-target="messages"]')?.classList.add('active');
     window.loadPage('messages');
     setTimeout(() => window.openChatView(chatId), 200);
@@ -1407,7 +1374,11 @@ window.openChatViewDirect = function(chatId) {
 
 window.renderNotifications = function() {
     const incomingRequests = chatsDB.filter(c => c.status === 'pending' && c.initiator !== window.userProfile.uid);
-    let html = `<div class="card" style="min-height: calc(100vh - 120px);"><h2 style="margin-bottom: 20px; padding-bottom:10px; border-bottom:1px solid var(--border-color);">🔔 Bildirimler ve İstekler</h2>`;
+    let html = `<div class="card" style="min-height: calc(100vh - 120px);">
+        <h2 style="margin-bottom: 20px; padding-bottom:10px; border-bottom:1px solid var(--border-color); display:flex; align-items:center;">
+            <button onclick="window.loadPage('home')" style="background:none; border:none; font-size:20px; cursor:pointer; padding-right:10px;">←</button>
+            🔔 Bildirimler ve İstekler
+        </h2>`;
     
     if (incomingRequests.length === 0) {
         html += `<p style="text-align:center; color:var(--text-gray); padding: 40px 0;">Henüz bekleyen bir bildiriminiz yok.</p>`;
@@ -1417,6 +1388,9 @@ window.renderNotifications = function() {
             let avatarHtml = req.avatar.startsWith('http') 
                 ? `<img src="${req.avatar}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">` 
                 : `<div style="width:50px; height:50px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0;">${req.avatar}</div>`;
+            
+            // Eğer ilk mesaj varsa onu göster, yoksa standart metin göster
+            const firstMsg = (req.messages && req.messages.length > 0) ? req.messages[0].text : "Sizi bağlantı olarak eklemek istiyor.";
 
             html += `
                 <div style="display:flex; justify-content:space-between; align-items:center; background:#F9FAFB; padding:15px 20px; border-radius:12px; border:1px solid var(--border-color); flex-wrap:wrap; gap:15px;">
@@ -1424,7 +1398,7 @@ window.renderNotifications = function() {
                         ${avatarHtml}
                         <div>
                             <strong style="display:block; font-size:16px; color:var(--text-dark); cursor:pointer;" onclick="window.viewUserProfile('${req.otherUid}')">${req.name}</strong>
-                            <span style="font-size:13px; color:var(--text-gray);">Sizi arkadaş olarak eklemek istiyor.</span>
+                            <span style="font-size:13px; color:var(--text-gray); font-style:italic;">"${firstMsg}"</span>
                         </div>
                     </div>
                     <div style="display:flex; gap:10px;">
@@ -1445,16 +1419,16 @@ window.acceptRequest = async function(chatId) {
         const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         await updateDoc(doc(db, "chats", chatId), {
             status: 'accepted',
-            messages: arrayUnion({ senderId: "system", text: "Arkadaşlık isteği kabul edildi. Artık arkadaşlarım listesindesiniz! 🎉", time: timeStr, read: false }),
+            messages: arrayUnion({ senderId: "system", text: "Bağlantı/Mesaj isteği kabul edildi. Artık mesajlaşabilirsiniz! 🎉", time: timeStr, read: false }),
             lastUpdated: serverTimestamp()
         });
-        alert("İstek kabul edildi! Arkadaşlarım sekmesinden bulabilirsiniz.");
+        alert("İstek kabul edildi! Mesajlar veya Profilinizdeki Arkadaşlarım sekmesinden kişiyi bulabilirsiniz.");
         window.renderNotifications(); 
     } catch(error) { alert("Hata oluştu: " + error.message); }
 };
 
 window.rejectRequest = async function(chatId) {
-    if(confirm("Bu arkadaşlık isteğini reddetmek istediğinize emin misiniz?")) {
+    if(confirm("Bu isteği reddetmek istediğinize emin misiniz?")) {
         try { await deleteDoc(doc(db, "chats", chatId)); alert("İstek silindi."); window.renderNotifications(); } 
         catch(error) { alert("Hata oluştu: " + error.message); }
     }
@@ -1574,7 +1548,7 @@ window.openChatView = function(chatId) {
     `;
     
     if (activeChat.status === 'pending' && activeChat.initiator === window.userProfile.uid) {
-         chatHTML += `<div style="padding: 20px; text-align: center; color: var(--text-gray); background: white; border-top: 1px solid var(--border-color); font-weight:bold;">⏳ Arkadaşlık isteğinizin karşı tarafça kabul edilmesi bekleniyor...</div>`;
+         chatHTML += `<div style="padding: 20px; text-align: center; color: var(--text-gray); background: white; border-top: 1px solid var(--border-color); font-weight:bold;">⏳ Karşı tarafın mesaj/bağlantı isteğini kabul etmesi bekleniyor...</div>`;
     } else {
          chatHTML += `
             <div class="chat-input-area" style="padding:15px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:10px;">
@@ -1861,7 +1835,7 @@ window.renderProfile = function() {
             
             <div style="text-align:left; background:#F9FAFB; padding:20px; border-radius:16px; border:1px solid #E5E7EB;">
                 <div class="form-group">
-                    <label style="font-weight:bold; font-size:13px; color:var(--text-gray); margin-bottom:5px; display:block;">Kullanıcı Adı (Arkadaş Ekleme İçin Gerekli)</label>
+                    <label style="font-weight:bold; font-size:13px; color:var(--text-gray); margin-bottom:5px; display:block;">Kullanıcı Adı (Bağlantı Kurmak İçin Gerekli)</label>
                     <div style="display:flex; align-items:center; background:white; border:1px solid #D1D5DB; border-radius:12px; padding:0 12px; overflow:hidden;">
                         <span style="color:var(--primary); font-weight:bold; font-size:16px;">#</span>
                         <input type="text" id="prof-username" value="${window.userProfile.username ? window.userProfile.username.replace('#','') : ''}" placeholder="KullaniciAdiniz" style="width:100%; border:none; padding:12px 8px; outline:none; font-size:15px; font-weight:600; color:var(--text-dark);">
@@ -1996,7 +1970,7 @@ window.saveProfile = async function() {
         window.userProfile.age = newAge;
 
         alert("Profil bilgileri başarıyla güncellendi!");
-        window.updateMyFacultiesSidebar(); 
+        if (typeof window.updateMyFacultiesSidebar === 'function') window.updateMyFacultiesSidebar(); 
     } catch (error) {
         console.error(error);
         alert("Güncelleme sırasında hata oluştu: " + error.message);
