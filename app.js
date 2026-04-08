@@ -117,9 +117,10 @@ const styleFix = document.createElement('style');
 styleFix.innerHTML = `
     html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
     
-    /* MESAJLAR SAYFASI (SCROLL KİLİTLİ PROFESYONEL) */
+    /* MESAJLAR SAYFASI (SCROLL KİLİTLİ PROFESYONEL - GÜNCELLENDİ) */
     body.no-scroll-messages { overflow: hidden !important; }
-    .no-scroll-messages #main-content { padding: 0 !important; margin: 0 !important; height: calc(100dvh - 60px - env(safe-area-inset-bottom) - 46px); overflow: hidden; }
+    /* Bottom nav yüksekliği (60px) + app-header yüksekliği (ortalama 50px) ve alt güvenli alan çıkarıldı */
+    .no-scroll-messages #main-content { padding: 0 !important; margin: 0 !important; height: calc(100dvh - 110px - env(safe-area-inset-bottom)); overflow: hidden; }
 
     #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
     #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; transition: opacity 0.3s ease;}
@@ -197,12 +198,14 @@ styleFix.innerHTML = `
     .notif-compact-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 12px; border-radius: 16px; border: 1px solid #f1f5f9; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); flex-wrap: wrap; gap: 10px; transition: transform 0.2s; }
     .notif-compact-item:hover { transform: translateY(-2px); border-color: #e2e8f0; }
 
-    /* CROPPER MODAL STİLLERİ */
-    .cropper-modal-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 100000; display: none; flex-direction: column; }
+    /* CROPPER MODAL STİLLERİ (GÜNCELLENDİ: Z-index ve Pointer-Events) */
+    .cropper-modal-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999999; display: none; flex-direction: column; pointer-events: auto !important;}
     .cropper-modal-container.active { display: flex; }
-    .cropper-header { display: flex; justify-content: space-between; padding: 15px; background: #111; color: white; }
+    .cropper-header { display: flex; justify-content: space-between; align-items:center; padding: 15px; background: #111; color: white; z-index: 10; position:relative;}
+    .cropper-header button { pointer-events: auto !important; cursor: pointer; }
     .cropper-body { flex: 1; position: relative; background: #000; display:flex; align-items:center; justify-content:center; overflow:hidden;}
-    .cropper-footer { padding: 20px; background: #111; display: flex; justify-content: center; }
+    .cropper-footer { padding: 20px; background: #111; display: flex; justify-content: center; z-index: 10; position:relative;}
+    .cropper-footer button { pointer-events: auto !important; cursor: pointer; }
     .cropper-view-box, .cropper-face { border-radius: 50%; }
     .cropper-view-box { outline: 0; box-shadow: 0 0 0 1px #39f; }
 
@@ -1342,7 +1345,7 @@ window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listi
         const msgText = `Merhaba, "${itemTitle}" başlıklı ilanınızla ilgileniyorum. Durumu nedir?`;
         const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
-        // GÜNCELLEME: Aynı satıcıyla var olan herhangi bir sohbeti bul (İlanı fark etmez)
+        // Aynı satıcıyla var olan herhangi bir sohbeti bul (İlanı fark etmez)
         const existingChat = chatsDB.find(c => c.otherUid === sellerId);
 
         if (existingChat) {
@@ -1464,7 +1467,6 @@ window.openListingDetail = function(docId) {
     const currentUid = window.userProfile.uid || (auth.currentUser ? auth.currentUser.uid : null);
     const safeTitle = item.title.replace(/'/g, "\\'"); 
     
-    // Satıcıyla aramızda var olan bir sohbet var mı?
     const existingChat = chatsDB.find(c => c.otherUid === item.sellerId);
 
     if (item.sellerId === currentUid) {
@@ -2241,7 +2243,7 @@ window.saveProfileInfo = async function() {
         window.renderProfile();
     } catch(e) {
         console.error(e);
-        alert("Hata oluştu: " + e.message);
+        alert("Hata  oluştu: " + e.message);
     }
 };
 
@@ -2312,3 +2314,4 @@ window.loadPage = function(page) {
 document.addEventListener("DOMContentLoaded", () => {
     initializeUniLoop();
 });
+
