@@ -66,25 +66,10 @@ let chatsDB = [];
 let currentChatId = null;
 let currentGroupUnsubscribe = null; 
 
-// Stepper için geçici kayıt verileri
 window.registrationData = { interests: [] };
 
 window.resetCurrentChatId = function() { currentChatId = null; };
 
-const FACULTY_PASSCODES = {
-    "Tıp Fakültesi": "tıpfak100", 
-    "Hukuk Fakültesi": "hukuk1000", 
-    "Diş Hekimliği Fakültesi": "dis1000",
-    "Bilgisayar Fakültesi": "comp100",
-    "Eczacılık Fakültesi": "ecza100"
-};
-
-const globalUniversities = [
-    "Yakın Doğu Üniversitesi (NEU)", "Doğu Akdeniz Üniversitesi (EMU)", "Girne Amerikan Üniversitesi (GAU)", "Uluslararası Kıbrıs Üniversitesi (CIU)",
-    "Orta Doğu Teknik Üniversitesi (ODTÜ)", "Boğaziçi Üniversitesi", "İstanbul Teknik Üniversitesi (İTÜ)", "Bilkent Üniversitesi", "Koç Üniversitesi"
-];
-
-// Kapsamlı Fakülteler
 const allFaculties = [
     "Tıp Fakültesi", "Diş Hekimliği Fakültesi", "Eczacılık Fakültesi", "Hukuk Fakültesi", "Mühendislik Fakültesi", 
     "Bilgisayar ve Bilişim Bilimleri", "Mimarlık Fakültesi", "Eğitim Fakültesi", "İletişim Fakültesi", 
@@ -93,7 +78,6 @@ const allFaculties = [
     "Ziraat Fakültesi", "Orman Fakültesi", "Denizcilik Fakültesi", "Havacılık ve Uzay Bilimleri", "Uygulamalı Bilimler"
 ];
 
-// Kulüpler ve Organizasyonlar Listesi
 const APP_CLUBS = [
     "⚽ Spor Kulübü", "🎭 Tiyatro Kulübü", "🏥 Sağlık Kulübü", "💻 Yazılım Kulübü", 
     "🎵 Müzik Kulübü", "📸 Fotoğrafçılık Kulübü", "🌍 Gezi ve Doğa Kulübü", 
@@ -105,12 +89,10 @@ const appScreen = document.getElementById('app-screen');
 const mainContent = document.getElementById('main-content');
 const modal = document.getElementById('app-modal');
 
-// Cropper referansı
 let cropper = null;
 
 function initializeUniLoop() {
 
-// ✂️ CROPPER.JS ENJEKSİYONU
 const cropperCss = document.createElement('link');
 cropperCss.rel = 'stylesheet';
 cropperCss.href = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css';
@@ -120,17 +102,16 @@ const cropperJs = document.createElement('script');
 cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
 document.head.appendChild(cropperJs);
 
-// 🎨 DINAMIK CSS ENJEKSIYONU
+// 🎨 BEYAZ EKRAN HATASINI ÇÖZEN DİNAMİK CSS
 const styleFix = document.createElement('style');
 styleFix.innerHTML = `
     html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
-    
     header, #app-header { height: 50px !important; box-sizing: border-box; }
 
     body.no-scroll-messages { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
     
     .no-scroll-messages #main-content { 
-        position: absolute !important;
+        position: fixed !important;
         top: 50px !important;
         bottom: calc(60px + env(safe-area-inset-bottom)) !important;
         left: 0 !important;
@@ -139,13 +120,27 @@ styleFix.innerHTML = `
         margin: 0 !important; 
         height: auto !important;
         overflow: hidden !important; 
+        display: flex !important;
+        flex-direction: column !important;
+        z-index: 40;
     }
 
-    #chat-layout-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: row; background: #fff; }
+    #chat-layout-container { 
+        position: relative !important; 
+        width: 100% !important; 
+        height: 100% !important; 
+        display: flex; 
+        flex-direction: row; 
+        background: #fff; 
+        flex: 1;
+        overflow: hidden; 
+    }
+    
     .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
     #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; }
     .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 10; padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;}
-    
+    #group-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; padding: 15px; }
+
     #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
     #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; transition: opacity 0.3s ease;}
     #auth-screen { position: relative; z-index: 1000 !important; }
@@ -176,18 +171,7 @@ styleFix.innerHTML = `
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        color: #8E8E93; 
-        font-size: 10px; 
-        text-decoration: none;
-        cursor: pointer;
-        transition: 0.2s;
-        flex: 1;
-        background: transparent !important;
-        border: none !important;
-        font-weight: 500;
-        -webkit-tap-highlight-color: transparent;
-        height: 100%;
-        padding: 0;
+        color: #8E8E93; font-size: 10px; text-decoration: none; cursor: pointer; transition: 0.2s; flex: 1; background: transparent !important; border: none !important; font-weight: 500; -webkit-tap-highlight-color: transparent; height: 100%; padding: 0;
     }
     .bottom-nav-item.active { color: #6366f1 !important; font-weight: 600; }
     .bottom-nav-icon { width: 22px; height: 22px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; }
@@ -297,7 +281,6 @@ styleFix.innerHTML = `
 `;
 document.head.appendChild(styleFix);
 
-// CROPPER İÇİN DÜZELTİLMİŞ MODAL HTML'İ
 const cropperModalHtml = `
     <div id="cropper-modal" class="cropper-modal-container">
         <div class="cropper-header">
@@ -315,7 +298,6 @@ const cropperModalHtml = `
 `;
 document.body.insertAdjacentHTML('beforeend', cropperModalHtml);
 
-
 window.setLanguage = function(lang) {
     localStorage.setItem('uniloop_lang', lang);
     window.renderSettings(); 
@@ -323,11 +305,8 @@ window.setLanguage = function(lang) {
 
 window.toggleTheme = function(theme) {
     localStorage.setItem('uniloop_theme', theme);
-    if(theme === 'dark') {
-        document.body.classList.add('dark-mode');
-    } else {
-        document.body.classList.remove('dark-mode');
-    }
+    if(theme === 'dark') document.body.classList.add('dark-mode');
+    else document.body.classList.remove('dark-mode');
 };
 
 const savedTheme = localStorage.getItem('uniloop_theme') || 'light';
@@ -343,16 +322,10 @@ const bind = (id, event, callback) => {
     if (el) { el.addEventListener(event, callback); }
 };
 
-// ============================================================================
-// 1. GİRİŞ VE YENİ STEPPER KAYIT SİSTEMİ
-// ============================================================================
-
 bind('show-login-btn', 'click', (e) => {
     if(e) e.preventDefault();
     document.getElementById('register-card').style.display = 'none'; 
-    if(document.getElementById('stepper-wrapper')) {
-        document.getElementById('stepper-wrapper').remove();
-    }
+    if(document.getElementById('stepper-wrapper')) document.getElementById('stepper-wrapper').remove();
     document.getElementById('login-card').style.display = 'block';
 });
 
@@ -388,11 +361,9 @@ window.renderStep = function(step) {
             <div class="step-header">Adım 1 / 6</div>
             <div class="step-title">Hesabını Oluştur 🔒</div>
             <p style="text-align:center; font-size:13px; color:#6b7280; margin-bottom:15px;">Okul e-postan ile güvenli bir şekilde başla.</p>
-            
             <input type="email" id="reg-email" placeholder="E-posta Adresin" style="margin-bottom:10px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; box-sizing:border-box; font-size:15px;">
             <input type="password" id="reg-password" placeholder="Şifre Belirle" style="margin-bottom:10px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; box-sizing:border-box; font-size:15px;">
             <input type="password" id="reg-password-confirm" placeholder="Şifreni Tekrar Gir" style="margin-bottom:20px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; box-sizing:border-box; font-size:15px;">
-            
             <button id="step1-btn" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:12px;" onclick="window.processStep(1)">Kayıt Ol ve Doğrulama Kodu Gönder</button>
             <p style="text-align:center; margin-top:15px; font-size:13px;">
                 <a href="#" style="color:var(--primary); text-decoration:none; font-weight:bold;" onclick="document.getElementById('stepper-wrapper').remove(); document.getElementById('login-card').style.display='block';">Giriş Ekranına Dön</a>
@@ -405,7 +376,6 @@ window.renderStep = function(step) {
             <p style="text-align:center; font-size:14px; color:#374151; margin-bottom:20px;">
                 <b>${window.registrationData.email || 'E-posta adresine'}</b> bir doğrulama bağlantısı gönderdik.<br><br>Lütfen gelen kutunu (ve spam klasörünü) kontrol et, linke tıkla ve ardından aşağıdaki butona bas.
             </p>
-            
             <button id="step2-btn" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:12px; background:#10B981; border-color:#10B981;" onclick="window.processStep(2)">Doğruladım, Devam Et →</button>
         `;
     } else if (step === 3) {
@@ -413,26 +383,20 @@ window.renderStep = function(step) {
         html = `
             <div class="step-header">Adım 3 / 6</div>
             <div class="step-title">Seni Tanıyalım 🎓</div>
-            
             <input type="text" id="reg-username" placeholder="Kullanıcı Adı Belirle (Örn: mutlucocuk)" style="margin-bottom:10px; width:100%; padding:14px; border-radius:12px; border:1px solid var(--primary); outline:none; box-sizing:border-box; font-size:15px; background:#EEF2FF;">
-
             <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <input type="text" id="reg-name" placeholder="Adın" style="flex:1; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; font-size:15px;">
                 <input type="text" id="reg-surname" placeholder="Soyadın" style="flex:1; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; font-size:15px;">
             </div>
-            
             <input type="number" id="reg-age" placeholder="Yaşın" style="margin-bottom:10px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; box-sizing:border-box; font-size:15px;">
-            
             <select id="reg-faculty" style="margin-bottom:15px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; background:#F3F4F6; outline:none; box-sizing:border-box; font-size:15px;">
                 <option value="">Hangi Fakültedesin?</option>
                 ${facOptions}
             </select>
-            
             <div style="margin-bottom: 20px; text-align:center;">
                 <p style="font-size:14px; font-weight:bold; margin-bottom:10px; color:#374151;">Kaçıncı Sınıfsın?</p>
                 ${[1, 2, 3, 4, 5, 6].map(g => `<button class="grade-btn" onclick="window.selectGrade(this, '${g}')">${g}. Sınıf</button>`).join('')}
             </div>
-            
             <button id="step3-btn" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:12px;" onclick="window.processStep(3)">Devam Et →</button>
         `;
     } else if (step === 4) {
@@ -441,11 +405,9 @@ window.renderStep = function(step) {
             <div class="step-header">Adım 4 / 6</div>
             <div class="step-title">İlgi Alanların Neler? 🎯</div>
             <p style="text-align:center; font-size:13px; color:#6b7280; margin-bottom:15px;">Kendini en iyi anlatanları seç (En az 2 adet)</p>
-            
             <div style="text-align:center; margin-bottom: 20px;">
                 ${interests.map(i => `<button class="interest-btn" onclick="window.toggleInterest(this, '${i}')">${i}</button>`).join('')}
             </div>
-            
             <button class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:12px;" onclick="window.processStep(4)">Devam Et →</button>
         `;
     } else if (step === 5) {
@@ -453,11 +415,9 @@ window.renderStep = function(step) {
         html = `
             <div class="step-header">Adım 5 / 6</div>
             <div class="step-title">Buradaki Amacın Ne? 🚀</div>
-            
             <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
                 ${purposes.map(p => `<button class="purpose-btn" onclick="window.selectPurpose(this, '${p}')" style="width:100%; text-align:left; padding:15px; font-size:15px;">${p}</button>`).join('')}
             </div>
-            
             <button class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:12px;" onclick="window.processStep(5)">Devam Et →</button>
         `;
     } else if (step === 6) {
@@ -465,7 +425,6 @@ window.renderStep = function(step) {
             <div class="step-header">Son Adım (6 / 6)</div>
             <div class="step-title">Gülümse! 📸</div>
             <p style="text-align:center; font-size:13px; color:#6b7280; margin-bottom:20px;">Profilin için harika bir fotoğraf seç.</p>
-            
             <div style="display:flex; justify-content:center; margin-bottom: 30px;">
                 <div style="position:relative; cursor:pointer; display:inline-block;" onclick="document.getElementById('final-avatar-upload').click()">
                     <div id="preview-pc-avatar-container" class="id-card-avatar" style="width:130px; height:130px; border-radius:50%; border:4px solid var(--primary); overflow:hidden;">👤</div>
@@ -473,7 +432,6 @@ window.renderStep = function(step) {
                 </div>
                 <input type="file" id="final-avatar-upload" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'register')">
             </div>
-            
             <button id="final-register-btn" class="btn-primary" style="width:100%; padding:16px; font-size:16px; font-weight:bold; border-radius:12px; background:linear-gradient(135deg, var(--primary), #818cf8);" onclick="window.finalizeRegistration()">Profili Tamamla ve Giriş Yap ✨</button>
         `;
     }
@@ -500,10 +458,6 @@ window.selectPurpose = function(btn, purpose) {
     btn.classList.add('active');
     window.registrationData.purpose = purpose;
 };
-
-// ============================================================================
-// CROPPER İŞLEMLERİ (INSTAGRAM TARZI KIRPMA)
-// ============================================================================
 
 window.currentCropperContext = ''; 
 
@@ -815,10 +769,6 @@ window.logout = async function() {
     }
 };
 
-// ============================================================================
-// 2. OTURUM DURUMU KONTROLÜ VE YENİ STİLİZASYONLU ALT BAR
-// ============================================================================
-
 onAuthStateChanged(auth, async (user) => {
     if (user && user.emailVerified) { 
         try {
@@ -1018,26 +968,20 @@ function initRealtimeListeners(currentUid) {
     });
 }
 
-// ============================================================================
-// PREMIUM ABONELİK MODAL VE MANTIK
-// ============================================================================
 window.openPremiumModal = function() {
     window.openModal('🌟 UniLoop Premium', `
         <div style="text-align:center; padding: 10px;">
             <div style="font-size: 48px; margin-bottom: 10px;">👑</div>
             <h3 style="color:#D97706; margin-bottom: 10px; font-size: 22px;">Kampüsün Zirvesine Çık!</h3>
             <p style="margin-bottom:20px; font-size:15px; color:var(--text-gray);">UniLoop Premium ile sınırları kaldır ve kampüsün en popüler ağına dahil ol.</p>
-            
             <ul style="text-align:left; background:#FEF3C7; padding: 20px; border-radius: 12px; margin-bottom:20px; list-style:none; color:#92400E; font-weight:500; font-size: 14px;">
                 <li style="margin-bottom:12px; display:flex; gap:10px;"><span style="font-size:18px;">🟢</span> <span><strong>Gelişmiş AI Radarı:</strong> Şu an kütüphanede veya çevrimiçi olan bölümdaşlarını anında gör.</span></li>
                 <li style="margin-bottom:12px; display:flex; gap:10px;"><span style="font-size:18px;">🕵️</span> <span><strong>Seni Kimler Beğendi?:</strong> Profilini gezen herkesi anında açığa çıkar.</span></li>
                 <li style="display:flex; gap:10px;"><span style="font-size:18px;">🚀</span> <span><strong>Öncelikli Mesaj (Super DM):</strong> Mesajların kilit ekranına düşsün ve anında fark edilsin.</span></li>
             </ul>
-            
             <div style="font-size:32px; font-weight:800; margin-bottom:20px; color:var(--text-dark);">
                 49.99 ₺ <span style="font-size:14px; color:var(--text-gray); font-weight:normal;">/ aylık</span>
             </div>
-            
             <button id="buy-premium-btn" onclick="window.upgradeToPremium()" class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center; padding: 16px; font-size: 16px;">
                 💳 Güvenli Ödeme İle Satın Al
             </button>
@@ -1050,15 +994,12 @@ window.upgradeToPremium = async function() {
     const btn = document.getElementById('buy-premium-btn');
     btn.innerText = '⏳ Ödeme İşleniyor... Lütfen bekleyin.';
     btn.disabled = true;
-    
     setTimeout(async () => {
         try {
             await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: true });
             window.userProfile.isPremium = true;
-            
             const navBtn = document.getElementById('nav-premium-action');
             if(navBtn) navBtn.style.display = 'none';
-
             window.closeModal();
             alert("🎉 Tebrikler! Ödemeniz başarıyla alındı. UniLoop Premium ayrıcalıklarına artık sahipsiniz!");
             window.loadPage('home'); 
@@ -1069,10 +1010,6 @@ window.upgradeToPremium = async function() {
         }
     }, 3000);
 };
-
-// ============================================================================
-// 3. AÇILIR PENCERELER VE TIKLAMA YÖNETİMİ
-// ============================================================================
 
 window.goToMessages = function() {
     document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
@@ -1096,14 +1033,7 @@ window.closeModal = function() {
 };
 
 bind('modal-close', 'click', window.closeModal);
-
-window.addEventListener('click', (e) => { 
-    if (e.target === modal) window.closeModal(); 
-});
-
-// ============================================================================
-// FAKÜLTELER VE KULÜPLER ODA MANTIĞI
-// ============================================================================
+window.addEventListener('click', (e) => { if (e.target === modal) window.closeModal(); });
 
 window.openFacultiesList = function() {
     let listHtml = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
@@ -1115,24 +1045,12 @@ window.openFacultiesList = function() {
 };
 
 window.openClubsList = function() {
-    let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
-    APP_CLUBS.forEach(club => {
-        listHtml += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-radius:12px; cursor:pointer; background:#fff; border:1px solid #E5E7EB; margin-bottom:0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.closeModal(); window.openGroupRoom('club_${club.replace(/\s+/g, '')}', '${club}', 'club')">
-            <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${club}</span>
-            <span style="background:#EEF2FF; color:var(--primary); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold;">Katıl 🚀</span>
-        </div>`;
-    });
-    listHtml += `</div>`;
-    window.openModal('🎭 Kulüpler ve Organizasyonlar', listHtml);
-};
-
 window.joinMockVoiceRoom = function(roomTitle) {
     window.openModal(`📞 ${roomTitle} - Sesli Oda`, `
         <div style="text-align:center; padding:30px 10px;">
             <div style="width:100px; height:100px; background:var(--primary); border-radius:50%; margin:0 auto 20px auto; display:flex; align-items:center; justify-content:center; color:white; font-size:40px; animation: glowPulse 1.5s infinite alternate; box-shadow:0 0 20px var(--primary);">🎤</div>
             <h3 style="margin-bottom:10px; color:var(--text-dark);">Bağlanıldı</h3>
             <p style="color:var(--text-gray); font-size:14px; margin-bottom:30px;">Odadaki diğer kişilerle konuşabilirsiniz...</p>
-            
             <div style="display:flex; justify-content:center; gap:20px;">
                 <button style="background:#F3F4F6; border:none; width:60px; height:60px; border-radius:50%; font-size:24px; cursor:pointer;" onclick="this.innerText = this.innerText==='🔇' ? '🔊' : '🔇'">🔊</button>
                 <button style="background:#EF4444; color:white; border:none; width:60px; height:60px; border-radius:50%; font-size:24px; cursor:pointer; box-shadow:0 4px 10px rgba(239,68,68,0.4);" onclick="window.closeModal()">🚪</button>
@@ -1188,10 +1106,11 @@ window.openGroupRoom = function(roomId, roomTitle, roomType) {
         `;
     }
 
+    // ÇÖZÜM: absolute yerine relative ve flex-1 ile ekrana yayılması sağlandı
     let html = `
-        <div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; background:#fff; z-index:50;">
+        <div id="chat-layout-container" style="flex-direction: column; position: relative; width: 100%; height: 100%; display: flex;">
             <div class="chat-header" style="padding:15px 20px; border-bottom:1px solid #E5E7EB; background:#fff; display:flex; align-items:center; gap:15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index:10; flex-shrink:0;">
-                <button class="back-btn" onclick="if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:#F3F4F6; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;">←</button>
+                <button class="back-btn" onclick="if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:#F3F4F6; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; display:block !important;">←</button>
                 <div class="chat-header-info">
                     <div class="chat-header-name" style="font-weight:800; font-size:16px; color:#111827;">${roomTitle}</div>
                     <div class="chat-header-status" style="font-size:12px; color:#10B981; font-weight:600;">🟢 Ortak Alan</div>
@@ -1236,7 +1155,7 @@ window.openGroupRoom = function(roomId, roomTitle, roomType) {
                 senderNameHtml = `<div style="font-size:11px; font-weight:bold; color:var(--primary); margin-bottom:4px;">${msg.senderName}</div>`;
             }
 
-            chatHTML += `<div class="bubble ${type}" style="display:flex; flex-direction:column;">
+            chatHTML += `<div class="bubble ${type}" style="display:flex; flex-direction:column; max-width: 80%;">
                 ${senderNameHtml}
                 <div class="msg-text">${msg.text}</div>
                 <div class="msg-time" style="align-self:flex-end; font-size:10px; opacity:0.7; margin-top:4px;">${msg.time}</div>
@@ -1275,10 +1194,6 @@ window.sendGroupMsg = async function(roomId) {
         }
     }
 };
-
-// ============================================================================
-// 4. YENİ ANA SAYFA (HOME) TASARIMI VE KULLANICI PROFİLİ GÖRÜNTÜLEME
-// ============================================================================
 
 window.searchAndAddFriend = async function() {
     try {
@@ -1489,10 +1404,6 @@ window.renderHome = async function() {
     }
 };
 
-// ============================================================================
-// 5. TAM EKRAN FOTOĞRAF GALERİSİ (LIGHTBOX) MANTIĞI
-// ============================================================================
-
 window.currentLightboxImages = [];
 window.currentLightboxIndex = 0;
 
@@ -1539,10 +1450,6 @@ if(lb) {
     lb.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleSwipe(); });
 }
 
-// ============================================================================
-// 6. İLAN YÖNETİMİ (MARKET)
-// ============================================================================
-
 window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listingId) {
     try {
         const myUid = window.userProfile.uid;
@@ -1572,7 +1479,6 @@ window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listi
                 messages: [{ senderId: myUid, text: msgText, time: timeStr, read: false }]
             });
             
-            // Gerçek zamanlı Firebase yanıtı gecikmesini aşmak için yerel zorunlu (force) ekleme yapıyoruz.
             const newLocalChat = {
                 id: newChatRef.id,
                 otherUid: sellerId,
@@ -1838,10 +1744,6 @@ window.submitListing = async function(type) {
     }
 };
 
-// ============================================================================
-// 7. KEŞFET / KAMPÜS AKIŞI (CONFESSIONS & FEED)
-// ============================================================================
-
 window.drawConfessionsFeed = function() {
     let html = `
         <div class="feed-layout-container">
@@ -1947,7 +1849,6 @@ window.submitPost = async function() {
         if (fileInput.files.length > 0) {
             try {
                 const file = fileInput.files[0];
-                // İsimdeki özel karakterler yüzünden hata fırlatmasını önler
                 const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
                 const storageRef = ref(storage, 'posts/' + Date.now() + '_' + cleanName);
                 await uploadBytes(storageRef, file);
@@ -1957,7 +1858,7 @@ window.submitPost = async function() {
                 alert("Fotoğraf yüklenirken bir hata oluştu. Lütfen tekrar deneyin.");
                 btn.disabled = false;
                 btn.innerText = "Paylaş 🚀";
-                return; // Hatayı yakalarsa durdur.
+                return; 
             }
         }
 
@@ -2155,17 +2056,18 @@ window.renderMessagesSidebarOnly = function() {
     `;
 };
 
+// ÇÖZÜM: Absolute yapıdan dolayı çöken chat layout'u flex düzene uygun hale getirildi.
 window.renderMessages = function() {
     document.body.classList.add('no-scroll-messages');
     let html = `
-        <div id="chat-layout-container">
+        <div id="chat-layout-container" style="display:flex; width:100%; height:100%; flex-direction:row;">
             <div class="chat-sidebar" id="chat-sidebar-main">
                 <div class="chat-sidebar-header" style="padding:15px 20px; border-bottom:1px solid #E5E7EB; background:white; position:sticky; top:0; z-index:10; display:flex; justify-content:space-between; align-items:center;">
                     <h2 style="margin:0; font-size:20px; font-weight:800;">Mesajlar <span style="background:var(--primary); color:white; font-size:12px; padding:2px 8px; border-radius:12px; margin-left:5px; vertical-align:middle;">${chatsDB.length}</span></h2>
                 </div>
                 <div id="chat-sidebar-list" style="padding-bottom:20px;"></div>
             </div>
-            <div class="chat-main" id="chat-main-area" style="display:none; flex-direction:column; height:100%; position:relative; background:#f9fafb;">
+            <div class="chat-main" id="chat-main-area" style="display:none; flex-direction:column; height:100%; position:relative; background:#f9fafb; flex:1;">
             </div>
         </div>
     `;
@@ -2203,7 +2105,7 @@ window.openChatView = function(chatId) {
 
     let headerHtml = `
         <div class="chat-header" style="padding:10px 15px; border-bottom:1px solid #E5E7EB; background:white; display:flex; align-items:center; gap:12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); z-index:10; flex-shrink:0;">
-            <button onclick="window.closeChatView()" style="background:#F3F4F6; border:none; border-radius:50%; width:36px; height:36px; font-size:18px; cursor:pointer; color:var(--text-dark); display:flex; align-items:center; justify-content:center; transition:0.2s;" class="back-btn-mobile">←</button>
+            <button onclick="window.closeChatView()" style="background:#F3F4F6; border:none; border-radius:50%; width:36px; height:36px; font-size:18px; cursor:pointer; color:var(--text-dark); display:flex; align-items:center; justify-content:center; transition:0.2s; display:block !important;" class="back-btn-mobile">←</button>
             ${avatarHtml}
             <div style="flex:1;">
                 <div style="font-weight:800; font-size:16px; color:#0f172a; cursor:pointer;" onclick="window.viewUserProfile('${chat.otherUid}')">${chat.name}</div>
@@ -2280,7 +2182,7 @@ window.updateChatMessagesOnly = function(chatId) {
             msgsHtml += `<div style="text-align:center; margin: 15px 0;"><span style="background:#F3F4F6; color:#6B7280; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid #E5E7EB;">${msg.text}</span></div>`;
         } else {
             msgsHtml += `
-                <div class="bubble ${type}">
+                <div class="bubble ${type}" style="max-width: 80%;">
                     <div class="msg-text" style="font-size:15px; line-height:1.4;">${msg.text}</div>
                     <div class="msg-time" style="font-size:10px; margin-top:4px; opacity:0.8; text-align:right; font-weight:600;">
                         ${msg.time} ${isMe && msg.read ? ' <span style="color:#60A5FA; font-size:12px;">✓✓</span>' : (isMe ? ' <span style="font-size:12px;">✓</span>' : '')}
@@ -2334,10 +2236,6 @@ window.rejectChatRequest = async function(chatId) {
         } catch(e) { console.error(e); }
     }
 };
-
-// ============================================================================
-// 9. KULLANICI PROFİLİ VE AYARLAR
-// ============================================================================
 
 window.renderProfile = function() {
     const u = window.userProfile;
@@ -2489,46 +2387,29 @@ window.renderNotifications = function() {
     window.openModal('🔔 Bildirimler', `<div class="notif-compact-panel">${notifsHtml}</div>`);
 };
 
-// ============================================================================
-// 10. SAYFA YÖNLENDİRİCİ (ROUTER) VE BAŞLATICI SİSTEM
-// ============================================================================
-
 window.loadPage = function(page) {
-    // Sayfa değiştirirken body scroll kilitlerini sıfırla
     document.body.classList.remove('no-scroll-messages');
-    
-    // Grup sohbet dinleyicisini kapat (Performans için)
     if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
-    
-    // Aktif sohbet ID'sini sıfırla
     window.resetCurrentChatId();
 
-    // Alt bar butonlarının aktiflik durumunu güncelle
     document.querySelectorAll('.bottom-nav-item').forEach(el => {
         el.classList.remove('active');
         if(el.getAttribute('data-target') === page) el.classList.add('active');
     });
 
-    // Ana içerik alanını temizle
     mainContent.innerHTML = '';
     
-    // İlgili sayfayı yükle
     if (page === 'home') window.renderHome();
     else if (page === 'confessions') window.drawConfessionsFeed();
     else if (page === 'market') window.renderListings('market', '🛒 Kampüs Market');
     else if (page === 'messages') window.renderMessages();
     else if (page === 'profile') window.renderProfile();
     
-    // Sayfa başına kaydır
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 } // initializeUniLoop fonksiyonunun kapanışı
 
-// ============================================================================
-// BOOTSTRAP - SİSTEMİ BAŞLAT
-// ============================================================================
 document.addEventListener('DOMContentLoaded', () => {
     initializeUniLoop();
 });
-
