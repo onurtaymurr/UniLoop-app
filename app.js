@@ -64,7 +64,7 @@ let marketDB = [];
 let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
-let currentGroupUnsubscribe = null; // Kulüp/Fakülte odaları için dinleyici
+let currentGroupUnsubscribe = null; 
 
 // Stepper için geçici kayıt verileri
 window.registrationData = { interests: [] };
@@ -84,7 +84,7 @@ const globalUniversities = [
     "Orta Doğu Teknik Üniversitesi (ODTÜ)", "Boğaziçi Üniversitesi", "İstanbul Teknik Üniversitesi (İTÜ)", "Bilkent Üniversitesi", "Koç Üniversitesi"
 ];
 
-// Stepper için Kapsamlı Fakülteler (Yapay Zeka Destekli Geniş Liste)
+// Kapsamlı Fakülteler
 const allFaculties = [
     "Tıp Fakültesi", "Diş Hekimliği Fakültesi", "Eczacılık Fakültesi", "Hukuk Fakültesi", "Mühendislik Fakültesi", 
     "Bilgisayar ve Bilişim Bilimleri", "Mimarlık Fakültesi", "Eğitim Fakültesi", "İletişim Fakültesi", 
@@ -110,7 +110,7 @@ let cropper = null;
 
 function initializeUniLoop() {
 
-// ✂️ CROPPER.JS ENJEKSİYONU (INSTAGRAM TARZI PROFİL KIRPMA İÇİN)
+// ✂️ CROPPER.JS ENJEKSİYONU
 const cropperCss = document.createElement('link');
 cropperCss.rel = 'stylesheet';
 cropperCss.href = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css';
@@ -120,18 +120,15 @@ const cropperJs = document.createElement('script');
 cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
 document.head.appendChild(cropperJs);
 
-// 🎨 DINAMIK CSS ENJEKSIYONU VE STIL AYARLARI
+// 🎨 DINAMIK CSS ENJEKSIYONU
 const styleFix = document.createElement('style');
 styleFix.innerHTML = `
     html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
     
-    /* Header yüksekliği sabitlendi (Chat hesaplamaları için) */
     header, #app-header { height: 50px !important; box-sizing: border-box; }
 
-    /* MESAJLAR SAYFASI İÇİN TAM DÜZELTME (Ekrana Tavan-Taban Tam Oturur) */
     body.no-scroll-messages { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
     
-    /* Main Content pozisyonu header (50px) ve bottom nav (60px) arasına kilitlendi */
     .no-scroll-messages #main-content { 
         position: absolute !important;
         top: 50px !important;
@@ -144,8 +141,7 @@ styleFix.innerHTML = `
         overflow: hidden !important; 
     }
 
-    /* Mesaj İç Tasarımı Düzeltmesi */
-    #chat-layout-container { height: 100% !important; max-height: 100% !important; display: flex; flex-direction: row; background: #fff; border:none; border-radius:0; box-shadow:none; overflow: hidden; }
+    #chat-layout-container { height: 100% !important; max-height: 100% !important; display: flex; flex-direction: row; background: #fff; border:none; border-radius:0; box-shadow:none; overflow: hidden; width:100%; }
     .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
     #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; }
     .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 10; padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;}
@@ -157,12 +153,10 @@ styleFix.innerHTML = `
     #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important; }
     button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; }
     
-    /* ESKİ SIDEBAR VE MOBİL MENÜ GİZLENDİ */
     #sidebar { display: none !important; }
     #mobile-menu-btn { display: none !important; }
     #main-content { padding-bottom: 75px; }
 
-    /* YENİ ESTETİK, İNCE VE PROFESYONEL ALT BAR (BOTTOM NAV) */
     .bottom-nav {
         position: fixed;
         bottom: 0;
@@ -202,7 +196,6 @@ styleFix.innerHTML = `
     .bottom-nav-item.active .bottom-nav-icon svg.fill-active { fill: currentColor; }
     .bottom-nav-item.active .bottom-nav-icon svg { stroke-width: 2.2; }
 
-    /* STEPPER & PROFIL KARTI & BİLDİRİM PANELİ */
     .stepper-container { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 400px; margin: 0 auto; width: 100%; animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .step-header { font-size: 14px; font-weight: bold; color: var(--primary); text-align: center; margin-bottom: 15px; }
@@ -210,7 +203,6 @@ styleFix.innerHTML = `
     .grade-btn, .interest-btn, .purpose-btn { background: #F3F4F6; border: 1px solid #E5E7EB; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; margin: 5px; display: inline-block; color: var(--text-dark); }
     .grade-btn.active, .interest-btn.active, .purpose-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
     
-    /* YENİ KİMLİK KARTI TASARIMI */
     .id-card { background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); max-width: 400px; margin: 0 auto 20px auto; position: relative; overflow: hidden; }
     .id-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--primary), #818cf8); }
     .id-card-left { flex-shrink: 0; }
@@ -222,12 +214,10 @@ styleFix.innerHTML = `
     .id-card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
     .id-tag { font-size: 10px; background: #e0e7ff; color: var(--primary); padding: 4px 8px; border-radius: 8px; font-weight: 700; }
 
-    /* BİLDİRİM PANELİ ESTETİĞİ */
     .notif-compact-panel { max-height: 400px; overflow-y: auto; padding-right: 5px; scroll-behavior: smooth; }
     .notif-compact-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 12px; border-radius: 16px; border: 1px solid #f1f5f9; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); flex-wrap: wrap; gap: 10px; transition: transform 0.2s; }
     .notif-compact-item:hover { transform: translateY(-2px); border-color: #e2e8f0; }
 
-    /* CROPPER MODAL STİLLERİ (GÜNCELLENDİ: Z-index ve Pointer-Events) */
     .cropper-modal-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999999; display: none; flex-direction: column; pointer-events: auto !important;}
     .cropper-modal-container.active { display: flex; }
     .cropper-header { display: flex; justify-content: space-between; align-items:center; padding: 15px; background: #111; color: white; z-index: 10; position:relative;}
@@ -290,7 +280,6 @@ styleFix.innerHTML = `
     #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
     #app-header > :last-child, .header-right-menu { display: flex !important; align-items: center !important; justify-content: flex-end !important; flex-wrap: nowrap !important; gap: 10px; }
     
-    /* Üst Bar Bildirim Butonu Stili */
     #notif-btn-top { position: relative; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; transition: 0.2s; }
     #notif-btn-top:hover { background: #E5E7EB; }
     
@@ -309,18 +298,19 @@ styleFix.innerHTML = `
 `;
 document.head.appendChild(styleFix);
 
-// CROPPER İÇİN MODAL HTML'İ SAYFAYA EKLENİYOR
+// CROPPER İÇİN DÜZELTİLMİŞ MODAL HTML'İ
 const cropperModalHtml = `
     <div id="cropper-modal" class="cropper-modal-container">
         <div class="cropper-header">
+            <button onclick="window.closeCropper()" style="background:rgba(255,255,255,0.2); border:none; color:white; font-size:14px; font-weight:bold; padding:8px 12px; border-radius:8px; cursor:pointer;">❌ İptal</button>
             <span style="font-weight:bold; font-size:16px;">Fotoğrafı Kırp</span>
-            <button onclick="window.closeCropper()" style="background:none; border:none; color:white; font-size:24px;">&times;</button>
+            <div style="width:70px;"></div>
         </div>
         <div class="cropper-body">
             <img id="cropper-image" src="" style="max-width: 100%; display: block;">
         </div>
         <div class="cropper-footer">
-            <button class="btn-primary" style="width: 100%; padding: 15px; font-size: 16px; border-radius: 12px; background: #6366f1;" onclick="window.saveCroppedImage()">Kırp ve Kaydet</button>
+            <button class="btn-primary" style="width: 100%; padding: 15px; font-size: 16px; border-radius: 12px; background: #6366f1;" onclick="window.saveCroppedImage()">✅ Kırp ve Kaydet</button>
         </div>
     </div>
 `;
@@ -478,8 +468,8 @@ window.renderStep = function(step) {
             <p style="text-align:center; font-size:13px; color:#6b7280; margin-bottom:20px;">Profilin için harika bir fotoğraf seç.</p>
             
             <div style="display:flex; justify-content:center; margin-bottom: 30px;">
-                <div style="position:relative; cursor:pointer;" onclick="document.getElementById('final-avatar-upload').click()">
-                    <div id="preview-pc-avatar-container" class="id-card-avatar" style="width:130px; height:130px; border-radius:50%; border:4px solid var(--primary);">👤</div>
+                <div style="position:relative; cursor:pointer; display:inline-block;" onclick="document.getElementById('final-avatar-upload').click()">
+                    <div id="preview-pc-avatar-container" class="id-card-avatar" style="width:130px; height:130px; border-radius:50%; border:4px solid var(--primary); overflow:hidden;">👤</div>
                     <div style="position:absolute; bottom:0; right:0; background:var(--primary); color:white; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:16px; border:3px solid white; z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.2);">📷</div>
                 </div>
                 <input type="file" id="final-avatar-upload" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'register')">
@@ -1181,7 +1171,7 @@ window.openGroupRoom = function(roomId, roomTitle, roomType) {
     if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
 
     document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
-    document.body.classList.add('no-scroll-messages'); // Sohbet ekranı kilitlenmesi
+    document.body.classList.add('no-scroll-messages'); 
 
     let extraButtons = '';
     if (roomType === 'club') {
@@ -1200,7 +1190,7 @@ window.openGroupRoom = function(roomId, roomTitle, roomType) {
     }
 
     let html = `
-        <div style="height: 100%; width: 100%; display: flex; flex-direction: column; background: var(--bg-color);">
+        <div id="chat-layout-container" style="flex-direction: column;">
             <div class="chat-header" style="padding:15px 20px; border-bottom:1px solid #E5E7EB; background:#fff; display:flex; align-items:center; gap:15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index:10; flex-shrink:0;">
                 <button class="back-btn" onclick="if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:#F3F4F6; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;">←</button>
                 <div class="chat-header-info">
@@ -1331,7 +1321,7 @@ window.searchAndAddFriend = async function() {
 
 window.sendFriendRequest = async function(targetUserId, targetUserName) {
     try {
-        const myUid = auth.currentUser.uid;
+        const myUid = window.userProfile.uid;
         const q = query(collection(db, "chats"), where("participants", "array-contains", myUid));
         const snap = await getDocs(q);
         
@@ -1556,7 +1546,7 @@ if(lb) {
 
 window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listingId) {
     try {
-        const myUid = auth.currentUser.uid;
+        const myUid = window.userProfile.uid;
         const msgText = `Merhaba, "${itemTitle}" başlıklı ilanınızla ilgileniyorum. Durumu nedir?`;
         const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
@@ -1687,11 +1677,21 @@ window.openListingDetail = function(docId) {
             </div>
          `;
     } else {
-         actionButtonsHtml = `
-            <button class="btn-primary" style="margin-top: 20px; width:100%; padding:12px; font-size:15px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendMarketMessage('${item.sellerId}', '${item.sellerName}', '${safeTitle}', '${item.id}'); window.closeModal();">
-                💬 Satıcıya Mesaj Gönder
-            </button>
-         `;
+        // ÇÖZÜM: Daha önce bu satıcıyla iletişime geçildiyse "Sohbete Git" çıkar.
+        const existingChat = chatsDB.find(c => c.otherUid === item.sellerId);
+        if(existingChat) {
+             actionButtonsHtml = `
+                <button class="btn-primary" style="margin-top: 20px; width:100%; padding:12px; font-size:15px; background:#10B981; border-color:#10B981; box-shadow:0 4px 6px rgba(16,185,129,0.3);" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">
+                    💬 Mevcut Sohbete Git
+                </button>
+             `;
+        } else {
+             actionButtonsHtml = `
+                <button class="btn-primary" style="margin-top: 20px; width:100%; padding:12px; font-size:15px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendMarketMessage('${item.sellerId}', '${item.sellerName}', '${safeTitle}', '${item.id}'); window.closeModal();">
+                    💬 Satıcıya Mesaj Gönder
+                </button>
+             `;
+        }
     }
 
     window.openModal(item.title, `
@@ -2508,3 +2508,4 @@ window.loadPage = function(page) {
 document.addEventListener('DOMContentLoaded', () => {
     initializeUniLoop();
 });
+
