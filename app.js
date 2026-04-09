@@ -141,12 +141,11 @@ styleFix.innerHTML = `
         overflow: hidden !important; 
     }
 
-    #chat-layout-container { height: 100% !important; max-height: 100% !important; display: flex; flex-direction: row; background: #fff; border:none; border-radius:0; box-shadow:none; overflow: hidden; width:100%; }
+    #chat-layout-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: row; background: #fff; }
     .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
     #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; }
     .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 10; padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;}
-    #group-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; padding: 15px; }
-
+    
     #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
     #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; transition: opacity 0.3s ease;}
     #auth-screen { position: relative; z-index: 1000 !important; }
@@ -205,8 +204,8 @@ styleFix.innerHTML = `
     
     .id-card { background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); max-width: 400px; margin: 0 auto 20px auto; position: relative; overflow: hidden; }
     .id-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--primary), #818cf8); }
-    .id-card-left { flex-shrink: 0; }
-    .id-card-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e5e7eb; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow:hidden;}
+    .id-card-left { flex-shrink: 0; position:relative; }
+    .id-card-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e5e7eb; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow:hidden; }
     .id-card-right { flex: 1; text-align: left; }
     .id-card-name { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
     .id-card-faculty { font-size: 13px; color: var(--primary); font-weight: 700; margin-bottom: 8px; }
@@ -310,7 +309,7 @@ const cropperModalHtml = `
             <img id="cropper-image" src="" style="max-width: 100%; display: block;">
         </div>
         <div class="cropper-footer">
-            <button class="btn-primary" style="width: 100%; padding: 15px; font-size: 16px; border-radius: 12px; background: #6366f1;" onclick="window.saveCroppedImage()">✅ Kırp ve Kaydet</button>
+            <button id="cropper-save-btn" class="btn-primary" style="width: 100%; padding: 15px; font-size: 16px; border-radius: 12px; background: #6366f1;" onclick="window.saveCroppedImage()">✅ Kırp ve Kaydet</button>
         </div>
     </div>
 `;
@@ -481,7 +480,6 @@ window.renderStep = function(step) {
     wrapper.innerHTML = html;
 };
 
-// Stepper Buton Tıklama Mantıkları
 window.selectGrade = function(btn, grade) {
     document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -556,8 +554,11 @@ window.saveCroppedImage = async function() {
         document.getElementById('preview-pc-avatar-container').innerHTML = `<img src="${base64Image}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
         window.closeCropper();
     } else if (window.currentCropperContext === 'profile') {
-        window.closeCropper();
+        const btn = document.getElementById('cropper-save-btn');
+        if(btn) { btn.innerText = "⏳ Yükleniyor..."; btn.disabled = true; }
         await window.uploadProfileAvatarDirect(base64Image);
+        window.closeCropper();
+        if(btn) { btn.innerText = "✅ Kırp ve Kaydet"; btn.disabled = false; }
     }
 };
 
@@ -578,7 +579,6 @@ window.uploadProfileAvatarDirect = async function(base64Image) {
         alert("Fotoğraf yüklenirken hata oluştu: " + e.message);
     }
 };
-
 
 window.processStep = async function(step) {
     if (step === 1) {
@@ -821,7 +821,6 @@ window.logout = async function() {
 
 onAuthStateChanged(auth, async (user) => {
     if (user && user.emailVerified) { 
-        
         try {
             const userDocRef = doc(db, "users", user.uid);
             const docSnap = await getDoc(userDocRef);
@@ -1190,7 +1189,7 @@ window.openGroupRoom = function(roomId, roomTitle, roomType) {
     }
 
     let html = `
-        <div id="chat-layout-container" style="flex-direction: column;">
+        <div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; background:#fff; z-index:50;">
             <div class="chat-header" style="padding:15px 20px; border-bottom:1px solid #E5E7EB; background:#fff; display:flex; align-items:center; gap:15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index:10; flex-shrink:0;">
                 <button class="back-btn" onclick="if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:#F3F4F6; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;">←</button>
                 <div class="chat-header-info">
@@ -1199,7 +1198,7 @@ window.openGroupRoom = function(roomId, roomTitle, roomType) {
                 </div>
             </div>
             ${extraButtons}
-            <div class="chat-messages" id="group-messages-scroll" style="flex:1 1 auto; padding:20px; overflow-y:auto; display:flex; flex-direction:column; background:#f9fafb;">
+            <div class="chat-messages" id="group-messages-scroll" style="flex:1; padding:20px; overflow-y:auto; background:#f9fafb; display:flex; flex-direction:column;">
                 <div style="text-align:center; padding:20px; color:#9CA3AF; font-size:14px;">Mesajlar yükleniyor...</div>
             </div>
             <div class="chat-input-area" style="padding:15px 20px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:12px; align-items:center; flex-shrink:0;">
@@ -1572,9 +1571,24 @@ window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listi
                 listingId: listingId,
                 messages: [{ senderId: myUid, text: msgText, time: timeStr, read: false }]
             });
+            
+            // Gerçek zamanlı Firebase yanıtı gecikmesini aşmak için yerel zorunlu (force) ekleme yapıyoruz.
+            const newLocalChat = {
+                id: newChatRef.id,
+                otherUid: sellerId,
+                name: sellerName,
+                avatar: "👤",
+                messages: [{ senderId: myUid, text: msgText, time: timeStr, read: false }],
+                status: 'pending',
+                initiator: myUid,
+                isMarketChat: true,
+                listingId: listingId
+            };
+            chatsDB.unshift(newLocalChat);
+            
             alert("Satıcıya mesaj isteği başarıyla gönderildi!");
             window.loadPage('messages');
-            setTimeout(() => window.openChatView(newChatRef.id), 300);
+            setTimeout(() => window.openChatView(newChatRef.id), 100);
         }
     } catch (error) {
         alert("Hata oluştu: " + error.message);
@@ -1677,7 +1691,6 @@ window.openListingDetail = function(docId) {
             </div>
          `;
     } else {
-        // ÇÖZÜM: Daha önce bu satıcıyla iletişime geçildiyse "Sohbete Git" çıkar.
         const existingChat = chatsDB.find(c => c.otherUid === item.sellerId);
         if(existingChat) {
              actionButtonsHtml = `
@@ -1932,10 +1945,20 @@ window.submitPost = async function() {
     try {
         let imgUrl = null;
         if (fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            const storageRef = ref(storage, 'posts/' + Date.now() + '_' + file.name);
-            await uploadBytes(storageRef, file);
-            imgUrl = await getDownloadURL(storageRef);
+            try {
+                const file = fileInput.files[0];
+                // İsimdeki özel karakterler yüzünden hata fırlatmasını önler
+                const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+                const storageRef = ref(storage, 'posts/' + Date.now() + '_' + cleanName);
+                await uploadBytes(storageRef, file);
+                imgUrl = await getDownloadURL(storageRef);
+            } catch(uploadError) {
+                console.error("Resim yükleme hatası: ", uploadError);
+                alert("Fotoğraf yüklenirken bir hata oluştu. Lütfen tekrar deneyin.");
+                btn.disabled = false;
+                btn.innerText = "Paylaş 🚀";
+                return; // Hatayı yakalarsa durdur.
+            }
         }
 
         await addDoc(collection(db, "confessions"), {
@@ -2143,7 +2166,7 @@ window.renderMessages = function() {
                 <div id="chat-sidebar-list" style="padding-bottom:20px;"></div>
             </div>
             <div class="chat-main" id="chat-main-area" style="display:none; flex-direction:column; height:100%; position:relative; background:#f9fafb;">
-                </div>
+            </div>
         </div>
     `;
     mainContent.innerHTML = html;
