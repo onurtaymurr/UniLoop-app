@@ -526,6 +526,7 @@ function initializeUniLoop() {
 
     window.currentCropperContext = ''; 
 
+    // --- CROPPER DOM RENDER FIX ---
     window.openCropper = function(event, context) {
         const file = event.target.files[0];
         if(!file) return;
@@ -538,20 +539,23 @@ function initializeUniLoop() {
             
             if(cropper) { cropper.destroy(); }
             
-            const image = document.getElementById('cropper-image');
-            cropper = new Cropper(image, {
-                aspectRatio: 1, 
-                viewMode: 1,
-                dragMode: 'move',
-                autoCropArea: 0.9,
-                restore: false,
-                guides: false,
-                center: false,
-                highlight: false,
-                cropBoxMovable: false,
-                cropBoxResizable: false,
-                toggleDragModeOnDblclick: false,
-            });
+            // DOM'un render edilmesi için küçük bir gecikme ekliyoruz (Timeout Fix)
+            setTimeout(() => {
+                const image = document.getElementById('cropper-image');
+                cropper = new Cropper(image, {
+                    aspectRatio: 1, 
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 0.9,
+                    restore: false,
+                    guides: false,
+                    center: false,
+                    highlight: false,
+                    cropBoxMovable: false,
+                    cropBoxResizable: false,
+                    toggleDragModeOnDblclick: false,
+                });
+            }, 150);
         };
         reader.readAsDataURL(file);
         event.target.value = ''; 
@@ -939,7 +943,8 @@ function initializeUniLoop() {
                         messages: data.messages || [], status: data.status || 'accepted', 
                         initiator: data.initiator || null, lastUpdatedTS: safeTimestamp,
                         isMarketChat: data.isMarketChat || false,
-                        listingId: data.listingId || null 
+                        // ÇOKLU İLAN MANTIĞI: Eski tekil kaydı veya yeni array kaydını al
+                        listingIds: data.listingIds || (data.listingId ? [data.listingId] : []) 
                     };
                     chatsDB.push(chatItem);
 
@@ -1477,6 +1482,7 @@ function initializeUniLoop() {
         lb.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleSwipe(); });
     }
 
+    // --- MARKET MESAJ GÖNDERME MANTIĞI DÜZELTİLDİ ---
     window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listingId) {
         try {
             const myUid = window.userProfile.uid;
@@ -1486,8 +1492,10 @@ function initializeUniLoop() {
             const existingChat = chatsDB.find(c => c.otherUid === sellerId && c.isMarketChat);
 
             if (existingChat) {
+                // Eğer o satıcıyla daha önceden market sohbetin varsa, yeni ilanın id'sini de array'e ekle
                 await updateDoc(doc(db, "chats", existingChat.id), {
                     messages: arrayUnion({ senderId: myUid, text: msgText, time: timeStr, read: false }),
+                    listingIds: arrayUnion(listingId),
                     lastUpdated: serverTimestamp()
                 });
                 alert("Mesajınız satıcıyla olan mevcut sohbetinize eklendi ve gönderildi!");
@@ -1502,7 +1510,7 @@ function initializeUniLoop() {
                     status: 'pending', 
                     initiator: myUid,
                     isMarketChat: true,
-                    listingId: listingId,
+                    listingIds: [listingId], // TEKİL STRING YERİNE ARRAY
                     messages: [{ senderId: myUid, text: msgText, time: timeStr, read: false }]
                 });
                 
@@ -1515,7 +1523,7 @@ function initializeUniLoop() {
                     status: 'pending',
                     initiator: myUid,
                     isMarketChat: true,
-                    listingId: listingId
+                    listingIds: [listingId]
                 };
                 chatsDB.unshift(newLocalChat);
                 
@@ -1588,6 +1596,7 @@ function initializeUniLoop() {
         container.innerHTML = gridHtml;
     };
 
+    // --- MARKET İLAN DETAYI VE BUTON MANTIĞI ---
     window.openListingDetail = function(docId) {
         const item = marketDB.find(i => i.id === docId);
         if(!item) return;
@@ -1625,7 +1634,10 @@ function initializeUniLoop() {
              `;
         } else {
             const existingChat = chatsDB.find(c => c.otherUid === item.sellerId && c.isMarketChat);
-            if(existingChat) {
+            // Düzeltilen Kısım: Bu spesifik ilana mesaj atılmış mı?
+            const hasMessagedThisListing = existingChat && existingChat.listingIds && existingChat.listingIds.includes(item.id);
+
+            if(hasMessagedThisListing) {
                  actionButtonsHtml = `
                     <button class="btn-primary" style="margin-top: 20px; width:100%; padding:12px; font-size:15px; background:#10B981; border-color:#10B981; box-shadow:0 4px 6px rgba(16,185,129,0.3);" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">
                         💬 Mevcut Sohbete Git
@@ -2164,100 +2176,132 @@ function initializeUniLoop() {
                 statusAreaHtml = `<div style="padding:15px; background:#EEF2FF; text-align:center; font-size:13px; color:#4F46E5; border-bottom:1px solid #E5E7EB; font-weight:700; flex-shrink:0;">⏳ İstek gönderildi, karşı tarafın onayı bekleniyor.</div>`;
             } else {
                 statusAreaHtml = `
-                    <div style="padding:20px 15px; background:white; border-bottom:1px solid #E5E7EB; text-align:center; flex-shrink:0; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
-                        <p style="margin:0 0 15px 0; font-size:15px; font-weight:800; color:var(--text-dark);">Yeni bir bağlantı isteği var!</p>
-                        <div style="display:flex; justify-content:center; gap:12px;">
-                            <button class="btn-primary" style="padding:10px 24px; font-size:14px; background:#10B981; border-color:#10B981; border-radius:20px; box-shadow:0 4px 10px rgba(16,185,129,0.3);" onclick="window.acceptChatRequest('${chat.id}')">Kabul Et</button>
-                            <button class="btn-danger" style="padding:10px 24px; font-size:14px; border-radius:20px; box-shadow:0 4px 10px rgba(239,68,68,0.3);" onclick="window.rejectChatRequest('${chat.id}')">Reddet</button>
-                        </div>
+                    <div style="padding:20px 15px; background:#F0FDF4; text-align:center; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
+                    <div style="font-size:14px; color:#166534; margin-bottom:12px; font-weight:700;">👋 ${chat.name} seninle bağlantı kurmak istiyor.</div>
+                    <div style="display:flex; justify-content:center; gap:10px;">
+                        <button class="btn-primary" style="padding:10px 20px; background:#10B981; border-color:#10B981; font-size:14px; box-shadow:none; border-radius:10px;" onclick="window.acceptChatRequest('${chat.id}')">✅ Kabul Et</button>
+                        <button class="btn-danger" style="padding:10px 20px; font-size:14px; box-shadow:none; border-radius:10px;" onclick="window.rejectChatRequest('${chat.id}')">❌ Reddet</button>
                     </div>
-                `;
+                </div>`;
             }
         }
 
-        let inputAreaHtml = chat.status === 'accepted' ? `
-            <div class="chat-input-area" style="padding:10px 15px; background:white; display:flex; gap:10px; align-items:center; flex-shrink:0; border-top:1px solid #E5E7EB;">
-                <button style="background:#F3F4F6; border:none; border-radius:50%; width:44px; height:44px; cursor:pointer; font-size:20px; color:var(--text-gray); display:flex; align-items:center; justify-content:center; transition:0.2s;">📎</button>
-                <input type="text" id="chat-input-field" placeholder="Mesajınızı yazın..." style="flex:1; padding:14px 18px; border-radius:25px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:15px;" onkeypress="if(event.key==='Enter') window.sendMessage('${chat.id}')">
-                <button onclick="window.sendMessage('${chat.id}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:44px; height:44px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(79,70,229,0.3); transition:0.2s;">➤</button>
-            </div>
-        ` : '';
-
-        mainArea.innerHTML = `
+        let mainHtml = `
             ${headerHtml}
             ${statusAreaHtml}
-            <div id="chat-messages-scroll" style="flex:1; overflow-y:auto; padding:20px 15px; display:flex; flex-direction:column; gap:12px;"></div>
-            ${inputAreaHtml}
+            <div id="chat-messages-scroll" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; background:#f9fafb;">
+                <div style="text-align:center; padding:20px; color:#9CA3AF; font-size:14px;">Mesajlar yükleniyor...</div>
+            </div>
         `;
 
+        if (chat.status === 'accepted' || chat.isMarketChat) {
+            mainHtml += `
+                <div class="chat-input-area" style="padding:15px 20px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:12px; align-items:center; flex-shrink:0;">
+                    <input type="text" id="chat-input-field" placeholder="Mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:25px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:15px; color:var(--text-dark);">
+                    <button onclick="window.sendDirectMessage('${chat.id}', '${chat.otherUid}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(79,70,229,0.3); flex-shrink:0; transition: transform 0.2s;">➤</button>
+                </div>
+            `;
+        }
+
+        mainArea.innerHTML = mainHtml;
         window.updateChatMessagesOnly(chatId);
 
-        const unreadMsgs = chat.messages.filter(m => m.senderId !== window.userProfile.uid && m.read === false);
-        if(unreadMsgs.length > 0) {
-            const updatedMsgs = chat.messages.map(m => {
-                if(m.senderId !== window.userProfile.uid) m.read = true;
-                return m;
+        const inputField = document.getElementById('chat-input-field');
+        if (inputField) {
+            inputField.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') window.sendDirectMessage(chat.id, chat.otherUid);
             });
-            updateDoc(doc(db, "chats", chatId), { messages: updatedMsgs });
+            if(window.innerWidth > 1024) setTimeout(() => inputField.focus(), 100);
+        }
+        
+        // Mesajları okundu olarak işaretle
+        if (chat.messages && chat.messages.length > 0) {
+            const lastMsg = chat.messages[chat.messages.length - 1];
+            if (lastMsg.senderId !== window.userProfile.uid && lastMsg.read === false) {
+                const updatedMessages = chat.messages.map(m => {
+                    if(m.senderId !== window.userProfile.uid) m.read = true;
+                    return m;
+                });
+                updateDoc(doc(db, "chats", chatId), { messages: updatedMessages }).catch(err => console.error(err));
+            }
         }
     };
 
     window.closeChatView = function() {
-        currentChatId = null;
         const chatLayout = document.getElementById('chat-layout-container');
         if(chatLayout) chatLayout.classList.remove('chat-active');
+        currentChatId = null;
         window.renderMessagesSidebarOnly();
     };
 
     window.updateChatMessagesOnly = function(chatId) {
+        if(currentChatId !== chatId) return;
         const scrollBox = document.getElementById('chat-messages-scroll');
         if(!scrollBox) return;
 
         const chat = chatsDB.find(c => c.id === chatId);
         if(!chat) return;
 
-        let msgsHtml = '';
-        chat.messages.forEach(msg => {
-            const isMe = msg.senderId === window.userProfile.uid || msg.senderId === 'system_me';
-            const type = isMe ? 'sent' : (msg.senderId === 'system' ? 'system-msg' : 'received');
-            
-            if (type === 'system-msg') {
-                msgsHtml += `<div style="text-align:center; margin: 15px 0;"><span style="background:#F3F4F6; color:#6B7280; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid #E5E7EB;">${msg.text}</span></div>`;
-            } else {
-                msgsHtml += `
-                    <div class="bubble ${type}" style="max-width: 80%;">
-                        <div class="msg-text" style="font-size:15px; line-height:1.4;">${msg.text}</div>
-                        <div class="msg-time" style="font-size:10px; margin-top:4px; opacity:0.8; text-align:right; font-weight:600;">
-                            ${msg.time} ${isMe && msg.read ? ' <span style="color:#60A5FA; font-size:12px;">✓✓</span>' : (isMe ? ' <span style="font-size:12px;">✓</span>' : '')}
+        let chatHTML = '';
+        const msgs = chat.messages || [];
+        
+        if (msgs.length === 0) {
+            chatHTML = `<div style="text-align:center; padding:20px; color:#9CA3AF; font-size:14px;">Henüz mesaj yok. İlk mesajı sen gönder!</div>`;
+        } else {
+            let lastDate = null;
+            msgs.forEach((msg, index) => {
+                const isMe = msg.senderId === window.userProfile.uid;
+                const type = isMe ? 'sent' : 'received';
+                const msgTime = msg.time || '';
+                const isRead = msg.read ? '✓✓' : '✓';
+                const readColor = msg.read ? '#3B82F6' : '#9CA3AF'; // Mavi tık
+                
+                // Tarih ayracı mantığı (basitleştirilmiş)
+                const currentDateStr = new Date().toLocaleDateString(); // Şimdilik sadece bugünü varsayıyoruz detaylı zaman yönetimi eklenebilir.
+                
+                chatHTML += `
+                    <div class="bubble ${type}" style="display:flex; flex-direction:column; max-width: 75%; position:relative;">
+                        <div class="msg-text" style="word-break: break-word;">${msg.text}</div>
+                        <div class="msg-time" style="align-self:flex-end; font-size:10px; opacity:0.7; margin-top:4px; display:flex; align-items:center; gap:4px;">
+                            ${msgTime} ${isMe ? `<span style="color:${readColor}; font-weight:bold;">${isRead}</span>` : ''}
                         </div>
                     </div>
                 `;
-            }
-        });
+            });
+        }
 
-        scrollBox.innerHTML = msgsHtml;
-        scrollBox.scrollTop = scrollBox.scrollHeight;
+        // Eğer yeni mesaj eklendiyse scroll'u en alta indir
+        const isScrolledToBottom = scrollBox.scrollHeight - scrollBox.clientHeight <= scrollBox.scrollTop + 50;
+        scrollBox.innerHTML = chatHTML;
+        if(isScrolledToBottom || msgs.length <= 1) {
+            scrollBox.scrollTop = scrollBox.scrollHeight;
+        }
     };
 
-    window.sendMessage = async function(chatId) {
+    window.sendDirectMessage = async function(chatId, otherUid) {
         const input = document.getElementById('chat-input-field');
         if(input && input.value.trim() !== '') {
             const text = input.value.trim();
             input.value = '';
+            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
-            const msgObj = {
+            const newMsg = {
                 senderId: window.userProfile.uid,
                 text: text,
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                time: timeStr,
                 read: false
             };
 
+            const chatRef = doc(db, "chats", chatId);
             try {
-                await updateDoc(doc(db, "chats", chatId), {
-                    messages: arrayUnion(msgObj),
+                await updateDoc(chatRef, {
+                    messages: arrayUnion(newMsg),
                     lastUpdated: serverTimestamp()
                 });
-            } catch(e) { console.error(e); }
+            } catch(error) {
+                console.error("Mesaj gönderilemedi:", error);
+                alert("Mesaj gönderilirken bir hata oluştu.");
+            }
         }
     };
 
@@ -2265,236 +2309,259 @@ function initializeUniLoop() {
         try {
             await updateDoc(doc(db, "chats", chatId), {
                 status: 'accepted',
-                lastUpdated: serverTimestamp(),
-                messages: arrayUnion({
-                    senderId: 'system',
-                    text: 'Arkadaşlık isteği kabul edildi! Artık sohbet edebilirsiniz.',
-                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-                })
+                lastUpdated: serverTimestamp()
             });
             window.openChatView(chatId);
-        } catch(e) { console.error(e); alert("Kabul edilirken hata oluştu."); }
+        } catch(error) {
+            alert("İstek onaylanırken hata oluştu.");
+        }
     };
 
     window.rejectChatRequest = async function(chatId) {
-        if(confirm("Bu isteği reddetmek istediğinize emin misiniz?")) {
+        if(confirm("Bu bağlantı isteğini reddetmek ve silmek istediğinize emin misiniz?")) {
             try {
                 await deleteDoc(doc(db, "chats", chatId));
                 window.closeChatView();
-            } catch(e) { console.error(e); }
+            } catch(error) {
+                alert("İstek silinirken hata oluştu.");
+            }
         }
     };
 
     // ============================================================================
-    // 9. KULLANICI PROFİLİ VE AYARLAR
+    // 9. PROFİL, BİLDİRİMLER VE AYARLAR
     // ============================================================================
 
     window.renderProfile = function() {
         const u = window.userProfile;
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
-        const bioText = u.bio ? u.bio : "Merhaba, ben UniLoop kullanıyorum! Henüz bir biyografi eklemedim.";
-        const ageText = u.age ? u.age + " Yaşında" : "Yaş Belirtilmemiş";
-        const gradeText = u.grade ? u.grade + ". Sınıf" : "";
-        const purposeText = u.purpose ? `<div style="margin-top:10px; font-size:13px; color:#059669; font-weight:800; background:#D1FAE5; padding:6px 12px; border-radius:12px; display:inline-block;">🎯 Hedef: ${u.purpose}</div>` : "";
+        const isPremium = u.isPremium;
+        
+        let avatarHtml = u.avatarUrl 
+            ? `<div style="position:relative; cursor:pointer;" onclick="document.getElementById('profile-avatar-upload').click()">
+                 <img src="${u.avatarUrl}" class="id-card-avatar" style="${isPremium ? 'border-color:#F59E0B;' : ''}">
+                 <div style="position:absolute; bottom:0; right:0; background:var(--primary); color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.2);">✏️</div>
+               </div>` 
+            : `<div style="position:relative; cursor:pointer;" onclick="document.getElementById('profile-avatar-upload').click()">
+                 <div class="id-card-avatar" style="${isPremium ? 'border-color:#F59E0B;' : ''}">${u.avatar || '👤'}</div>
+                 <div style="position:absolute; bottom:0; right:0; background:var(--primary); color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.2);">✏️</div>
+               </div>`;
 
         let tagsHtml = '';
         if(u.interests && Array.isArray(u.interests)) {
-            u.interests.forEach(int => { tagsHtml += `<span class="id-tag">${int}</span>`; });
+            tagsHtml = u.interests.map(tag => `<span class="id-tag">${tag}</span>`).join('');
         }
 
-        let avatarHtml = u.avatarUrl 
-            ? `<img src="${u.avatarUrl}" style="width:100%; height:100%; object-fit:cover;">` 
-            : u.avatar || '👨‍🎓';
+        const premiumBadgeHtml = isPremium 
+            ? `<div style="background:linear-gradient(135deg, #F59E0B, #D97706); color:white; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 4px rgba(245,158,11,0.3); margin-top:5px;">👑 Premium Üye</div>` 
+            : ``;
 
         let html = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; padding: 0 5px;">
-                <h2 style="margin:0; font-size:24px; font-weight:800;">Kişisel Profilim</h2>
-                <button style="background:#F3F4F6; border:none; width:40px; height:40px; border-radius:50%; font-size:20px; cursor:pointer; color:var(--text-dark); display:flex; align-items:center; justify-content:center; transition:0.2s;" onclick="window.renderSettings()">⚙️</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 style="margin:0; font-size:22px; color:var(--text-dark);">Profilim</h2>
+                <button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:8px 12px; font-size:13px; border-radius:10px;" onclick="window.renderSettings()">⚙️ Ayarlar</button>
             </div>
+            
+            <input type="file" id="profile-avatar-upload" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
 
-            <div class="id-card">
-                <div class="id-card-left">
-                    <div style="position:relative;">
-                        <div class="id-card-avatar" onclick="document.getElementById('profile-avatar-upload').click()" style="cursor:pointer; position:relative;">
-                            ${avatarHtml}
-                            <div style="position:absolute; bottom:-5px; right:-5px; background:var(--primary); color:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; border:3px solid white; box-shadow:0 2px 5px rgba(0,0,0,0.2); transition:transform 0.2s;">📷</div>
-                        </div>
-                        <input type="file" id="profile-avatar-upload" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
-                    </div>
-                </div>
+            <div class="id-card ${isPremium ? 'premium-glow' : ''}" style="${isPremium ? 'border-color:#F59E0B;' : ''}">
+                <div class="id-card-left">${avatarHtml}</div>
                 <div class="id-card-right">
-                    <div class="id-card-name">${u.name} ${initial} ${u.isPremium ? '<span style="color:#F59E0B; font-size:20px;" title="Premium Üye">👑</span>' : ''}</div>
-                    <div class="id-card-faculty">${u.faculty || 'Bölüm Belirtilmemiş'}</div>
+                    <div class="id-card-name">${u.name} ${initial}</div>
+                    <div style="font-size:12px; color:#6B7280; margin-bottom:4px; font-weight:600;">@${u.username ? u.username.replace('#','') : 'kullanici_adi'}</div>
+                    <div class="id-card-faculty">${u.faculty || 'Bölüm belirtilmemiş'} ${u.grade ? ' - ' + u.grade + '. Sınıf' : ''}</div>
                     <div class="id-card-details">
-                        <span style="display:flex; align-items:center; gap:5px;">🎓 ${u.university}</span>
-                        <span style="display:flex; align-items:center; gap:5px;">📚 ${gradeText} ${ageText ? ' • ' + ageText : ''}</span>
-                        <span style="display:flex; align-items:center; gap:5px; color:var(--primary); font-weight:800;">@${u.username ? u.username.replace('#', '') : 'kullanici_adi'}</span>
+                        <span>🏫 ${u.university || 'UniLoop'}</span>
+                        <span>🎂 ${u.age ? u.age + ' Yaşında' : 'Yaş belirtilmemiş'}</span>
+                        ${premiumBadgeHtml}
                     </div>
-                    <div class="id-card-tags" style="margin-top:8px;">${tagsHtml}</div>
-                    ${purposeText}
+                    <div class="id-card-tags">${tagsHtml}</div>
                 </div>
             </div>
 
-            <div class="card" style="margin-bottom:20px; border-radius:16px;">
-                <h3 style="margin-top:0; font-size:18px; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px;">Hakkımda ✍️</h3>
-                <p style="font-size:15px; color:#4B5563; line-height:1.6; margin-bottom:20px; background:#F9FAFB; padding:15px; border-radius:12px; border:1px solid #E5E7EB;">${bioText}</p>
-                
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-primary" style="flex:1; padding:14px; font-size:14px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s; border-radius: 12px;" onclick="window.editProfile()" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'">✏️ Profili Düzenle</button>
-                    <button class="btn-primary" style="flex:1; padding:14px; font-size:14px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s; border-radius: 12px;" onclick="window.showFriendsList()" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'">👥 Arkadaşlarım</button>
+            <div class="card" style="margin-bottom:15px;">
+                <h3 style="font-size:15px; margin-bottom:10px; color:var(--text-dark); border-bottom:1px solid #E5E7EB; padding-bottom:8px;">Hakkımda</h3>
+                <textarea id="profile-bio-input" rows="3" placeholder="Kendinden bahset... (Örn: Kahve aşığı, kod yazar, dizi izler)" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; background:#F9FAFB; font-size:14px; outline:none; resize:none; font-family:inherit;">${u.bio || ''}</textarea>
+                <div style="text-align:right; margin-top:10px;">
+                    <button class="btn-primary" style="padding:8px 16px; font-size:13px; border-radius:8px;" onclick="window.updateBio()">Kaydet</button>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom:15px;">
+                <h3 style="font-size:15px; margin-bottom:10px; color:var(--text-dark); border-bottom:1px solid #E5E7EB; padding-bottom:8px;">İstatistiklerim</h3>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; text-align:center;">
+                    <div style="background:#F9FAFB; padding:15px 10px; border-radius:12px; border:1px solid #E5E7EB;">
+                        <div style="font-size:20px; font-weight:800; color:var(--primary);">${confessionsDB.filter(c => c.authorId === u.uid).length}</div>
+                        <div style="font-size:11px; color:var(--text-gray); margin-top:4px;">Gönderi</div>
+                    </div>
+                    <div style="background:#F9FAFB; padding:15px 10px; border-radius:12px; border:1px solid #E5E7EB;">
+                        <div style="font-size:20px; font-weight:800; color:#10B981;">${marketDB.filter(m => m.sellerId === u.uid).length}</div>
+                        <div style="font-size:11px; color:var(--text-gray); margin-top:4px;">Market İlanı</div>
+                    </div>
+                    <div style="background:#F9FAFB; padding:15px 10px; border-radius:12px; border:1px solid #E5E7EB;">
+                        <div style="font-size:20px; font-weight:800; color:#F59E0B;">${chatsDB.filter(c => c.status === 'accepted').length}</div>
+                        <div style="font-size:11px; color:var(--text-gray); margin-top:4px;">Bağlantı</div>
+                    </div>
                 </div>
             </div>
             
-            <button class="btn-danger" style="width:100%; padding: 16px; border-radius: 16px; font-weight: bold; font-size:16px; margin-bottom:30px; box-shadow:0 4px 10px rgba(239,68,68,0.3);" onclick="window.logout()">🚪 Hesaptan Güvenli Çıkış Yap</button>
+            ${!isPremium ? `
+            <div class="card premium-glow" style="background:linear-gradient(135deg, #FFFBEB, #FEF3C7); border-color:#FDE68A; cursor:pointer;" onclick="window.openPremiumModal()">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <div style="font-weight:800; color:#D97706; font-size:16px; margin-bottom:4px;">🌟 UniLoop Premium'a Geç</div>
+                        <div style="font-size:12px; color:#B45309;">Kampüsün en popüler kişisi ol, sınırları kaldır!</div>
+                    </div>
+                    <div style="font-size:24px;">👑</div>
+                </div>
+            </div>
+            ` : ''}
         `;
         mainContent.innerHTML = html;
     };
 
-    window.showFriendsList = function() {
-        const friendsChats = chatsDB.filter(c => c.status === 'accepted' && !c.isMarketChat);
-        if (friendsChats.length === 0) {
-            window.openModal('👥 Arkadaşlarım', '<div style="text-align:center; padding:30px; color:var(--text-gray);"><div style="font-size:40px; margin-bottom:10px;">👤</div>Henüz arkadaşınız yok. Keşfet bölümünden veya arama yaparak yeni insanlarla tanışabilirsiniz!</div>');
-            return;
-        }
-
-        let html = '<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px;">';
-        friendsChats.forEach(f => {
-            let avatarHtml = f.avatar && f.avatar.startsWith('http')
-                ? `<img src="${f.avatar}" stylewidth:40px; height:40px; border-radius:50%; object-fit:cover;">`
-                : `<div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px;">${f.avatar || '👤'}</div>`;
-
-            html += `
-                <div style="display:flex; align-items:center; gap:12px; background:#F9FAFB; padding:10px; border-radius:12px; border:1px solid #E5E7EB;">
-                    ${avatarHtml}
-                    <div style="flex:1;">
-                        <div style="font-weight:bold; font-size:15px; color:var(--text-dark);">${f.name}</div>
-                    </div>
-                    <button class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:8px;" onclick="window.closeModal(); window.openChatViewDirect('${f.id}')">Mesaj At</button>
-                </div>
-            `;
-        });
-        html += '</div>';
-
-        window.openModal(`👥 Arkadaşlarım (${friendsChats.length})`, html);
-    };
-
-    window.editProfile = function() {
-        const u = window.userProfile;
-        const currentBio = u.bio || "";
-        window.openModal('Profili Düzenle ✏️', `
-            <div style="margin-bottom:20px;">
-                <label style="font-size:14px; font-weight:800; color:var(--text-dark); margin-bottom:8px; display:block;">Hakkımda (Bio)</label>
-                <textarea id="edit-bio" rows="5" placeholder="Kendinden biraz bahset..." style="width:100%; padding:15px; border-radius:12px; border:1px solid #E5E7EB; box-sizing:border-box; outline:none; font-size:15px; font-family:inherit; resize:none; background:#F9FAFB;">${currentBio}</textarea>
-            </div>
-            <button class="btn-primary" style="width:100%; padding:16px; font-size:16px; font-weight:bold; border-radius:12px; box-shadow:0 4px 10px rgba(79,70,229,0.3);" onclick="window.saveProfile()">Değişiklikleri Kaydet</button>
-        `);
-    };
-
-    window.saveProfile = async function() {
-        const newBio = document.getElementById('edit-bio').value.trim();
-        const btn = document.querySelector('.btn-primary');
-        btn.innerText = "Kaydediliyor...";
-        btn.disabled = true;
-
+    window.updateBio = async function() {
+        const bioText = document.getElementById('profile-bio-input').value.trim();
         try {
-            await updateDoc(doc(db, "users", window.userProfile.uid), { bio: newBio });
-            window.userProfile.bio = newBio;
-            window.closeModal();
-            window.renderProfile();
-        } catch(e) { 
-            alert("Profil kaydedilirken hata oluştu: " + e.message); 
-            btn.innerText = "Değişiklikleri Kaydet";
-            btn.disabled = false;
+            await updateDoc(doc(db, "users", window.userProfile.uid), { bio: bioText });
+            window.userProfile.bio = bioText;
+            alert("Hakkımda bilginiz güncellendi!");
+        } catch(e) {
+            alert("Güncellenirken hata oluştu: " + e.message);
         }
     };
 
     window.renderSettings = function() {
-        const lang = localStorage.getItem('uniloop_lang') || 'tr';
-        const theme = localStorage.getItem('uniloop_theme') || 'light';
-        const t = TRANSLATIONS[lang];
+        const currentLang = localStorage.getItem('uniloop_lang') || 'tr';
+        const currentTheme = localStorage.getItem('uniloop_theme') || 'light';
 
-        window.openModal(t.settingsTitle, `
-            <div style="display:flex; flex-direction:column; gap:25px;">
-                <div>
-                    <label style="font-weight:800; font-size:15px; display:block; margin-bottom:12px; color:var(--text-dark);">${t.themeLabel} (Görünüm)</label>
-                    <div style="display:flex; gap:10px;">
-                        <button class="action-btn" style="flex:1; justify-content:center; padding:12px; border-radius:12px; font-weight:bold; ${theme==='light'?'background:var(--primary); color:white; border-color:var(--primary);':'background:#F3F4F6; color:var(--text-dark); border-color:#E5E7EB;'}" onclick="window.toggleTheme('light'); window.renderSettings();">☀️ ${t.lightMode}</button>
-                        <button class="action-btn" style="flex:1; justify-content:center; padding:12px; border-radius:12px; font-weight:bold; ${theme==='dark'?'background:var(--primary); color:white; border-color:var(--primary);':'background:#F3F4F6; color:var(--text-dark); border-color:#E5E7EB;'}" onclick="window.toggleTheme('dark'); window.renderSettings();">🌙 ${t.darkMode}</button>
-                    </div>
+        window.openModal('⚙️ Ayarlar', `
+            <div style="display:flex; flex-direction:column; gap:15px;">
+                <div class="form-group" style="margin:0;">
+                    <label style="font-size:13px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; display:block;">Dil Seçimi</label>
+                    <select onchange="window.setLanguage(this.value)" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; background:#F9FAFB;">
+                        <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>🇹🇷 Türkçe</option>
+                        <option value="en" ${currentLang === 'en' ? 'selected' : ''}>🇬🇧 English</option>
+                    </select>
                 </div>
-                <div style="background:#F9FAFB; padding:15px; border-radius:12px; border:1px solid #E5E7EB; text-align:center;">
-                    <p style="font-size:13px; color:var(--text-gray); margin:0;">UniLoop Versiyon 3.2.0 (Güncellenmiş Engine)</p>
+                
+                <div class="form-group" style="margin:0;">
+                    <label style="font-size:13px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; display:block;">Tema</label>
+                    <select onchange="window.toggleTheme(this.value)" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; background:#F9FAFB;">
+                        <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>☀️ Aydınlık Mod</option>
+                        <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>🌙 Karanlık Mod</option>
+                    </select>
+                </div>
+                
+                <div style="border-top:1px solid #E5E7EB; margin:10px 0;"></div>
+                
+                <button class="btn-danger" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
+                
+                <div style="text-align:center; font-size:11px; color:#9CA3AF; margin-top:10px;">
+                    UniLoop v3.1.0 Pro<br>Made with ❤️ for Students
                 </div>
             </div>
         `);
     };
 
     window.renderNotifications = function() {
-        let notifsHtml = '';
+        const notifBadgeTop = document.getElementById('notif-badge-top');
+        if(notifBadgeTop) notifBadgeTop.style.display = 'none';
+
+        let html = '<div class="notif-compact-panel">';
         let hasNotif = false;
         
+        // 1. Bekleyen Arkadaşlık İstekleri
         chatsDB.forEach(chat => {
-            if (chat.status === 'pending' && chat.initiator !== window.userProfile.uid) {
+            if (chat.status === 'pending' && chat.initiator !== window.userProfile.uid && !chat.isMarketChat) {
                 hasNotif = true;
-                
-                let avatarHtml = chat.avatar && chat.avatar.startsWith('http') 
-                    ? `<img src="${chat.avatar}" style="width:100%; height:100%; object-fit:cover;">`
-                    : chat.avatar || '👤';
-
-                notifsHtml += `
-                    <div class="notif-compact-item">
-                        <div style="display:flex; align-items:center; gap:12px; flex:1;">
-                            <div style="font-size:24px; width:44px; height:44px; background:#F3F4F6; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden; border:1px solid #E5E7EB;">${avatarHtml}</div>
+                html += `
+                    <div class="notif-compact-item" style="border-left: 4px solid var(--primary);">
+                        <div style="display:flex; align-items:center; gap:10px; flex:1;">
+                            <div style="font-size:24px;">👋</div>
                             <div>
-                                <div style="font-weight:800; font-size:15px; color:var(--text-dark);">${chat.name}</div>
-                                <div style="font-size:13px; color:var(--text-gray); margin-top:2px;">Sana bağlantı isteği gönderdi.</div>
+                                <div style="font-weight:800; font-size:14px; color:var(--text-dark);">${chat.name}</div>
+                                <div style="font-size:12px; color:var(--text-gray);">Seninle bağlantı kurmak istiyor.</div>
                             </div>
                         </div>
-                        <div style="display:flex; gap:8px; margin-top:10px; width:100%; justify-content:flex-end;">
-                            <button style="background:#10B981; color:white; border:none; padding:8px 16px; border-radius:12px; font-size:13px; cursor:pointer; font-weight:bold; flex:1; box-shadow:0 2px 5px rgba(16,185,129,0.3);" onclick="window.acceptChatRequest('${chat.id}'); window.closeModal();">Kabul Et</button>
-                            <button style="background:#EF4444; color:white; border:none; padding:8px 16px; border-radius:12px; font-size:13px; cursor:pointer; font-weight:bold; flex:1; box-shadow:0 2px 5px rgba(239,68,68,0.3);" onclick="window.rejectChatRequest('${chat.id}'); window.closeModal();">Reddet</button>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:8px; background:#10B981; border-color:#10B981; box-shadow:none;" onclick="window.acceptChatRequest('${chat.id}')">Kabul</button>
+                            <button class="btn-danger" style="padding:6px 12px; font-size:12px; border-radius:8px; box-shadow:none;" onclick="window.rejectChatRequest('${chat.id}')">Red</button>
                         </div>
                     </div>
                 `;
             }
         });
 
-        if(!hasNotif) {
-            notifsHtml = `
-                <div style="text-align:center; padding:50px 20px; color:var(--text-gray);">
-                    <div style="font-size:48px; margin-bottom:15px;">🔕</div>
-                    <div style="font-weight:bold; font-size:16px; color:var(--text-dark); margin-bottom:5px;">Bildirim Yok</div>
-                    <p style="font-size:14px;">Şu an için yeni bir bağlantı isteğiniz veya bildiriminiz bulunmuyor.</p>
-                </div>`;
-        }
-
-        window.openModal('🔔 Bildirimler', `<div class="notif-compact-panel">${notifsHtml}</div>`);
-    };
-
-    window.loadPage = function(page) {
-        document.body.classList.remove('no-scroll-messages');
-        if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
-        window.resetCurrentChatId();
-
-        document.querySelectorAll('.bottom-nav-item').forEach(el => {
-            el.classList.remove('active');
-            if(el.getAttribute('data-target') === page) el.classList.add('active');
+        // 2. Okunmamış Mesajlar
+        chatsDB.forEach(chat => {
+            if (chat.status === 'accepted' || chat.isMarketChat) {
+                if (chat.messages && chat.messages.length > 0) {
+                    const lastMsg = chat.messages[chat.messages.length - 1];
+                    if (lastMsg.senderId !== window.userProfile.uid && lastMsg.read === false) {
+                        hasNotif = true;
+                        html += `
+                            <div class="notif-compact-item" style="cursor:pointer;" onclick="window.openChatViewDirect('${chat.id}'); window.closeModal();">
+                                <div style="display:flex; align-items:center; gap:10px; flex:1;">
+                                    <div style="font-size:24px;">💬</div>
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="font-weight:800; font-size:14px; color:var(--text-dark);">${chat.name}</div>
+                                        <div style="font-size:12px; color:var(--primary); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Yeni mesaj: ${lastMsg.text}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }
         });
 
-        mainContent.innerHTML = '';
+        if (!hasNotif) {
+            html += `<div style="text-align:center; padding:30px 10px; color:var(--text-gray);">
+                <div style="font-size:40px; margin-bottom:10px;">🔔</div>
+                <div style="font-size:14px;">Şu an için yeni bir bildiriminiz yok.</div>
+            </div>`;
+        }
         
-        if (page === 'home') window.renderHome();
-        else if (page === 'confessions') window.drawConfessionsFeed();
-        else if (page === 'market') window.renderListings('market', '🛒 Kampüs Market');
-        else if (page === 'messages') window.renderMessages();
-        else if (page === 'profile') window.renderProfile();
-        
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        html += '</div>';
+        window.openModal('🔔 Bildirimler', html);
     };
 
-} // initializeUniLoop fonksiyonunun kapanışı
+    // ============================================================================
+    // 10. ROUTING (SAYFA YÖNLENDİRME)
+    // ============================================================================
+    window.loadPage = function(page) {
+        document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
+        const targetNav = document.querySelector(`.bottom-nav-item[data-target="${page}"]`);
+        if(targetNav) targetNav.classList.add('active');
 
-// Sayfa yüklendiğinde ana motoru çalıştır.
-document.addEventListener('DOMContentLoaded', () => {
-    initializeUniLoop();
-});
+        // Reset scroll states
+        window.scrollTo(0, 0);
+        document.body.classList.remove('no-scroll-messages');
+        if (currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
+
+        switch(page) {
+            case 'home':
+                window.renderHome();
+                break;
+            case 'confessions':
+                window.drawConfessionsFeed();
+                break;
+            case 'market':
+                window.renderListings('market', '🛒 Kampüs Market');
+                break;
+            case 'messages':
+                window.renderMessages();
+                break;
+            case 'profile':
+                window.renderProfile();
+                break;
+            default:
+                window.renderHome();
+        }
+    };
+}
+
+// Uygulamayı Başlat
+document.addEventListener('DOMContentLoaded', initializeUniLoop);
+
