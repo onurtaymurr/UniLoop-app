@@ -103,7 +103,7 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
-    // 🎨 CSS DÜZENLEMELERİ (Orijinal Boyutlar Korundu, Çakışma Öncelendi)
+    // 🎨 CSS DÜZENLEMELERİ
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
@@ -111,12 +111,14 @@ function initializeUniLoop() {
 
         body.no-scroll-messages { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
         
-        #main-content { padding-bottom: calc(75px + env(safe-area-inset-bottom)) !important; }
+        /* FIX: Ana içerik alt barda kaybolmasın diye padding artırıldı */
+        #main-content { padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important; }
 
+        /* FIX: Mesajlar sayfasında chat inputunun alt barın (bottom nav) altında kalmasını önlemek için bottom değeri 75px yapıldı */
         .no-scroll-messages #main-content { 
             position: fixed !important;
             top: 50px !important;
-            bottom: calc(60px + env(safe-area-inset-bottom)) !important; 
+            bottom: calc(75px + env(safe-area-inset-bottom)) !important; 
             left: 0 !important;
             right: 0 !important;
             padding: 0 !important; 
@@ -142,6 +144,7 @@ function initializeUniLoop() {
         .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
         #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; }
         
+        /* Chat Input Her Zaman Üstte */
         .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 50; position: relative; }
         #group-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; padding: 15px; }
 
@@ -325,6 +328,13 @@ function initializeUniLoop() {
 
     document.addEventListener('click', async function(e) {
         const isTarget = (id) => e.target.id === id || (e.target.closest && e.target.closest('#' + id));
+
+        // 🛠 FIX 1: ÇARPI (X) TUŞUYLA MODAL KAPATMA 🛠
+        if (e.target.id === 'modal-close' || e.target.classList.contains('close-btn')) {
+            e.preventDefault();
+            window.closeModal();
+            return;
+        }
 
         if (isTarget('show-login-btn')) {
             e.preventDefault();
@@ -1792,7 +1802,6 @@ function initializeUniLoop() {
             
             let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" class="feed-post-img" onclick="event.stopPropagation(); window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
             
-            // KURAL 4: event parametresi likePost'a gönderildi.
             feedHtml += `
                 <div class="feed-post" onclick="window.openConfessionDetail('${post.id}')" style="cursor:pointer; transition: transform 0.2s;">
                     <div class="feed-post-header">
@@ -1901,7 +1910,6 @@ function initializeUniLoop() {
         }
     };
 
-    // 🌟 KURAL 4 UYGULANDI: Beğeniye basıldığında Uçan Kalp animasyonu tetiklenecek.
     window.likePost = async function(postId, event) {
         if (event) {
             const btn = event.currentTarget || event.target;
@@ -1914,11 +1922,9 @@ function initializeUniLoop() {
             flyingEmoji.style.fontSize = '24px';
             flyingEmoji.style.zIndex = '999999';
             flyingEmoji.style.pointerEvents = 'none';
-            // CSS'teki animasyonu doğrudan bağlıyoruz.
             flyingEmoji.style.animation = 'flyUpAndFade 1s ease-out forwards';
             document.body.appendChild(flyingEmoji);
             
-            // Animasyon bittikten sonra DOM'dan temizle
             setTimeout(() => flyingEmoji.remove(), 1000);
         }
 
@@ -1971,7 +1977,6 @@ function initializeUniLoop() {
 
         let deleteBtn = post.authorId === window.userProfile.uid ? `<button onclick="window.deleteConfession('${post.id}')" style="background:none; border:none; color:#EF4444; font-size:12px; font-weight:bold; cursor:pointer; padding:5px;">🗑️ Sil</button>` : '';
 
-        // KURAL 4: event parametresi modal içindeki butona da eklendi.
         const html = `
             <input type="hidden" id="active-post-id" value="${post.id}">
             <div class="feed-post-header" style="justify-content:space-between; margin-bottom:15px;">
@@ -2355,7 +2360,7 @@ function initializeUniLoop() {
         let html = '<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px;">';
         friendsChats.forEach(f => {
             let avatarHtml = f.avatar && f.avatar.startsWith('http')
-                ? `<img src="${f.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">`
+                ? `<img src="${f.avatar}" stylewidth:40px; height:40px; border-radius:50%; object-fit:cover;">`
                 : `<div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px;">${f.avatar || '👤'}</div>`;
 
             html += `
@@ -2424,7 +2429,7 @@ function initializeUniLoop() {
         `);
     };
 
-        window.renderNotifications = function() {
+    window.renderNotifications = function() {
         let notifsHtml = '';
         let hasNotif = false;
         
@@ -2493,4 +2498,3 @@ function initializeUniLoop() {
 document.addEventListener('DOMContentLoaded', () => {
     initializeUniLoop();
 });
-
