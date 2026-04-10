@@ -56,7 +56,7 @@ const storage = getStorage(app);
 
 // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
 window.userProfile = { 
-    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", isPremium: false, grade: "", interests: [], purpose: "", isFacultyVerified: false 
+    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", isPremium: false, grade: "", interests: [], purpose: "" 
 };
 
 window.joinedFaculties = [];
@@ -93,7 +93,7 @@ let cropper = null;
 
 function initializeUniLoop() {
 
-    // ✂️ CROPPER.JS VE CSS ENJEKSİYONU
+    // ✂️ CROPPER.JS ENJEKSİYONU
     const cropperCss = document.createElement('link');
     cropperCss.rel = 'stylesheet';
     cropperCss.href = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css';
@@ -106,28 +106,13 @@ function initializeUniLoop() {
     // 🎨 CSS DÜZENLEMELERİ
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
-        html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; font-family: 'Inter', sans-serif; }
+        html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
         header, #app-header { height: 50px !important; box-sizing: border-box; }
-        body.no-scroll-messages { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
-        #main-content { padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important; }
-        .bubble { margin-bottom: 8px; border-radius: 18px; padding: 10px 15px; }
-        
-        /* Kulüp Modüler Araba Tasarımı */
-        .club-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 5px; }
-        .club-card-sq { background: white; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; cursor: pointer; transition: 0.3s; }
-        .club-card-sq:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .club-card-wide { grid-column: span 2; background: white; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; cursor: pointer; }
-        
-        /* Takvim / Etkinlik Paneli */
-        .calendar-strip { background: linear-gradient(135deg, #4f46e5, #818cf8); border-radius: 20px; padding: 15px; color: white; margin-bottom: 20px; }
-        .calendar-title { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-        .event-item { background: rgba(255,255,255,0.2); border-radius: 12px; padding: 10px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
 
-        /* Kayıt Sınıf Seçimi */
-        .grade-btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .grade-btn { background: #f3f4f6; border: 2px solid transparent; border-radius: 15px; padding: 15px; font-weight: 800; cursor: pointer; transition: 0.2s; }
-        .grade-btn.active { background: #eef2ff; border-color: #4f46e5; color: #4f46e5; }
+        body.no-scroll-messages { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
         
+        #main-content { padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important; }
+
         .no-scroll-messages #main-content { 
             position: fixed !important;
             top: 50px !important;
@@ -143,9 +128,20 @@ function initializeUniLoop() {
             z-index: 40;
         }
 
-        #chat-layout-container { position: relative !important; width: 100% !important; height: 100% !important; display: flex; flex-direction: row; background: #fff; flex: 1; overflow: hidden; }
+        #chat-layout-container { 
+            position: relative !important; 
+            width: 100% !important; 
+            height: 100% !important; 
+            display: flex; 
+            flex-direction: row; 
+            background: #fff; 
+            flex: 1;
+            overflow: hidden; 
+        }
+        
         .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
         #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; }
+        
         .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 50; position: relative; }
         #group-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; padding: 15px; }
 
@@ -158,14 +154,44 @@ function initializeUniLoop() {
         #sidebar { display: none !important; }
         #mobile-menu-btn { display: none !important; }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #ffffff; border-top: 1px solid #f1f1f1; display: flex; justify-content: space-around; align-items: center; height: calc(60px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; z-index: 99999; box-shadow: 0 -2px 10px rgba(0,0,0,0.02); }
-        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8E8E93; font-size: 10px; text-decoration: none; cursor: pointer; transition: 0.2s; flex: 1; background: transparent !important; border: none !important; font-weight: 500; height: 60px; padding: 0; }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #ffffff;
+            border-top: 1px solid #f1f1f1;
+            display: flex;
+            justify-content: space-around;
+            align-items: center; 
+            height: calc(60px + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
+            box-sizing: border-box;
+            z-index: 99999;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #8E8E93; font-size: 10px; text-decoration: none; cursor: pointer; transition: 0.2s; flex: 1; background: transparent !important; border: none !important; font-weight: 500; -webkit-tap-highlight-color: transparent; 
+            height: 60px; 
+            padding: 0;
+        }
         .bottom-nav-item.active { color: #6366f1 !important; font-weight: 600; }
         .bottom-nav-icon { width: 22px; height: 22px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; }
         .bottom-nav-icon svg { width: 100%; height: 100%; transition: 0.2s; }
         .bottom-nav-item.active .bottom-nav-icon svg.fill-active { fill: currentColor; }
         .bottom-nav-item.active .bottom-nav-icon svg { stroke-width: 2.2; }
 
+        .stepper-container { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 400px; margin: 0 auto; width: 100%; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .step-header { font-size: 14px; font-weight: bold; color: var(--primary); text-align: center; margin-bottom: 15px; }
+        .step-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 20px; color: #111827; }
+        .grade-btn, .interest-btn, .purpose-btn { background: #F3F4F6; border: 1px solid #E5E7EB; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; margin: 5px; display: inline-block; color: var(--text-dark); }
+        .grade-btn.active, .interest-btn.active, .purpose-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
+        
         .id-card { background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); width: 100%; max-width: 100%; box-sizing: border-box; margin: 0 auto 20px auto; position: relative; overflow: hidden; }
         .id-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--primary), #818cf8); }
         .id-card-left { flex-shrink: 0; position:relative; }
@@ -189,15 +215,8 @@ function initializeUniLoop() {
         .chat-sidebar { width: 320px; overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; border-right: 1px solid #e5e7eb; }
         .chat-contact.active { background: #EEF2FF; border-left: 4px solid var(--primary); }
         .chat-contact:hover { background: #F9FAFB; }
-
-        .club-dashboard { padding: 20px; background: #f8fafc; height: 100%; overflow-y: auto; display: flex; flex-direction: column; }
-        .club-dash-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .calendar-widget { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
-        .club-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .club-action-sq { background: white; padding: 25px 15px; border-radius: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; }
-        .club-action-sq:hover { transform: translateY(-5px); border-color: #6366f1; }
-        .club-action-wide { grid-column: span 2; display: flex; align-items: center; gap: 15px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; }
-        .club-action-wide:hover { transform: translateY(-3px); border-color: #10b981; }
+        
+        .bubble { margin-bottom: 6px; }
 
         #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; }
         .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; scroll-behavior: smooth; }
@@ -265,7 +284,7 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
 
-    // Kırpma (Cropper) Modal
+    // Kırpma (Cropper) alanı için Sağ-Üst "Kaydet" Düzeltmesi
     const cropperModalHtml = `
         <div id="cropper-modal" class="cropper-modal-container">
             <div class="cropper-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:#111; color:white; z-index:10; position:relative;">
@@ -293,6 +312,11 @@ function initializeUniLoop() {
 
     const savedTheme = localStorage.getItem('uniloop_theme') || 'light';
     window.toggleTheme(savedTheme);
+
+    const TRANSLATIONS = {
+        'tr': { settingsTitle: '⚙️ Uygulama Ayarları', langLabel: 'Dil Seçimi', themeLabel: 'Tema', lightMode: 'Aydınlık Mod', darkMode: 'Karanlık Mod', logoutBtn: '🚪 Güvenli Çıkış Yap' },
+        'en': { settingsTitle: '⚙️ App Settings', langLabel: 'Language', themeLabel: 'Theme', lightMode: 'Light Mode', darkMode: 'Dark Mode', logoutBtn: '🚪 Secure Logout' }
+    };
 
     document.addEventListener('click', async function(e) {
         const isTarget = (id) => e.target.id === id || (e.target.closest && e.target.closest('#' + id));
@@ -383,7 +407,6 @@ function initializeUniLoop() {
         window.renderStep(startStep);
     }
 
-    // YENİ GÜNCELLEME: Sınıf Doğrulama Kodu Mantığı
     window.renderStep = function(step) {
         const wrapper = document.getElementById('stepper-wrapper');
         if(!wrapper) return;
@@ -421,27 +444,15 @@ function initializeUniLoop() {
                     <input type="text" id="reg-name" placeholder="Adın" style="flex:1; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; font-size:15px;">
                     <input type="text" id="reg-surname" placeholder="Soyadın" style="flex:1; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; font-size:15px;">
                 </div>
-                <input type="number" id="reg-age" placeholder="Yaşın" style="margin-bottom:15px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; box-sizing:border-box; font-size:15px;">
-                
-                <label style="font-size:13px; font-weight:bold; color:var(--text-dark); margin-bottom:8px; display:block;">Hangi Fakültedesin?</label>
-                <select id="reg-faculty" style="margin-bottom:15px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; background:#F3F4F6; outline:none; box-sizing:border-box; font-size:15px;" onchange="window.resetGradeCode()">
-                    <option value="">Fakülteni Seç</option>
+                <input type="number" id="reg-age" placeholder="Yaşın" style="margin-bottom:10px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; box-sizing:border-box; font-size:15px;">
+                <select id="reg-faculty" style="margin-bottom:15px; width:100%; padding:14px; border-radius:12px; border:1px solid #ccc; background:#F3F4F6; outline:none; box-sizing:border-box; font-size:15px;">
+                    <option value="">Hangi Fakültedesin?</option>
                     ${facOptions}
                 </select>
-                
                 <div style="margin-bottom: 20px; text-align:center;">
-                    <p style="font-size:13px; font-weight:bold; margin-bottom:10px; color:#374151;">Kaçıncı Sınıfsın?</p>
-                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
-                        ${[1, 2, 3, 4, 5, 6].map(g => `<button class="grade-btn" style="padding:10px; border-radius:10px;" onclick="window.selectGrade(this, '${g}')">${g}. Sınıf</button>`).join('')}
-                    </div>
+                    <p style="font-size:14px; font-weight:bold; margin-bottom:10px; color:#374151;">Kaçıncı Sınıfsın?</p>
+                    ${[1, 2, 3, 4, 5, 6].map(g => `<button class="grade-btn" onclick="window.selectGrade(this, '${g}')">${g}. Sınıf</button>`).join('')}
                 </div>
-                
-                <div id="faculty-code-container" style="display:none; margin-bottom:20px; padding:15px; background:#F0FDF4; border:1px dashed #10B981; border-radius:12px;">
-                    <label style="font-size:13px; font-weight:bold; color:#065F46; margin-bottom:8px; display:block;">🔒 Sınıf Doğrulama Kodu</label>
-                    <input type="text" id="reg-fac-code" placeholder="Örn: tıp100, hukuk100" style="width:100%; padding:14px; border-radius:10px; border:2px solid #10B981; outline:none; box-sizing:border-box; font-size:15px; font-weight:bold; background:#fff; color:#065F46; text-align:center; text-transform:lowercase;">
-                    <div style="font-size:11px; color:#047857; margin-top:8px; text-align:center;">*Bu sınıfa katılmak için kodu temsilcinizden öğrenin.</div>
-                </div>
-
                 <button id="step3-btn" class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:12px;" onclick="window.processStep(3)">Devam Et →</button>
             `;
         } else if (step === 4) {
@@ -483,27 +494,10 @@ function initializeUniLoop() {
         wrapper.innerHTML = html;
     };
 
-    window.resetGradeCode = function() {
-        document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
-        window.registrationData.grade = null;
-        const codeContainer = document.getElementById('faculty-code-container');
-        if(codeContainer) codeContainer.style.display = 'none';
-    };
-
     window.selectGrade = function(btn, grade) {
-        const fac = document.getElementById('reg-faculty').value;
-        if(!fac) { alert("Lütfen önce fakültenizi seçin."); return; }
-        
         document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         window.registrationData.grade = grade;
-        
-        const codeContainer = document.getElementById('faculty-code-container');
-        if(codeContainer) {
-            codeContainer.style.display = 'block';
-            document.getElementById('reg-fac-code').value = '';
-            document.getElementById('reg-fac-code').focus();
-        }
     };
 
     window.toggleInterest = function(btn, interest) {
@@ -648,20 +642,9 @@ function initializeUniLoop() {
             const s = document.getElementById('reg-surname').value.trim();
             const a = document.getElementById('reg-age').value.trim();
             const f = document.getElementById('reg-faculty').value;
-            const codeInputEl = document.getElementById('reg-fac-code');
-            const codeInput = codeInputEl ? codeInputEl.value.trim().toLocaleLowerCase('tr-TR') : "";
             
             if(!uInput) return alert("Lütfen bir kullanıcı adı belirleyin.");
             if(!n || !s || !a || !f || !window.registrationData.grade) return alert("Lütfen tüm kişisel bilgilerinizi eksiksiz doldurun.");
-            if(!codeInput) return alert("Lütfen sınıfınıza girmek için gerekli doğrulama kodunu yazın.");
-
-            // KOD DOĞRULAMA MANTIĞI: (İlk Kelime)100
-            const expectedBaseWord = f.split(" ")[0].toLocaleLowerCase('tr-TR');
-            const expectedCode = expectedBaseWord + "100";
-
-            if (codeInput !== expectedCode) {
-                return alert(`Hatalı Giriş Kodu! ${window.registrationData.grade}. Sınıf ${f} için temsilcinizden doğru kodu öğrenin. (Örn: ${expectedCode})`);
-            }
             
             const finalUsername = '#' + uInput;
             const btn = document.getElementById('step3-btn');
@@ -816,7 +799,7 @@ function initializeUniLoop() {
                     appScreen.style.display = 'block';
                 }
 
-                window.userProfile = docSnap.data() || {};
+                window.userProfile = docSnap.data();
                 if(window.userProfile.isPremium === undefined) window.userProfile.isPremium = false;
                 if(window.userProfile.age === undefined) window.userProfile.age = "";
                 if(window.userProfile.avatarUrl === undefined) window.userProfile.avatarUrl = "";
@@ -898,7 +881,7 @@ function initializeUniLoop() {
 
     window.addEventListener("beforeunload", () => {
         if(window.userProfile && window.userProfile.uid) {
-            updateDoc(doc(db, "users", window.userProfile.uid), { isOnline: false }).catch(e => console.log(e));
+            updateDoc(doc(db, "users", window.userProfile.uid), { isOnline: false });
         }
     });
 
@@ -914,7 +897,7 @@ function initializeUniLoop() {
             if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
         });
 
-        // 🌟 SOFT UPDATE MANTIĞI (SAYFA YENİLENMEDEN BEĞENİ/YORUM GÜNCELLEME)
+        // 🌟 SOFT UPDATE MANTIĞI EKLENDİ 🌟
         onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc")), (snapshot) => {
             confessionsDB = [];
             snapshot.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
@@ -924,7 +907,7 @@ function initializeUniLoop() {
             if(activeTab && activeTab.getAttribute('data-target') === 'confessions') {
                 const feedContainer = document.getElementById('conf-feed');
                 
-                // Eğer post sayısı aynıysa sadece dom elementlerinin içindeki sayıları güncelle
+                // Eğer ekranda mevcut post sayısı veri tabanındaki ile aynıysa (sadece beğeni/yorum arttıysa) SAYFAYI SIFIRLAMA, YUMUŞAK GÜNCELLE
                 if (feedContainer && feedContainer.children.length === confessionsDB.length) {
                     confessionsDB.forEach(post => {
                         const isLiked = post.likes && post.likes.includes(currentUid);
@@ -938,7 +921,7 @@ function initializeUniLoop() {
                         }
                     });
                 } else {
-                    // Veri eklendiyse veya silindiyse listeyi baştan çiz
+                    // Sayı değiştiyse (yeni post geldi veya silindiyse) baştan çiz
                     window.drawConfessionsFeed();
                 }
             }
@@ -973,18 +956,19 @@ function initializeUniLoop() {
                     };
                     chatsDB.push(chatItem);
 
-                    // Okunmamış veya İstek Bildirimleri
+                    // İstek ve Okunmamış mesaj hesabı
                     if (chatItem.status === 'pending' && chatItem.initiator !== currentUid) {
                         pendingRequestsCount++;
                     } else if (chatItem.status === 'accepted' || chatItem.isMarketChat) {
                         if (chatItem.messages && chatItem.messages.length > 0) {
                             const lastMsg = chatItem.messages[chatItem.messages.length - 1];
+                            // Son mesaj senden değilse ve okunmadıysa
                             if (lastMsg.senderId !== currentUid && lastMsg.read === false) {
                                 unreadMessagesCount++;
                             }
                         }
                     }
-                } catch(err) { console.error("Hatalı mesaj belgesi:", err); }
+                } catch(err) { console.error("Hatalı mesaj belgesi es geçildi:", err); }
             });
 
             chatsDB.sort((a, b) => b.lastUpdatedTS - a.lastUpdatedTS);
@@ -1027,127 +1011,76 @@ function initializeUniLoop() {
         });
     }
 
-    // ============================================================================
-    // YENİ GÜNCELLEME: DİNAMİK ANA SAYFA VE KİŞİSELLEŞTİRİLMİŞ SINIF GRUBU
-    // ============================================================================
-    window.renderHome = async function() {
-        const u = window.userProfile || {};
-        
-        let usernameWarning = '';
-        if (!u.username) {
-            usernameWarning = `
-                <div style="background: #FEF2F2; color: #DC2626; padding: 12px; border-radius: 12px; border: 1px solid #FCA5A5; margin-bottom: 6px; font-weight: bold; text-align: center; cursor:pointer;" onclick="window.loadPage('profile')">
-                    ⚠️ Lütfen profilinden bir kullanıcı adı belirle!
+    window.openPremiumModal = function() {
+        window.openModal('🌟 UniLoop Premium', `
+            <div style="text-align:center; padding: 10px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">👑</div>
+                <h3 style="color:#D97706; margin-bottom: 10px; font-size: 22px;">Kampüsün Zirvesine Çık!</h3>
+                <p style="margin-bottom:20px; font-size:15px; color:var(--text-gray);">UniLoop Premium ile sınırları kaldır ve kampüsün en popüler ağına dahil ol.</p>
+                <ul style="text-align:left; background:#FEF3C7; padding: 20px; border-radius: 12px; margin-bottom:20px; list-style:none; color:#92400E; font-weight:500; font-size: 14px;">
+                    <li style="margin-bottom:12px; display:flex; gap:10px;"><span style="font-size:18px;">🟢</span> <span><strong>Gelişmiş AI Radarı:</strong> Şu an kütüphanede veya çevrimiçi olan bölümdaşlarını anında gör.</span></li>
+                    <li style="margin-bottom:12px; display:flex; gap:10px;"><span style="font-size:18px;">🕵️</span> <span><strong>Seni Kimler Beğendi?:</strong> Profilini gezen herkesi anında açığa çıkar.</span></li>
+                    <li style="display:flex; gap:10px;"><span style="font-size:18px;">🚀</span> <span><strong>Öncelikli Mesaj (Super DM):</strong> Mesajların kilit ekranına düşsün ve anında fark edilsin.</span></li>
+                </ul>
+                <div style="font-size:32px; font-weight:800; margin-bottom:20px; color:var(--text-dark);">
+                    49.99 ₺ <span style="font-size:14px; color:var(--text-gray); font-weight:normal;">/ aylık</span>
                 </div>
-            `;
-        }
-
-        // Eğer kullanıcı bir sınıf ve fakülteye sahipse KENDİ SINIFINA GİRİŞ BUTONU GÖSTER
-        let facultyActionHtml = '';
-        if (u.faculty && u.grade) {
-            const safeRoomId = `faculty_${u.faculty.replace(/\s+/g, '')}_${u.grade}`;
-            const safeRoomTitle = `${u.grade}. Sınıf ${u.faculty}`;
-            facultyActionHtml = `
-                <div class="card" style="grid-column: span 2; padding:20px; border-radius:18px; cursor:pointer; background:linear-gradient(135deg, #4f46e5, #7c3aed); color:white; border:none; transition:0.3s; box-shadow: 0 10px 20px rgba(79,70,229,0.2);" onclick="window.openGroupRoom('${safeRoomId}', '${safeRoomTitle}', 'faculty')">
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <div style="font-size:35px;">🎓</div>
-                        <div style="flex:1;">
-                            <div style="font-weight:800; font-size:16px;">Sınıf Grubuma Gir</div>
-                            <div style="font-size:12px; opacity:0.9;">${u.grade}. Sınıf | ${u.faculty}</div>
-                        </div>
-                        <div style="font-size:20px;">→</div>
-                    </div>
-                </div>
-            `;
-        } else {
-            facultyActionHtml = `
-                <div class="card" style="grid-column: span 2; padding:15px; border-radius:12px; cursor:pointer; text-align:center; background:#F3F4F6; border: 1px dashed #D1D5DB;" onclick="window.loadPage('profile')">
-                    <div style="font-size:13px; color:#6B7280; font-weight:600;">⚠️ Henüz bir sınıfa katılmadın. Doğrulamak için tıkla.</div>
-                </div>
-            `;
-        }
-
-        let html = `
-            ${usernameWarning}
-            <div class="card" style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; border:none; margin-bottom: 15px !important; padding: 15px;">
-                <h2 style="font-size:18px; margin-bottom:4px;">Selam, ${u.name || 'Öğrenci'}! 👋</h2>
-                <p style="opacity:0.9; font-size:13px; margin:0;">UniLoop Kampüsü'nde her şey yolunda.</p>
+                <button id="buy-premium-btn" onclick="window.upgradeToPremium()" class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center; padding: 16px; font-size: 16px;">
+                    💳 Güvenli Ödeme İle Satın Al
+                </button>
+                <p style="font-size:11px; color:#9CA3AF; margin-top:10px;">*İstediğin zaman iptal edebilirsin.</p>
             </div>
-            
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:15px;">
-                ${facultyActionHtml}
-                <div class="card" style="padding:15px 10px; border-radius:15px; cursor:pointer; text-align:center; background:#fffbeb; border: 1px solid #fcd34d; margin-bottom:0 !important; transition:0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" onclick="window.openClubsList()">
-                    <div style="font-size:28px; margin-bottom:5px;">🎭</div>
-                    <div style="font-weight:800; color:#b45309; font-size:13px;">Kulüpler</div>
-                </div>
-                <div class="card" style="padding:15px 10px; border-radius:15px; cursor:pointer; text-align:center; background:#f0fdf4; border: 1px solid #86efac; margin-bottom:0 !important; transition:0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" onclick="window.loadPage('market')">
-                    <div style="font-size:28px; margin-bottom:5px;">🛒</div>
-                    <div style="font-weight:800; color:#15803d; font-size:13px;">Market</div>
-                </div>
-            </div>
-
-            <div class="card" style="padding: 10px 15px; display:flex; align-items:center; gap:10px; margin-bottom: 15px !important; border-radius: 12px;">
-                <div style="font-size:16px;">🔍</div>
-                <div style="display:flex; flex:1; align-items:center; background:#F3F4F6; border-radius:10px; padding:0 10px; border:1px solid transparent; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='transparent'; this.style.background='#F3F4F6';">
-                    <span style="color:var(--primary); font-weight:800; font-size:15px;">#</span>
-                    <input type="text" id="friend-search-input" style="border:none; background:transparent; width:100%; padding:8px 6px; outline:none; font-size:14px; font-weight:600; color:var(--text-dark);" placeholder="arkadasini_bul" onkeypress="if(event.key==='Enter') window.searchAndAddFriend()">
-                </div>
-                <button class="btn-primary" id="friend-search-btn" style="width:auto; padding:8px 14px; border-radius:10px; font-size:13px;" onclick="window.searchAndAddFriend()">Ekle</button>
-            </div>
-
-            <div class="card" style="padding: 15px; margin-bottom: 6px !important; border-radius: 12px;">
-                <h2 style="margin-bottom:12px; margin-top:0; font-size:15px; font-weight:800; display:flex; align-items:center; justify-content:space-between;">
-                    <span>🔥 Önerilen Kişiler</span>
-                    <span style="font-size:10px; background:var(--primary); color:white; padding:3px 8px; border-radius:8px;">Yeni Aktifler</span>
-                </h2>
-                <div class="user-grid" id="home-users-grid" style="gap:10px;">
-                    <div style="grid-column: 1 / -1; text-align:center; padding: 20px; color:#9CA3AF;">Yükleniyor... ⏳</div>
-                </div>
-            </div>
-        `;
-        
-        mainContent.innerHTML = html;
-        window.fetchSuggestedUsers(); 
+        `);
     };
 
-    window.fetchSuggestedUsers = async function() {
-        try {
-            const querySnapshot = await getDocs(query(collection(db, "users")));
-            let usersHtml = '';
-            let count = 0;
-            const interactedUids = chatsDB.map(c => c.otherUid);
-            
-            querySnapshot.forEach((doc) => {
-                const u = doc.data();
-                if(u.uid !== window.userProfile.uid && !interactedUids.includes(u.uid) && count < 10) {
-                    count++;
-                    const initial = u.surname ? u.surname.charAt(0) + '.' : '';
-                    let avatarHtml = u.avatarUrl 
-                        ? `<img src="${u.avatarUrl}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #E5E7EB;">` 
-                        : `<div style="width:50px; height:50px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:25px; border:2px solid #E5E7EB; margin:0 auto;">${u.avatar || '👤'}</div>`;
-                    
-                    usersHtml += `
-                        <div class="user-card" onclick="window.viewUserProfile('${u.uid}')" style="min-height:120px; padding:10px;">
-                            <div style="margin-bottom: 8px;">${avatarHtml}</div>
-                            <div style="font-weight:bold; font-size:14px; color:var(--text-dark);">${u.name} ${initial}</div>
-                            <div style="font-size:11px; color:var(--text-gray); margin-top:4px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100%;">${u.grade ? u.grade+'. Sınıf | ' : ''}${u.faculty || 'Kampüs Öğrencisi'}</div>
-                            <button class="btn-primary" style="margin-top:10px; padding:6px; font-size:12px; border-radius:8px; width:100%; box-shadow:none;" onclick="event.stopPropagation(); window.sendFriendRequest('${u.uid}', '${u.name} ${initial}')">➕ İstek Gönder</button>
-                        </div>
-                    `;
-                }
-            });
-            
-            const targetContainer = document.getElementById('home-users-grid');
-            if(targetContainer) {
-                targetContainer.innerHTML = usersHtml || '<p style="grid-column: 1 / -1; text-align:center; color:var(--text-gray); font-size:13px;">Şu an için yeni önerilecek kişi kalmadı.</p>';
+    window.upgradeToPremium = async function() {
+        const btn = document.getElementById('buy-premium-btn');
+        btn.innerText = '⏳ Ödeme İşleniyor... Lütfen bekleyin.';
+        btn.disabled = true;
+        setTimeout(async () => {
+            try {
+                await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: true });
+                window.userProfile.isPremium = true;
+                const navBtn = document.getElementById('nav-premium-action');
+                if(navBtn) navBtn.style.display = 'none';
+                window.closeModal();
+                alert("🎉 Tebrikler! Ödemeniz başarıyla alındı. UniLoop Premium ayrıcalıklarına artık sahipsiniz!");
+                window.loadPage('home'); 
+            } catch(e) {
+                alert("Hata oluştu: Lütfen internet bağlantınızı kontrol edin. (" + e.message + ")");
+                btn.innerText = '💳 Güvenli Ödeme İle Satın Al';
+                btn.disabled = false;
             }
-        } catch(e) {
-            console.error("Kullanıcılar çekilemedi", e);
-            const targetContainer = document.getElementById('home-users-grid');
-            if(targetContainer) {
-                targetContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:red; font-size:13px;">Kullanıcılar yüklenirken hata oluştu.</p>';
-            }
+        }, 3000);
+    };
+
+    window.goToMessages = function() {
+        document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
+        const msgTab = document.querySelector('.bottom-nav-item[data-target="messages"]');
+        if(msgTab) { msgTab.classList.add('active'); window.loadPage('messages'); }
+    };
+
+    window.openModal = function(title, contentHTML) { 
+        document.getElementById('modal-title').innerText = title; 
+        document.getElementById('modal-body').innerHTML = contentHTML; 
+        modal.classList.add('active'); 
+        document.body.style.overflow = 'hidden'; 
+    };
+
+    window.closeModal = function() { 
+        modal.classList.remove('active'); 
+        document.getElementById('modal-body').innerHTML = ''; 
+        if (!document.getElementById('lightbox').classList.contains('active') && !document.body.classList.contains('no-scroll-messages')) {
+            document.body.style.overflow = 'auto'; 
         }
+    };
+    window.openFacultiesList = function() {
+        let listHtml = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
+        allFaculties.forEach(fac => {
+            listHtml += `<button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px 8px; font-size:13px; font-weight:600; border-radius:12px;" onclick="window.closeModal(); window.openGroupRoom('faculty_${fac.replace(/\s+/g, '')}', '${fac}', 'faculty')">${fac}</button>`;
+        });
+        listHtml += `</div>`;
+        window.openModal('🏛️ Fakülteler', listHtml);
     };
 
     window.openClubsList = function() {
@@ -1155,7 +1088,7 @@ function initializeUniLoop() {
         APP_CLUBS.forEach(club => {
             listHtml += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-radius:12px; cursor:pointer; background:#fff; border:1px solid #E5E7EB; margin-bottom:0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.closeModal(); window.openGroupRoom('club_${club.replace(/\s+/g, '')}', '${club}', 'club')">
                 <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${club}</span>
-                <span style="background:#EEF2FF; color:var(--primary); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold;">Alandan Gir 🚀</span>
+                <span style="background:#EEF2FF; color:var(--primary); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold;">Katıl 🚀</span>
             </div>`;
         });
         listHtml += `</div>`;
@@ -1201,52 +1134,9 @@ function initializeUniLoop() {
         `);
     };
 
-    // 🌟 YENİ MODÜLER KULÜP DASHBOARD'U
-    window.renderClubHub = function(roomId, roomTitle) {
-        let html = `
-            <div class="club-dashboard" style="padding:20px; background:#f8fafc; height:100%; overflow-y:auto; padding-bottom:80px; box-sizing:border-box;">
-                <div class="club-dash-header" style="display:flex; align-items:center; gap:15px; margin-bottom:20px; z-index:99; position:relative;">
-                    <button onclick="window.loadPage('home')" style="border:none; background:#fff; width:40px; height:40px; border-radius:50%; box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer; font-size:22px; font-weight:bold; color:var(--text-dark); display:flex; align-items:center; justify-content:center; pointer-events:auto; transition:0.2s;">←</button>
-                    <h2 style="font-size:20px; font-weight:900; margin:0; color:var(--text-dark); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${roomTitle}</h2>
-                </div>
-
-                <div class="calendar-widget" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);">
-                    <div style="font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">📅 Planlanan Gelecek Toplantı</div>
-                    <div style="background: rgba(255,255,255,0.2); border-radius: 12px; padding: 12px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; font-weight:bold;">
-                        <span>🚀 Kulüp Tanışma & Proje Günü</span>
-                        <span>Yarın 14:00</span>
-                    </div>
-                </div>
-
-                <div class="club-action-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                    <div class="club-action-sq" style="background: white; padding: 25px 15px; border-radius: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s;" onclick="window.joinMockVideoRoom('${roomTitle}')">
-                        <div style="font-size:35px; margin-bottom:10px;">📹</div>
-                        <div style="font-weight:800; font-size:14px; color:var(--text-dark);">Görüntülü</div>
-                        <div style="font-size:11px; color:#6b7280; margin-top:5px;">3 Kişi Yayında</div>
-                    </div>
-                    <div class="club-action-sq" style="background: white; padding: 25px 15px; border-radius: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s;" onclick="window.joinMockVoiceRoom('${roomTitle}')">
-                        <div style="font-size:35px; margin-bottom:10px;">🎙️</div>
-                        <div style="font-weight:800; font-size:14px; color:var(--text-dark);">Sesli Oda</div>
-                        <div style="font-size:11px; color:#6b7280; margin-top:5px;">Dinlemek İçin Katıl</div>
-                    </div>
-
-                    <div class="club-action-wide" style="grid-column: span 2; display: flex; align-items: center; gap: 15px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s;" onclick="window.openGroupRoom('${roomId}', '${roomTitle}', 'clubChat')">
-                        <div style="width:50px; height:50px; background:#eef2ff; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:24px;">💬</div>
-                        <div style="flex:1;">
-                            <div style="font-weight:800; font-size:15px; color:var(--text-dark);">Kulüp Masası (Chat)</div>
-                            <div style="font-size:12px; color:#6b7280; margin-top:3px;">Üyelerle anlık yazışmaya başla</div>
-                        </div>
-                        <div style="background:var(--primary); color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;">→</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        mainContent.innerHTML = html;
-    };
-
-    // 🌟 ESTETİK ÜYE KAYDIRMA SİSTEMİ
+    // Tıklandığında Fakülte / Kulüp Üyelerini Gösteren Sistem
     window.showGroupMembers = async function(roomTitle, roomType) {
-        window.openModal(`👥 Üyeler`, `<div style="text-align:center; padding:30px; color:var(--text-gray);">Üyeler yükleniyor... ⏳</div>`);
+        window.openModal(`👥 ${roomTitle} Üyeleri`, `<div style="text-align:center; padding:30px; color:var(--text-gray);">Üyeler yükleniyor... ⏳</div>`);
         try {
             const querySnapshot = await getDocs(query(collection(db, "users")));
             let usersHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px; scroll-behavior:smooth;">`;
@@ -1254,13 +1144,8 @@ function initializeUniLoop() {
             
             querySnapshot.forEach((doc) => {
                 const u = doc.data();
-                let isMatch = true;
-                // Fakülte/Sınıf gruplarında sadece tam eşleşenleri gösterir
-                if (roomType === 'faculty') {
-                    isMatch = (u.faculty === window.userProfile.faculty && u.grade == window.userProfile.grade);
-                }
-                
-                if(isMatch) {
+                // Fakültelerde sadece o fakülteyi seçenler, kulüplerde temsil olarak herkes listelenir
+                if(roomType === 'club' || (roomType === 'faculty' && u.faculty === roomTitle) || true) {
                     count++;
                     const initial = u.surname ? u.surname.charAt(0) + '.' : '';
                     let avatarHtml = u.avatarUrl 
@@ -1273,7 +1158,7 @@ function initializeUniLoop() {
                                 ${avatarHtml}
                                 <div style="display:flex; flex-direction:column;">
                                     <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} ${u.uid === window.userProfile.uid ? '<span style="color:#10B981; font-size:11px;">(Sen)</span>' : ''}</span>
-                                    <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade+'. Sınıf | ' : ''}${u.faculty || 'Kampüs Öğrencisi'}</span>
+                                    <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.faculty || 'Kampüs Öğrencisi'}</span>
                                 </div>
                             </div>
                             ${u.isPremium ? '<span style="font-size:18px; filter:drop-shadow(0 2px 4px rgba(245,158,11,0.4));" title="Premium Üye">👑</span>' : ''}
@@ -1294,30 +1179,37 @@ function initializeUniLoop() {
         }
     };
 
-    // Ana Grup Odası (Fakülte veya Kulüp Chat Masası)
+    // WhatsApp Benzeri Modern Grup / Kulüp Odası
     window.openGroupRoom = function(roomId, roomTitle, roomType) {
         if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
 
         document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
         document.body.classList.add('no-scroll-messages'); 
 
-        // Kulüpler için önce dashboard'u açar
-        if (roomType === 'club') {
-            window.renderClubHub(roomId, roomTitle);
-            return;
-        }
+        let topRightIcons = '';
+        let subtitle = '';
 
-        let topRightIcons = `<div style="font-size:13px; font-weight:800; color:var(--primary); cursor:pointer; background:#EEF2FF; padding:8px 14px; border-radius:12px; box-shadow:0 2px 4px rgba(79,70,229,0.1);" onclick="event.stopPropagation(); window.showGroupMembers('${roomTitle}', '${roomType}')">👥 Üyeler</div>`;
-        let subtitle = roomType === 'clubChat' ? '🟢 Kulüp Sohbet Alanı' : '🟢 Sınıf Arkadaşların Burada';
+        if (roomType === 'club') {
+            topRightIcons = `
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <button style="background:transparent; border:none; font-size:22px; cursor:pointer; color:var(--primary); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="event.stopPropagation(); window.joinMockVoiceRoom('${roomTitle}')">📞</button>
+                    <button style="background:transparent; border:none; font-size:22px; cursor:pointer; color:var(--primary); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="event.stopPropagation(); window.joinMockVideoRoom('${roomTitle}')">📹</button>
+                </div>
+            `;
+            subtitle = 'Ortak Kulüp Alanı';
+        } else {
+            topRightIcons = `<div style="font-size:22px; cursor:pointer;" onclick="event.stopPropagation(); window.showGroupMembers('${roomTitle}', '${roomType}')">👥</div>`;
+            subtitle = '🟢 250+ Öğrenci Aktif';
+        }
 
         let html = `
             <div id="chat-layout-container" style="flex-direction: column; position: relative; width: 100%; height: 100%; display: flex; background:#e5ded8;">
                 
                 <div class="chat-header" style="padding:10px 15px; border-bottom:1px solid #d1d5db; background:#fff; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index:10; flex-shrink:0; height:65px; box-sizing:border-box; cursor:pointer;" onclick="window.showGroupMembers('${roomTitle}', '${roomType}')">
                     <div style="display:flex; align-items:center; gap:10px; flex:1;">
-                        <button class="back-btn" onclick="event.stopPropagation(); if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } ${roomType === 'clubChat' ? `window.openGroupRoom('${roomId}', '${roomTitle}', 'club')` : `window.loadPage('home')`};" style="border:none; background:transparent; font-size:24px; font-weight:bold; cursor:pointer; color:var(--text-dark); display:flex; align-items:center; justify-content:center; z-index:9999; pointer-events:auto; padding:0; width:30px;">←</button>
+                        <button class="back-btn" onclick="event.stopPropagation(); if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:transparent; font-size:24px; font-weight:bold; cursor:pointer; color:var(--text-dark); display:flex; align-items:center; justify-content:center; z-index:9999; pointer-events:auto; padding:0; width:30px;">←</button>
                         <div style="width:44px; height:44px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:22px; flex-shrink:0; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
-                            ${roomType === 'clubChat' ? '🎭' : '🎓'}
+                            ${roomType === 'club' ? '🎭' : '🎓'}
                         </div>
                         <div class="chat-header-info" style="display:flex; flex-direction:column; flex:1; min-width:0; padding-right:10px;">
                             <div class="chat-header-name" style="font-weight:800; font-size:16px; color:#111827; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${roomTitle}</div>
@@ -1328,7 +1220,7 @@ function initializeUniLoop() {
                 </div>
 
                 <div class="chat-messages" id="group-messages-scroll" style="flex:1; padding:15px; overflow-y:auto; background:#efeae2; display:flex; flex-direction:column; background-image: radial-gradient(#d1d5db 1px, transparent 1px); background-size: 20px 20px;">
-                    <div style="text-align:center; padding:20px; color:#6B7280; font-size:14px; background:rgba(255,255,255,0.8); border-radius:12px; margin:20px auto; width:fit-content; max-width:80%; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.05);">Bağlantı kuruluyor...</div>
+                    <div style="text-align:center; padding:20px; color:#6B7280; font-size:14px; background:rgba(255,255,255,0.8); border-radius:12px; margin:20px auto; width:fit-content; max-width:80%; font-weight:500;">Bağlantı kuruluyor...</div>
                 </div>
 
                 <div class="chat-input-area" style="padding:10px 15px; background:#f0f2f5; display:flex; gap:10px; align-items:center; flex-shrink:0; border-top:none;">
@@ -1355,7 +1247,7 @@ function initializeUniLoop() {
 
             const data = docSnap.data();
             const msgs = data.messages || [];
-            let chatHTML = `<div style="text-align:center; padding:8px 12px; color:#6B7280; font-size:11px; background:rgba(255,255,255,0.6); border-radius:8px; margin:10px auto 20px auto; width:fit-content; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.02);">Bugün</div>`;
+            let chatHTML = `<div style="text-align:center; padding:10px; color:#6B7280; font-size:11px; background:rgba(255,255,255,0.6); border-radius:8px; margin:10px auto 20px auto; width:fit-content; font-weight:600;">Bugün</div>`;
 
             msgs.forEach(msg => {
                 const isMe = msg.senderId === window.userProfile.uid;
@@ -1529,6 +1421,98 @@ function initializeUniLoop() {
         }
     };
 
+    window.renderHome = async function() {
+        let usernameWarning = '';
+        if (!window.userProfile.username) {
+            usernameWarning = `
+                <div style="background: #FEF2F2; color: #DC2626; padding: 12px; border-radius: 12px; border: 1px solid #FCA5A5; margin-bottom: 6px; font-weight: bold; text-align: center; cursor:pointer;" onclick="window.loadPage('profile')">
+                    ⚠️ Lütfen profilinden bir kullanıcı adı belirle!
+                </div>
+            `;
+        }
+
+        const homeCardsHtml = `
+            <div style="display:flex; gap:10px; margin-bottom: 10px;">
+                <div class="card" style="flex:1; padding:15px 10px; border-radius:12px; cursor:pointer; text-align:center; background:linear-gradient(135deg, #f0fdf4, #bbf7d0); border: 1px solid #86efac; transition: transform 0.2s;" onclick="window.openFacultiesList()">
+                    <div style="font-size:32px; margin-bottom:8px;">🏛️</div>
+                    <div style="font-weight:800; color:#166534; font-size:14px;">Fakülteler</div>
+                    <div style="font-size:11px; color:#15803d; margin-top:4px;">Bölümdaşlarını Bul</div>
+                </div>
+                <div class="card" style="flex:1; padding:15px 10px; border-radius:12px; cursor:pointer; text-align:center; background:linear-gradient(135deg, #fffbeb, #fde68a); border: 1px solid #fcd34d; transition: transform 0.2s;" onclick="window.openClubsList()">
+                    <div style="font-size:32px; margin-bottom:8px;">🎭</div>
+                    <div style="font-weight:800; color:#b45309; font-size:14px;">Kulüpler & Org.</div>
+                    <div style="font-size:11px; color:#d97706; margin-top:4px;">Etkinliklere Katıl</div>
+                </div>
+            </div>
+        `;
+
+        let html = `
+            ${usernameWarning}
+            <div class="card" style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; border:none; margin-bottom: 6px !important; padding: 15px;">
+                <h2 style="font-size:20px; margin-bottom:6px;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
+                <p style="opacity:0.9; font-size:14px; margin:0;">
+                    <strong style="color:#D9FDD3;">${window.userProfile.university}</strong> ağındasın.
+                </p>
+            </div>
+            
+            <div class="card" style="padding: 10px 15px; display:flex; align-items:center; gap:10px; margin-bottom: 6px !important; border-radius: 12px;">
+                <div style="font-size:16px;">🔍</div>
+                <div style="display:flex; flex:1; align-items:center; background:#F3F4F6; border-radius:10px; padding:0 10px; border:1px solid transparent; transition:0.2s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='transparent'; this.style.background='#F3F4F6';">
+                    <span style="color:var(--primary); font-weight:800; font-size:15px;">#</span>
+                    <input type="text" id="friend-search-input" style="border:none; background:transparent; width:100%; padding:8px 6px; outline:none; font-size:14px; font-weight:600; color:var(--text-dark);" placeholder="arkadasini_bul" onkeypress="if(event.key==='Enter') window.searchAndAddFriend()">
+                </div>
+                <button class="btn-primary" id="friend-search-btn" style="width:auto; padding:8px 14px; border-radius:10px; font-size:13px;" onclick="window.searchAndAddFriend()">Ekle</button>
+            </div>
+            
+            ${homeCardsHtml}
+            
+            <div class="card" style="padding: 15px; margin-bottom: 6px !important; border-radius: 12px;">
+                <h2 style="margin-bottom:12px; margin-top:0; font-size:16px; display:flex; align-items:center; justify-content:space-between;">
+                    <span>🔥 Önerilen Kişiler</span>
+                    <span style="font-size:11px; background:var(--primary); color:white; padding:3px 8px; border-radius:8px;">Yeni</span>
+                </h2>
+                <div class="user-grid" id="home-users-grid" style="gap:8px;">
+                    <div style="grid-column: 1 / -1; text-align:center; padding: 15px; color:var(--text-gray); font-size:13px;">Kullanıcılar yükleniyor...</div>
+                </div>
+            </div>
+        `;
+        
+        mainContent.innerHTML = html;
+
+        try {
+            const querySnapshot = await getDocs(query(collection(db, "users")));
+            let usersHtml = '';
+            let count = 0;
+            
+            const interactedUids = chatsDB.map(c => c.otherUid);
+            
+            querySnapshot.forEach((doc) => {
+                const u = doc.data();
+                if(u.uid !== window.userProfile.uid && !interactedUids.includes(u.uid) && count < 10) {
+                    count++;
+                    const initial = u.surname ? u.surname.charAt(0) + '.' : '';
+                    let avatarHtml = u.avatarUrl 
+                        ? `<img src="${u.avatarUrl}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #E5E7EB;">` 
+                        : `<div style="width:50px; height:50px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:25px; border:2px solid #E5E7EB; margin:0 auto;">${u.avatar || '👤'}</div>`;
+                    
+                    usersHtml += `
+                        <div class="user-card" onclick="window.viewUserProfile('${u.uid}')" style="min-height:120px; padding:10px;">
+                            <div style="margin-bottom: 8px;">${avatarHtml}</div>
+                            <div style="font-weight:bold; font-size:14px; color:var(--text-dark);">${u.name} ${initial}</div>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:4px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100%;">${u.faculty || 'Kampüs Öğrencisi'}</div>
+                            <button class="btn-primary" style="margin-top:10px; padding:6px; font-size:12px; border-radius:8px; width:100%; box-shadow:none;" onclick="event.stopPropagation(); window.sendFriendRequest('${u.uid}', '${u.name} ${initial}')">➕ İstek Gönder</button>
+                        </div>
+                    `;
+                }
+            });
+            
+            document.getElementById('home-users-grid').innerHTML = usersHtml || '<p style="grid-column: 1 / -1; text-align:center; color:var(--text-gray); font-size:13px;">Henüz önerebileceğimiz yeni bir kullanıcı bulunamadı.</p>';
+        } catch(e) {
+            console.error("Kullanıcılar çekilemedi", e);
+            document.getElementById('home-users-grid').innerHTML = '<p style="grid-column: 1 / -1; text-align:center; color:red; font-size:13px;">Kullanıcılar yüklenirken hata oluştu.</p>';
+        }
+    };
+
     window.currentLightboxImages = [];
     window.currentLightboxIndex = 0;
 
@@ -1569,13 +1553,7 @@ function initializeUniLoop() {
         if (touchendX > touchstartX + 40) window.changeLightboxImage(-1); 
     }
 
-    const lb = document.getElementById('lightbox');
-    if(lb) {
-        lb.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
-        lb.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleSwipe(); });
-    }
-
-    // --- MARKET MANTIĞI ---
+    // --- MARKET MESAJ GÖNDERME MANTIĞI ---
     window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listingId) {
         try {
             const myUid = window.userProfile.uid;
@@ -2440,7 +2418,7 @@ function initializeUniLoop() {
     // ============================================================================
 
     window.renderProfile = function() {
-        const u = window.userProfile || {};
+        const u = window.userProfile;
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
         const isPremium = u.isPremium;
         
