@@ -103,7 +103,7 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
-    // 🎨 CSS DÜZENLEMELERİ (Matematiksel Kesinlik ile Çakışmalar Giderildi)
+    // 🎨 CSS DÜZENLEMELERİ (Orijinal Boyutlar Korundu, Çakışma Öncelendi)
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
@@ -326,23 +326,73 @@ function initializeUniLoop() {
         'en': { settingsTitle: '⚙️ App Settings', langLabel: 'Language', themeLabel: 'Theme', lightMode: 'Light Mode', darkMode: 'Dark Mode', logoutBtn: '🚪 Secure Logout' }
     };
 
-    const bind = (id, event, callback) => { 
-        const el = document.getElementById(id); 
-        if (el) { el.addEventListener(event, callback); }
-    };
+    // GİRİŞ/KAYIT BUTONLARININ KALICI VE SAĞLAM ÇÖZÜMÜ (EVENT DELEGATION)
+    document.addEventListener('click', async function(e) {
+        const isTarget = (id) => e.target.id === id || (e.target.closest && e.target.closest('#' + id));
 
-    bind('show-login-btn', 'click', (e) => {
-        if(e) e.preventDefault();
-        document.getElementById('register-card').style.display = 'none'; 
-        if(document.getElementById('stepper-wrapper')) document.getElementById('stepper-wrapper').remove();
-        document.getElementById('login-card').style.display = 'block';
-    });
+        if (isTarget('show-login-btn')) {
+            e.preventDefault();
+            const logCard = document.getElementById('login-card');
+            const regCard = document.getElementById('register-card');
+            const stepWrap = document.getElementById('stepper-wrapper');
+            if (regCard) regCard.style.display = 'none'; 
+            if (stepWrap) stepWrap.remove();
+            if (logCard) logCard.style.display = 'block';
+        }
+        else if (isTarget('show-register-btn')) {
+            e.preventDefault();
+            const logCard = document.getElementById('login-card');
+            const regCard = document.getElementById('register-card');
+            if (logCard) logCard.style.display = 'none'; 
+            if (regCard) regCard.style.display = 'none'; 
+            startRegistrationStepper(1);
+        }
+        else if (isTarget('login-btn')) {
+            e.preventDefault(); 
+            const emailInput = document.getElementById('login-email');
+            const passInput = document.getElementById('login-password');
+            if(!emailInput || !passInput) return;
 
-    bind('show-register-btn', 'click', (e) => {
-        if(e) e.preventDefault();
-        document.getElementById('login-card').style.display = 'none'; 
-        document.getElementById('register-card').style.display = 'none'; 
-        startRegistrationStepper(1);
+            const email = emailInput.value.trim();
+            const password = passInput.value;
+            const btn = e.target.closest('#login-btn') || e.target;
+
+            if(!email || !password) {
+                alert("Lütfen e-posta ve şifrenizi girin.");
+                return;
+            }
+
+            const originalText = btn.innerText;
+            btn.innerText = "Giriş Yapılıyor...";
+            btn.disabled = true;
+
+            try {
+                const userCred = await signInWithEmailAndPassword(auth, email, password);
+                if(!userCred.user.emailVerified) {
+                    alert("Hesabınız henüz onaylanmamış. Lütfen e-postanızı kontrol edin.");
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+            } catch (error) {
+                console.error("Giriş Hatası:", error);
+                alert("Giriş başarısız! E-posta veya şifreniz yanlış.");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            } 
+        }
+        else if (isTarget('forgot-password-btn')) {
+            e.preventDefault();
+            const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:");
+            if(!email) return;
+            
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Şifre sıfırlama bağlantısı e-posta adresinize başarıyla gönderildi!");
+            } catch (error) {
+                alert("Hata: " + error.message);
+            }
+        }
     });
 
     function startRegistrationStepper(startStep = 1) {
@@ -672,50 +722,6 @@ function initializeUniLoop() {
         }
     };
 
-    bind('login-btn', 'click', async (e) => {
-        if(e) e.preventDefault(); 
-        const email = document.getElementById('login-email').value.trim();
-        const password = document.getElementById('login-password').value;
-        const btn = document.getElementById('login-btn');
-
-        if(!email || !password) {
-            alert("Lütfen e-posta ve şifrenizi girin.");
-            return;
-        }
-
-        const originalText = btn.innerText;
-        btn.innerText = "Giriş Yapılıyor...";
-        btn.disabled = true;
-
-        try {
-            const userCred = await signInWithEmailAndPassword(auth, email, password);
-            if(!userCred.user.emailVerified) {
-                alert("Hesabınız henüz onaylanmamış. Lütfen e-postanızı kontrol edin.");
-                btn.innerText = originalText;
-                btn.disabled = false;
-                return;
-            }
-        } catch (error) {
-            console.error("Giriş Hatası:", error);
-            alert("Giriş başarısız! E-posta veya şifreniz yanlış.");
-            btn.innerText = originalText;
-            btn.disabled = false;
-        } 
-    });
-
-    bind('forgot-password-btn', 'click', async (e) => {
-        if(e) e.preventDefault();
-        const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:");
-        if(!email) return;
-        
-        try {
-            await sendPasswordResetEmail(auth, email);
-            alert("Şifre sıfırlama bağlantısı e-posta adresinize başarıyla gönderildi!");
-        } catch (error) {
-            alert("Hata: " + error.message);
-        }
-    });
-
     window.ensureWelcomeMessage = async function(user, userName) {
         if(!user) return;
         try {
@@ -763,9 +769,6 @@ function initializeUniLoop() {
                 document.getElementById('login-card').style.display = 'block';
                 document.getElementById('register-card').style.display = 'none';
                 if(document.getElementById('stepper-wrapper')) document.getElementById('stepper-wrapper').remove();
-                
-                const btn = document.getElementById('login-btn');
-                if(btn) { btn.innerText = "Giriş Yap"; btn.disabled = false; }
                 
                 const bottomNav = document.getElementById('uniloop-bottom-nav');
                 if(bottomNav) bottomNav.remove();
@@ -1042,9 +1045,6 @@ function initializeUniLoop() {
             document.body.style.overflow = 'auto'; 
         }
     };
-
-    bind('modal-close', 'click', window.closeModal);
-    window.addEventListener('click', (e) => { if (e.target === modal) window.closeModal(); });
 
     window.openFacultiesList = function() {
         let listHtml = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
@@ -1937,7 +1937,7 @@ function initializeUniLoop() {
             post.comments.forEach(c => {
                 commentsHtml += `
                     <div style="background:#F9FAFB; padding:12px; border-radius:12px; margin-bottom:10px; display:flex; gap:12px; border:1px solid #f1f5f9;">
-                        <div style="font-size:20px; flex-shrink:0; width:36px; height:36px; background:#E5E7EB; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden;">${c.avatarUrl ? `<img src="${c.avatarUrl}" stylewidth:100%;height:100%;object-fit:cover;">` : (c.avatar || '👤')}</div>
+                        <div style="font-size:20px; flex-shrink:0; width:36px; height:36px; background:#E5E7EB; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden;">${c.avatarUrl ? `<img src="${c.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (c.avatar || '👤')}</div>
                         <div style="flex:1;">
                             <div style="font-size:13px; font-weight:800; color:var(--text-dark); margin-bottom:4px; display:flex; justify-content:space-between;">
                                 <span>${c.name}</span>
@@ -2036,9 +2036,6 @@ function initializeUniLoop() {
             const isUnread = lastMsgObj.senderId !== window.userProfile.uid && lastMsgObj.read === false;
             
             let statusBadge = '';
-            if (chat.status === 'pending') {
-                statusBadge = chat.initiator === window.userProfile.uid ? ' <span style="font-size:10px; color:#9CA3AF; font-weight:normal;">(Bekleniyor)</span>' : ' <span style="font-size:1
-                        let statusBadge = '';
             if (chat.status === 'pending') {
                 statusBadge = chat.initiator === window.userProfile.uid ? ' <span style="font-size:10px; color:#9CA3AF; font-weight:normal;">(Bekleniyor)</span>' : ' <span style="font-size:10px; color:#EF4444; font-weight:bold;">(İstek!)</span>';
             }
@@ -2321,7 +2318,8 @@ function initializeUniLoop() {
                 
                 <div style="display:flex; gap:10px;">
                     <button class="btn-primary" style="flex:1; padding:14px; font-size:14px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s; border-radius: 12px;" onclick="window.editProfile()" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'">✏️ Profili Düzenle</button>
-                    <button class="btn-primary" style="flex:1; padding:14px; font-size:14px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s; border-radius: 12px;" onclick="window.showFriendsList()" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'">👥 Arkadaşlarım</button>
+                    <button class="btn-primary" style="flex:1; padding:14px; font-size:14px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s; border-radius: 12px;" onclick="window.showFriendsList
+                                        <button class="btn-primary" style="flex:1; padding:14px; font-size:14px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s; border-radius: 12px;" onclick="window.showFriendsList()" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'">👥 Arkadaşlarım</button>
                 </div>
             </div>
             
