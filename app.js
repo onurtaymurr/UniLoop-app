@@ -103,7 +103,7 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
-    // 🎨 CSS DÜZENLEMELERİ (Alt Menü Çakışması Giderildi)
+    // 🎨 CSS DÜZENLEMELERİ (Orijinal Boyutlar Korundu, Çakışma Öncelendi)
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
@@ -111,14 +111,14 @@ function initializeUniLoop() {
 
         body.no-scroll-messages { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
         
-        /* 1. DÜZELTME: Normal akışta alt menünün üzerinde yeterli boşluk bırakıldı */
-        #main-content { padding-bottom: calc(85px + env(safe-area-inset-bottom)) !important; }
+        /* Orijinal bar yüksekliği ile uyumlu normal sayfa boşluğu */
+        #main-content { padding-bottom: calc(75px + env(safe-area-inset-bottom)) !important; }
 
-        /* 2. DÜZELTME: Mesajlaşma ekranında kutunun alt sınırı kesin çizgilerle belirlendi */
+        /* YENİ DÜZELTME: Mesajlaşma ekranında ana içerik kutusu tam olarak alt menünün başladığı yerde biter */
         .no-scroll-messages #main-content { 
             position: fixed !important;
             top: 50px !important;
-            bottom: calc(65px + env(safe-area-inset-bottom)) !important; 
+            bottom: calc(60px + env(safe-area-inset-bottom)) !important; /* Alt menünün orijinal 60px boyutu + varsa iPhone alt boşluğu */
             left: 0 !important;
             right: 0 !important;
             padding: 0 !important; 
@@ -144,7 +144,7 @@ function initializeUniLoop() {
         .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
         #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; }
         
-        /* Mesaj yazma alanı düzeltildi. Padding-bottom kaldırıldı çünkü dış katman zaten yukarı alındı */
+        /* Mesaj input kısmı artık menünün arkasında kalmaz, çünkü #main-content yukarı çekildi */
         .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 10; }
         #group-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; padding: 15px; }
 
@@ -157,7 +157,7 @@ function initializeUniLoop() {
         #sidebar { display: none !important; }
         #mobile-menu-btn { display: none !important; }
 
-        /* 3. DÜZELTME: Alt bar sitenin düzeninden tamamen bağımsız, en üst katmanda ve sabit kılındı */
+        /* ORİJİNAL ALT MENÜ CSS'İ (Değiştirilmedi) */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -169,8 +169,7 @@ function initializeUniLoop() {
             justify-content: space-around;
             align-items: center;
             padding-bottom: env(safe-area-inset-bottom);
-            height: 65px;
-            box-sizing: content-box;
+            height: 60px; /* Tamamen orijinal boyut */
             z-index: 99999;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
         }
@@ -1659,7 +1658,6 @@ function initializeUniLoop() {
         }
     };
 
-    // 4. DÜZELTME: İlan önizleme fonksiyonu global'e taşındı
     window.previewMarketImages = function(event) {
         const files = Array.from(event.target.files).slice(0, 3);
         const previewContainer = document.getElementById('preview-container');
@@ -1682,7 +1680,6 @@ function initializeUniLoop() {
         const titlePlaceholder = 'İlan Başlığı (Örn: Temiz Çalışma Masası veya Çıkmış Sorular)';
         const descPlaceholder = 'Ürünün durumu ve detayları...';
 
-        // 4. DÜZELTME DEVAMI: Fotoğraf input'u doğrudan butona bağlandı ve gizlendi, z-index sorunu ortadan kaldırıldı
         window.openModal(formTitle, `
             <div class="form-group"><input type="text" id="new-item-title" placeholder="${titlePlaceholder}"></div>
             <div class="form-group" style="display: flex; gap: 10px;">
@@ -2029,8 +2026,7 @@ function initializeUniLoop() {
 
         let sbHtml = '';
         chatsDB.forEach(chat => {
-            // 2. DÜZELTME: Karşıdan kabul edilmemiş arkadaşlık istekleri mesajlar kısmında GÖSTERİLMEYECEK.
-            // Yalnızca pazar (market) konuşmaları veya kabul edilmiş arkadaşlıklar görünecek.
+            // İsteğe bağlı olarak arkadaşlık istekleri mesaj listesinde gösterilmez (sadece bildirimlerde gösterilir)
             if (chat.status === 'pending' && !chat.isMarketChat) return;
 
             const lastMsgObj = chat.messages && chat.messages.length > 0 ? chat.messages[chat.messages.length - 1] : {text: 'Yeni bağlantı'};
@@ -2330,7 +2326,6 @@ function initializeUniLoop() {
         mainContent.innerHTML = html;
     };
 
-    // 3. DÜZELTME DEVAMI: Arkadaşlarım Listesini Görüntüleme Fonksiyonu
     window.showFriendsList = function() {
         const friendsChats = chatsDB.filter(c => c.status === 'accepted' && !c.isMarketChat);
         if (friendsChats.length === 0) {
