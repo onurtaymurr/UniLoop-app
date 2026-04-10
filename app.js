@@ -103,7 +103,7 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
-    // 🎨 CSS DÜZENLEMELERİ (Orijinal Boyutlar Korundu, Çakışma Öncelendi)
+    // 🎨 CSS DÜZENLEMELERİ (Matematiksel Kesinlik ile Çakışmalar Giderildi)
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
@@ -111,14 +111,13 @@ function initializeUniLoop() {
 
         body.no-scroll-messages { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
         
-        /* Orijinal bar yüksekliği ile uyumlu normal sayfa boşluğu */
         #main-content { padding-bottom: calc(75px + env(safe-area-inset-bottom)) !important; }
 
-        /* YENİ DÜZELTME: Mesajlaşma ekranında ana içerik kutusu tam olarak alt menünün başladığı yerde biter */
+        /* Mesaj ve Gruplarda tam olarak alt menü sınırında bitmesi sağlandı */
         .no-scroll-messages #main-content { 
             position: fixed !important;
             top: 50px !important;
-            bottom: calc(60px + env(safe-area-inset-bottom)) !important; /* Alt menünün orijinal 60px boyutu + varsa iPhone alt boşluğu */
+            bottom: calc(60px + env(safe-area-inset-bottom)) !important; 
             left: 0 !important;
             right: 0 !important;
             padding: 0 !important; 
@@ -144,8 +143,8 @@ function initializeUniLoop() {
         .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
         #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; }
         
-        /* Mesaj input kısmı artık menünün arkasında kalmaz, çünkü #main-content yukarı çekildi */
-        .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 10; }
+        /* Input alanı her zaman en üstte kalacak */
+        .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 50; position: relative; }
         #group-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; padding: 15px; }
 
         #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
@@ -157,7 +156,7 @@ function initializeUniLoop() {
         #sidebar { display: none !important; }
         #mobile-menu-btn { display: none !important; }
 
-        /* ORİJİNAL ALT MENÜ CSS'İ (Değiştirilmedi) */
+        /* ORİJİNAL HİZALAMA: Alt Menü tamamen eski görünümüne ve ortalamasına döndürüldü */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -167,9 +166,10 @@ function initializeUniLoop() {
             border-top: 1px solid #f1f1f1;
             display: flex;
             justify-content: space-around;
-            align-items: center;
+            align-items: center; /* Dikeyde kusursuz ortalama */
+            height: calc(60px + env(safe-area-inset-bottom));
             padding-bottom: env(safe-area-inset-bottom);
-            height: 60px; /* Tamamen orijinal boyut */
+            box-sizing: border-box;
             z-index: 99999;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
         }
@@ -178,7 +178,9 @@ function initializeUniLoop() {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: #8E8E93; font-size: 10px; text-decoration: none; cursor: pointer; transition: 0.2s; flex: 1; background: transparent !important; border: none !important; font-weight: 500; -webkit-tap-highlight-color: transparent; height: 100%; padding: 0;
+            color: #8E8E93; font-size: 10px; text-decoration: none; cursor: pointer; transition: 0.2s; flex: 1; background: transparent !important; border: none !important; font-weight: 500; -webkit-tap-highlight-color: transparent; 
+            height: 60px; /* İkon ve yazıyı 60px içine mükemmel sıkıştırır */
+            padding: 0;
         }
         .bottom-nav-item.active { color: #6366f1 !important; font-weight: 600; }
         .bottom-nav-icon { width: 22px; height: 22px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; }
@@ -1129,7 +1131,7 @@ function initializeUniLoop() {
         let html = `
             <div id="chat-layout-container" style="flex-direction: column; position: relative; width: 100%; height: 100%; display: flex;">
                 <div class="chat-header" style="padding:15px 20px; border-bottom:1px solid #E5E7EB; background:#fff; display:flex; align-items:center; gap:15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index:10; flex-shrink:0;">
-                    <button class="back-btn" onclick="if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:#F3F4F6; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; display:block !important;">←</button>
+                    <button class="back-btn" onclick="if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:#F3F4F6; width:36px; height:36px; border-radius:50%; font-size:18px; cursor:pointer; display:flex !important; align-items:center; justify-content:center; z-index:999; pointer-events:auto; position:relative;">←</button>
                     <div class="chat-header-info">
                         <div class="chat-header-name" style="font-weight:800; font-size:16px; color:#111827;">${roomTitle}</div>
                         <div class="chat-header-status" style="font-size:12px; color:#10B981; font-weight:600;">🟢 Ortak Alan</div>
@@ -1935,7 +1937,7 @@ function initializeUniLoop() {
             post.comments.forEach(c => {
                 commentsHtml += `
                     <div style="background:#F9FAFB; padding:12px; border-radius:12px; margin-bottom:10px; display:flex; gap:12px; border:1px solid #f1f5f9;">
-                        <div style="font-size:20px; flex-shrink:0; width:36px; height:36px; background:#E5E7EB; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden;">${c.avatarUrl ? `<img src="${c.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (c.avatar || '👤')}</div>
+                        <div style="font-size:20px; flex-shrink:0; width:36px; height:36px; background:#E5E7EB; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden;">${c.avatarUrl ? `<img src="${c.avatarUrl}" stylewidth:100%;height:100%;object-fit:cover;">` : (c.avatar || '👤')}</div>
                         <div style="flex:1;">
                             <div style="font-size:13px; font-weight:800; color:var(--text-dark); margin-bottom:4px; display:flex; justify-content:space-between;">
                                 <span>${c.name}</span>
@@ -2026,7 +2028,6 @@ function initializeUniLoop() {
 
         let sbHtml = '';
         chatsDB.forEach(chat => {
-            // İsteğe bağlı olarak arkadaşlık istekleri mesaj listesinde gösterilmez (sadece bildirimlerde gösterilir)
             if (chat.status === 'pending' && !chat.isMarketChat) return;
 
             const lastMsgObj = chat.messages && chat.messages.length > 0 ? chat.messages[chat.messages.length - 1] : {text: 'Yeni bağlantı'};
@@ -2035,6 +2036,9 @@ function initializeUniLoop() {
             const isUnread = lastMsgObj.senderId !== window.userProfile.uid && lastMsgObj.read === false;
             
             let statusBadge = '';
+            if (chat.status === 'pending') {
+                statusBadge = chat.initiator === window.userProfile.uid ? ' <span style="font-size:10px; color:#9CA3AF; font-weight:normal;">(Bekleniyor)</span>' : ' <span style="font-size:1
+                        let statusBadge = '';
             if (chat.status === 'pending') {
                 statusBadge = chat.initiator === window.userProfile.uid ? ' <span style="font-size:10px; color:#9CA3AF; font-weight:normal;">(Bekleniyor)</span>' : ' <span style="font-size:10px; color:#EF4444; font-weight:bold;">(İstek!)</span>';
             }
