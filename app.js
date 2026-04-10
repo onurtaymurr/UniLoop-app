@@ -192,7 +192,7 @@ function initializeUniLoop() {
         .grade-btn, .interest-btn, .purpose-btn { background: #F3F4F6; border: 1px solid #E5E7EB; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; margin: 5px; display: inline-block; color: var(--text-dark); }
         .grade-btn.active, .interest-btn.active, .purpose-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
         
-        .id-card { background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); max-width: 400px; margin: 0 auto 20px auto; position: relative; overflow: hidden; }
+        .id-card { background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); width: 100%; max-width: 100%; box-sizing: border-box; margin: 0 auto 20px auto; position: relative; overflow: hidden; }
         .id-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--primary), #818cf8); }
         .id-card-left { flex-shrink: 0; position:relative; }
         .id-card-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e5e7eb; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow:hidden; }
@@ -1465,8 +1465,7 @@ function initializeUniLoop() {
         lb.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
         lb.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleSwipe(); });
     }
-
-    // --- MARKET MESAJ GÖNDERME KISITI ---
+    // --- MARKET MESAJ GÖNDERME MANTIĞI (GÜNCELLENDİ) ---
     window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listingId) {
         try {
             const myUid = window.userProfile.uid;
@@ -1476,18 +1475,21 @@ function initializeUniLoop() {
             const existingChat = chatsDB.find(c => c.otherUid === sellerId && c.isMarketChat);
 
             if (existingChat) {
-                // Eğer istek durumunda ise (henüz onaylamadıysa) yeni mesaj atmasını engelle
-                if (existingChat.status === 'pending') {
-                    alert("Satıcı henüz önceki mesaj isteğinizi kabul etmedi. Yeni mesaj gönderemezsiniz.");
+                // Eğer bu satıcıya daha önce mesaj attıysa ve sohbet hala "bekleniyor" (pending) durumundaysa bile 
+                // YENİ bir ilanı için otomatik sorgu mesajı atmasına izin veriyoruz.
+                // (Manuel mesaj yazma kutusu yine de kapalı kalacak, sadece bu ilan mesajı düşecek)
+                if (existingChat.listingIds && existingChat.listingIds.includes(listingId)) {
+                    alert("Bu ilan için satıcıya zaten mesaj gönderdiniz!");
+                    window.openChatViewDirect(existingChat.id);
                     return;
                 }
-                
+
                 await updateDoc(doc(db, "chats", existingChat.id), {
                     messages: arrayUnion({ senderId: myUid, text: msgText, time: timeStr, read: false }),
                     listingIds: arrayUnion(listingId),
                     lastUpdated: serverTimestamp()
                 });
-                alert("Mesajınız satıcıyla olan mevcut sohbetinize eklendi ve gönderildi!");
+                alert("Yeni ilan için mesajınız satıcıyla olan sohbetinize eklendi!");
                 window.loadPage('messages');
                 setTimeout(() => window.openChatView(existingChat.id), 300);
             } else {
@@ -2039,6 +2041,7 @@ function initializeUniLoop() {
             } catch(e) { alert("Hata: " + e.message); }
         }
     };
+    
     // ============================================================================
     // 8. MESAJLAR SİSTEMİ (DM & İLETİŞİM)
     // ============================================================================
@@ -2159,8 +2162,7 @@ function initializeUniLoop() {
         let statusAreaHtml = '';
         if (chat.status === 'pending') {
             if (chat.initiator === window.userProfile.uid) {
-                // SADECE 1 MESAJ ATILABİLİR - ONAY BEKLENİYOR
-                statusAreaHtml = `<div style="padding:15px; background:#EEF2FF; text-align:center; font-size:13px; color:#4F46E5; border-bottom:1px solid #E5E7EB; font-weight:700; flex-shrink:0;">⏳ Karşı tarafın onayı bekleniyor. ${chat.isMarketChat ? 'Onaylanana kadar yeni mesaj gönderemezsiniz.' : ''}</div>`;
+                statusAreaHtml = `<div style="padding:15px; background:#EEF2FF; text-align:center; font-size:13px; color:#4F46E5; border-bottom:1px solid #E5E7EB; font-weight:700; flex-shrink:0;">⏳ Karşı tarafın onayı bekleniyor. ${chat.isMarketChat ? 'Onaylanana kadar manuel mesaj gönderemezsiniz.' : ''}</div>`;
             } else {
                 statusAreaHtml = `
                     <div style="padding:20px 15px; background:#F0FDF4; text-align:center; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
@@ -2181,7 +2183,7 @@ function initializeUniLoop() {
             </div>
         `;
 
-        // MESAJ YAZMA ALANINI SADECE SOHBET ONAYLIYSA GÖSTER
+        // MANUEL MESAJ YAZMA ALANINI SADECE ONAYLANDIYSA GÖSTER
         if (chat.status === 'accepted') {
             mainHtml += `
                 <div class="chat-input-area" style="padding:15px 20px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:12px; align-items:center; flex-shrink:0;">
@@ -2344,14 +2346,9 @@ function initializeUniLoop() {
         const friendsCount = chatsDB.filter(c => c.status === 'accepted' && !c.isMarketChat).length;
 
         let html = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h2 style="margin:0; font-size:22px; color:var(--text-dark);">Profilim</h2>
-                <button style="background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-gray); transition:0.2s;" onclick="window.renderSettings()" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-gray)'">⚙️</button>
-            </div>
-            
             <input type="file" id="profile-avatar-upload" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
 
-            <div class="id-card ${isPremium ? 'premium-glow' : ''}" style="${isPremium ? 'border-color:#F59E0B;' : ''}">
+            <div class="id-card ${isPremium ? 'premium-glow' : ''}" style="width:100%; max-width:100%; box-sizing:border-box; margin-top:10px; margin-bottom:15px; ${isPremium ? 'border-color:#F59E0B;' : ''}">
                 <div class="id-card-left">${avatarHtml}</div>
                 <div class="id-card-right">
                     <div class="id-card-name">${u.name} ${initial}</div>
@@ -2389,7 +2386,7 @@ function initializeUniLoop() {
             </div>
             
             ${!isPremium ? `
-            <div class="card premium-glow" style="background:linear-gradient(135deg, #FFFBEB, #FEF3C7); border-color:#FDE68A; cursor:pointer;" onclick="window.openPremiumModal()">
+            <div class="card premium-glow" style="margin-bottom:15px; background:linear-gradient(135deg, #FFFBEB, #FEF3C7); border-color:#FDE68A; cursor:pointer;" onclick="window.openPremiumModal()">
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div>
                         <div style="font-weight:800; color:#D97706; font-size:16px; margin-bottom:4px;">🌟 UniLoop Premium'a Geç</div>
@@ -2399,6 +2396,10 @@ function initializeUniLoop() {
                 </div>
             </div>
             ` : ''}
+
+            <button class="card" style="width:100%; padding:16px; margin-bottom:20px; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:10px; background:#fff; border:1px solid #E5E7EB; cursor:pointer; color:var(--text-dark); transition:transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.renderSettings()">
+                <span style="font-size:20px;">⚙️</span> <strong style="font-size:15px;">Hesap Ayarları</strong>
+            </button>
         `;
         mainContent.innerHTML = html;
     };
