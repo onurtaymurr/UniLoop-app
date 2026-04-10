@@ -113,7 +113,6 @@ function initializeUniLoop() {
         
         #main-content { padding-bottom: calc(75px + env(safe-area-inset-bottom)) !important; }
 
-        /* Mesaj ve Gruplarda tam olarak alt menü sınırında bitmesi sağlandı */
         .no-scroll-messages #main-content { 
             position: fixed !important;
             top: 50px !important;
@@ -143,7 +142,6 @@ function initializeUniLoop() {
         .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
         #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; }
         
-        /* Input alanı her zaman en üstte kalacak */
         .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 50; position: relative; }
         #group-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; padding: 15px; }
 
@@ -156,7 +154,6 @@ function initializeUniLoop() {
         #sidebar { display: none !important; }
         #mobile-menu-btn { display: none !important; }
 
-        /* ORİJİNAL HİZALAMA: Alt Menü tamamen eski görünümüne ve ortalamasına döndürüldü */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -166,7 +163,7 @@ function initializeUniLoop() {
             border-top: 1px solid #f1f1f1;
             display: flex;
             justify-content: space-around;
-            align-items: center; /* Dikeyde kusursuz ortalama */
+            align-items: center; 
             height: calc(60px + env(safe-area-inset-bottom));
             padding-bottom: env(safe-area-inset-bottom);
             box-sizing: border-box;
@@ -179,7 +176,7 @@ function initializeUniLoop() {
             align-items: center;
             justify-content: center;
             color: #8E8E93; font-size: 10px; text-decoration: none; cursor: pointer; transition: 0.2s; flex: 1; background: transparent !important; border: none !important; font-weight: 500; -webkit-tap-highlight-color: transparent; 
-            height: 60px; /* İkon ve yazıyı 60px içine mükemmel sıkıştırır */
+            height: 60px; 
             padding: 0;
         }
         .bottom-nav-item.active { color: #6366f1 !important; font-weight: 600; }
@@ -326,7 +323,6 @@ function initializeUniLoop() {
         'en': { settingsTitle: '⚙️ App Settings', langLabel: 'Language', themeLabel: 'Theme', lightMode: 'Light Mode', darkMode: 'Dark Mode', logoutBtn: '🚪 Secure Logout' }
     };
 
-    // GİRİŞ/KAYIT BUTONLARININ KALICI VE SAĞLAM ÇÖZÜMÜ (EVENT DELEGATION)
     document.addEventListener('click', async function(e) {
         const isTarget = (id) => e.target.id === id || (e.target.closest && e.target.closest('#' + id));
 
@@ -1796,6 +1792,7 @@ function initializeUniLoop() {
             
             let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" class="feed-post-img" onclick="event.stopPropagation(); window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
             
+            // KURAL 4: event parametresi likePost'a gönderildi.
             feedHtml += `
                 <div class="feed-post" onclick="window.openConfessionDetail('${post.id}')" style="cursor:pointer; transition: transform 0.2s;">
                     <div class="feed-post-header">
@@ -1808,7 +1805,7 @@ function initializeUniLoop() {
                     <div class="feed-post-text">${post.text}</div>
                     ${imgHtml}
                     <div class="feed-post-actions">
-                        <button class="feed-action-btn" onclick="event.stopPropagation(); window.likePost('${post.id}')">${likeIcon} <span style="margin-left:4px;">${likeCount}</span></button>
+                        <button class="feed-action-btn" onclick="event.stopPropagation(); window.likePost('${post.id}', event)">${likeIcon} <span style="margin-left:4px;">${likeCount}</span></button>
                         <button class="feed-action-btn">💬 <span style="margin-left:4px;">${commentCount}</span></button>
                     </div>
                 </div>
@@ -1876,7 +1873,7 @@ function initializeUniLoop() {
                     console.error("Resim yükleme hatası: ", uploadError);
                     alert("Fotoğraf yüklenirken bir hata oluştu. Lütfen tekrar deneyin.");
                     btn.disabled = false;
-                                        btn.innerText = "Paylaş 🚀";
+                    btn.innerText = "Paylaş 🚀";
                     return; 
                 }
             }
@@ -1904,7 +1901,27 @@ function initializeUniLoop() {
         }
     };
 
-    window.likePost = async function(postId) {
+    // 🌟 KURAL 4 UYGULANDI: Beğeniye basıldığında Uçan Kalp animasyonu tetiklenecek.
+    window.likePost = async function(postId, event) {
+        if (event) {
+            const btn = event.currentTarget || event.target;
+            const rect = btn.getBoundingClientRect();
+            const flyingEmoji = document.createElement('div');
+            flyingEmoji.innerText = '❤️';
+            flyingEmoji.style.position = 'fixed';
+            flyingEmoji.style.left = (rect.left + rect.width / 2 - 12) + 'px'; 
+            flyingEmoji.style.top = rect.top + 'px';
+            flyingEmoji.style.fontSize = '24px';
+            flyingEmoji.style.zIndex = '999999';
+            flyingEmoji.style.pointerEvents = 'none';
+            // CSS'teki animasyonu doğrudan bağlıyoruz.
+            flyingEmoji.style.animation = 'flyUpAndFade 1s ease-out forwards';
+            document.body.appendChild(flyingEmoji);
+            
+            // Animasyon bittikten sonra DOM'dan temizle
+            setTimeout(() => flyingEmoji.remove(), 1000);
+        }
+
         const postRef = doc(db, "confessions", postId);
         const post = confessionsDB.find(p => p.id === postId);
         if(!post) return;
@@ -1954,6 +1971,7 @@ function initializeUniLoop() {
 
         let deleteBtn = post.authorId === window.userProfile.uid ? `<button onclick="window.deleteConfession('${post.id}')" style="background:none; border:none; color:#EF4444; font-size:12px; font-weight:bold; cursor:pointer; padding:5px;">🗑️ Sil</button>` : '';
 
+        // KURAL 4: event parametresi modal içindeki butona da eklendi.
         const html = `
             <input type="hidden" id="active-post-id" value="${post.id}">
             <div class="feed-post-header" style="justify-content:space-between; margin-bottom:15px;">
@@ -1969,7 +1987,7 @@ function initializeUniLoop() {
             <div class="feed-post-text" style="font-size:16px; margin-bottom:15px;">${post.text}</div>
             ${imgHtml}
             <div class="feed-post-actions" style="margin-bottom:15px; border-bottom:1px solid #E5E7EB; padding-bottom:15px;">
-                <button class="feed-action-btn" onclick="window.likePost('${post.id}')" style="font-size:15px;">${likeIcon} <span style="margin-left:5px; font-weight:bold;">${likeCount} Beğeni</span></button>
+                <button class="feed-action-btn" onclick="window.likePost('${post.id}', event)" style="font-size:15px;">${likeIcon} <span style="margin-left:5px; font-weight:bold;">${likeCount} Beğeni</span></button>
             </div>
             <div class="answers-container" id="comments-container" style="margin-bottom:15px; max-height: 300px; overflow-y:auto;">${commentsHtml}</div>
             <div style="display:flex; gap:10px; background:white; padding-top:10px;">
@@ -2318,8 +2336,7 @@ function initializeUniLoop() {
                 
                 <div style="display:flex; gap:10px;">
                     <button class="btn-primary" style="flex:1; padding:14px; font-size:14px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s; border-radius: 12px;" onclick="window.editProfile()" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'">✏️ Profili Düzenle</button>
-                    <button class="btn-primary" style="flex:1; padding:14px; font-size:14px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s; border-radius: 12px;" onclick="window.showFriendsList
-                                        <button class="btn-primary" style="flex:1; padding:14px; font-size:14px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s; border-radius: 12px;" onclick="window.showFriendsList()" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'">👥 Arkadaşlarım</button>
+                    <button class="btn-primary" style="flex:1; padding:14px; font-size:14px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s; border-radius: 12px;" onclick="window.showFriendsList()" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'">👥 Arkadaşlarım</button>
                 </div>
             </div>
             
@@ -2407,7 +2424,7 @@ function initializeUniLoop() {
         `);
     };
 
-    window.renderNotifications = function() {
+        window.renderNotifications = function() {
         let notifsHtml = '';
         let hasNotif = false;
         
@@ -2472,6 +2489,8 @@ function initializeUniLoop() {
 
 } // initializeUniLoop fonksiyonunun kapanışı
 
+// Sayfa yüklendiğinde ana motoru çalıştır.
 document.addEventListener('DOMContentLoaded', () => {
     initializeUniLoop();
 });
+
