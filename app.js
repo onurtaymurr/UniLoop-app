@@ -56,7 +56,7 @@ const storage = getStorage(app);
 
 // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
 window.userProfile = { 
-    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", isPremium: false, grade: "", interests: [], purpose: "" 
+    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", isPremium: false, grade: "", interests: [], purpose: "", isFacultyVerified: false 
 };
 
 window.joinedFaculties = [];
@@ -106,13 +106,29 @@ function initializeUniLoop() {
     // 🎨 CSS DÜZENLEMELERİ (Kulüp Dashboard ve Fakülte Doğrulama eklendi)
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
-        html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
+        html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; font-family: 'Inter', sans-serif; }
         header, #app-header { height: 50px !important; box-sizing: border-box; }
-
         body.no-scroll-messages { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
-        
         #main-content { padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important; }
+        .bubble { margin-bottom: 8px; border-radius: 18px; padding: 10px 15px; }
+        
+        /* Kulüp Modüler Araba Tasarımı */
+        .club-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 5px; }
+        .club-card-sq { background: white; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; cursor: pointer; transition: 0.3s; }
+        .club-card-sq:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .club-card-wide { grid-column: span 2; background: white; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; cursor: pointer; }
+        
+        /* Takvim / Etkinlik Paneli */
+        .calendar-strip { background: linear-gradient(135deg, #4f46e5, #818cf8); border-radius: 20px; padding: 15px; color: white; margin-bottom: 20px; }
+        .calendar-title { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .event-item { background: rgba(255,255,255,0.2); border-radius: 12px; padding: 10px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
 
+        /* Kayıt Sınıf Seçimi */
+        .grade-btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .grade-btn { background: #f3f4f6; border: 2px solid transparent; border-radius: 15px; padding: 15px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .grade-btn.active { background: #eef2ff; border-color: #4f46e5; color: #4f46e5; }
+        
+        /* Diğer Kodların CSS'leri aynen korunuyor */
         .no-scroll-messages #main-content { 
             position: fixed !important;
             top: 50px !important;
@@ -185,13 +201,6 @@ function initializeUniLoop() {
         .bottom-nav-item.active .bottom-nav-icon svg.fill-active { fill: currentColor; }
         .bottom-nav-item.active .bottom-nav-icon svg { stroke-width: 2.2; }
 
-        .stepper-container { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 400px; margin: 0 auto; width: 100%; animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .step-header { font-size: 14px; font-weight: bold; color: var(--primary); text-align: center; margin-bottom: 15px; }
-        .step-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 20px; color: #111827; }
-        .grade-btn, .interest-btn, .purpose-btn { background: #F3F4F6; border: 1px solid #E5E7EB; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; margin: 5px; display: inline-block; color: var(--text-dark); }
-        .grade-btn.active, .interest-btn.active, .purpose-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
-        
         .id-card { background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); width: 100%; max-width: 100%; box-sizing: border-box; margin: 0 auto 20px auto; position: relative; overflow: hidden; }
         .id-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--primary), #818cf8); }
         .id-card-left { flex-shrink: 0; position:relative; }
@@ -215,18 +224,6 @@ function initializeUniLoop() {
         .chat-sidebar { width: 320px; overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; border-right: 1px solid #e5e7eb; }
         .chat-contact.active { background: #EEF2FF; border-left: 4px solid var(--primary); }
         .chat-contact:hover { background: #F9FAFB; }
-        
-        .bubble { margin-bottom: 6px; }
-
-        /* Kulüp Modüler Ekran CSS */
-        .club-dashboard { padding: 20px; background: #f8fafc; height: 100%; overflow-y: auto; display: flex; flex-direction: column; }
-        .club-dash-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .calendar-widget { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
-        .club-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .club-action-sq { background: white; padding: 25px 15px; border-radius: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; }
-        .club-action-sq:hover { transform: translateY(-5px); border-color: #6366f1; }
-        .club-action-wide { grid-column: span 2; display: flex; align-items: center; gap: 15px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; }
-        .club-action-wide:hover { transform: translateY(-3px); border-color: #10b981; }
 
         #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; }
         .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; scroll-behavior: smooth; }
@@ -947,7 +944,7 @@ function initializeUniLoop() {
             if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
         });
 
-        // 🌟 SOFT UPDATE MANTIĞI 🌟
+        // 🌟 SOFT UPDATE MANTIĞI EKLENDİ 🌟
         onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc")), (snapshot) => {
             confessionsDB = [];
             snapshot.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
@@ -1004,6 +1001,7 @@ function initializeUniLoop() {
                     };
                     chatsDB.push(chatItem);
 
+                    // İstek ve Okunmamış mesaj hesabı
                     if (chatItem.status === 'pending' && chatItem.initiator !== currentUid) {
                         pendingRequestsCount++;
                     } else if (chatItem.status === 'accepted' || chatItem.isMarketChat) {
@@ -1233,7 +1231,7 @@ function initializeUniLoop() {
     // KULÜPLER İÇİN ÖZEL MODÜLER EKRAN
     window.renderClubHub = function(roomId, roomTitle) {
         let html = `
-            <div class="club-dashboard" style="padding:20px; background:#f8fafc; height:100%; overflow-y:auto;">
+            <div class="club-dashboard" style="padding:20px; background:#f8fafc; height:100%; overflow-y:auto; padding-bottom:80px;">
                 <div class="club-dash-header" style="display:flex; align-items:center; gap:15px; margin-bottom:20px; z-index:99; position:relative;">
                     <button onclick="window.loadPage('home')" style="border:none; background:#fff; width:40px; height:40px; border-radius:50%; box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer; font-size:22px; font-weight:bold; color:var(--text-dark); display:flex; align-items:center; justify-content:center; pointer-events:auto;">←</button>
                     <h2 style="font-size:20px; font-weight:900; margin:0; color:var(--text-dark);">${roomTitle}</h2>
@@ -1287,7 +1285,7 @@ function initializeUniLoop() {
         }
 
         let topRightIcons = `<div style="font-size:13px; font-weight:800; color:var(--primary); cursor:pointer; background:#EEF2FF; padding:8px 14px; border-radius:12px; box-shadow:0 2px 4px rgba(79,70,229,0.1);" onclick="event.stopPropagation(); window.showGroupMembers('${roomTitle}', '${roomType}')">👥 Üyeler</div>`;
-        let subtitle = roomType === 'clubChat' ? '🟢 Kulüp Sohbet Alanı' : '🟢 250+ Öğrenci Aktif';
+        let subtitle = roomType === 'clubChat' ? '🟢 Kulüp Sohbet Alanı' : '🟢 Sınıf Arkadaşların Burada';
 
         let html = `
             <div id="chat-layout-container" style="flex-direction: column; position: relative; width: 100%; height: 100%; display: flex; background:#e5ded8;">
