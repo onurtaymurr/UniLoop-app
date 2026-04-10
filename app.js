@@ -895,13 +895,34 @@ function initializeUniLoop() {
             if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
         });
 
+        // 🌟 SOFT UPDATE MANTIĞI EKLENDİ 🌟
         onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc")), (snapshot) => {
             confessionsDB = [];
             snapshot.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
             confessionsDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
             
             const activeTab = document.querySelector('.bottom-nav-item.active');
-            if(activeTab && activeTab.getAttribute('data-target') === 'confessions') window.drawConfessionsFeed();
+            if(activeTab && activeTab.getAttribute('data-target') === 'confessions') {
+                const feedContainer = document.getElementById('conf-feed');
+                
+                // Eğer ekranda mevcut post sayısı veri tabanındaki ile aynıysa (sadece beğeni/yorum arttıysa) SAYFAYI SIFIRLAMA, YUMUŞAK GÜNCELLE
+                if (feedContainer && feedContainer.children.length === confessionsDB.length) {
+                    confessionsDB.forEach(post => {
+                        const isLiked = post.likes && post.likes.includes(currentUid);
+                        const likeBtn = document.getElementById(`like-btn-${post.id}`);
+                        if (likeBtn) {
+                            likeBtn.innerHTML = `${isLiked ? '❤️' : '🤍'} <span style="margin-left:4px;">${post.likes ? post.likes.length : 0}</span>`;
+                        }
+                        const commentCountBtn = document.getElementById(`comment-count-${post.id}`);
+                        if (commentCountBtn) {
+                            commentCountBtn.innerHTML = `💬 <span style="margin-left:4px;">${post.comments ? post.comments.length : 0}</span>`;
+                        }
+                    });
+                } else {
+                    // Sayı değiştiyse (yeni post geldi veya silindiyse) baştan çiz
+                    window.drawConfessionsFeed();
+                }
+            }
             
             if(document.getElementById('app-modal').classList.contains('active') && document.getElementById('active-post-id')) {
                 const activePostId = document.getElementById('active-post-id').value;
@@ -1465,7 +1486,7 @@ function initializeUniLoop() {
         lb.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
         lb.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleSwipe(); });
     }
-    // --- MARKET MESAJ GÖNDERME MANTIĞI (GÜNCELLENDİ) ---
+    // --- MARKET MESAJ GÖNDERME MANTIĞI ---
     window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listingId) {
         try {
             const myUid = window.userProfile.uid;
@@ -1475,9 +1496,8 @@ function initializeUniLoop() {
             const existingChat = chatsDB.find(c => c.otherUid === sellerId && c.isMarketChat);
 
             if (existingChat) {
-                // Eğer bu satıcıya daha önce mesaj attıysa ve sohbet hala "bekleniyor" (pending) durumundaysa bile 
+                // Eğer bu satıcıya daha önce mesaj attıysa ve sohbet hala "bekleniyor" durumundaysa
                 // YENİ bir ilanı için otomatik sorgu mesajı atmasına izin veriyoruz.
-                // (Manuel mesaj yazma kutusu yine de kapalı kalacak, sadece bu ilan mesajı düşecek)
                 if (existingChat.listingIds && existingChat.listingIds.includes(listingId)) {
                     alert("Bu ilan için satıcıya zaten mesaj gönderdiniz!");
                     window.openChatViewDirect(existingChat.id);
@@ -1738,7 +1758,9 @@ function initializeUniLoop() {
                 const file = files[i];
                 if(file.type === "application/pdf") isPdf = true;
                 const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-                const storageRef = ref(storage, 'market/' + Date.now() + '_' + cleanName);
+                
+                // YENİ GÜNCELLEME: Firebase kurallarıyla eşleşen path (listings/{userId}/{fileName})
+                const storageRef = ref(storage, 'listings/' + window.userProfile.uid + '/' + Date.now() + '_' + cleanName);
                 await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(storageRef);
                 imgUrls.push(url);
@@ -1777,7 +1799,8 @@ function initializeUniLoop() {
                     <div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; border:1px solid #E5E7EB; flex-shrink:0;">
                         ${window.userProfile.avatarUrl ? `<img src="${window.userProfile.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : window.userProfile.avatar}
                     </div>
-                    <button class="btn-primary" style="flex:1; text-align:left; background:#F9FAFB; color:var(--text-gray); border:1px solid #E5E7EB; box-shadow:none; padding:12px 15px; font-weight:normal; border-radius:20px;" onclick="window.openConfessionForm()">Kampüste neler oluyor? Paylaş...</button>
+                    <button onclick="window.openConfessionForm()" style="background:var(--primary); color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(79,70,229,0.3); flex-shrink:0; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Yeni Paylaşım Ekle">+</button>
+                    <button class="btn-primary" style="flex:1; text-align:left; background:#F9FAFB; color:var(--text-gray); border:1px solid #E5E7EB; box-shadow:none; padding:12px 15px; font-weight:normal; border-radius:20px;" onclick="window.openConfessionForm()">Kampüste neler oluyor?</button>
                 </div>
                 <div id="conf-feed"></div>
             </div>
@@ -1815,8 +1838,8 @@ function initializeUniLoop() {
                     <div class="feed-post-text">${post.text}</div>
                     ${imgHtml}
                     <div class="feed-post-actions">
-                        <button class="feed-action-btn" onclick="event.stopPropagation(); window.likePost('${post.id}', event)">${likeIcon} <span style="margin-left:4px;">${likeCount}</span></button>
-                        <button class="feed-action-btn">💬 <span style="margin-left:4px;">${commentCount}</span></button>
+                        <button class="feed-action-btn" id="like-btn-${post.id}" onclick="event.stopPropagation(); window.likePost('${post.id}', event)">${likeIcon} <span style="margin-left:4px;">${likeCount}</span></button>
+                        <button class="feed-action-btn" id="comment-count-${post.id}">💬 <span style="margin-left:4px;">${commentCount}</span></button>
                     </div>
                 </div>
             `;
@@ -1876,7 +1899,9 @@ function initializeUniLoop() {
                 try {
                     const file = fileInput.files[0];
                     const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-                    const storageRef = ref(storage, 'posts/' + Date.now() + '_' + cleanName);
+                    
+                    // YENİ GÜNCELLEME: Firebase kurallarıyla eşleşen path (loopmap/{fileName})
+                    const storageRef = ref(storage, 'loopmap/' + Date.now() + '_' + cleanName);
                     await uploadBytes(storageRef, file);
                     imgUrl = await getDownloadURL(storageRef);
                 } catch(uploadError) {
@@ -2183,7 +2208,6 @@ function initializeUniLoop() {
             </div>
         `;
 
-        // MANUEL MESAJ YAZMA ALANINI SADECE ONAYLANDIYSA GÖSTER
         if (chat.status === 'accepted') {
             mainHtml += `
                 <div class="chat-input-area" style="padding:15px 20px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:12px; align-items:center; flex-shrink:0;">
@@ -2204,7 +2228,6 @@ function initializeUniLoop() {
             if(window.innerWidth > 1024) setTimeout(() => inputField.focus(), 100);
         }
         
-        // Mesajları okundu olarak işaretle
         if (chat.messages && chat.messages.length > 0) {
             const lastMsg = chat.messages[chat.messages.length - 1];
             if (lastMsg.senderId !== window.userProfile.uid && lastMsg.read === false) {
@@ -2244,7 +2267,7 @@ function initializeUniLoop() {
                 const type = isMe ? 'sent' : 'received';
                 const msgTime = msg.time || '';
                 const isRead = msg.read ? '✓✓' : '✓';
-                const readColor = msg.read ? '#3B82F6' : '#9CA3AF'; // Mavi tık
+                const readColor = msg.read ? '#3B82F6' : '#9CA3AF';
                 
                 chatHTML += `
                     <div class="bubble ${type}" style="display:flex; flex-direction:column; max-width: 75%; position:relative;">
@@ -2342,7 +2365,6 @@ function initializeUniLoop() {
             ? `<div style="background:linear-gradient(135deg, #F59E0B, #D97706); color:white; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 4px rgba(245,158,11,0.3); margin-top:5px;">👑 Premium Üye</div>` 
             : ``;
 
-        // Arkadaşlarım sayısını hesaplama
         const friendsCount = chatsDB.filter(c => c.status === 'accepted' && !c.isMarketChat).length;
 
         let html = `
@@ -2404,7 +2426,6 @@ function initializeUniLoop() {
         mainContent.innerHTML = html;
     };
 
-    // Arkadaş listesi popup ekranı
     window.openFriendsList = function() {
         const friends = chatsDB.filter(c => c.status === 'accepted' && !c.isMarketChat);
         
