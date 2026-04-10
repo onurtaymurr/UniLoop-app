@@ -284,6 +284,7 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
 
+    // Kırpma (Cropper) alanı için Sağ-Üst "Kaydet" Düzeltmesi
     const cropperModalHtml = `
         <div id="cropper-modal" class="cropper-modal-container">
             <div class="cropper-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:#111; color:white; z-index:10; position:relative;">
@@ -896,6 +897,7 @@ function initializeUniLoop() {
             if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
         });
 
+        // 🌟 SOFT UPDATE MANTIĞI EKLENDİ 🌟
         onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc")), (snapshot) => {
             confessionsDB = [];
             snapshot.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
@@ -904,6 +906,8 @@ function initializeUniLoop() {
             const activeTab = document.querySelector('.bottom-nav-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'confessions') {
                 const feedContainer = document.getElementById('conf-feed');
+                
+                // Eğer ekranda mevcut post sayısı veri tabanındaki ile aynıysa (sadece beğeni/yorum arttıysa) SAYFAYI SIFIRLAMA, YUMUŞAK GÜNCELLE
                 if (feedContainer && feedContainer.children.length === confessionsDB.length) {
                     confessionsDB.forEach(post => {
                         const isLiked = post.likes && post.likes.includes(currentUid);
@@ -917,6 +921,7 @@ function initializeUniLoop() {
                         }
                     });
                 } else {
+                    // Sayı değiştiyse (yeni post geldi veya silindiyse) baştan çiz
                     window.drawConfessionsFeed();
                 }
             }
@@ -1129,44 +1134,98 @@ function initializeUniLoop() {
         `);
     };
 
+    // Tıklandığında Fakülte / Kulüp Üyelerini Gösteren Sistem
+    window.showGroupMembers = async function(roomTitle, roomType) {
+        window.openModal(`👥 ${roomTitle} Üyeleri`, `<div style="text-align:center; padding:30px; color:var(--text-gray);">Üyeler yükleniyor... ⏳</div>`);
+        try {
+            const querySnapshot = await getDocs(query(collection(db, "users")));
+            let usersHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px; scroll-behavior:smooth;">`;
+            let count = 0;
+            
+            querySnapshot.forEach((doc) => {
+                const u = doc.data();
+                // Fakültelerde sadece o fakülteyi seçenler, kulüplerde temsil olarak herkes listelenir
+                if(roomType === 'club' || (roomType === 'faculty' && u.faculty === roomTitle) || true) {
+                    count++;
+                    const initial = u.surname ? u.surname.charAt(0) + '.' : '';
+                    let avatarHtml = u.avatarUrl 
+                        ? `<img src="${u.avatarUrl}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">` 
+                        : `<div style="width:44px; height:44px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid #E5E7EB;">${u.avatar || '👤'}</div>`;
+                    
+                    usersHtml += `
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#fff; border:1px solid #E5E7EB; border-radius:12px; cursor:pointer; transition:0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)'" onmouseout="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'" onclick="window.closeModal(); window.viewUserProfile('${u.uid}')">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                ${avatarHtml}
+                                <div style="display:flex; flex-direction:column;">
+                                    <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} ${u.uid === window.userProfile.uid ? '<span style="color:#10B981; font-size:11px;">(Sen)</span>' : ''}</span>
+                                    <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.faculty || 'Kampüs Öğrencisi'}</span>
+                                </div>
+                            </div>
+                            ${u.isPremium ? '<span style="font-size:18px; filter:drop-shadow(0 2px 4px rgba(245,158,11,0.4));" title="Premium Üye">👑</span>' : ''}
+                        </div>
+                    `;
+                }
+            });
+            usersHtml += `</div>`;
+            
+            if(count === 0) {
+                usersHtml = `<div style="text-align:center; padding:30px; color:var(--text-gray);">Bu alanda henüz kimse yok.</div>`;
+            }
+            
+            document.getElementById('modal-body').innerHTML = usersHtml;
+        } catch (e) {
+            console.error(e);
+            document.getElementById('modal-body').innerHTML = `<div style="color:red; text-align:center;">Üyeler yüklenirken bir hata oluştu.</div>`;
+        }
+    };
+
+    // WhatsApp Benzeri Modern Grup / Kulüp Odası
     window.openGroupRoom = function(roomId, roomTitle, roomType) {
         if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
 
         document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
         document.body.classList.add('no-scroll-messages'); 
 
-        let extraButtons = '';
+        let topRightIcons = '';
+        let subtitle = '';
+
         if (roomType === 'club') {
-            extraButtons = `
-                <div style="display:flex; gap:12px; padding:12px 20px; background:#F9FAFB; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
-                    <button class="btn-primary" style="flex:1; padding:12px; background:linear-gradient(135deg, #10B981, #059669); border:none; font-size:14px; font-weight:bold; border-radius:20px; box-shadow:0 4px 10px rgba(16,185,129,0.3); display:flex; align-items:center; justify-content:center; gap:8px;" onclick="window.joinMockVoiceRoom('${roomTitle}')">📞 Sesli Oda</button>
-                    <button class="btn-primary" style="flex:1; padding:12px; background:linear-gradient(135deg, #6366F1, #4F46E5); border:none; font-size:14px; font-weight:bold; border-radius:20px; box-shadow:0 4px 10px rgba(99,102,241,0.3); display:flex; align-items:center; justify-content:center; gap:8px;" onclick="window.joinMockVideoRoom('${roomTitle}')">📹 Görüntülü</button>
+            topRightIcons = `
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <button style="background:transparent; border:none; font-size:22px; cursor:pointer; color:var(--primary); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="event.stopPropagation(); window.joinMockVoiceRoom('${roomTitle}')">📞</button>
+                    <button style="background:transparent; border:none; font-size:22px; cursor:pointer; color:var(--primary); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="event.stopPropagation(); window.joinMockVideoRoom('${roomTitle}')">📹</button>
                 </div>
             `;
+            subtitle = 'Ortak Kulüp Alanı';
         } else {
-            extraButtons = `
-                <div style="padding:10px 20px; background:#EEF2FF; border-bottom:1px solid #E5E7EB; font-size:13px; color:#4F46E5; display:flex; align-items:center; justify-content:center; gap:8px; flex-shrink:0;">
-                    <span style="font-size:18px;">👥</span> <strong style="font-weight:800;">250+ Öğrenci Aktif</strong> • Ortak Kampüs Alanı
-                </div>
-            `;
+            topRightIcons = `<div style="font-size:22px; cursor:pointer;" onclick="event.stopPropagation(); window.showGroupMembers('${roomTitle}', '${roomType}')">👥</div>`;
+            subtitle = '🟢 250+ Öğrenci Aktif';
         }
 
         let html = `
-            <div id="chat-layout-container" style="flex-direction: column; position: relative; width: 100%; height: 100%; display: flex;">
-                <div class="chat-header" style="padding:15px 20px; border-bottom:1px solid #E5E7EB; background:#fff; display:flex; align-items:center; gap:15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index:10; flex-shrink:0;">
-                    <button class="back-btn" onclick="if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:#F3F4F6; width:40px; height:40px; border-radius:50%; font-size:20px; font-weight:bold; cursor:pointer; display:flex !important; align-items:center; justify-content:center; z-index:9999; pointer-events:auto; position:relative; color:var(--text-dark); transition:0.2s;">←</button>
-                    <div class="chat-header-info">
-                        <div class="chat-header-name" style="font-weight:800; font-size:18px; color:#111827; margin-bottom:2px;">${roomTitle}</div>
-                        <div class="chat-header-status" style="font-size:12px; color:#10B981; font-weight:700; display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; background:#10B981; border-radius:50%; box-shadow:0 0 5px #10B981;"></div> Aktif Grup</div>
+            <div id="chat-layout-container" style="flex-direction: column; position: relative; width: 100%; height: 100%; display: flex; background:#e5ded8;">
+                
+                <div class="chat-header" style="padding:10px 15px; border-bottom:1px solid #d1d5db; background:#fff; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index:10; flex-shrink:0; height:65px; box-sizing:border-box; cursor:pointer;" onclick="window.showGroupMembers('${roomTitle}', '${roomType}')">
+                    <div style="display:flex; align-items:center; gap:10px; flex:1;">
+                        <button class="back-btn" onclick="event.stopPropagation(); if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:transparent; font-size:24px; font-weight:bold; cursor:pointer; color:var(--text-dark); display:flex; align-items:center; justify-content:center; z-index:9999; pointer-events:auto; padding:0; width:30px;">←</button>
+                        <div style="width:44px; height:44px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:22px; flex-shrink:0; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                            ${roomType === 'club' ? '🎭' : '🎓'}
+                        </div>
+                        <div class="chat-header-info" style="display:flex; flex-direction:column; flex:1; min-width:0; padding-right:10px;">
+                            <div class="chat-header-name" style="font-weight:800; font-size:16px; color:#111827; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${roomTitle}</div>
+                            <div class="chat-header-status" style="font-size:12px; color:#10B981; font-weight:600;">${subtitle}</div>
+                        </div>
                     </div>
+                    ${topRightIcons}
                 </div>
-                ${extraButtons}
-                <div class="chat-messages" id="group-messages-scroll" style="flex:1; padding:20px; overflow-y:auto; background:#f9fafb; display:flex; flex-direction:column;">
-                    <div style="text-align:center; padding:20px; color:#9CA3AF; font-size:14px;">Mesajlar yükleniyor...</div>
+
+                <div class="chat-messages" id="group-messages-scroll" style="flex:1; padding:15px; overflow-y:auto; background:#efeae2; display:flex; flex-direction:column; background-image: radial-gradient(#d1d5db 1px, transparent 1px); background-size: 20px 20px;">
+                    <div style="text-align:center; padding:20px; color:#6B7280; font-size:14px; background:rgba(255,255,255,0.8); border-radius:12px; margin:20px auto; width:fit-content; max-width:80%; font-weight:500;">Bağlantı kuruluyor...</div>
                 </div>
-                <div class="chat-input-area" style="padding:15px 20px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:12px; align-items:center; flex-shrink:0;">
-                    <input type="text" id="group-chat-input" placeholder="Gruba mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:25px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:15px; color:var(--text-dark);">
-                    <button class="chat-send-btn" onclick="window.sendGroupMsg('${roomId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(79,70,229,0.3); transition:transform 0.2s;">➤</button>
+
+                <div class="chat-input-area" style="padding:10px 15px; background:#f0f2f5; display:flex; gap:10px; align-items:center; flex-shrink:0; border-top:none;">
+                    <input type="text" id="group-chat-input" placeholder="Gruba mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:24px; border:none; background:#fff; outline:none; font-size:15px; color:var(--text-dark); box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                    <button class="chat-send-btn" onclick="window.sendGroupMsg('${roomId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(79,70,229,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">➤</button>
                 </div>
             </div>
         `;
@@ -1182,30 +1241,33 @@ function initializeUniLoop() {
             if(!scrollBox) return;
 
             if(!docSnap.exists()) {
-                scrollBox.innerHTML = `<div style="text-align:center; padding:40px 20px; color:#9CA3AF;">
-                    <div style="font-size:40px; margin-bottom:10px;">👋</div>
-                    <div style="font-size:14px; font-weight:500;">Burada henüz mesaj yok. İlk merhaba diyen sen ol!</div>
-                </div>`;
+                scrollBox.innerHTML = `<div style="text-align:center; padding:20px; color:#6B7280; font-size:13px; background:rgba(255,255,255,0.8); border-radius:12px; margin:20px auto; width:fit-content; max-width:80%; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.05);">🔒 Bu grubun mesajları uçtan uca şifrelidir.<br>İlk mesajı gönderen sen ol!</div>`;
                 return;
             }
 
             const data = docSnap.data();
             const msgs = data.messages || [];
-            let chatHTML = '';
+            let chatHTML = `<div style="text-align:center; padding:10px; color:#6B7280; font-size:11px; background:rgba(255,255,255,0.6); border-radius:8px; margin:10px auto 20px auto; width:fit-content; font-weight:600;">Bugün</div>`;
 
             msgs.forEach(msg => {
                 const isMe = msg.senderId === window.userProfile.uid;
                 const type = isMe ? 'sent' : 'received';
+                const bgStyle = isMe ? 'background:#DCF8C6;' : 'background:#FFFFFF; border:1px solid #e5e7eb;';
                 
                 let senderNameHtml = '';
                 if(!isMe) {
-                    senderNameHtml = `<div style="font-size:11px; font-weight:bold; color:var(--primary); margin-bottom:4px;">${msg.senderName}</div>`;
+                    senderNameHtml = `<div style="font-size:12px; font-weight:800; color:var(--primary); margin-bottom:4px; display:flex; align-items:center; gap:5px;">
+                        <span style="width:20px; height:20px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                            ${msg.senderAvatar && msg.senderAvatar.startsWith('http') ? `<img src="${msg.senderAvatar}" style="width:100%;height:100%;object-fit:cover;">` : (msg.senderAvatar || '👤')}
+                        </span>
+                        ${msg.senderName}
+                    </div>`;
                 }
 
-                chatHTML += `<div class="bubble ${type}" style="display:flex; flex-direction:column; max-width: 80%;">
+                chatHTML += `<div class="bubble ${type}" style="display:flex; flex-direction:column; max-width:80%; padding:8px 12px; border-radius:12px; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05); ${bgStyle}">
                     ${senderNameHtml}
-                    <div class="msg-text" style="word-break:break-word;">${msg.text}</div>
-                    <div class="msg-time" style="align-self:flex-end; font-size:10px; opacity:0.7; margin-top:4px;">${msg.time}</div>
+                    <div class="msg-text" style="font-size:15px; color:#111827; word-break:break-word; line-height:1.4;">${msg.text}</div>
+                    <div class="msg-time" style="align-self:flex-end; font-size:10px; color:#6B7280; margin-top:4px; font-weight:500;">${msg.time}</div>
                 </div>`;
             });
             scrollBox.innerHTML = chatHTML;
@@ -1489,12 +1551,6 @@ function initializeUniLoop() {
     function handleSwipe() {
         if (touchendX < touchstartX - 40) window.changeLightboxImage(1); 
         if (touchendX > touchstartX + 40) window.changeLightboxImage(-1); 
-    }
-
-    const lb = document.getElementById('lightbox');
-    if(lb) {
-        lb.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; });
-        lb.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleSwipe(); });
     }
 
     // --- MARKET MESAJ GÖNDERME MANTIĞI ---
@@ -2134,7 +2190,6 @@ function initializeUniLoop() {
     window.renderMessages = function() {
         document.body.classList.add('no-scroll-messages');
 
-        // YENİ GÜNCELLEME: Sadece okunmamış mesajların sayısını hesaplıyoruz.
         let unreadCount = 0;
         chatsDB.forEach(chat => {
             if (chat.status === 'accepted' || chat.isMarketChat) {
