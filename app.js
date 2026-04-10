@@ -103,7 +103,7 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
-    // 🎨 DÜZELTİLMİŞ CSS (ALT BAR ÜST ÜSTE BİNME HATASI GİDERİLDİ)
+    // 🎨 CSS DÜZENLEMELERİ (Alt Menü Çakışması Giderildi)
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
@@ -111,12 +111,14 @@ function initializeUniLoop() {
 
         body.no-scroll-messages { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
         
-        #main-content { padding-bottom: 90px !important; } /* Alt menü içeriklerin üstüne çıkmasın diye boşluk bırakıldı */
+        /* 1. DÜZELTME: Normal akışta alt menünün üzerinde yeterli boşluk bırakıldı */
+        #main-content { padding-bottom: calc(85px + env(safe-area-inset-bottom)) !important; }
 
+        /* 2. DÜZELTME: Mesajlaşma ekranında kutunun alt sınırı kesin çizgilerle belirlendi */
         .no-scroll-messages #main-content { 
             position: fixed !important;
             top: 50px !important;
-            bottom: 60px !important; /* Alt barın hemen üstünde biter */
+            bottom: calc(65px + env(safe-area-inset-bottom)) !important; 
             left: 0 !important;
             right: 0 !important;
             padding: 0 !important; 
@@ -141,7 +143,9 @@ function initializeUniLoop() {
         
         .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
         #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; }
-        .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 10; padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;}
+        
+        /* Mesaj yazma alanı düzeltildi. Padding-bottom kaldırıldı çünkü dış katman zaten yukarı alındı */
+        .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 10; }
         #group-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; padding: 15px; }
 
         #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
@@ -153,6 +157,7 @@ function initializeUniLoop() {
         #sidebar { display: none !important; }
         #mobile-menu-btn { display: none !important; }
 
+        /* 3. DÜZELTME: Alt bar sitenin düzeninden tamamen bağımsız, en üst katmanda ve sabit kılındı */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -164,7 +169,8 @@ function initializeUniLoop() {
             justify-content: space-around;
             align-items: center;
             padding-bottom: env(safe-area-inset-bottom);
-            height: 60px;
+            height: 65px;
+            box-sizing: content-box;
             z-index: 99999;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
         }
@@ -927,7 +933,6 @@ function initializeUniLoop() {
                     };
                     chatsDB.push(chatItem);
 
-                    // Bekleyen bildirimlerin sayılması
                     if (chatItem.status === 'pending' && chatItem.initiator !== currentUid) {
                         pendingRequestsCount++;
                     }
@@ -1210,7 +1215,6 @@ function initializeUniLoop() {
         }
     };
 
-    // Arkadaş ekleme mantığı
     window.searchAndAddFriend = async function() {
         try {
             const searchInput = document.getElementById('friend-search-input');
@@ -1655,12 +1659,30 @@ function initializeUniLoop() {
         }
     };
 
+    // 4. DÜZELTME: İlan önizleme fonksiyonu global'e taşındı
+    window.previewMarketImages = function(event) {
+        const files = Array.from(event.target.files).slice(0, 3);
+        const previewContainer = document.getElementById('preview-container');
+        previewContainer.innerHTML = ''; 
+        files.forEach(file => {
+            if (file.type === "application/pdf") {
+                previewContainer.innerHTML += `<div class="preview-box" style="display:inline-flex; flex-direction:column; align-items:center; justify-content:center; background:#F9FAFB; border:1px solid #E5E7EB; width:80px; height:80px; border-radius:8px; margin-right:8px;"><span style="font-size:30px;">📄</span><span style="font-size:10px; color:#EF4444; font-weight:bold; margin-top:5px;">PDF</span></div>`;
+            } else {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    previewContainer.innerHTML += `<div class="preview-box" style="width:80px; height:80px; overflow:hidden; border-radius:8px; border:1px solid #E5E7EB; display:inline-block; margin-right:8px;"><img src="${ev.target.result}" style="width:100%; height:100%; object-fit:cover;"></div>`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    };
+
     window.openListingForm = function(type) {
         const formTitle = '🛒 Kampüs Market İlanı Ekle';
         const titlePlaceholder = 'İlan Başlığı (Örn: Temiz Çalışma Masası veya Çıkmış Sorular)';
         const descPlaceholder = 'Ürünün durumu ve detayları...';
 
-        // 🟢 ÇÖZÜM: Dosya input'u opacity: 0 yapıldı, mobil tıklama sorunu çözüldü
+        // 4. DÜZELTME DEVAMI: Fotoğraf input'u doğrudan butona bağlandı ve gizlendi, z-index sorunu ortadan kaldırıldı
         window.openModal(formTitle, `
             <div class="form-group"><input type="text" id="new-item-title" placeholder="${titlePlaceholder}"></div>
             <div class="form-group" style="display: flex; gap: 10px;">
@@ -1673,36 +1695,17 @@ function initializeUniLoop() {
                 </select>
             </div>
             <div class="form-group"><textarea id="new-item-desc" rows="3" placeholder="${descPlaceholder}"></textarea></div>
-            <div class="upload-btn-wrapper" style="position:relative;">
-                <button class="action-btn" id="photo-trigger-btn" style="width:100%; justify-content:center;">📷 Fotoğraf veya 📄 PDF Seç</button>
-                <input type="file" id="new-item-photo" accept="image/*, application/pdf" multiple style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;" />
+            
+            <div class="upload-btn-wrapper" style="margin-bottom: 15px;">
+                <button class="action-btn" onclick="document.getElementById('new-item-photo').click()" style="width:100%; justify-content:center; padding: 12px; font-weight:bold; background: #EEF2FF; color: var(--primary); border:none; border-radius:12px;">📷 Fotoğraf veya 📄 PDF Seç</button>
+                <input type="file" id="new-item-photo" accept="image/*, application/pdf" multiple style="display:none;" onchange="window.previewMarketImages(event)" />
             </div>
-            <div id="preview-container" class="preview-container"></div>
+            
+            <div id="preview-container" class="preview-container" style="display:flex; flex-wrap:wrap; margin-bottom:15px; min-height:0px;"></div>
+            
             <button class="btn-primary" id="publish-listing-btn" onclick="window.submitListing('${type}')">İlanı Yayınla</button>
             <p id="upload-status" style="font-size:12px; color:var(--primary); text-align:center; margin-top:10px; display:none; font-weight:bold;">Dosyalar Yükleniyor, lütfen bekleyin...</p>
         `);
-
-        setTimeout(() => {
-            const photoInput = document.getElementById('new-item-photo');
-            if(photoInput) {
-                photoInput.addEventListener('change', function(e) {
-                    const files = Array.from(e.target.files).slice(0, 3);
-                    const previewContainer = document.getElementById('preview-container');
-                    previewContainer.innerHTML = ''; 
-                    files.forEach(file => {
-                        if (file.type === "application/pdf") {
-                            previewContainer.innerHTML += `<div class="preview-box" style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:#F9FAFB; border:1px solid #E5E7EB;"><span style="font-size:30px;">📄</span><span style="font-size:12px; color:#EF4444; font-weight:bold; margin-top:5px;">PDF Dosyası</span></div>`;
-                        } else {
-                            const reader = new FileReader();
-                            reader.onload = function(ev) {
-                                previewContainer.innerHTML += `<div class="preview-box" style="width:80px; height:80px; overflow:hidden; border-radius:8px; border:1px solid #E5E7EB;"><img src="${ev.target.result}" style="width:100%; height:100%; object-fit:cover;"></div>`;
-                            };
-                            reader.readAsDataURL(file);
-                        }
-                    });
-                });
-            }
-        }, 100);
     };
 
     window.submitListing = async function(type) {
@@ -1816,7 +1819,6 @@ function initializeUniLoop() {
     };
 
     window.openConfessionForm = function() {
-        // 🟢 ÇÖZÜM: Dosya input'u opacity: 0 yapıldı
         window.openModal('📝 Gönderi Paylaş', `
             <textarea id="new-post-text" rows="4" placeholder="Düşüncelerini özgürce paylaş..." style="width:100%; padding:15px; border-radius:12px; border:1px solid #E5E7EB; outline:none; resize:none; font-size:15px; margin-bottom:15px; box-sizing:border-box; background:#F9FAFB;"></textarea>
             
@@ -1825,8 +1827,8 @@ function initializeUniLoop() {
                     <input type="checkbox" id="new-post-anon" style="width:18px; height:18px; accent-color:var(--primary);"> 🕵️ Gizli Paylaş
                 </label>
                 <div style="position:relative;">
-                    <button class="action-btn" style="padding:8px 16px; font-size:13px; background:#EEF2FF; color:var(--primary); border:none;">📷 Fotoğraf Ekle</button>
-                    <input type="file" id="post-img-upload" accept="image/*" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;" onchange="window.previewPostImage(event)">
+                    <button class="action-btn" onclick="document.getElementById('post-img-upload').click()" style="padding:8px 16px; font-size:13px; background:#EEF2FF; color:var(--primary); border:none;">📷 Fotoğraf Ekle</button>
+                    <input type="file" id="post-img-upload" accept="image/*" style="display:none;" onchange="window.previewPostImage(event)">
                 </div>
             </div>
             
@@ -2027,6 +2029,10 @@ function initializeUniLoop() {
 
         let sbHtml = '';
         chatsDB.forEach(chat => {
+            // 2. DÜZELTME: Karşıdan kabul edilmemiş arkadaşlık istekleri mesajlar kısmında GÖSTERİLMEYECEK.
+            // Yalnızca pazar (market) konuşmaları veya kabul edilmiş arkadaşlıklar görünecek.
+            if (chat.status === 'pending' && !chat.isMarketChat) return;
+
             const lastMsgObj = chat.messages && chat.messages.length > 0 ? chat.messages[chat.messages.length - 1] : {text: 'Yeni bağlantı'};
             const lastMsg = lastMsgObj.text;
             const msgTime = lastMsgObj.time || '';
@@ -2068,8 +2074,8 @@ function initializeUniLoop() {
         sb.innerHTML = sbHtml || `
             <div style="padding:40px 20px; text-align:center; color:#9CA3AF;">
                 <div style="font-size:40px; margin-bottom:10px;">💬</div>
-                <div style="font-size:14px; font-weight:500;">Henüz mesaj yok.</div>
-                <div style="font-size:12px; margin-top:5px;">Keşfet'ten veya Market'ten insanlarla iletişime geçin.</div>
+                <div style="font-size:14px; font-weight:500;">Mesajınız yok.</div>
+                <div style="font-size:12px; margin-top:5px;">Keşfet'ten yeni insanlarla tanışın.</div>
             </div>
         `;
     };
@@ -2080,7 +2086,7 @@ function initializeUniLoop() {
             <div id="chat-layout-container" style="display:flex; width:100%; height:100%; flex-direction:row;">
                 <div class="chat-sidebar" id="chat-sidebar-main">
                     <div class="chat-sidebar-header" style="padding:15px 20px; border-bottom:1px solid #E5E7EB; background:white; position:sticky; top:0; z-index:10; display:flex; justify-content:space-between; align-items:center;">
-                        <h2 style="margin:0; font-size:20px; font-weight:800;">Mesajlar <span style="background:var(--primary); color:white; font-size:12px; padding:2px 8px; border-radius:12px; margin-left:5px; vertical-align:middle;">${chatsDB.length}</span></h2>
+                        <h2 style="margin:0; font-size:20px; font-weight:800;">Sohbetler <span style="background:var(--primary); color:white; font-size:12px; padding:2px 8px; border-radius:12px; margin-left:5px; vertical-align:middle;">${chatsDB.filter(c => c.status === 'accepted' || c.isMarketChat).length}</span></h2>
                     </div>
                     <div id="chat-sidebar-list" style="padding-bottom:20px;"></div>
                 </div>
@@ -2239,7 +2245,12 @@ function initializeUniLoop() {
         try {
             await updateDoc(doc(db, "chats", chatId), {
                 status: 'accepted',
-                lastUpdated: serverTimestamp()
+                lastUpdated: serverTimestamp(),
+                messages: arrayUnion({
+                    senderId: 'system',
+                    text: 'Arkadaşlık isteği kabul edildi! Artık sohbet edebilirsiniz.',
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                })
             });
             window.openChatView(chatId);
         } catch(e) { console.error(e); alert("Kabul edilirken hata oluştu."); }
@@ -2307,12 +2318,45 @@ function initializeUniLoop() {
             <div class="card" style="margin-bottom:20px; border-radius:16px;">
                 <h3 style="margin-top:0; font-size:18px; font-weight:800; margin-bottom:12px; display:flex; align-items:center; gap:8px;">Hakkımda ✍️</h3>
                 <p style="font-size:15px; color:#4B5563; line-height:1.6; margin-bottom:20px; background:#F9FAFB; padding:15px; border-radius:12px; border:1px solid #E5E7EB;">${bioText}</p>
-                <button class="btn-primary" style="width:100%; padding:14px; font-size:15px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s;" onclick="window.editProfile()" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'">Profili Düzenle ✏️</button>
+                
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-primary" style="flex:1; padding:14px; font-size:14px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s; border-radius: 12px;" onclick="window.editProfile()" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'">✏️ Profili Düzenle</button>
+                    <button class="btn-primary" style="flex:1; padding:14px; font-size:14px; background:white; color:var(--text-dark); border:2px solid #E5E7EB; box-shadow:none; font-weight:800; transition:0.2s; border-radius: 12px;" onclick="window.showFriendsList()" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'">👥 Arkadaşlarım</button>
+                </div>
             </div>
             
             <button class="btn-danger" style="width:100%; padding: 16px; border-radius: 16px; font-weight: bold; font-size:16px; margin-bottom:30px; box-shadow:0 4px 10px rgba(239,68,68,0.3);" onclick="window.logout()">🚪 Hesaptan Güvenli Çıkış Yap</button>
         `;
         mainContent.innerHTML = html;
+    };
+
+    // 3. DÜZELTME DEVAMI: Arkadaşlarım Listesini Görüntüleme Fonksiyonu
+    window.showFriendsList = function() {
+        const friendsChats = chatsDB.filter(c => c.status === 'accepted' && !c.isMarketChat);
+        if (friendsChats.length === 0) {
+            window.openModal('👥 Arkadaşlarım', '<div style="text-align:center; padding:30px; color:var(--text-gray);"><div style="font-size:40px; margin-bottom:10px;">👤</div>Henüz arkadaşınız yok. Keşfet bölümünden veya arama yaparak yeni insanlarla tanışabilirsiniz!</div>');
+            return;
+        }
+
+        let html = '<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px;">';
+        friendsChats.forEach(f => {
+            let avatarHtml = f.avatar && f.avatar.startsWith('http')
+                ? `<img src="${f.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">`
+                : `<div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px;">${f.avatar || '👤'}</div>`;
+
+            html += `
+                <div style="display:flex; align-items:center; gap:12px; background:#F9FAFB; padding:10px; border-radius:12px; border:1px solid #E5E7EB;">
+                    ${avatarHtml}
+                    <div style="flex:1;">
+                        <div style="font-weight:bold; font-size:15px; color:var(--text-dark);">${f.name}</div>
+                    </div>
+                    <button class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:8px;" onclick="window.closeModal(); window.openChatViewDirect('${f.id}')">Mesaj At</button>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        window.openModal(`👥 Arkadaşlarım (${friendsChats.length})`, html);
     };
 
     window.editProfile = function() {
@@ -2360,7 +2404,7 @@ function initializeUniLoop() {
                     </div>
                 </div>
                 <div style="background:#F9FAFB; padding:15px; border-radius:12px; border:1px solid #E5E7EB; text-align:center;">
-                    <p style="font-size:13px; color:var(--text-gray); margin:0;">UniLoop Versiyon 3.1.0 (Firebase Engine)</p>
+                    <p style="font-size:13px; color:var(--text-gray); margin:0;">UniLoop Versiyon 3.2.0 (Güncellenmiş Engine)</p>
                 </div>
             </div>
         `);
