@@ -7,11 +7,36 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
+        /* ==========================================================================
+           🌟 ALT MENÜ (BOTTOM NAV) İÇERİK ÇAKIŞMASI KESİN ÇÖZÜMÜ 🌟
+           ========================================================================== */
+        
+        /* 1. Ana içeriğin en altına, alt menü yüksekliği kadar kalıcı bir boşluk bırakıyoruz.
+           Böylece sayfa sonuna gelindiğinde hiçbir içerik (yazı, buton vs.) menünün altında kalmaz. */
+        #main-content {
+            padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+        }
+
+        /* 2. Chat (Mesajlaşma) ekranı açıldığında, sayfa yapısını dondurup mesajlaşma 
+           alanının alt menünün tam üstünde bitmesini sağlıyoruz. */
+        body.no-scroll-messages #main-content {
+            position: fixed !important;
+            top: 50px !important; /* Üst header yüksekliği */
+            bottom: calc(65px + env(safe-area-inset-bottom)) !important; /* Alt menü yüksekliği kadar yukarı çeker */
+            left: 0 !important;
+            right: 0 !important;
+            padding-bottom: 0 !important; 
+            height: auto !important;
+            overflow: hidden !important; 
+            z-index: 40;
+        }
+
         /* Alt Navigasyon (Bottom Nav) İkonlarını ve Metinlerini Aşağı Çekme / Ortalama Düzeltmesi */
         .bottom-nav {
             align-items: flex-end !important; 
             padding-bottom: calc(env(safe-area-inset-bottom) + 8px) !important;
             padding-top: 5px !important;
+            z-index: 99999 !important; /* Menünün her zaman en üst katmanda kalmasını garantiler */
         }
         .bottom-nav-item {
             justify-content: flex-end !important; 
