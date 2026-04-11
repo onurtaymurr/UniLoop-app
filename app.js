@@ -2098,7 +2098,7 @@ function initializeUniLoop() {
                 try {
                     const file = fileInput.files[0];
                     const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-                    const storageRef = ref(storage, 'loopmap/' + Date.now() + '_' + cleanName);
+                    const storageRef = ref(storage, 'confessions/' + window.userProfile.uid + '/' + Date.now() + '_' + cleanName);
                     await uploadBytes(storageRef, file);
                     imgUrl = await getDownloadURL(storageRef);
                 } catch(uploadError) {
