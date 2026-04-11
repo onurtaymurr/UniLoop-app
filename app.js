@@ -2500,18 +2500,43 @@ function initializeUniLoop() {
     };
 
     window.sendDirectMessage = async function(chatId, otherUid) {
-        const input = document.getElementById('chat-input-field');
-        if(input && input.value.trim() !== '') {
-            const text = input.value.trim();
-            input.value = '';
-            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            const newMsg = {
-                senderId: window.userProfile.uid,
-                text: text,
-                time: timeStr,
-                read: false
-            };
+    const input = document.getElementById('chat-input-field');
+    if (input && input.value.trim() !== '') {
+        const text = input.value.trim();
+        input.value = '';
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const newMsg = {
+            senderId: window.userProfile.uid,
+            text: text,
+            time: timeStr,
+            read: false
+        };
+
+        const chatRef = doc(db, "chats", chatId);
+
+        try {
+            await updateDoc(chatRef, {
+                messages: arrayUnion(newMsg),
+                lastUpdated: serverTimestamp()
+            });
+
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+
+            setTimeout(() => {
+                document.body.style.pointerEvents = 'auto';
+                const inputAgain = document.getElementById('chat-input-field');
+                if (inputAgain) inputAgain.focus();
+            }, 80);
+
+        } catch (error) {
+            console.error("Mesaj gönderilemedi:", error);
+            alert("Mesaj gönderilirken bir hata oluştu.");
+        }
+    }
+};
 
             const chatRef = doc(db, "chats", chatId);
             try {
