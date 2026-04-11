@@ -92,6 +92,13 @@ const modal = document.getElementById('app-modal');
 let cropper = null;
 
 function initializeUniLoop() {
+        document.addEventListener('touchend', () => {
+        document.body.style.pointerEvents = 'auto';
+    }, { passive: true });
+
+    document.addEventListener('click', () => {
+        document.body.style.pointerEvents = 'auto';
+    });
 
     // ✂️ CROPPER.JS ENJEKSİYONU
     const cropperCss = document.createElement('link');
