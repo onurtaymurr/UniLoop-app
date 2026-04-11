@@ -1380,33 +1380,53 @@ function initializeUniLoop() {
     }
 
     window.sendGroupMsg = async function(roomId) {
-        const input = document.getElementById('group-chat-input');
-        if(input && input.value.trim() !== '') {
-            const text = input.value.trim();
-            input.value = '';
-            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            const msgObj = {
-                senderId: window.userProfile.uid,
-                senderName: window.userProfile.name,
-                senderAvatar: window.userProfile.avatarUrl || window.userProfile.avatar || "👤",
-                text: text,
-                time: timeStr
-            };
+    const input = document.getElementById('group-chat-input');
+    if (input && input.value.trim() !== '') {
+        const text = input.value.trim();
+        input.value = '';
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            const docRef = doc(db, "group_chats", roomId);
-            try {
-                const docSnap = await getDoc(docRef);
-                if(docSnap.exists()) {
-                    await updateDoc(docRef, { messages: arrayUnion(msgObj), lastUpdated: serverTimestamp() });
-                } else {
-                    await setDoc(docRef, { messages: [msgObj], createdAt: serverTimestamp(), roomId: roomId });
-                }
-            } catch(error) {
-                console.error("Grup mesajı gönderilemedi:", error);
+        const msgObj = {
+            senderId: window.userProfile.uid,
+            senderName: window.userProfile.name,
+            senderAvatar: window.userProfile.avatarUrl || window.userProfile.avatar || "👤",
+            text: text,
+            time: timeStr
+        };
+
+        const docRef = doc(db, "group_chats", roomId);
+
+        try {
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                await updateDoc(docRef, {
+                    messages: arrayUnion(msgObj),
+                    lastUpdated: serverTimestamp()
+                });
+            } else {
+                await setDoc(docRef, {
+                    messages: [msgObj],
+                    createdAt: serverTimestamp(),
+                    roomId: roomId
+                });
             }
+
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+
+            setTimeout(() => {
+                document.body.style.pointerEvents = 'auto';
+                const inputAgain = document.getElementById('group-chat-input');
+                if (inputAgain) inputAgain.focus();
+            }, 80);
+
+        } catch (error) {
+            console.error("Grup mesajı gönderilemedi:", error);
         }
-    };
+    }
+};
 
     // --- HIZLI ARKADAŞ EKLE KISMI (TAÇLI) ---
     window.searchAndAddFriend = async function() {
