@@ -92,13 +92,6 @@ const modal = document.getElementById('app-modal');
 let cropper = null;
 
 function initializeUniLoop() {
-        document.addEventListener('touchend', () => {
-        document.body.style.pointerEvents = 'auto';
-    }, { passive: true });
-
-    document.addEventListener('click', () => {
-        document.body.style.pointerEvents = 'auto';
-    });
 
     // ✂️ CROPPER.JS ENJEKSİYONU
     const cropperCss = document.createElement('link');
@@ -1336,7 +1329,7 @@ function initializeUniLoop() {
                     <button class="chat-send-btn" onclick="window.sendGroupMsg('${roomId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(79,70,229,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">➤</button>
                 </div>
             </div>
-        `;
+`;
         mainContent.innerHTML = html;
 
         const inputField = document.getElementById('group-chat-input');
@@ -1387,53 +1380,33 @@ function initializeUniLoop() {
     }
 
     window.sendGroupMsg = async function(roomId) {
-    const input = document.getElementById('group-chat-input');
-    if (input && input.value.trim() !== '') {
-        const text = input.value.trim();
-        input.value = '';
-        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const input = document.getElementById('group-chat-input');
+        if(input && input.value.trim() !== '') {
+            const text = input.value.trim();
+            input.value = '';
+            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const msgObj = {
+                senderId: window.userProfile.uid,
+                senderName: window.userProfile.name,
+                senderAvatar: window.userProfile.avatarUrl || window.userProfile.avatar || "👤",
+                text: text,
+                time: timeStr
+            };
 
-        const msgObj = {
-            senderId: window.userProfile.uid,
-            senderName: window.userProfile.name,
-            senderAvatar: window.userProfile.avatarUrl || window.userProfile.avatar || "👤",
-            text: text,
-            time: timeStr
-        };
-
-        const docRef = doc(db, "group_chats", roomId);
-
-        try {
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                await updateDoc(docRef, {
-                    messages: arrayUnion(msgObj),
-                    lastUpdated: serverTimestamp()
-                });
-            } else {
-                await setDoc(docRef, {
-                    messages: [msgObj],
-                    createdAt: serverTimestamp(),
-                    roomId: roomId
-                });
+            const docRef = doc(db, "group_chats", roomId);
+            try {
+                const docSnap = await getDoc(docRef);
+                if(docSnap.exists()) {
+                    await updateDoc(docRef, { messages: arrayUnion(msgObj), lastUpdated: serverTimestamp() });
+                } else {
+                    await setDoc(docRef, { messages: [msgObj], createdAt: serverTimestamp(), roomId: roomId });
+                }
+            } catch(error) {
+                console.error("Grup mesajı gönderilemedi:", error);
             }
-
-            if (document.activeElement) {
-                document.activeElement.blur();
-            }
-
-            setTimeout(() => {
-                document.body.style.pointerEvents = 'auto';
-                const inputAgain = document.getElementById('group-chat-input');
-                if (inputAgain) inputAgain.focus();
-            }, 80);
-
-        } catch (error) {
-            console.error("Grup mesajı gönderilemedi:", error);
         }
-    }
-};
+    };
 
     // --- HIZLI ARKADAŞ EKLE KISMI (TAÇLI) ---
     window.searchAndAddFriend = async function() {
@@ -2125,7 +2098,7 @@ function initializeUniLoop() {
                 try {
                     const file = fileInput.files[0];
                     const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-                    const storageRef = ref(storage, 'confessions/' + window.userProfile.uid + '/' + Date.now() + '_' + cleanName);
+                    const storageRef = ref(storage, 'loopmap/' + Date.now() + '_' + cleanName);
                     await uploadBytes(storageRef, file);
                     imgUrl = await getDownloadURL(storageRef);
                 } catch(uploadError) {
@@ -2527,43 +2500,18 @@ function initializeUniLoop() {
     };
 
     window.sendDirectMessage = async function(chatId, otherUid) {
-    const input = document.getElementById('chat-input-field');
-    if (input && input.value.trim() !== '') {
-        const text = input.value.trim();
-        input.value = '';
-        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        const newMsg = {
-            senderId: window.userProfile.uid,
-            text: text,
-            time: timeStr,
-            read: false
-        };
-
-        const chatRef = doc(db, "chats", chatId);
-
-        try {
-            await updateDoc(chatRef, {
-                messages: arrayUnion(newMsg),
-                lastUpdated: serverTimestamp()
-            });
-
-            if (document.activeElement) {
-                document.activeElement.blur();
-            }
-
-            setTimeout(() => {
-                document.body.style.pointerEvents = 'auto';
-                const inputAgain = document.getElementById('chat-input-field');
-                if (inputAgain) inputAgain.focus();
-            }, 80);
-
-        } catch (error) {
-            console.error("Mesaj gönderilemedi:", error);
-            alert("Mesaj gönderilirken bir hata oluştu.");
-        }
-    }
-};
+        const input = document.getElementById('chat-input-field');
+        if(input && input.value.trim() !== '') {
+            const text = input.value.trim();
+            input.value = '';
+            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const newMsg = {
+                senderId: window.userProfile.uid,
+                text: text,
+                time: timeStr,
+                read: false
+            };
 
             const chatRef = doc(db, "chats", chatId);
             try {
