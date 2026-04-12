@@ -56,7 +56,7 @@ const storage = getStorage(app);
 
 // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
 window.userProfile = { 
-    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null 
+    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, joinedClubs: [] 
 };
 
 window.joinedFaculties = [];
@@ -284,7 +284,6 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
 
-    // Kırpma (Cropper) alanı için Sağ-Üst "Kaydet" Düzeltmesi
     const cropperModalHtml = `
         <div id="cropper-modal" class="cropper-modal-container">
             <div class="cropper-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:#111; color:white; z-index:10; position:relative;">
@@ -708,7 +707,8 @@ function initializeUniLoop() {
                 avatarUrl: finalAvatarUrl, 
                 isOnline: true, 
                 isPremium: false,
-                joinedClassRoom: null 
+                joinedClassRoom: null,
+                joinedClubs: [] // YENİ: Kulüp listesi başlangıcı
             });
 
             alert("Harika! Profilin başarıyla oluşturuldu. Şimdi uygulamaya yönlendiriliyorsun.");
@@ -805,6 +805,7 @@ function initializeUniLoop() {
                 if(window.userProfile.age === undefined) window.userProfile.age = "";
                 if(window.userProfile.avatarUrl === undefined) window.userProfile.avatarUrl = "";
                 if(window.userProfile.joinedClassRoom === undefined) window.userProfile.joinedClassRoom = null;
+                if(window.userProfile.joinedClubs === undefined) window.userProfile.joinedClubs = []; // YENİ: Hata önleyici
 
                 await window.ensureWelcomeMessage(user, window.userProfile.name);
                 await updateDoc(userDocRef, { isOnline: true });
@@ -1007,7 +1008,6 @@ function initializeUniLoop() {
             }
         });
     }
-
     window.openPremiumModal = function() {
         window.openModal('🌟 UniLoop Premium', `
             <div style="text-align:center; padding: 10px;">
@@ -1069,6 +1069,57 @@ function initializeUniLoop() {
         document.getElementById('modal-body').innerHTML = ''; 
         if (!document.getElementById('lightbox').classList.contains('active') && !document.body.classList.contains('no-scroll-messages')) {
             document.body.style.overflow = 'auto'; 
+        }
+    };
+
+    // --- SOHBET İÇİ MEDYA YÜKLEME SİSTEMİ (ORTAK) ---
+    window.uploadChatMedia = async function(event, targetId, chatType) {
+        const file = event.target.files[0];
+        if(!file) return;
+        
+        const btn = document.querySelector('.chat-send-btn');
+        const originalIcon = btn ? btn.innerHTML : '➤';
+        if(btn) { btn.innerHTML = '⏳'; btn.disabled = true; }
+
+        try {
+            const isPdf = file.type === "application/pdf";
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+            const storageRef = ref(storage, 'chat_media/' + window.userProfile.uid + '/' + Date.now() + '_' + cleanName);
+            await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(storageRef);
+
+            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const msgObj = {
+                senderId: window.userProfile.uid,
+                senderName: window.userProfile.name,
+                senderAvatar: window.userProfile.avatarUrl || window.userProfile.avatar || "👤",
+                text: isPdf ? '📄 PDF Belgesi' : '📷 Fotoğraf',
+                time: timeStr,
+                mediaUrl: url,
+                mediaType: isPdf ? 'pdf' : 'image',
+                read: false
+            };
+
+            if (chatType === 'group' || chatType === 'club') {
+                const docRef = doc(db, "group_chats", targetId);
+                const docSnap = await getDoc(docRef);
+                if(docSnap.exists()) {
+                    await updateDoc(docRef, { messages: arrayUnion(msgObj), lastUpdated: serverTimestamp() });
+                } else {
+                    await setDoc(docRef, { messages: [msgObj], createdAt: serverTimestamp(), roomId: targetId });
+                }
+            } else if (chatType === 'dm') {
+                await updateDoc(doc(db, "chats", targetId), {
+                    messages: arrayUnion(msgObj),
+                    lastUpdated: serverTimestamp()
+                });
+            }
+        } catch(e) {
+            console.error(e);
+            alert("Medya yüklenirken hata oluştu.");
+        } finally {
+            if(btn) { btn.innerHTML = originalIcon; btn.disabled = false; }
+            event.target.value = '';
         }
     };
 
@@ -1137,15 +1188,43 @@ function initializeUniLoop() {
         window.openModal('🎭 Kulüpler ve Organizasyonlar', listHtml);
     };
 
-    window.checkClubPasscode = function(clubName, expectedWord) {
+    window.openJoinedClubsList = function() {
+        let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
+        listHtml += `<button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px; font-weight:bold; border-radius:12px; margin-bottom:10px;" onclick="window.openClubsList()">🔍 Yeni Kulüp Keşfet</button>`;
+
+        window.userProfile.joinedClubs.forEach(club => {
+            listHtml += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-radius:12px; cursor:pointer; background:#fff; border:1px solid #E5E7EB; margin-bottom:0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.closeModal(); window.openClubRoom('${club.roomId}', '${club.name}')">
+                <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${club.name}</span>
+                <span style="background:#DCF8C6; color:#166534; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold;">Git ➡️</span>
+            </div>`;
+        });
+        listHtml += `</div>`;
+        window.openModal('📌 Katıldığım Kulüpler', listHtml);
+    };
+
+    window.checkClubPasscode = async function(clubName, expectedWord) {
         let expectedCode = expectedWord + "100";
         let userCode = prompt(`${clubName} grubuna girmek için lütfen giriş kodunu girin:\n(Örn: ${expectedCode})`);
         
         if (userCode !== null) {
             if (userCode.trim().toLocaleLowerCase('tr-TR') === expectedCode) {
                 alert("✅ Şifre doğru! Kulüp odasına yönlendiriliyorsunuz.");
-                window.closeModal();
                 let roomId = 'club_' + expectedWord;
+
+                try {
+                    const clubObj = { roomId: roomId, name: clubName };
+                    const hasClub = window.userProfile.joinedClubs && window.userProfile.joinedClubs.find(c => c.roomId === roomId);
+                    if(!hasClub) {
+                        await updateDoc(doc(db, "users", window.userProfile.uid), { 
+                            joinedClubs: arrayUnion(clubObj) 
+                        });
+                        if(!window.userProfile.joinedClubs) window.userProfile.joinedClubs = [];
+                        window.userProfile.joinedClubs.push(clubObj);
+                    }
+                } catch(e) { console.error(e); }
+
+                window.closeModal();
+                window.loadPage('home'); 
                 window.openClubRoom(roomId, clubName);
             } else {
                 alert("❌ Hatalı kod girdiniz. Lütfen tekrar deneyin.");
@@ -1201,7 +1280,7 @@ function initializeUniLoop() {
             
             querySnapshot.forEach((doc) => {
                 const u = doc.data();
-                if(true) { // Herkes listeleniyor, gerçek kullanımda filtrelenebilir.
+                if(true) { 
                     count++;
                     const initial = u.surname ? u.surname.charAt(0) + '.' : '';
                     let avatarHtml = u.avatarUrl 
@@ -1284,6 +1363,8 @@ function initializeUniLoop() {
                 </div>
 
                 <div class="chat-input-area" style="padding:10px 15px; background:white; display:flex; gap:10px; align-items:center; flex-shrink:0; border-top:1px solid #E5E7EB;">
+                    <input type="file" id="club-chat-media" accept="image/*, application/pdf" style="display:none;" onchange="window.uploadChatMedia(event, '${roomId}', 'club')">
+                    <button onclick="document.getElementById('club-chat-media').click()" style="background:transparent; color:#6B7280; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
                     <input type="text" id="group-chat-input" placeholder="Kulübe mesaj gönder..." style="flex:1; padding:14px 20px; border-radius:24px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:14px; color:var(--text-dark);">
                     <button class="chat-send-btn" onclick="window.sendGroupMsg('${roomId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(79,70,229,0.3);">➤</button>
                 </div>
@@ -1325,6 +1406,8 @@ function initializeUniLoop() {
                 </div>
 
                 <div class="chat-input-area" style="padding:10px 15px; background:#f0f2f5; display:flex; gap:10px; align-items:center; flex-shrink:0; border-top:none;">
+                    <input type="file" id="group-chat-media" accept="image/*, application/pdf" style="display:none;" onchange="window.uploadChatMedia(event, '${roomId}', 'group')">
+                    <button onclick="document.getElementById('group-chat-media').click()" style="background:transparent; color:#6B7280; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
                     <input type="text" id="group-chat-input" placeholder="Sınıfa mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:24px; border:none; background:#fff; outline:none; font-size:15px; color:var(--text-dark); box-shadow:0 1px 3px rgba(0,0,0,0.05);">
                     <button class="chat-send-btn" onclick="window.sendGroupMsg('${roomId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(79,70,229,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">➤</button>
                 </div>
@@ -1368,8 +1451,18 @@ function initializeUniLoop() {
                     </div>`;
                 }
 
+                let mediaHtml = '';
+                if (msg.mediaUrl) {
+                    if (msg.mediaType === 'pdf') {
+                        mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:5px; background:rgba(0,0,0,0.05); padding:10px; border-radius:8px; margin-bottom:5px; text-decoration:none; color:#EF4444; font-weight:bold; font-size:13px;"><span>📄</span> PDF İndir/Aç</a>`;
+                    } else {
+                        mediaHtml = `<img src="${msg.mediaUrl}" style="width:100%; max-width:250px; border-radius:8px; margin-bottom:5px; cursor:pointer;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([msg.mediaUrl]))}', 0)">`;
+                    }
+                }
+
                 chatHTML += `<div class="bubble ${type}" style="display:flex; flex-direction:column; max-width:80%; padding:8px 12px; border-radius:12px; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05); ${bgStyle}">
                     ${senderNameHtml}
+                    ${mediaHtml}
                     <div class="msg-text" style="font-size:15px; color:#111827; word-break:break-word; line-height:1.4;">${msg.text}</div>
                     <div class="msg-time" style="align-self:flex-end; font-size:10px; color:#6B7280; margin-top:4px; font-weight:500;">${msg.time}</div>
                 </div>`;
@@ -1545,7 +1638,7 @@ function initializeUniLoop() {
         }
     };
 
-    // --- ANA SAYFA (SINIFIMA GİR VE KULLANICI LİSTESİNDE TAÇ) ---
+    // --- ANA SAYFA (SINIFIMA GİR VE KATILDIKLARIM KISAYOLU) ---
     window.renderHome = async function() {
         let usernameWarning = '';
         if (!window.userProfile.username) {
@@ -1577,14 +1670,30 @@ function initializeUniLoop() {
             `;
         }
 
-        const homeCardsHtml = `
-            <div style="display:flex; gap:10px; margin-bottom: 10px;">
-                ${facultyCardHtml}
+        // Katıldığı kulüpler varsa kısayol çıkart, yoksa normal keşfet butonu
+        let clubsCardHtml = '';
+        if (window.userProfile.joinedClubs && window.userProfile.joinedClubs.length > 0) {
+            clubsCardHtml = `
+                <div class="card" style="flex:1; padding:15px 10px; border-radius:12px; cursor:pointer; text-align:center; background:linear-gradient(135deg, #fffbeb, #fde68a); border: 1px solid #fcd34d; transition: transform 0.2s;" onclick="window.openJoinedClubsList()">
+                    <div style="font-size:32px; margin-bottom:8px;">📌</div>
+                    <div style="font-weight:800; color:#b45309; font-size:14px;">Katıldıklarım</div>
+                    <div style="font-size:11px; color:#d97706; margin-top:4px;">${window.userProfile.joinedClubs.length} Kulüp</div>
+                </div>
+            `;
+        } else {
+            clubsCardHtml = `
                 <div class="card" style="flex:1; padding:15px 10px; border-radius:12px; cursor:pointer; text-align:center; background:linear-gradient(135deg, #fffbeb, #fde68a); border: 1px solid #fcd34d; transition: transform 0.2s;" onclick="window.openClubsList()">
                     <div style="font-size:32px; margin-bottom:8px;">🎭</div>
                     <div style="font-weight:800; color:#b45309; font-size:14px;">Kulüpler & Org.</div>
                     <div style="font-size:11px; color:#d97706; margin-top:4px;">Etkinliklere Katıl</div>
                 </div>
+            `;
+        }
+
+        const homeCardsHtml = `
+            <div style="display:flex; gap:10px; margin-bottom: 10px;">
+                ${facultyCardHtml}
+                ${clubsCardHtml}
             </div>
         `;
 
@@ -2423,6 +2532,8 @@ function initializeUniLoop() {
         if (chat.status === 'accepted') {
             mainHtml += `
                 <div class="chat-input-area" style="padding:15px 20px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:12px; align-items:center; flex-shrink:0;">
+                    <input type="file" id="dm-chat-media" accept="image/*, application/pdf" style="display:none;" onchange="window.uploadChatMedia(event, '${chat.id}', 'dm')">
+                    <button onclick="document.getElementById('dm-chat-media').click()" style="background:transparent; color:#6B7280; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
                     <input type="text" id="chat-input-field" placeholder="Mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:25px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:15px; color:var(--text-dark);">
                     <button onclick="window.sendDirectMessage('${chat.id}', '${chat.otherUid}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(79,70,229,0.3); flex-shrink:0; transition: transform 0.2s;">➤</button>
                 </div>
@@ -2481,8 +2592,18 @@ function initializeUniLoop() {
                 const isRead = msg.read ? '✓✓' : '✓';
                 const readColor = msg.read ? '#3B82F6' : '#9CA3AF';
                 
+                let mediaHtml = '';
+                if (msg.mediaUrl) {
+                    if (msg.mediaType === 'pdf') {
+                        mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:5px; background:rgba(0,0,0,0.05); padding:10px; border-radius:8px; margin-bottom:5px; text-decoration:none; color:#EF4444; font-weight:bold; font-size:13px;"><span>📄</span> PDF İndir/Aç</a>`;
+                    } else {
+                        mediaHtml = `<img src="${msg.mediaUrl}" style="width:100%; max-width:250px; border-radius:8px; margin-bottom:5px; cursor:pointer;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([msg.mediaUrl]))}', 0)">`;
+                    }
+                }
+
                 chatHTML += `
                     <div class="bubble ${type}" style="display:flex; flex-direction:column; max-width: 75%; position:relative;">
+                        ${mediaHtml}
                         <div class="msg-text" style="word-break: break-word;">${msg.text}</div>
                         <div class="msg-time" style="align-self:flex-end; font-size:10px; opacity:0.7; margin-top:4px; display:flex; align-items:center; gap:4px;">
                             ${msgTime} ${isMe ? `<span style="color:${readColor}; font-weight:bold;">${isRead}</span>` : ''}
