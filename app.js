@@ -312,11 +312,6 @@ function initializeUniLoop() {
     const savedTheme = localStorage.getItem('uniloop_theme') || 'light';
     window.toggleTheme(savedTheme);
 
-    const TRANSLATIONS = {
-        'tr': { settingsTitle: '⚙️ Uygulama Ayarları', langLabel: 'Dil Seçimi', themeLabel: 'Tema', lightMode: 'Aydınlık Mod', darkMode: 'Karanlık Mod', logoutBtn: '🚪 Güvenli Çıkış Yap' },
-        'en': { settingsTitle: '⚙️ App Settings', langLabel: 'Language', themeLabel: 'Theme', lightMode: 'Light Mode', darkMode: 'Dark Mode', logoutBtn: '🚪 Secure Logout' }
-    };
-
     document.addEventListener('click', async function(e) {
         const isTarget = (id) => e.target.id === id || (e.target.closest && e.target.closest('#' + id));
 
@@ -353,10 +348,7 @@ function initializeUniLoop() {
             const password = passInput.value;
             const btn = e.target.closest('#login-btn') || e.target;
 
-            if(!email || !password) {
-                alert("Lütfen e-posta ve şifrenizi girin.");
-                return;
-            }
+            if(!email || !password) { alert("Lütfen e-posta ve şifrenizi girin."); return; }
 
             const originalText = btn.innerText;
             btn.innerText = "Giriş Yapılıyor...";
@@ -381,20 +373,16 @@ function initializeUniLoop() {
             e.preventDefault();
             const email = prompt("Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin:");
             if(!email) return;
-            
             try {
                 await sendPasswordResetEmail(auth, email);
                 alert("Şifre sıfırlama bağlantısı e-posta adresinize başarıyla gönderildi!");
-            } catch (error) {
-                alert("Hata: " + error.message);
-            }
+            } catch (error) { alert("Hata: " + error.message); }
         }
     });
 
     function startRegistrationStepper(startStep = 1) {
         window.registrationData = window.registrationData || { interests: [] };
         if(!window.registrationData.interests) window.registrationData.interests = [];
-        
         let container = document.getElementById('stepper-wrapper');
         if(!container) {
             container = document.createElement('div');
@@ -525,24 +513,10 @@ function initializeUniLoop() {
         reader.onload = function(e) {
             document.getElementById('cropper-image').src = e.target.result;
             document.getElementById('cropper-modal').classList.add('active');
-            
             if(cropper) { cropper.destroy(); }
-            
             setTimeout(() => {
                 const image = document.getElementById('cropper-image');
-                cropper = new Cropper(image, {
-                    aspectRatio: 1, 
-                    viewMode: 1,
-                    dragMode: 'move',
-                    autoCropArea: 0.9,
-                    restore: false,
-                    guides: false,
-                    center: false,
-                    highlight: false,
-                    cropBoxMovable: false,
-                    cropBoxResizable: false,
-                    toggleDragModeOnDblclick: false,
-                });
+                cropper = new Cropper(image, { aspectRatio: 1, viewMode: 1, dragMode: 'move', autoCropArea: 0.9, restore: false, guides: false, center: false, highlight: false, cropBoxMovable: false, cropBoxResizable: false, toggleDragModeOnDblclick: false });
             }, 150);
         };
         reader.readAsDataURL(file);
@@ -556,7 +530,6 @@ function initializeUniLoop() {
 
     window.saveCroppedImage = async function() {
         if(!cropper) return;
-        
         const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
         const base64Image = canvas.toDataURL('image/jpeg', 0.8);
         
@@ -577,7 +550,6 @@ function initializeUniLoop() {
         try {
             const fileName = window.userProfile.uid + '_avatar_' + Date.now() + '.jpg';
             const storageRef = ref(storage, 'avatars/' + fileName);
-            
             await uploadString(storageRef, base64Image, 'data_url');
             const url = await getDownloadURL(storageRef);
             
@@ -620,21 +592,15 @@ function initializeUniLoop() {
             const btn = document.getElementById('step2-btn');
             btn.innerText = "Kontrol Ediliyor...";
             btn.disabled = true;
-            
             try {
                 await auth.currentUser.reload();
-                if (auth.currentUser.emailVerified) {
-                    window.renderStep(3);
-                } else {
+                if (auth.currentUser.emailVerified) { window.renderStep(3); } 
+                else {
                     alert("E-postanız henüz doğrulanmamış. Lütfen gelen kutunuzu kontrol edin.");
                     btn.innerText = "Doğruladım, Devam Et →";
                     btn.disabled = false;
                 }
-            } catch (error) {
-                alert("Hata: " + error.message);
-                btn.innerText = "Doğruladım, Devam Et →";
-                btn.disabled = false;
-            }
+            } catch (error) { alert("Hata: " + error.message); btn.innerText = "Doğruladım, Devam Et →"; btn.disabled = false; }
         } else if (step === 3) {
             const uInput = document.getElementById('reg-username').value.trim().toLowerCase().replace(/\s+/g, '');
             const n = document.getElementById('reg-name').value.trim();
@@ -659,9 +625,7 @@ function initializeUniLoop() {
                     btn.disabled = false;
                     return;
                 }
-            } catch(e) {
-                console.error(e);
-            }
+            } catch(e) { console.error(e); }
 
             window.registrationData = { ...window.registrationData, username: finalUsername, name: n, surname: s, age: a, faculty: f };
             window.renderStep(4);
@@ -708,12 +672,11 @@ function initializeUniLoop() {
                 isOnline: true, 
                 isPremium: false,
                 joinedClassRoom: null,
-                joinedClubs: [] // YENİ: Kulüp listesi başlangıcı
+                joinedClubs: []
             });
 
             alert("Harika! Profilin başarıyla oluşturuldu. Şimdi uygulamaya yönlendiriliyorsun.");
             window.location.reload(); 
-            
         } catch (error) {
             alert("Profil kaydedilirken bir hata oluştu: " + error.message);
             btn.innerText = "Profili Tamamla ve Giriş Yap ✨";
@@ -733,7 +696,6 @@ function initializeUniLoop() {
                     Merhaba ${userName}! Dünyanın en yenilikçi kampüs ağı UniLoop'a hoş geldin. 🎓✨<br><br>
                     Burası senin alanın. Hemen insanlarla tanışmaya başla!
                 `;
-                
                 await setDoc(chatRef, {
                     participants: [user.uid, "system"],
                     participantNames: { [user.uid]: userName, "system": "UniLoop Team" },
@@ -750,34 +712,25 @@ function initializeUniLoop() {
                     }]
                 });
             }
-        } catch (error) {
-            console.error("Karşılama mesajı oluşturulamadı: ", error);
-        }
+        } catch (error) { console.error(error); }
     };
 
     window.logout = async function() {
         try {
-            if(window.userProfile && window.userProfile.uid) {
-                await updateDoc(doc(db, "users", window.userProfile.uid), { isOnline: false });
-            }
+            if(window.userProfile && window.userProfile.uid) { await updateDoc(doc(db, "users", window.userProfile.uid), { isOnline: false }); }
             await signOut(auth);
-            
             if(authScreen && appScreen) {
                 appScreen.style.display = 'none';
                 authScreen.style.display = 'flex';
                 document.getElementById('login-card').style.display = 'block';
                 document.getElementById('register-card').style.display = 'none';
                 if(document.getElementById('stepper-wrapper')) document.getElementById('stepper-wrapper').remove();
-                
                 const bottomNav = document.getElementById('uniloop-bottom-nav');
                 if(bottomNav) bottomNav.remove();
-                
                 const topNotifBtn = document.getElementById('notif-btn-top');
                 if(topNotifBtn) topNotifBtn.remove();
             }
-        } catch(error) {
-            console.error("Çıkış hatası:", error);
-        }
+        } catch(error) { console.error(error); }
     };
 
     onAuthStateChanged(auth, async (user) => {
@@ -795,17 +748,14 @@ function initializeUniLoop() {
                     return; 
                 }
 
-                if(authScreen && appScreen) {
-                    authScreen.style.display = 'none';
-                    appScreen.style.display = 'block';
-                }
+                if(authScreen && appScreen) { authScreen.style.display = 'none'; appScreen.style.display = 'block'; }
 
                 window.userProfile = docSnap.data();
                 if(window.userProfile.isPremium === undefined) window.userProfile.isPremium = false;
                 if(window.userProfile.age === undefined) window.userProfile.age = "";
                 if(window.userProfile.avatarUrl === undefined) window.userProfile.avatarUrl = "";
                 if(window.userProfile.joinedClassRoom === undefined) window.userProfile.joinedClassRoom = null;
-                if(window.userProfile.joinedClubs === undefined) window.userProfile.joinedClubs = []; // YENİ: Hata önleyici
+                if(window.userProfile.joinedClubs === undefined) window.userProfile.joinedClubs = [];
 
                 await window.ensureWelcomeMessage(user, window.userProfile.name);
                 await updateDoc(userDocRef, { isOnline: true });
@@ -813,20 +763,10 @@ function initializeUniLoop() {
                 const headerRightMenu = document.querySelector('.header-right-menu');
                 if (headerRightMenu) {
                     headerRightMenu.innerHTML = ''; 
-                    
                     if (!window.userProfile.isPremium) {
-                        headerRightMenu.insertAdjacentHTML('beforeend', `
-                            <div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold; cursor:pointer;" onclick="window.openPremiumModal()">
-                                🌟 Premium
-                            </div>
-                        `);
+                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold; cursor:pointer;" onclick="window.openPremiumModal()">🌟 Premium</div>`);
                     }
-                    
-                    headerRightMenu.insertAdjacentHTML('beforeend', `
-                        <div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler">
-                            🔔 <span id="notif-badge-top" style="display:none; position:absolute; top:-2px; right:-2px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span>
-                        </div>
-                    `);
+                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler">🔔 <span id="notif-badge-top" style="display:none; position:absolute; top:-2px; right:-2px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
                 }
 
                 if (!document.getElementById('uniloop-bottom-nav')) {
@@ -834,58 +774,24 @@ function initializeUniLoop() {
                     bottomNav.id = 'uniloop-bottom-nav';
                     bottomNav.className = 'bottom-nav';
                     bottomNav.innerHTML = `
-                        <div class="menu-item bottom-nav-item active" data-target="home" onclick="window.loadPage('home')">
-                            <div class="bottom-nav-icon">
-                                <svg class="fill-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                            </div>
-                            <span>Ana Sayfa</span>
-                        </div>
-                        <div class="menu-item bottom-nav-item" data-target="confessions" onclick="window.loadPage('confessions')">
-                            <div class="bottom-nav-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-                            </div>
-                            <span>Keşfet</span>
-                        </div>
-                        <div class="menu-item bottom-nav-item" data-target="market" onclick="window.loadPage('market')">
-                            <div class="bottom-nav-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                            </div>
-                            <span>Market</span>
-                        </div>
-                        <div class="menu-item bottom-nav-item" data-target="messages" onclick="window.loadPage('messages')">
-                            <div class="bottom-nav-icon" style="position:relative;">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                                <span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-6px; background:#EF4444; color:white; border-radius:50%; width:14px; height:14px; font-size:9px; align-items:center; justify-content:center; font-weight:bold; border: 2px solid white;">0</span>
-                            </div>
-                            <span>Mesajlar</span>
-                        </div>
-                        <div class="menu-item bottom-nav-item" data-target="profile" onclick="window.loadPage('profile')">
-                            <div class="bottom-nav-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                            </div>
-                            <span>Profil</span>
-                        </div>
+                        <div class="menu-item bottom-nav-item active" data-target="home" onclick="window.loadPage('home')"><div class="bottom-nav-icon"><svg class="fill-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div><span>Ana Sayfa</span></div>
+                        <div class="menu-item bottom-nav-item" data-target="confessions" onclick="window.loadPage('confessions')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg></div><span>Keşfet</span></div>
+                        <div class="menu-item bottom-nav-item" data-target="market" onclick="window.loadPage('market')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></div><span>Market</span></div>
+                        <div class="menu-item bottom-nav-item" data-target="messages" onclick="window.loadPage('messages')"><div class="bottom-nav-icon" style="position:relative;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-6px; background:#EF4444; color:white; border-radius:50%; width:14px; height:14px; font-size:9px; align-items:center; justify-content:center; font-weight:bold; border: 2px solid white;">0</span></div><span>Mesajlar</span></div>
+                        <div class="menu-item bottom-nav-item" data-target="profile" onclick="window.loadPage('profile')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><span>Profil</span></div>
                     `;
                     if (appScreen) appScreen.appendChild(bottomNav);
                 }
                 
                 initRealtimeListeners(user.uid);
-
                 const activeTab = document.querySelector('.bottom-nav-item.active');
-                if(typeof window.loadPage === 'function') {
-                    window.loadPage(activeTab ? activeTab.getAttribute('data-target') : 'home'); 
-                }
-
-            } catch(error) { 
-                console.error(error);
-            }
+                if(typeof window.loadPage === 'function') { window.loadPage(activeTab ? activeTab.getAttribute('data-target') : 'home'); }
+            } catch(error) { console.error(error); }
         }
     });
 
     window.addEventListener("beforeunload", () => {
-        if(window.userProfile && window.userProfile.uid) {
-            updateDoc(doc(db, "users", window.userProfile.uid), { isOnline: false });
-        }
+        if(window.userProfile && window.userProfile.uid) { updateDoc(doc(db, "users", window.userProfile.uid), { isOnline: false }); }
     });
 
     function initRealtimeListeners(currentUid) {
@@ -895,7 +801,6 @@ function initializeUniLoop() {
             marketDB = [];
             snapshot.forEach(doc => { marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
             marketDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
-            
             const activeTab = document.querySelector('.bottom-nav-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
         });
@@ -904,28 +809,19 @@ function initializeUniLoop() {
             confessionsDB = [];
             snapshot.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
             confessionsDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
-            
             const activeTab = document.querySelector('.bottom-nav-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'confessions') {
                 const feedContainer = document.getElementById('conf-feed');
-                
                 if (feedContainer && feedContainer.children.length === confessionsDB.length) {
                     confessionsDB.forEach(post => {
                         const isLiked = post.likes && post.likes.includes(currentUid);
                         const likeBtn = document.getElementById(`like-btn-${post.id}`);
-                        if (likeBtn) {
-                            likeBtn.innerHTML = `${isLiked ? '❤️' : '🤍'} <span style="margin-left:4px;">${post.likes ? post.likes.length : 0}</span>`;
-                        }
+                        if (likeBtn) likeBtn.innerHTML = `${isLiked ? '❤️' : '🤍'} <span style="margin-left:4px;">${post.likes ? post.likes.length : 0}</span>`;
                         const commentCountBtn = document.getElementById(`comment-count-${post.id}`);
-                        if (commentCountBtn) {
-                            commentCountBtn.innerHTML = `💬 <span style="margin-left:4px;">${post.comments ? post.comments.length : 0}</span>`;
-                        }
+                        if (commentCountBtn) commentCountBtn.innerHTML = `💬 <span style="margin-left:4px;">${post.comments ? post.comments.length : 0}</span>`;
                     });
-                } else {
-                    window.drawConfessionsFeed();
-                }
+                } else { window.drawConfessionsFeed(); }
             }
-            
             if(document.getElementById('app-modal').classList.contains('active') && document.getElementById('active-post-id')) {
                 const activePostId = document.getElementById('active-post-id').value;
                 if(activePostId) window.updateConfessionDetailLive(activePostId);
@@ -936,12 +832,10 @@ function initializeUniLoop() {
             chatsDB = [];
             let pendingRequestsCount = 0;
             let unreadMessagesCount = 0;
-            
             snapshot.forEach(doc => {
                 try {
                     const data = doc.data({ serverTimestamps: 'estimate' }); 
                     if (!data.participants || !Array.isArray(data.participants)) return;
-                    
                     const otherUid = data.participants.find(p => p !== currentUid) || "system";
                     const otherName = (data.participantNames && data.participantNames[otherUid]) ? data.participantNames[otherUid] : "UniLoop Team";
                     const otherAvatar = (data.participantAvatars && data.participantAvatars[otherUid]) ? data.participantAvatars[otherUid] : "👤";
@@ -956,14 +850,11 @@ function initializeUniLoop() {
                     };
                     chatsDB.push(chatItem);
 
-                    if (chatItem.status === 'pending' && chatItem.initiator !== currentUid) {
-                        pendingRequestsCount++;
-                    } else if (chatItem.status === 'accepted' || chatItem.isMarketChat) {
+                    if (chatItem.status === 'pending' && chatItem.initiator !== currentUid) { pendingRequestsCount++; } 
+                    else if (chatItem.status === 'accepted' || chatItem.isMarketChat) {
                         if (chatItem.messages && chatItem.messages.length > 0) {
                             const lastMsg = chatItem.messages[chatItem.messages.length - 1];
-                            if (lastMsg.senderId !== currentUid && lastMsg.read === false) {
-                                unreadMessagesCount++;
-                            }
+                            if (lastMsg.senderId !== currentUid && lastMsg.read === false) unreadMessagesCount++;
                         }
                     }
                 } catch(err) { console.error("Hatalı mesaj belgesi es geçildi:", err); }
@@ -975,14 +866,8 @@ function initializeUniLoop() {
             const notifBadge = document.getElementById('notif-badge'); 
             const notifBadgeTop = document.getElementById('notif-badge-top'); 
             
-            if(notifBadge) {
-                if(totalNotifs > 0) { notifBadge.style.display = 'flex'; notifBadge.innerText = totalNotifs; } 
-                else { notifBadge.style.display = 'none'; }
-            }
-            if(notifBadgeTop) {
-                if(totalNotifs > 0) { notifBadgeTop.style.display = 'flex'; notifBadgeTop.innerText = totalNotifs; } 
-                else { notifBadgeTop.style.display = 'none'; }
-            }
+            if(notifBadge) { if(totalNotifs > 0) { notifBadge.style.display = 'flex'; notifBadge.innerText = totalNotifs; } else { notifBadge.style.display = 'none'; } }
+            if(notifBadgeTop) { if(totalNotifs > 0) { notifBadgeTop.style.display = 'flex'; notifBadgeTop.innerText = totalNotifs; } else { notifBadgeTop.style.display = 'none'; } }
 
             const activeTab = document.querySelector('.bottom-nav-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'messages') {
@@ -1002,10 +887,7 @@ function initializeUniLoop() {
             } else if (activeTab && activeTab.getAttribute('data-target') === 'profile') {
                 window.renderProfile();
             }
-            
-            if (document.getElementById('app-modal').classList.contains('active') && document.getElementById('modal-title').innerText.includes('Bildirimler')) {
-                window.renderNotifications();
-            }
+            if (document.getElementById('app-modal').classList.contains('active') && document.getElementById('modal-title').innerText.includes('Bildirimler')) { window.renderNotifications(); }
         });
     }
     window.openPremiumModal = function() {
@@ -1084,6 +966,7 @@ function initializeUniLoop() {
         try {
             const isPdf = file.type === "application/pdf";
             const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+            // YENİ: Firebase rules ile uyumlu olması için chat_media path'i kullanıyoruz.
             const storageRef = ref(storage, 'chat_media/' + window.userProfile.uid + '/' + Date.now() + '_' + cleanName);
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
@@ -1143,15 +1026,25 @@ function initializeUniLoop() {
         window.openModal('🎓 Sınıfını Seç', listHtml);
     };
 
+    // 1. FAKÜLTE ŞİFRESİ VE YÖNETİCİ KONTROLÜ
     window.checkFacultyPasscode = async function(facName, grade) {
         let firstWord = facName.split(' ')[0].toLocaleLowerCase('tr-TR');
         let expectedCode = firstWord + grade + "00"; 
         
-        let userCode = prompt(`${facName} ${grade}. Sınıf grubuna girmek için lütfen onay kodunu girin:\n(Örn: ${expectedCode})`);
+        let userCode = prompt(`${facName} ${grade}. Sınıf grubuna girmek için onay kodunu girin:\n(Yönetici girişi için şifrenin başına 'ai' ekleyin)`);
         
         if (userCode !== null) {
-            if (userCode.trim().toLocaleLowerCase('tr-TR') === expectedCode) {
-                alert("✅ Şifre doğru! Sınıfınıza katılıyorsunuz.");
+            let inputCode = userCode.trim().toLocaleLowerCase('tr-TR');
+            let isAdminJoin = false;
+
+            // 'ai' kontrolü
+            if (inputCode.startsWith('ai')) {
+                isAdminJoin = true;
+                inputCode = inputCode.substring(2); // 'ai' kısmını at
+            }
+
+            if (inputCode === expectedCode) {
+                alert(isAdminJoin ? "👑 Yönetici şifresi doğru! Gruba yönetici olarak katılıyorsunuz." : "✅ Şifre doğru! Sınıfınıza katılıyorsunuz.");
                 
                 const roomId = 'class_' + firstWord + '_' + grade;
                 const roomTitle = facName + ' ' + grade + '. Sınıf';
@@ -1161,6 +1054,17 @@ function initializeUniLoop() {
                         joinedClassRoom: { facName: facName, grade: grade, roomId: roomId, roomTitle: roomTitle } 
                     });
                     window.userProfile.joinedClassRoom = { facName: facName, grade: grade, roomId: roomId, roomTitle: roomTitle };
+
+                    // Yönetici ise veritabanına yetkiyi kaydet
+                    if (isAdminJoin) {
+                        const roomRef = doc(db, "group_chats", roomId);
+                        const roomSnap = await getDoc(roomRef);
+                        if (roomSnap.exists()) {
+                            await updateDoc(roomRef, { admins: arrayUnion(window.userProfile.uid) });
+                        } else {
+                            await setDoc(roomRef, { messages: [], admins: [window.userProfile.uid], bannedUsers: [], createdAt: serverTimestamp(), roomId: roomId });
+                        }
+                    }
                 } catch(e) { console.error(e); }
                 
                 window.closeModal();
@@ -1202,24 +1106,42 @@ function initializeUniLoop() {
         window.openModal('📌 Katıldığım Kulüpler', listHtml);
     };
 
+    // 2. KULÜP ŞİFRESİ VE YÖNETİCİ KONTROLÜ
     window.checkClubPasscode = async function(clubName, expectedWord) {
         let expectedCode = expectedWord + "100";
-        let userCode = prompt(`${clubName} grubuna girmek için lütfen giriş kodunu girin:\n(Örn: ${expectedCode})`);
+        let userCode = prompt(`${clubName} grubuna girmek için giriş kodunu girin:\n(Yönetici girişi için şifrenin başına 'ai' ekleyin)`);
         
         if (userCode !== null) {
-            if (userCode.trim().toLocaleLowerCase('tr-TR') === expectedCode) {
-                alert("✅ Şifre doğru! Kulüp odasına yönlendiriliyorsunuz.");
+            let inputCode = userCode.trim().toLocaleLowerCase('tr-TR');
+            let isAdminJoin = false;
+
+            if (inputCode.startsWith('ai')) {
+                isAdminJoin = true;
+                inputCode = inputCode.substring(2);
+            }
+
+            if (inputCode === expectedCode) {
+                alert(isAdminJoin ? "👑 Yönetici olarak kulüp odasına yönlendiriliyorsunuz." : "✅ Şifre doğru! Kulüp odasına yönlendiriliyorsunuz.");
                 let roomId = 'club_' + expectedWord;
 
                 try {
                     const clubObj = { roomId: roomId, name: clubName };
                     const hasClub = window.userProfile.joinedClubs && window.userProfile.joinedClubs.find(c => c.roomId === roomId);
                     if(!hasClub) {
-                        await updateDoc(doc(db, "users", window.userProfile.uid), { 
-                            joinedClubs: arrayUnion(clubObj) 
-                        });
+                        await updateDoc(doc(db, "users", window.userProfile.uid), { joinedClubs: arrayUnion(clubObj) });
                         if(!window.userProfile.joinedClubs) window.userProfile.joinedClubs = [];
                         window.userProfile.joinedClubs.push(clubObj);
+                    }
+
+                    // Yönetici Kaydı
+                    if (isAdminJoin) {
+                        const roomRef = doc(db, "group_chats", roomId);
+                        const roomSnap = await getDoc(roomRef);
+                        if (roomSnap.exists()) {
+                            await updateDoc(roomRef, { admins: arrayUnion(window.userProfile.uid) });
+                        } else {
+                            await setDoc(roomRef, { messages: [], admins: [window.userProfile.uid], bannedUsers: [], createdAt: serverTimestamp(), roomId: roomId });
+                        }
                     }
                 } catch(e) { console.error(e); }
 
@@ -1269,49 +1191,6 @@ function initializeUniLoop() {
                 <button style="background:#EF4444; color:white; border:none; width:50px; height:50px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 4px 10px rgba(239,68,68,0.4); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="window.closeModal()">🚪</button>
             </div>
         `);
-    };
-
-    window.showGroupMembers = async function(roomTitle, roomType) {
-        window.openModal(`👥 ${roomTitle} Üyeleri`, `<div style="text-align:center; padding:30px; color:var(--text-gray);">Üyeler yükleniyor... ⏳</div>`);
-        try {
-            const querySnapshot = await getDocs(query(collection(db, "users")));
-            let usersHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px; scroll-behavior:smooth;">`;
-            let count = 0;
-            
-            querySnapshot.forEach((doc) => {
-                const u = doc.data();
-                if(true) { 
-                    count++;
-                    const initial = u.surname ? u.surname.charAt(0) + '.' : '';
-                    let avatarHtml = u.avatarUrl 
-                        ? `<img src="${u.avatarUrl}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">` 
-                        : `<div style="width:44px; height:44px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid #E5E7EB;">${u.avatar || '👤'}</div>`;
-                    
-                    usersHtml += `
-                        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#fff; border:1px solid #E5E7EB; border-radius:12px; cursor:pointer; transition:0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)'" onmouseout="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'" onclick="window.closeModal(); window.viewUserProfile('${u.uid}')">
-                            <div style="display:flex; align-items:center; gap:12px;">
-                                ${avatarHtml}
-                                <div style="display:flex; flex-direction:column;">
-                                    <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} ${u.uid === window.userProfile.uid ? '<span style="color:#10B981; font-size:11px;">(Sen)</span>' : ''}</span>
-                                    <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.faculty || 'Kampüs Öğrencisi'}</span>
-                                </div>
-                            </div>
-                            ${u.isPremium ? '<span style="font-size:18px; filter:drop-shadow(0 2px 4px rgba(245,158,11,0.4));" title="Premium Üye">👑</span>' : ''}
-                        </div>
-                    `;
-                }
-            });
-            usersHtml += `</div>`;
-            
-            if(count === 0) {
-                usersHtml = `<div style="text-align:center; padding:30px; color:var(--text-gray);">Bu alanda henüz kimse yok.</div>`;
-            }
-            
-            document.getElementById('modal-body').innerHTML = usersHtml;
-        } catch (e) {
-            console.error(e);
-            document.getElementById('modal-body').innerHTML = `<div style="color:red; text-align:center;">Üyeler yüklenirken bir hata oluştu.</div>`;
-        }
     };
 
     // --- ÖZEL KULÜP ODASI TASARIMI (Takvimli ve Toplantılı) ---
@@ -1412,7 +1291,7 @@ function initializeUniLoop() {
                     <button class="chat-send-btn" onclick="window.sendGroupMsg('${roomId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(79,70,229,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">➤</button>
                 </div>
             </div>
-`;
+        `;
         mainContent.innerHTML = html;
 
         const inputField = document.getElementById('group-chat-input');
@@ -1422,6 +1301,7 @@ function initializeUniLoop() {
         setupGroupChatListener(roomId);
     };
 
+    // 3. YÖNETİCİ MESAJ SİLME VE BAN KONTROLÜ DİNLEYİCİSİ
     function setupGroupChatListener(roomId) {
         currentGroupUnsubscribe = onSnapshot(doc(db, "group_chats", roomId), (docSnap) => {
             const scrollBox = document.getElementById('group-messages-scroll');
@@ -1434,6 +1314,18 @@ function initializeUniLoop() {
 
             const data = docSnap.data();
             const msgs = data.messages || [];
+            const admins = data.admins || [];
+            const bannedUsers = data.bannedUsers || [];
+            
+            // BAN KONTROLÜ: Eğer kullanıcı atıldıysa odadan çıkarılır
+            if (bannedUsers.includes(window.userProfile.uid)) {
+                if (currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
+                alert("🚫 Bir yönetici tarafından bu gruptan çıkarıldınız. Artık mesajları göremezsiniz.");
+                window.loadPage('home');
+                return;
+            }
+
+            const isMeAdmin = admins.includes(window.userProfile.uid);
             let chatHTML = `<div style="text-align:center; padding:10px; color:#6B7280; font-size:11px; background:rgba(255,255,255,0.6); border-radius:8px; margin:10px auto 20px auto; width:fit-content; font-weight:600;">Bugün</div>`;
 
             msgs.forEach(msg => {
@@ -1443,11 +1335,12 @@ function initializeUniLoop() {
                 
                 let senderNameHtml = '';
                 if(!isMe) {
+                    const adminBadge = admins.includes(msg.senderId) ? '<span style="font-size:9px; background:#F59E0B; color:white; padding:2px 4px; border-radius:4px; margin-left:4px;">Yönetici</span>' : '';
                     senderNameHtml = `<div style="font-size:12px; font-weight:800; color:var(--primary); margin-bottom:4px; display:flex; align-items:center; gap:5px;">
                         <span style="width:20px; height:20px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; overflow:hidden;">
                             ${msg.senderAvatar && msg.senderAvatar.startsWith('http') ? `<img src="${msg.senderAvatar}" style="width:100%;height:100%;object-fit:cover;">` : (msg.senderAvatar || '👤')}
                         </span>
-                        ${msg.senderName}
+                        ${msg.senderName} ${adminBadge}
                     </div>`;
                 }
 
@@ -1460,7 +1353,12 @@ function initializeUniLoop() {
                     }
                 }
 
-                chatHTML += `<div class="bubble ${type}" style="display:flex; flex-direction:column; max-width:80%; padding:8px 12px; border-radius:12px; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05); ${bgStyle}">
+                // Yöneticiler için Sil Butonu (Hover ile görünür)
+                const safeMsgText = msg.text.replace(/'/g, "\\'");
+                let deleteHtml = isMeAdmin ? `<button onclick="window.deleteGroupMsg('${roomId}', '${msg.time}', '${msg.senderId}', '${safeMsgText}')" style="position:absolute; top:-10px; right:-10px; background:#EF4444; color:white; border:none; border-radius:50%; width:24px; height:24px; font-size:10px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); display:none;" class="admin-del-btn" title="Mesajı Sil">🗑️</button>` : '';
+
+                chatHTML += `<div class="bubble ${type}" style="display:flex; flex-direction:column; max-width:80%; padding:8px 12px; border-radius:12px; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05); ${bgStyle} position:relative;" onmouseover="let btn=this.querySelector('.admin-del-btn'); if(btn) btn.style.display='block';" onmouseout="let btn=this.querySelector('.admin-del-btn'); if(btn) btn.style.display='none';">
+                    ${deleteHtml}
                     ${senderNameHtml}
                     ${mediaHtml}
                     <div class="msg-text" style="font-size:15px; color:#111827; word-break:break-word; line-height:1.4;">${msg.text}</div>
@@ -1471,6 +1369,32 @@ function initializeUniLoop() {
             scrollBox.scrollTop = scrollBox.scrollHeight;
         });
     }
+
+    // 4. YENİ: MESAJ SİLME FONKSİYONU
+    window.deleteGroupMsg = async function(roomId, msgTime, senderId, msgText) {
+        if(confirm("Yönetici Yetkisi: Bu mesajı herkes için silmek istediğinize emin misiniz?")) {
+            try {
+                const roomRef = doc(db, "group_chats", roomId);
+                const roomSnap = await getDoc(roomRef);
+                if(roomSnap.exists()) {
+                    const msgs = roomSnap.data().messages || [];
+                    const updatedMsgs = msgs.filter(m => !(m.time === msgTime && m.senderId === senderId && m.text === msgText));
+                    await updateDoc(roomRef, { messages: updatedMsgs });
+                }
+            } catch(e) { alert("Mesaj silinirken hata oluştu: " + e.message); }
+        }
+    };
+
+    // 5. YENİ: KULLANICIYI GRUPTAN ATMA (KICK)
+    window.kickUserFromGroup = async function(roomId, userId, userName) {
+        if(confirm(`Yönetici Uyarısı: ${userName} adlı kullanıcıyı gruptan uzaklaştırmak istediğinize emin misiniz?`)) {
+            try {
+                await updateDoc(doc(db, "group_chats", roomId), { bannedUsers: arrayUnion(userId) });
+                alert(`✅ ${userName} gruptan başarıyla çıkarıldı.`);
+                window.closeModal();
+            } catch(e) { alert("Kullanıcı atılamadı: " + e.message); }
+        }
+    };
 
     window.sendGroupMsg = async function(roomId) {
         const input = document.getElementById('group-chat-input');
@@ -1529,7 +1453,6 @@ function initializeUniLoop() {
             } else {
                 const targetUser = snapshot.docs[0].data();
                 
-                // Mini Modal ile ekleme onayı (Taç gösterimi burada)
                 const premiumIcon = targetUser.isPremium ? '<span style="font-size:18px; margin-left:5px;" title="Premium Üye">👑</span>' : '';
                 window.openModal('🔍 Kullanıcı Bulundu', `
                     <div style="text-align:center; padding:10px;">
@@ -1649,7 +1572,6 @@ function initializeUniLoop() {
             `;
         }
 
-        // Sınıfına giriş yapmışsa "Sınıfıma Gir" butonu göster, yapmamışsa "Fakülteler"
         let facultyCardHtml = '';
         if (window.userProfile.joinedClassRoom && window.userProfile.joinedClassRoom.roomId) {
             const classInfo = window.userProfile.joinedClassRoom;
@@ -1670,7 +1592,6 @@ function initializeUniLoop() {
             `;
         }
 
-        // Katıldığı kulüpler varsa kısayol çıkart, yoksa normal keşfet butonu
         let clubsCardHtml = '';
         if (window.userProfile.joinedClubs && window.userProfile.joinedClubs.length > 0) {
             clubsCardHtml = `
@@ -2207,7 +2128,7 @@ function initializeUniLoop() {
                 try {
                     const file = fileInput.files[0];
                     const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-                    const storageRef = ref(storage, 'loopmap/' + Date.now() + '_' + cleanName);
+                    const storageRef = ref(storage, 'confessions/' + window.userProfile.uid + '/' + Date.now() + '_' + cleanName);
                     await uploadBytes(storageRef, file);
                     imgUrl = await getDownloadURL(storageRef);
                 } catch(uploadError) {
