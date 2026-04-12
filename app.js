@@ -904,9 +904,18 @@ function initializeUniLoop() {
                 <h3 style="color:#D97706; margin-bottom: 10px; font-size: 22px;">Kampüsün Zirvesine Çık!</h3>
                 <p style="margin-bottom:20px; font-size:15px; color:var(--text-gray);">UniLoop Premium ile sınırları kaldır ve kampüsün en popüler ağına dahil ol.</p>
                 <ul style="text-align:left; background:#FEF3C7; padding: 20px; border-radius: 12px; margin-bottom:20px; list-style:none; color:#92400E; font-weight:500; font-size: 14px;">
-                    <li style="margin-bottom:12px; display:flex; gap:10px;"><span style="font-size:18px;">🟢</span> <span><strong>Gelişmiş AI Radarı:</strong> Şu an kütüphanede veya çevrimiçi olan bölümdaşlarını anında gör.</span></li>
-                    <li style="margin-bottom:12px; display:flex; gap:10px;"><span style="font-size:18px;">🕵️</span> <span><strong>Seni Kimler Beğendi?:</strong> Profilini gezen herkesi anında açığa çıkar.</span></li>
-                    <li style="display:flex; gap:10px;"><span style="font-size:18px;">🚀</span> <span><strong>Öncelikli Mesaj (Super DM):</strong> Mesajların kilit ekranına düşsün ve anında fark edilsin.</span></li>
+                    <li style="margin-bottom:12px; display:flex; gap:10px;">
+                        <span style="font-size:18px;">🟢</span> 
+                        <span><strong>Gelişmiş AI Radarı:</strong> Şu an kütüphanede veya çevrimiçi olan bölümdaşlarını anında gör.</span>
+                    </li>
+                    <li style="margin-bottom:12px; display:flex; gap:10px;">
+                        <span style="font-size:18px;">🕵️</span> 
+                        <span><strong>Seni Kimler Beğendi?:</strong> Profilini gezen herkesi anında açığa çıkar.</span>
+                    </li>
+                    <li style="display:flex; gap:10px;">
+                        <span style="font-size:18px;">🚀</span> 
+                        <span><strong>Öncelikli Mesaj (Super DM):</strong> Mesajların kilit ekranına düşsün ve anında fark edilsin.</span>
+                    </li>
                 </ul>
                 <div style="font-size:32px; font-weight:800; margin-bottom:20px; color:var(--text-dark);">
                     49.99 ₺ <span style="font-size:14px; color:var(--text-gray); font-weight:normal;">/ aylık</span>
@@ -923,12 +932,15 @@ function initializeUniLoop() {
         const btn = document.getElementById('buy-premium-btn');
         btn.innerText = '⏳ Ödeme İşleniyor... Lütfen bekleyin.';
         btn.disabled = true;
+        
         setTimeout(async () => {
             try {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: true });
                 window.userProfile.isPremium = true;
+                
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) navBtn.style.display = 'none';
+                
                 window.closeModal();
                 alert("🎉 Tebrikler! Ödemeniz başarıyla alındı. UniLoop Premium ayrıcalıklarına artık sahipsiniz!");
                 window.loadPage('home'); 
@@ -943,7 +955,10 @@ function initializeUniLoop() {
     window.goToMessages = function() {
         document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
         const msgTab = document.querySelector('.bottom-nav-item[data-target="messages"]');
-        if(msgTab) { msgTab.classList.add('active'); window.loadPage('messages'); }
+        if(msgTab) { 
+            msgTab.classList.add('active'); 
+            window.loadPage('messages'); 
+        }
     };
 
     window.openModal = function(title, contentHTML) { 
@@ -968,12 +983,16 @@ function initializeUniLoop() {
         
         const btn = document.querySelector('.chat-send-btn');
         const originalIcon = btn ? btn.innerHTML : '➤';
-        if(btn) { btn.innerHTML = '⏳'; btn.disabled = true; }
+        if(btn) { 
+            btn.innerHTML = '⏳'; 
+            btn.disabled = true; 
+        }
 
         try {
             const isPdf = file.type === "application/pdf";
             const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
             const storageRef = ref(storage, 'chat_media/' + window.userProfile.uid + '/' + Date.now() + '_' + cleanName);
+            
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
 
@@ -993,9 +1012,17 @@ function initializeUniLoop() {
                 const docRef = doc(db, "group_chats", targetId);
                 const docSnap = await getDoc(docRef);
                 if(docSnap.exists()) {
-                    await updateDoc(docRef, { messages: arrayUnion(msgObj), lastUpdated: serverTimestamp() });
+                    await updateDoc(docRef, { 
+                        messages: arrayUnion(msgObj), 
+                        lastUpdated: serverTimestamp() 
+                    });
                 } else {
-                    await setDoc(docRef, { messages: [msgObj], members: [window.userProfile.uid], createdAt: serverTimestamp(), roomId: targetId });
+                    await setDoc(docRef, { 
+                        messages: [msgObj], 
+                        members: [window.userProfile.uid], 
+                        createdAt: serverTimestamp(), 
+                        roomId: targetId 
+                    });
                 }
             } else if (chatType === 'dm') {
                 await updateDoc(doc(db, "chats", targetId), {
@@ -1007,7 +1034,10 @@ function initializeUniLoop() {
             console.error(e);
             alert("Medya yüklenirken hata oluştu.");
         } finally {
-            if(btn) { btn.innerHTML = originalIcon; btn.disabled = false; }
+            if(btn) { 
+                btn.innerHTML = originalIcon; 
+                btn.disabled = false; 
+            }
             event.target.value = '';
         }
     };
@@ -1067,11 +1097,19 @@ function initializeUniLoop() {
                         if (isAdminJoin) updates.admins = arrayUnion(window.userProfile.uid);
                         await updateDoc(roomRef, updates);
                     } else {
-                        let docData = { messages: [], members: [window.userProfile.uid], bannedUsers: [], createdAt: serverTimestamp(), roomId: roomId };
+                        let docData = { 
+                            messages: [], 
+                            members: [window.userProfile.uid], 
+                            bannedUsers: [], 
+                            createdAt: serverTimestamp(), 
+                            roomId: roomId 
+                        };
                         if (isAdminJoin) docData.admins = [window.userProfile.uid];
                         await setDoc(roomRef, docData);
                     }
-                } catch(e) { console.error(e); }
+                } catch(e) { 
+                    console.error(e); 
+                }
                 
                 window.closeModal();
                 window.loadPage('home'); 
@@ -1089,10 +1127,12 @@ function initializeUniLoop() {
             let cleanNameMatch = club.match(/([a-zA-ZçğıöşüÇĞİÖŞÜ]+)/);
             let expectedWord = cleanNameMatch ? cleanNameMatch[0].toLocaleLowerCase('tr-TR') : "kulup";
             
-            listHtml += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-radius:12px; cursor:pointer; background:#fff; border:1px solid #E5E7EB; margin-bottom:0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.checkClubPasscode('${club}', '${expectedWord}')">
-                <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${club}</span>
-                <span style="background:#EEF2FF; color:var(--primary); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold;">Katıl 🚀</span>
-            </div>`;
+            listHtml += `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-radius:12px; cursor:pointer; background:#fff; border:1px solid #E5E7EB; margin-bottom:0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.checkClubPasscode('${club}', '${expectedWord}')">
+                    <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${club}</span>
+                    <span style="background:#EEF2FF; color:var(--primary); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold;">Katıl 🚀</span>
+                </div>
+            `;
         });
         listHtml += `</div>`;
         window.openModal('🎭 Kulüpler ve Organizasyonlar', listHtml);
@@ -1103,10 +1143,12 @@ function initializeUniLoop() {
         listHtml += `<button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px; font-weight:bold; border-radius:12px; margin-bottom:10px;" onclick="window.openClubsList()">🔍 Yeni Kulüp Keşfet</button>`;
 
         window.userProfile.joinedClubs.forEach(club => {
-            listHtml += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-radius:12px; cursor:pointer; background:#fff; border:1px solid #E5E7EB; margin-bottom:0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.closeModal(); window.openClubRoom('${club.roomId}', '${club.name}')">
-                <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${club.name}</span>
-                <span style="background:#DCF8C6; color:#166534; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold;">Git ➡️</span>
-            </div>`;
+            listHtml += `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-radius:12px; cursor:pointer; background:#fff; border:1px solid #E5E7EB; margin-bottom:0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.closeModal(); window.openClubRoom('${club.roomId}', '${club.name}')">
+                    <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${club.name}</span>
+                    <span style="background:#DCF8C6; color:#166534; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold;">Git ➡️</span>
+                </div>
+            `;
         });
         listHtml += `</div>`;
         window.openModal('📌 Katıldığım Kulüpler', listHtml);
@@ -1133,11 +1175,14 @@ function initializeUniLoop() {
                 try {
                     const clubObj = { roomId: roomId, name: clubName };
                     const hasClub = window.userProfile.joinedClubs && window.userProfile.joinedClubs.find(c => c.roomId === roomId);
+                    
                     if(!hasClub) {
                         await updateDoc(doc(db, "users", window.userProfile.uid), { 
                             joinedClubs: arrayUnion(clubObj) 
                         });
-                        if(!window.userProfile.joinedClubs) window.userProfile.joinedClubs = [];
+                        if(!window.userProfile.joinedClubs) {
+                            window.userProfile.joinedClubs = [];
+                        }
                         window.userProfile.joinedClubs.push(clubObj);
                     }
 
@@ -1148,11 +1193,19 @@ function initializeUniLoop() {
                         if (isAdminJoin) updates.admins = arrayUnion(window.userProfile.uid);
                         await updateDoc(roomRef, updates);
                     } else {
-                        let docData = { messages: [], members: [window.userProfile.uid], bannedUsers: [], createdAt: serverTimestamp(), roomId: roomId };
+                        let docData = { 
+                            messages: [], 
+                            members: [window.userProfile.uid], 
+                            bannedUsers: [], 
+                            createdAt: serverTimestamp(), 
+                            roomId: roomId 
+                        };
                         if (isAdminJoin) docData.admins = [window.userProfile.uid];
                         await setDoc(roomRef, docData);
                     }
-                } catch(e) { console.error(e); }
+                } catch(e) { 
+                    console.error(e); 
+                }
 
                 window.closeModal();
                 window.loadPage('home'); 
@@ -1202,12 +1255,25 @@ function initializeUniLoop() {
         `);
     };
 
-    // YENİ: GRUPTAN ÇIKIŞ FONKSİYONU (⏏)
-    window.leaveGroup = async function(roomId, roomType) {
+    // YENİ: GRUPTAN AYRILMA (Sistem mesajı ve üyelikten düşme)
+    window.leaveGroup = async function(roomId, roomType, userName) {
         if(confirm("Bu gruptan çıkış yapmak istediğinize emin misiniz?")) {
             try {
                 const roomRef = doc(db, "group_chats", roomId);
-                await updateDoc(roomRef, { members: arrayRemove(window.userProfile.uid), admins: arrayRemove(window.userProfile.uid) });
+                
+                // Sistem mesajı oluştur
+                const sysMsg = { 
+                    senderId: "system", 
+                    text: `${userName} gruptan ayrıldı.`, 
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+                    isSystem: true 
+                };
+                
+                await updateDoc(roomRef, { 
+                    members: arrayRemove(window.userProfile.uid), 
+                    admins: arrayRemove(window.userProfile.uid),
+                    messages: arrayUnion(sysMsg)
+                });
                 
                 const userRef = doc(db, "users", window.userProfile.uid);
                 if (roomType === 'faculty') {
@@ -1220,14 +1286,32 @@ function initializeUniLoop() {
                 }
                 
                 alert("Gruptan başarıyla çıktınız.");
-                if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
+                if(currentGroupUnsubscribe) { 
+                    currentGroupUnsubscribe(); 
+                    currentGroupUnsubscribe = null; 
+                }
                 window.closeModal(); 
                 window.loadPage('home');
-            } catch(e) { alert("Çıkış yapılamadı: " + e.message); }
+            } catch(e) { 
+                alert("Çıkış yapılamadı: " + e.message); 
+            }
         }
     };
 
-    // --- ÖZEL KULÜP ODASI TASARIMI ---
+    // YENİ: KULÜP ETKİNLİĞİ DÜZENLEME
+    window.editClubMeeting = function(roomId) {
+        const title = prompt("Toplantı Başlığı (Örn: Haftalık Değerlendirme):");
+        if (!title) return;
+        const time = prompt("Toplantı Saati ve Yeri (Örn: Cuma 20:00 - Online):");
+        if (!time) return;
+        
+        updateDoc(doc(db, "group_chats", roomId), { 
+            meetingTitle: title, 
+            meetingTime: time 
+        }).catch(e => console.error(e));
+    };
+
+    // --- ÖZEL KULÜP ODASI TASARIMI (Daraltılmış Planlanan Toplantı) ---
     window.openClubRoom = function(roomId, roomTitle) {
         if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
 
@@ -1236,6 +1320,7 @@ function initializeUniLoop() {
 
         let html = `
             <div id="chat-layout-container" style="flex-direction: column; position: relative; width: 100%; height: 100%; display: flex; background:#F9FAFB;">
+                
                 <div class="chat-header" style="padding:10px 15px; border-bottom:1px solid #E5E7EB; background:white; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index:10; flex-shrink:0;">
                     <div style="display:flex; align-items:center; gap:10px; flex:1;">
                         <button class="back-btn" onclick="event.stopPropagation(); if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:transparent; font-size:24px; font-weight:bold; cursor:pointer; color:var(--text-dark); padding:0; width:30px;">←</button>
@@ -1248,24 +1333,24 @@ function initializeUniLoop() {
                     <div style="font-size:22px; cursor:pointer;" onclick="event.stopPropagation(); window.showGroupMembers('${roomTitle}', 'club')">👥</div>
                 </div>
 
-                <div style="padding:15px; background:white; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <div style="font-size:14px; font-weight:800; color:var(--text-dark);">📅 Gelecek Etkinlikler</div>
+                <div style="padding:8px 15px; background:white; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <div style="font-size:13px; font-weight:800; color:var(--text-dark);">📅 Planlanan Toplantı</div>
+                        <button id="edit-meeting-btn" style="display:none; font-size:11px; background:#EEF2FF; color:var(--primary); border:1px solid #C7D2FE; padding:3px 8px; border-radius:6px; cursor:pointer; font-weight:bold;" onclick="window.editClubMeeting('${roomId}')">✏️ Düzenle</button>
                     </div>
-                    <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:12px; padding:12px; display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
+                    <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:8px; padding:8px 12px; display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
                         <div style="display:flex; flex-direction:column;">
-                            <span style="font-size:13px; font-weight:800; color:#D97706;">Büyük Tanışma Toplantısı</span>
-                            <span style="font-size:11px; color:#B45309; margin-top:2px;">Yarın, 20:00 - Online</span>
+                            <span id="meeting-title" style="font-size:12px; font-weight:800; color:#D97706;">Büyük Tanışma Toplantısı</span>
+                            <span id="meeting-time" style="font-size:11px; color:#B45309; margin-top:2px;">Tarih Belirlenmedi</span>
                         </div>
-                        <span style="background:#F59E0B; color:white; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:8px;">Yaklaşıyor</span>
                     </div>
 
                     <div style="display:flex; gap:10px;">
-                        <button style="flex:1; background:#EEF2FF; border:1px solid #C7D2FE; color:var(--primary); padding:10px; border-radius:10px; font-size:13px; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; transition:0.2s;" onclick="window.joinMockVoiceRoom('${roomTitle}')">
-                            <span style="font-size:16px;">📞</span> Sesli Oda
+                        <button style="flex:1; background:#EEF2FF; border:1px solid #C7D2FE; color:var(--primary); padding:6px; border-radius:8px; font-size:12px; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; transition:0.2s;" onclick="window.joinMockVoiceRoom('${roomTitle}')">
+                            <span style="font-size:14px;">📞</span> Sesli
                         </button>
-                        <button style="flex:1; background:#EEF2FF; border:1px solid #C7D2FE; color:var(--primary); padding:10px; border-radius:10px; font-size:13px; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; transition:0.2s;" onclick="window.joinMockVideoRoom('${roomTitle}')">
-                            <span style="font-size:16px;">📹</span> Görüntülü Meeting
+                        <button style="flex:1; background:#EEF2FF; border:1px solid #C7D2FE; color:var(--primary); padding:6px; border-radius:8px; font-size:12px; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; transition:0.2s;" onclick="window.joinMockVideoRoom('${roomTitle}')">
+                            <span style="font-size:14px;">📹</span> Görüntülü
                         </button>
                     </div>
                 </div>
@@ -1300,6 +1385,7 @@ function initializeUniLoop() {
 
         let html = `
             <div id="chat-layout-container" style="flex-direction: column; position: relative; width: 100%; height: 100%; display: flex; background:#e5ded8;">
+                
                 <div class="chat-header" style="padding:10px 15px; border-bottom:1px solid #d1d5db; background:#fff; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index:10; flex-shrink:0; height:65px; box-sizing:border-box;">
                     <div style="display:flex; align-items:center; gap:10px; flex:1;">
                         <button class="back-btn" onclick="event.stopPropagation(); if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:transparent; font-size:24px; font-weight:bold; cursor:pointer; color:var(--text-dark); display:flex; align-items:center; justify-content:center; z-index:9999; pointer-events:auto; padding:0; width:30px;">←</button>
@@ -1349,6 +1435,16 @@ function initializeUniLoop() {
             const admins = data.admins || [];
             const bannedUsers = data.bannedUsers || [];
             
+            // Eğer Kulüp odasındaysak toplantı verisini güncelle
+            if (roomId.startsWith('club_')) {
+                const mTitle = document.getElementById('meeting-title');
+                const mTime = document.getElementById('meeting-time');
+                const editBtn = document.getElementById('edit-meeting-btn');
+                if(mTitle) mTitle.innerText = data.meetingTitle || 'Büyük Tanışma Toplantısı';
+                if(mTime) mTime.innerText = data.meetingTime || 'Tarih Belirlenmedi';
+                if(editBtn && admins.includes(window.userProfile.uid)) editBtn.style.display = 'block';
+            }
+            
             // BAN KONTROLÜ: Eğer kullanıcı atıldıysa odadan çıkarılır
             if (bannedUsers.includes(window.userProfile.uid)) {
                 if (currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
@@ -1358,9 +1454,21 @@ function initializeUniLoop() {
             }
 
             const isMeAdmin = admins.includes(window.userProfile.uid);
-            let chatHTML = `<div style="text-align:center; padding:10px; color:#6B7280; font-size:11px; background:rgba(255,255,255,0.6); border-radius:8px; margin:10px auto 20px auto; width:fit-content; font-weight:600;">Bugün</div>`;
+            let chatHTML = `<div style="text-align:center; padding:10px; color:#6B7280; font-size:11px; font-weight:600;">Bugün</div>`;
 
             msgs.forEach(msg => {
+                // SİSTEM MESAJI RENDERI (Gruptan çıktı / atıldı mesajı)
+                if (msg.isSystem) {
+                    chatHTML += `
+                        <div style="text-align:center; margin: 12px 0;">
+                            <span style="background:rgba(0,0,0,0.08); color:#4B5563; font-size:11px; padding:6px 14px; border-radius:16px; font-weight:600; display:inline-block; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
+                                ${msg.text}
+                            </span>
+                        </div>
+                    `;
+                    return; // Sistem mesajı olduğu için standart bubble çizilmez.
+                }
+
                 const isMe = msg.senderId === window.userProfile.uid;
                 const type = isMe ? 'sent' : 'received';
                 const bgStyle = isMe ? 'background:#DCF8C6;' : 'background:#FFFFFF; border:1px solid #e5e7eb;';
@@ -1368,12 +1476,14 @@ function initializeUniLoop() {
                 let senderNameHtml = '';
                 if(!isMe) {
                     const adminBadge = admins.includes(msg.senderId) ? '<span style="font-size:9px; background:#F59E0B; color:white; padding:2px 4px; border-radius:4px; margin-left:4px;">Yönetici</span>' : '';
-                    senderNameHtml = `<div style="font-size:12px; font-weight:800; color:var(--primary); margin-bottom:4px; display:flex; align-items:center; gap:5px;">
-                        <span style="width:20px; height:20px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                            ${msg.senderAvatar && msg.senderAvatar.startsWith('http') ? `<img src="${msg.senderAvatar}" style="width:100%;height:100%;object-fit:cover;">` : (msg.senderAvatar || '👤')}
-                        </span>
-                        ${msg.senderName} ${adminBadge}
-                    </div>`;
+                    senderNameHtml = `
+                        <div style="font-size:12px; font-weight:800; color:var(--primary); margin-bottom:4px; display:flex; align-items:center; gap:5px;">
+                            <span style="width:20px; height:20px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                                ${msg.senderAvatar && msg.senderAvatar.startsWith('http') ? `<img src="${msg.senderAvatar}" style="width:100%;height:100%;object-fit:cover;">` : (msg.senderAvatar || '👤')}
+                            </span>
+                            ${msg.senderName} ${adminBadge}
+                        </div>
+                    `;
                 }
 
                 let mediaHtml = '';
@@ -1385,17 +1495,19 @@ function initializeUniLoop() {
                     }
                 }
 
-                // Yöneticiler için Sil Butonu (✕)
+                // Yöneticiler için Sil Butonu (✕) Tıklama ile açılır
                 const safeMsgText = msg.text.replace(/'/g, "\\'");
-                let deleteHtml = isMeAdmin ? `<button onclick="window.deleteGroupMsg('${roomId}', '${msg.time}', '${msg.senderId}', '${safeMsgText}')" style="position:absolute; top:-10px; right:-10px; background:white; color:#DC2626; border:1px solid #E5E7EB; border-radius:50%; width:24px; height:24px; font-size:12px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); display:none; display:flex; align-items:center; justify-content:center; padding-bottom:2px;" class="admin-del-btn" title="Mesajı Sil">✕</button>` : '';
+                let deleteHtml = isMeAdmin ? `<button onclick="event.stopPropagation(); window.deleteGroupMsg('${roomId}', '${msg.time}', '${msg.senderId}', '${safeMsgText}')" style="position:absolute; top:-10px; right:-10px; background:white; color:#DC2626; border:1px solid #E5E7EB; border-radius:50%; width:24px; height:24px; font-size:12px; cursor:pointer; align-items:center; justify-content:center; padding-bottom:2px; box-shadow:0 2px 4px rgba(0,0,0,0.1); z-index:50; display:none;" class="admin-del-btn" title="Mesajı Sil">✕</button>` : '';
 
-                chatHTML += `<div class="bubble ${type}" style="display:flex; flex-direction:column; max-width:80%; padding:8px 12px; border-radius:12px; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05); ${bgStyle} position:relative;" onmouseover="let btn=this.querySelector('.admin-del-btn'); if(btn) btn.style.display='block';" onmouseout="let btn=this.querySelector('.admin-del-btn'); if(btn) btn.style.display='none';">
-                    ${deleteHtml}
-                    ${senderNameHtml}
-                    ${mediaHtml}
-                    <div class="msg-text" style="font-size:15px; color:#111827; word-break:break-word; line-height:1.4;">${msg.text}</div>
-                    <div class="msg-time" style="align-self:flex-end; font-size:10px; color:#6B7280; margin-top:4px; font-weight:500;">${msg.time}</div>
-                </div>`;
+                chatHTML += `
+                    <div class="bubble ${type}" style="display:flex; flex-direction:column; max-width:80%; padding:8px 12px; border-radius:12px; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05); ${bgStyle} position:relative;" onclick="let btn=this.querySelector('.admin-del-btn'); if(btn) { btn.style.display = btn.style.display === 'none' ? 'flex' : 'none'; }">
+                        ${deleteHtml}
+                        ${senderNameHtml}
+                        ${mediaHtml}
+                        <div class="msg-text" style="font-size:15px; color:#111827; word-break:break-word; line-height:1.4;">${msg.text}</div>
+                        <div class="msg-time" style="align-self:flex-end; font-size:10px; color:#6B7280; margin-top:4px; font-weight:500;">${msg.time}</div>
+                    </div>
+                `;
             });
             scrollBox.innerHTML = chatHTML;
             scrollBox.scrollTop = scrollBox.scrollHeight;
@@ -1417,15 +1529,24 @@ function initializeUniLoop() {
         }
     };
 
-    // 5. YENİ: KULLANICIYI GRUPTAN ATMA (KICK) (✕)
+    // 5. YENİ: KULLANICIYI GRUPTAN ATMA (KICK) (✕) (Sistem mesajlı)
     window.kickUserFromGroup = async function(roomId, userId, userName) {
         if(confirm(`Yönetici Uyarısı: ${userName} adlı kullanıcıyı gruptan uzaklaştırmak istediğinize emin misiniz?`)) {
             try {
+                const sysMsg = { 
+                    senderId: "system", 
+                    text: `${userName} gruptan çıkarıldı.`, 
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+                    isSystem: true 
+                };
+
                 await updateDoc(doc(db, "group_chats", roomId), { 
                     bannedUsers: arrayUnion(userId),
                     members: arrayRemove(userId),
-                    admins: arrayRemove(userId)
+                    admins: arrayRemove(userId),
+                    messages: arrayUnion(sysMsg)
                 });
+                
                 alert(`✅ ${userName} gruptan başarıyla çıkarıldı.`);
                 window.closeModal();
             } catch(e) { alert("Kullanıcı atılamadı: " + e.message); }
@@ -1481,7 +1602,7 @@ function initializeUniLoop() {
                     
                     // Kendisi için "Çık" (⏏) butonu
                     if (u.uid === window.userProfile.uid) {
-                        actionBtn = `<button onclick="event.stopPropagation(); window.leaveGroup('${currentRoomId}', '${roomType}')" style="background:transparent; border:none; font-size:22px; color:#DC2626; cursor:pointer;" title="Gruptan Çık">⏏</button>`;
+                        actionBtn = `<button onclick="event.stopPropagation(); window.leaveGroup('${currentRoomId}', '${roomType}', '${u.name}')" style="background:transparent; border:none; font-size:22px; color:#DC2626; cursor:pointer;" title="Gruptan Çık">⏏</button>`;
                         
                         meHtml = `
                             <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#EEF2FF; border:1px solid #C7D2FE; border-radius:12px; transition:0.2s; margin-bottom:10px;">
@@ -1500,7 +1621,7 @@ function initializeUniLoop() {
                     } else {
                         // Yönetici ise başkası için "Çıkar" (✕) butonu
                         if (isMeAdmin && currentRoomId) {
-                            actionBtn = `<button onclick="event.stopPropagation(); window.kickUserFromGroup('${currentRoomId}', '${u.uid}', '${u.name}')" style="background:transparent; border:none; font-size:18px; color:#6B7280; cursor:pointer;" title="Gruptan At">✕</button>`;
+                            actionBtn = `<button onclick="event.stopPropagation(); window.kickUserFromGroup('${currentRoomId}', '${u.uid}', '${u.name}')" style="background:transparent; border:none; font-size:18px; color:#6B7280; cursor:pointer; font-weight:bold;" title="Gruptan At">✕</button>`;
                         }
 
                         othersHtml += `
@@ -1701,7 +1822,7 @@ function initializeUniLoop() {
         }
     };
 
-    // --- YENİ: PROFİL DÜZENLEME MODALI ---
+    // --- PROFİL DÜZENLEME MODALI ---
     window.openProfileEditModal = function() {
         const u = window.userProfile;
         const uNameStr = u.username ? u.username.replace('#', '') : '';
@@ -1755,7 +1876,6 @@ function initializeUniLoop() {
         const finalUsername = '#' + usernameInput;
         
         try {
-            // Eğer kullanıcı adını değiştirdiyse, başkası almış mı kontrol et
             if (finalUsername !== window.userProfile.username) {
                 const qU = query(collection(db, "users"), where("username", "==", finalUsername));
                 const snap = await getDocs(qU);
@@ -1772,7 +1892,6 @@ function initializeUniLoop() {
                 grade: newGrade
             });
 
-            // RAM'i güncelle
             window.userProfile.username = finalUsername;
             window.userProfile.age = newAge;
             window.userProfile.faculty = newFaculty;
@@ -3008,7 +3127,7 @@ function initializeUniLoop() {
             return;
         }
 
-        let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px;">`;
+        let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding:right:5px;">`;
         friends.forEach(f => {
             let avatarHtml = f.avatar && f.avatar.startsWith('http') 
                 ? `<img src="${f.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">`
@@ -3117,10 +3236,12 @@ function initializeUniLoop() {
         });
 
         if (!hasNotif) {
-            html += `<div style="text-align:center; padding:30px 10px; color:var(--text-gray);">
-                <div style="font-size:40px; margin-bottom:10px;">🔔</div>
-                <div style="font-size:14px;">Şu an için yeni bir bildiriminiz yok.</div>
-            </div>`;
+            html += `
+                <div style="text-align:center; padding:30px 10px; color:var(--text-gray);">
+                    <div style="font-size:40px; margin-bottom:10px;">🔔</div>
+                    <div style="font-size:14px;">Şu an için yeni bir bildiriminiz yok.</div>
+                </div>
+            `;
         }
         
         html += '</div>';
