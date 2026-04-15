@@ -288,7 +288,7 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
 
-        // 🌟 UNILOOP LOGO ENJEKSİYONU (Sadece Daire Logosu)
+            // 🌟 UNILOOP LOGO ENJEKSİYONU (Sadece Daire Logosu, Metin Kırpıldı)
     setTimeout(() => {
         const headerLogoCandidates = document.querySelectorAll('.logo, .logo-title, #logo-btn, #app-header > :first-child, header > :first-child');
         headerLogoCandidates.forEach(el => {
@@ -304,6 +304,7 @@ function initializeUniLoop() {
             }
         });
     }, 100);
+
 
 
     const cropperModalHtml = `
