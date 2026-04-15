@@ -288,20 +288,22 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
 
-                                    // 🌟 UNILOOP LOGO ENJEKSİYONU (EKSTRA ÇİZGİ SİLİNDİ, SADECE KENDİ LOGON)
+                                        // 🌟 UNILOOP LOGO ENJEKSİYONU (Sağ Alt Hizalı Küçük Yazı İle Birlikte)
     setTimeout(() => {
         const headerLogoCandidates = document.querySelectorAll('.logo, .logo-title, #logo-btn, #app-header > :first-child, header > :first-child');
         headerLogoCandidates.forEach(el => {
             if(el && !el.hasAttribute('data-logo-applied')) {
                 el.innerHTML = `
-                    <div style="display: flex; align-items: center;">
+                    <div style="display: flex; align-items: flex-end; gap: 6px;">
                         <div style="width: 48px; height: 48px; min-width: 48px; min-height: 48px; border-radius: 50%; background-image: url('uniloop-logo.png'); background-size: 155%; background-position: center 12%; background-repeat: no-repeat; border: none;"></div>
+                        <span style="font-weight: 800; font-size: 15px; color: #111827; margin-bottom: 8px; letter-spacing: -0.5px;">UniLoop</span>
                     </div>
                 `;
                 el.setAttribute('data-logo-applied', 'true');
             }
         });
     }, 100);
+
 
 
 
