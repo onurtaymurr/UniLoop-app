@@ -288,6 +288,24 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
 
+    // 🌟 UNILOOP LOGO ENJEKSİYONU (Sol Üst Köşe Dünya Emojisi Yerine)
+    setTimeout(() => {
+        const headerLogoCandidates = document.querySelectorAll('.logo, .logo-title, #logo-btn, #app-header > :first-child, header > :first-child');
+        headerLogoCandidates.forEach(el => {
+            if(el && !el.hasAttribute('data-logo-applied')) {
+                el.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 38px; height: 38px; border-radius: 50%; overflow: hidden; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.08); border: 1px solid #E5E7EB;">
+                            <img src="uniloop-logo.png" alt="UniLoop Logo" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <span style="font-weight: 800; font-size: 18px; color: var(--primary); letter-spacing: -0.5px;">UNILOOP</span>
+                    </div>
+                `;
+                el.setAttribute('data-logo-applied', 'true');
+            }
+        });
+    }, 100);
+
     const cropperModalHtml = `
         <div id="cropper-modal" class="cropper-modal-container">
             <div class="cropper-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:#111; color:white; z-index:10; position:relative;">
@@ -704,9 +722,10 @@ function initializeUniLoop() {
                     Burası senin alanın. Hemen insanlarla tanışmaya başla!
                 `;
                 await setDoc(chatRef, {
+                    // 🌟 SİSTEM MESAJINDA YENİ UNILOOP LOGOSU KULLANIMI
                     participants: [user.uid, "system"],
                     participantNames: { [user.uid]: userName, "system": "UniLoop Team" },
-                    participantAvatars: { [user.uid]: "👨‍🎓", "system": "🌍" },
+                    participantAvatars: { [user.uid]: "👨‍🎓", "system": "<img src='uniloop-logo.png' style='width:100%; height:100%; object-fit:cover; border-radius:50%; border:1px solid #E5E7EB;'>" },
                     lastUpdated: serverTimestamp(),
                     status: 'accepted',
                     initiator: 'system',
@@ -1043,7 +1062,6 @@ function initializeUniLoop() {
             document.body.style.overflow = 'auto'; 
         }
     };
-
     // --- SOHBET İÇİ MEDYA YÜKLEME SİSTEMİ (ORTAK) ---
     window.uploadChatMedia = async function(event, targetId, chatType) {
         const file = event.target.files[0];
