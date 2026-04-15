@@ -1106,10 +1106,9 @@ function initializeUniLoop() {
         window.openModal('🏛️ Fakülte Sohbetleri', listHtml);
     };
 
-        window.checkFacultyPasscode = async function(facName) {
-        // Fakülte adının ilk 3 harfini alıp küçük harfe çeviriyoruz ve 1000 ekliyoruz
-        let prefix = facName.substring(0, 3).toLocaleLowerCase('tr-TR');
-        let expectedCode = prefix + "1000"; // Örn: tıp1000, güz1000
+    window.checkFacultyPasscode = async function(facName) {
+        let firstWord = facName.split(' ')[0].toLocaleLowerCase('tr-TR');
+        let expectedCode = firstWord + "00"; // Ortak fakülte kodu (örn: tıp00)
         
         let userCode = prompt(`${facName} ortak iletişim grubuna girmek için onay kodunu girin:\n(Yönetici girişi için şifrenin başına 'ai' ekleyin)`);
         
@@ -1121,67 +1120,6 @@ function initializeUniLoop() {
                 isAdminJoin = true;
                 inputCode = inputCode.substring(2);
             }
-
-            if (inputCode === expectedCode) {
-                alert(isAdminJoin ? "👑 Yönetici şifresi doğru! Gruba yönetici olarak katılıyorsunuz." : "✅ Şifre doğru! Fakülte grubunuza katılıyorsunuz.");
-                
-                // Room id için güvenli bir isim oluşturuyoruz (sadece ingilizce harfler)
-                let safeRoomName = facName.split(' ')[0].toLocaleLowerCase('en-US').replace(/[^a-z0-9]/g, '');
-                const roomId = 'faculty_' + safeRoomName;
-                const roomTitle = facName + ' Ortak Grup';
-                
-                try {
-                    await updateDoc(doc(db, "users", window.userProfile.uid), { 
-                        joinedClassRoom: { 
-                            facName: facName, 
-                            roomId: roomId, 
-                            roomTitle: roomTitle 
-                        } 
-                    });
-                    
-                    window.userProfile.joinedClassRoom = { 
-                        facName: facName, 
-                        roomId: roomId, 
-                        roomTitle: roomTitle 
-                    };
-
-                    const roomRef = doc(db, "group_chats", roomId);
-                    const roomSnap = await getDoc(roomRef);
-                    
-                    if (roomSnap.exists()) {
-                        let updates = { 
-                            members: arrayUnion(window.userProfile.uid) 
-                        };
-                        if (isAdminJoin) {
-                            updates.admins = arrayUnion(window.userProfile.uid);
-                        }
-                        await updateDoc(roomRef, updates);
-                    } else {
-                        let docData = { 
-                            messages: [], 
-                            members: [window.userProfile.uid], 
-                            bannedUsers: [], 
-                            createdAt: serverTimestamp(), 
-                            roomId: roomId 
-                        };
-                        if (isAdminJoin) {
-                            docData.admins = [window.userProfile.uid];
-                        }
-                        await setDoc(roomRef, docData);
-                    }
-                } catch(e) { 
-                    console.error(e); 
-                }
-                
-                window.closeModal();
-                window.loadPage('home'); 
-                window.openGroupRoom(roomId, roomTitle, 'faculty');
-            } else {
-                alert("❌ Hatalı kod girdiniz. Lütfen tekrar deneyin.");
-            }
-        }
-    };
-
 
             if (inputCode === expectedCode) {
                 alert(isAdminJoin ? "👑 Yönetici şifresi doğru! Gruba yönetici olarak katılıyorsunuz." : "✅ Şifre doğru! Fakülte grubunuza katılıyorsunuz.");
