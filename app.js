@@ -288,15 +288,15 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
 
-                        // 🌟 UNILOOP LOGO ENJEKSİYONU (Kusursuz Kırpma - Sadece Siyah Çember)
+                            // 🌟 UNILOOP LOGO ENJEKSİYONU (Background Image ile Kusursuz Kırpma)
     setTimeout(() => {
         const headerLogoCandidates = document.querySelectorAll('.logo, .logo-title, #logo-btn, #app-header > :first-child, header > :first-child');
         headerLogoCandidates.forEach(el => {
             if(el && !el.hasAttribute('data-logo-applied')) {
                 el.innerHTML = `
                     <div style="display: flex; align-items: center;">
-                        <div style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: #fff; display: flex; align-items: center; justify-content: center;">
-                            <img src="uniloop-logo.png" alt="UniLoop Logo" style="width: 220%; max-width: none; height: auto; margin-top: -18%;">
+                        <div style="width: 44px; height: 44px; border-radius: 50%; background-color: transparent; display: flex; align-items: center; justify-content: center;">
+                            <div style="width: 100%; height: 100%; background-image: url('uniloop-logo.png'); background-size: 140%; background-position: center -15px; border-radius: 50%;"></div>
                         </div>
                     </div>
                 `;
@@ -304,6 +304,7 @@ function initializeUniLoop() {
             }
         });
     }, 100);
+
 
 
 
