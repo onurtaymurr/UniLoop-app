@@ -66,7 +66,7 @@ let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
 let currentGroupUnsubscribe = null; 
-window.currentClubData = {}; // Kulüp toplantıları için yeni state
+window.currentClubData = {};
 
 window.registrationData = { interests: [] };
 
@@ -95,7 +95,7 @@ let cropper = null;
 
 function initializeUniLoop() {
 
-    // 🌟 KLAVYE SCROLL/DONMA BUG FİXİ (Blur event)
+    // 🌟 KLAVYE SCROLL/DONMA BUG FİXİ
     document.addEventListener('focusout', function(e) {
         if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
             setTimeout(() => { 
@@ -115,7 +115,7 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
-    // 🎨 CSS DÜZENLEMELERİ (MODERN CHAT & TRUE DARK MODE EKLENDİ)
+    // 🎨 CSS DÜZENLEMELERİ (MODERN CHAT & TRUE DARK MODE)
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
@@ -857,7 +857,6 @@ function initializeUniLoop() {
             console.error(e); 
         }
     };
-
     function initRealtimeListeners(currentUid) {
         const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
 
@@ -1025,7 +1024,6 @@ function initializeUniLoop() {
         }
     };
 
-    // (Premium vs formasyon modülleri burada kalıyor...)
     window.openPremiumModal = function() {
         window.openModal('🌟 UniLoop Premium', `
             <div style="text-align:center; padding: 10px;">
@@ -1100,6 +1098,302 @@ function initializeUniLoop() {
         document.getElementById('modal-body').innerHTML = ''; 
         if (!document.getElementById('lightbox').classList.contains('active') && !document.body.classList.contains('no-scroll-messages')) {
             document.body.style.overflow = 'auto'; 
+        }
+    };
+
+    window.openFacultiesList = function() {
+        let listHtml = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
+        
+        allFaculties.forEach(fac => {
+            listHtml += `
+                <button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px 8px; font-size:13px; font-weight:600; border-radius:12px;" onclick="window.askFacultyGrade('${fac}')">
+                    ${fac}
+                </button>
+            `;
+        });
+        
+        listHtml += `</div>`;
+        window.openModal('🏛️ Fakülteler', listHtml);
+    };
+
+    window.askFacultyGrade = function(facName) {
+        let listHtml = `<div style="display:grid; grid-template-columns: 1fr; gap:10px; padding:5px;">`;
+        listHtml += `<p style="text-align:center; font-weight:bold; color:var(--text-gray); font-size:14px; margin-bottom:10px;">${facName} için kaçıncı sınıfsınız?</p>`;
+        
+        for(let i=1; i<=6; i++) {
+            listHtml += `
+                <button class="btn-primary" style="padding:12px; font-size:15px; border-radius:12px;" onclick="window.checkFacultyPasscode('${facName}', ${i})">
+                    ${i}. Sınıf
+                </button>
+            `;
+        }
+        
+        listHtml += `</div>`;
+        window.openModal('🎓 Sınıfını Seç', listHtml);
+    };
+
+    window.checkFacultyPasscode = async function(facName, grade) {
+        let firstWord = facName.split(' ')[0].toLocaleLowerCase('tr-TR');
+        let expectedCode = firstWord + grade + "00"; 
+        
+        let userCode = prompt(`${facName} ${grade}. Sınıf grubuna girmek için onay kodunu girin:\n(Yönetici girişi için şifrenin başına 'ai' ekleyin)`);
+        
+        if (userCode !== null) {
+            let inputCode = userCode.trim().toLocaleLowerCase('tr-TR');
+            let isAdminJoin = false;
+
+            if (inputCode.startsWith('ai')) {
+                isAdminJoin = true;
+                inputCode = inputCode.substring(2);
+            }
+
+            if (inputCode === expectedCode) {
+                alert(isAdminJoin ? "👑 Yönetici şifresi doğru! Gruba yönetici olarak katılıyorsunuz." : "✅ Şifre doğru! Sınıfınıza katılıyorsunuz.");
+                
+                const roomId = 'class_' + firstWord + '_' + grade;
+                const roomTitle = facName + ' ' + grade + '. Sınıf';
+                
+                try {
+                    await updateDoc(doc(db, "users", window.userProfile.uid), { 
+                        joinedClassRoom: { 
+                            facName: facName, 
+                            grade: grade, 
+                            roomId: roomId, 
+                            roomTitle: roomTitle 
+                        } 
+                    });
+                    
+                    window.userProfile.joinedClassRoom = { 
+                        facName: facName, 
+                        grade: grade, 
+                        roomId: roomId, 
+                        roomTitle: roomTitle 
+                    };
+
+                    const roomRef = doc(db, "group_chats", roomId);
+                    const roomSnap = await getDoc(roomRef);
+                    
+                    if (roomSnap.exists()) {
+                        let updates = { 
+                            members: arrayUnion(window.userProfile.uid) 
+                        };
+                        if (isAdminJoin) {
+                            updates.admins = arrayUnion(window.userProfile.uid);
+                        }
+                        await updateDoc(roomRef, updates);
+                    } else {
+                        let docData = { 
+                            messages: [], 
+                            members: [window.userProfile.uid], 
+                            bannedUsers: [], 
+                            createdAt: serverTimestamp(), 
+                            roomId: roomId 
+                        };
+                        if (isAdminJoin) {
+                            docData.admins = [window.userProfile.uid];
+                        }
+                        await setDoc(roomRef, docData);
+                    }
+                } catch(e) { 
+                    console.error(e); 
+                }
+                
+                window.closeModal();
+                window.loadPage('home'); 
+                window.openGroupRoom(roomId, roomTitle, 'faculty');
+            } else {
+                alert("❌ Hatalı kod girdiniz. Lütfen tekrar deneyin.");
+            }
+        }
+    };
+
+    window.openClubsList = function() {
+        let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
+        
+        APP_CLUBS.forEach(club => {
+            let cleanNameMatch = club.match(/([a-zA-ZçğıöşüÇĞİÖŞÜ]+)/);
+            let expectedWord = cleanNameMatch ? cleanNameMatch[0].toLocaleLowerCase('tr-TR') : "kulup";
+            
+            listHtml += `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-radius:12px; cursor:pointer; background:#fff; border:1px solid #E5E7EB; margin-bottom:0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.checkClubPasscode('${club}', '${expectedWord}')">
+                    <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${club}</span>
+                    <span style="background:#EEF2FF; color:var(--primary); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold;">Katıl 🚀</span>
+                </div>
+            `;
+        });
+        
+        listHtml += `</div>`;
+        window.openModal('🎭 Kulüpler ve Organizasyonlar', listHtml);
+    };
+
+    window.openJoinedClubsList = function() {
+        let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
+        
+        listHtml += `
+            <button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px; font-weight:bold; border-radius:12px; margin-bottom:10px;" onclick="window.openClubsList()">
+                🔍 Yeni Kulüp Keşfet
+            </button>
+        `;
+
+        window.userProfile.joinedClubs.forEach(club => {
+            listHtml += `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-radius:12px; cursor:pointer; background:#fff; border:1px solid #E5E7EB; margin-bottom:0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.closeModal(); window.openClubRoom('${club.roomId}', '${club.name}')">
+                    <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${club.name}</span>
+                    <span style="background:#DCF8C6; color:#166534; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold;">Git ➡️</span>
+                </div>
+            `;
+        });
+        
+        listHtml += `</div>`;
+        window.openModal('📌 Katıldığım Kulüpler', listHtml);
+    };
+
+    window.checkClubPasscode = async function(clubName, expectedWord) {
+        let expectedCode = expectedWord + "100";
+        let userCode = prompt(`${clubName} grubuna girmek için giriş kodunu girin:\n(Yönetici girişi için şifrenin başına 'ai' ekleyin)`);
+        
+        if (userCode !== null) {
+            let inputCode = userCode.trim().toLocaleLowerCase('tr-TR');
+            let isAdminJoin = false;
+
+            if (inputCode.startsWith('ai')) {
+                isAdminJoin = true;
+                inputCode = inputCode.substring(2);
+            }
+
+            if (inputCode === expectedCode) {
+                alert(isAdminJoin ? "👑 Yönetici olarak kulüp odasına yönlendiriliyorsunuz." : "✅ Şifre doğru! Kulüp odasına yönlendiriliyorsunuz.");
+                let roomId = 'club_' + expectedWord;
+
+                try {
+                    const clubObj = { roomId: roomId, name: clubName };
+                    const hasClub = window.userProfile.joinedClubs && window.userProfile.joinedClubs.find(c => c.roomId === roomId);
+                    
+                    if(!hasClub) {
+                        await updateDoc(doc(db, "users", window.userProfile.uid), { 
+                            joinedClubs: arrayUnion(clubObj) 
+                        });
+                        
+                        if(!window.userProfile.joinedClubs) {
+                            window.userProfile.joinedClubs = [];
+                        }
+                        window.userProfile.joinedClubs.push(clubObj);
+                    }
+
+                    const roomRef = doc(db, "group_chats", roomId);
+                    const roomSnap = await getDoc(roomRef);
+                    
+                    if (roomSnap.exists()) {
+                        let updates = { 
+                            members: arrayUnion(window.userProfile.uid) 
+                        };
+                        if (isAdminJoin) {
+                            updates.admins = arrayUnion(window.userProfile.uid);
+                        }
+                        await updateDoc(roomRef, updates);
+                    } else {
+                        let docData = { 
+                            messages: [], 
+                            members: [window.userProfile.uid], 
+                            bannedUsers: [], 
+                            createdAt: serverTimestamp(), 
+                            roomId: roomId 
+                        };
+                        if (isAdminJoin) {
+                            docData.admins = [window.userProfile.uid];
+                        }
+                        await setDoc(roomRef, docData);
+                    }
+                } catch(e) { 
+                    console.error(e); 
+                }
+
+                window.closeModal();
+                window.loadPage('home'); 
+                window.openClubRoom(roomId, clubName);
+            } else {
+                alert("❌ Hatalı kod girdiniz. Lütfen tekrar deneyin.");
+            }
+        }
+    };
+
+    window.joinMockVoiceRoom = function(roomTitle) {
+        window.openModal(`📞 ${roomTitle} - Sesli Oda`, `
+            <div style="text-align:center; padding:30px 10px;">
+                <div style="width:100px; height:100px; background:var(--primary); border-radius:50%; margin:0 auto 20px auto; display:flex; align-items:center; justify-content:center; color:white; font-size:40px; animation: glowPulse 1.5s infinite alternate; box-shadow:0 0 20px var(--primary);">🎤</div>
+                <h3 style="margin-bottom:10px; color:var(--text-dark);">Bağlanıldı</h3>
+                <p style="color:var(--text-gray); font-size:14px; margin-bottom:30px;">Odadaki diğer kişilerle konuşabilirsiniz...</p>
+                <div style="display:flex; justify-content:center; gap:20px;">
+                    <button style="background:#F3F4F6; border:none; width:60px; height:60px; border-radius:50%; font-size:24px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#E5E7EB'" onmouseout="this.style.background='#F3F4F6'" onclick="this.innerText = this.innerText==='🔇' ? '🔊' : '🔇'">🔊</button>
+                    <button style="background:#EF4444; color:white; border:none; width:60px; height:60px; border-radius:50%; font-size:24px; cursor:pointer; box-shadow:0 4px 10px rgba(239,68,68,0.4); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="window.closeModal()">🚪</button>
+                </div>
+            </div>
+        `);
+    };
+
+    window.joinMockVideoRoom = function(roomTitle) {
+        window.openModal(`📹 ${roomTitle} - Görüntülü Oda`, `
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
+                <div style="background:#111827; border-radius:12px; height:150px; display:flex; align-items:center; justify-content:center; flex-direction:column; position:relative; box-shadow:inset 0 0 20px rgba(0,0,0,0.5);">
+                    <div style="font-size:40px;">${window.userProfile.avatar || '👨‍🎓'}</div>
+                    <div style="position:absolute; bottom:10px; left:10px; color:white; font-size:11px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; font-weight:bold;">Siz</div>
+                </div>
+                <div style="background:#111827; border-radius:12px; height:150px; display:flex; align-items:center; justify-content:center; flex-direction:column; position:relative; box-shadow:inset 0 0 20px rgba(0,0,0,0.5);">
+                    <div style="font-size:40px;">👩‍⚕️</div>
+                    <div style="position:absolute; bottom:10px; left:10px; color:white; font-size:11px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; font-weight:bold;">Ayşe</div>
+                </div>
+                <div style="background:#111827; border-radius:12px; height:150px; display:flex; align-items:center; justify-content:center; flex-direction:column; position:relative; box-shadow:inset 0 0 20px rgba(0,0,0,0.5);">
+                    <div style="font-size:40px;">👨‍💻</div>
+                    <div style="position:absolute; bottom:10px; left:10px; color:white; font-size:11px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; font-weight:bold;">Can</div>
+                </div>
+                <div style="background:#374151; border-radius:12px; height:150px; display:flex; align-items:center; justify-content:center; color:#9CA3AF; font-size:13px; font-weight:bold; border:2px dashed #4B5563;">+ Bekleniyor</div>
+            </div>
+            <div style="display:flex; justify-content:center; gap:20px; background:#F3F4F6; padding:15px; border-radius:20px;">
+                <button style="background:white; border:none; width:50px; height:50px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">📹</button>
+                <button style="background:white; border:none; width:50px; height:50px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">🎤</button>
+                <button style="background:#EF4444; color:white; border:none; width:50px; height:50px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 4px 10px rgba(239,68,68,0.4); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="window.closeModal()">🚪</button>
+            </div>
+        `);
+    };
+
+    window.leaveGroup = async function(roomId, roomType, userName) {
+        if(confirm("Bu gruptan çıkış yapmak istediğinize emin misiniz?")) {
+            try {
+                const roomRef = doc(db, "group_chats", roomId);
+                
+                const sysMsg = { 
+                    senderId: "system", 
+                    text: `${userName} gruptan ayrıldı.`, 
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
+                    isSystem: true 
+                };
+                
+                await updateDoc(roomRef, { 
+                    members: arrayRemove(window.userProfile.uid), 
+                    admins: arrayRemove(window.userProfile.uid),
+                    messages: arrayUnion(sysMsg)
+                });
+                
+                const userRef = doc(db, "users", window.userProfile.uid);
+                if (roomType === 'faculty') {
+                    await updateDoc(userRef, { joinedClassRoom: null });
+                    window.userProfile.joinedClassRoom = null;
+                } else if (roomType === 'club') {
+                    const newClubs = window.userProfile.joinedClubs.filter(c => c.roomId !== roomId);
+                    await updateDoc(userRef, { joinedClubs: newClubs });
+                    window.userProfile.joinedClubs = newClubs;
+                }
+                
+                alert("Gruptan başarıyla çıktınız.");
+                if(currentGroupUnsubscribe) { 
+                    currentGroupUnsubscribe(); 
+                    currentGroupUnsubscribe = null; 
+                }
+                window.closeModal(); 
+                window.loadPage('home');
+            } catch(e) { 
+                alert("Çıkış yapılamadı: " + e.message); 
+            }
         }
     };
 
@@ -1255,7 +1549,7 @@ function initializeUniLoop() {
             }
 
             const data = docSnap.data();
-            window.currentClubData = data; // Modal okuyabilsin diye veriyi global'e çek
+            window.currentClubData = data; 
             
             const msgs = data.messages || [];
             const admins = data.admins || [];
@@ -1309,7 +1603,7 @@ function initializeUniLoop() {
                 }
 
                 // SADECE GÖRSEL VARSA YAZI ÇIKMAMASI İÇİN GÜNCELLEME
-                const textHtml = msg.text ? `<div class="msg-text" style="font-size:15px; word-break:break-word; line-height:1.4;">${msg.text}</div>` : '';
+                const textHtml = msg.text ? `<div class="msg-text" style="word-break:break-word; line-height:1.4;">${msg.text}</div>` : '';
 
                 const safeMsgText = msg.text ? msg.text.replace(/'/g, "\\'") : '';
                 let deleteHtml = isMeAdmin ? `
@@ -1349,7 +1643,8 @@ function initializeUniLoop() {
             } catch(e) { alert("Mesaj silinirken hata oluştu: " + e.message); }
         }
     };
-    // 5. KULLANICIYI GRUPTAN ATMA (KICK) (✕) (Sistem mesajlı)
+
+    // 5. KULLANICIYI GRUPTAN ATMA (KICK)
     window.kickUserFromGroup = async function(roomId, userId, userName) {
         if(confirm(`Yönetici Uyarısı: ${userName} adlı kullanıcıyı gruptan uzaklaştırmak istediğinize emin misiniz?`)) {
             try {
@@ -1375,7 +1670,7 @@ function initializeUniLoop() {
         }
     };
 
-    // 6. ÜYE LİSTESİ KONTROLÜ ("Sen" en üstte, Çıkar (✕), Çık (⏏) ikonları)
+    // 6. ÜYE LİSTESİ KONTROLÜ
     window.showGroupMembers = async function(roomTitle, roomType) {
         window.openModal(`👥 ${roomTitle} Üyeleri`, `<div style="text-align:center; padding:30px; color:var(--text-gray);">Üyeler yükleniyor... ⏳</div>`);
         
@@ -1410,7 +1705,6 @@ function initializeUniLoop() {
             querySnapshot.forEach((doc) => {
                 const u = doc.data();
                 
-                // Sadece grupta olan ve banlanmamış olanları göster
                 if(roomMembers.includes(u.uid) && !roomBanned.includes(u.uid)) { 
                     count++;
                     const initial = u.surname ? u.surname.charAt(0) + '.' : '';
@@ -1422,7 +1716,6 @@ function initializeUniLoop() {
                     
                     let actionBtn = '';
                     
-                    // Kendisi için "Çık" (⏏) butonu
                     if (u.uid === window.userProfile.uid) {
                         actionBtn = `<button onclick="event.stopPropagation(); window.leaveGroup('${currentRoomId}', '${roomType}', '${u.name}')" style="background:transparent; border:none; font-size:22px; color:#DC2626; cursor:pointer;" title="Gruptan Çık">⏏</button>`;
                         
@@ -1441,7 +1734,6 @@ function initializeUniLoop() {
                             </div>
                         `;
                     } else {
-                        // Yönetici ise başkası için "Çıkar" (✕) butonu
                         if (isMeAdmin && currentRoomId) {
                             actionBtn = `<button onclick="event.stopPropagation(); window.kickUserFromGroup('${currentRoomId}', '${u.uid}', '${u.name}')" style="background:transparent; border:none; font-size:18px; color:#6B7280; cursor:pointer; font-weight:bold;" title="Gruptan At">✕</button>`;
                         }
@@ -1469,7 +1761,7 @@ function initializeUniLoop() {
             if(count === 0) {
                 finalHtml += `<div style="text-align:center; padding:30px; color:var(--text-gray);">Bu alanda henüz kimse yok.</div>`;
             } else {
-                finalHtml += meHtml + othersHtml; // Önce SEN, sonra DİĞERLERİ
+                finalHtml += meHtml + othersHtml;
             }
             finalHtml += `</div>`;
             
@@ -1607,7 +1899,6 @@ function initializeUniLoop() {
             if (docSnap.exists()) {
                 const u = docSnap.data();
                 
-                // PREMIUM ÜYE İSE, PROFİLİNİ GÖRENE BİLDİRİM AT
                 if (u.isPremium) {
                     window.sendSystemNotification(targetUid, `👀 <strong>${window.userProfile.name}</strong> profilini inceledi!`);
                 }
@@ -1737,7 +2028,7 @@ function initializeUniLoop() {
         }
     };
 
-    // --- ANA SAYFA (SOFT RENKLER EKLENDİ) ---
+    // --- ANA SAYFA (SOFT RENKLER KORUNDU) ---
     window.renderHome = async function() {
         let usernameWarning = '';
         if (!window.userProfile.username) {
@@ -2775,7 +3066,6 @@ function initializeUniLoop() {
     // 9. PROFİL, ARKADAŞLARIM VE AYARLAR
     // ============================================================================
 
-    // Profil Sayfası Render (Bölüm 1'de de geçiyordu, buradaki en güncel yapısı)
     window.renderProfile = function() {
         const u = window.userProfile;
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
