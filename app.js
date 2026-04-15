@@ -57,7 +57,7 @@ const storage = getStorage(app);
 
 // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
 window.userProfile = { 
-    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, joinedClubs: [] 
+    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null
 };
 
 window.joinedFaculties = [];
@@ -66,7 +66,6 @@ let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
 let currentGroupUnsubscribe = null; 
-window.currentClubData = {};
 
 window.registrationData = { interests: [] };
 
@@ -78,12 +77,6 @@ const allFaculties = [
     "İktisadi ve İdari Bilimler", "Güzel Sanatlar", "Fen-Edebiyat Fakültesi", "Sağlık Bilimleri Fakültesi", 
     "Veteriner Fakültesi", "İlahiyat Fakültesi", "Spor Bilimleri Fakültesi", "Turizm Fakültesi", 
     "Ziraat Fakültesi", "Orman Fakültesi", "Denizcilik Fakültesi", "Havacılık ve Uzay Bilimleri", "Uygulamalı Bilimler"
-];
-
-const APP_CLUBS = [
-    "⚽ Spor Kulübü", "🎭 Tiyatro Kulübü", "🏥 Sağlık Kulübü", "💻 Yazılım Kulübü", 
-    "🎵 Müzik Kulübü", "📸 Fotoğrafçılık Kulübü", "🌍 Gezi ve Doğa Kulübü", 
-    "🧠 Yapay Zeka Kulübü", "📚 Edebiyat Kulübü", "🎮 E-Spor Kulübü"
 ];
 
 const authScreen = document.getElementById('auth-screen');
@@ -715,8 +708,7 @@ function initializeUniLoop() {
                 avatarUrl: finalAvatarUrl, 
                 isOnline: true, 
                 isPremium: false,
-                joinedClassRoom: null,
-                joinedClubs: []
+                joinedClassRoom: null
             });
 
             alert("Harika! Profilin başarıyla oluşturuldu. Şimdi uygulamaya yönlendiriliyorsun.");
@@ -799,7 +791,6 @@ function initializeUniLoop() {
                 if(window.userProfile.age === undefined) window.userProfile.age = "";
                 if(window.userProfile.avatarUrl === undefined) window.userProfile.avatarUrl = "";
                 if(window.userProfile.joinedClassRoom === undefined) window.userProfile.joinedClassRoom = null;
-                if(window.userProfile.joinedClubs === undefined) window.userProfile.joinedClubs = [];
 
                 await window.ensureWelcomeMessage(user, window.userProfile.name);
                 await updateDoc(userDocRef, { isOnline: true });
@@ -953,8 +944,7 @@ function initializeUniLoop() {
             if (document.getElementById('app-modal').classList.contains('active') && document.getElementById('modal-title').innerText.includes('Bildirimler')) { window.renderNotifications(); }
         });
     }
-
-    // 🌟 MEDYA YÜKLEME SİSTEMİ (FOTOĞRAF YAZISI KALDIRILDI)
+    // 🌟 MEDYA YÜKLEME SİSTEMİ
     window.uploadChatMedia = async function(event, targetId, chatType) {
         const file = event.target.files[0];
         if(!file) return;
@@ -977,7 +967,6 @@ function initializeUniLoop() {
             const url = await getDownloadURL(storageRef);
             const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
-            // FOTOĞRAF YAZISI KALDIRILDI (Sadece boş text, image tipi)
             const msgObj = {
                 senderId: window.userProfile.uid,
                 senderName: window.userProfile.name,
@@ -989,7 +978,7 @@ function initializeUniLoop() {
                 read: false
             };
 
-            if (chatType === 'group' || chatType === 'club') {
+            if (chatType === 'group') {
                 const docRef = doc(db, "group_chats", targetId);
                 const docSnap = await getDoc(docRef);
                 
@@ -1101,42 +1090,27 @@ function initializeUniLoop() {
         }
     };
 
+    // 🌟 GÜNCELLEME: FAKÜLTELER ARTIK SINIF SINIF DEĞİL, BİRLEŞİK.
     window.openFacultiesList = function() {
         let listHtml = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
         
         allFaculties.forEach(fac => {
             listHtml += `
-                <button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px 8px; font-size:13px; font-weight:600; border-radius:12px;" onclick="window.askFacultyGrade('${fac}')">
+                <button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px 8px; font-size:13px; font-weight:600; border-radius:12px;" onclick="window.checkFacultyPasscode('${fac}')">
                     ${fac}
                 </button>
             `;
         });
         
         listHtml += `</div>`;
-        window.openModal('🏛️ Fakülteler', listHtml);
+        window.openModal('🏛️ Fakülte Sohbetleri', listHtml);
     };
 
-    window.askFacultyGrade = function(facName) {
-        let listHtml = `<div style="display:grid; grid-template-columns: 1fr; gap:10px; padding:5px;">`;
-        listHtml += `<p style="text-align:center; font-weight:bold; color:var(--text-gray); font-size:14px; margin-bottom:10px;">${facName} için kaçıncı sınıfsınız?</p>`;
-        
-        for(let i=1; i<=6; i++) {
-            listHtml += `
-                <button class="btn-primary" style="padding:12px; font-size:15px; border-radius:12px;" onclick="window.checkFacultyPasscode('${facName}', ${i})">
-                    ${i}. Sınıf
-                </button>
-            `;
-        }
-        
-        listHtml += `</div>`;
-        window.openModal('🎓 Sınıfını Seç', listHtml);
-    };
-
-    window.checkFacultyPasscode = async function(facName, grade) {
+    window.checkFacultyPasscode = async function(facName) {
         let firstWord = facName.split(' ')[0].toLocaleLowerCase('tr-TR');
-        let expectedCode = firstWord + grade + "00"; 
+        let expectedCode = firstWord + "00"; // Ortak fakülte kodu (örn: tıp00)
         
-        let userCode = prompt(`${facName} ${grade}. Sınıf grubuna girmek için onay kodunu girin:\n(Yönetici girişi için şifrenin başına 'ai' ekleyin)`);
+        let userCode = prompt(`${facName} ortak iletişim grubuna girmek için onay kodunu girin:\n(Yönetici girişi için şifrenin başına 'ai' ekleyin)`);
         
         if (userCode !== null) {
             let inputCode = userCode.trim().toLocaleLowerCase('tr-TR');
@@ -1148,16 +1122,15 @@ function initializeUniLoop() {
             }
 
             if (inputCode === expectedCode) {
-                alert(isAdminJoin ? "👑 Yönetici şifresi doğru! Gruba yönetici olarak katılıyorsunuz." : "✅ Şifre doğru! Sınıfınıza katılıyorsunuz.");
+                alert(isAdminJoin ? "👑 Yönetici şifresi doğru! Gruba yönetici olarak katılıyorsunuz." : "✅ Şifre doğru! Fakülte grubunuza katılıyorsunuz.");
                 
-                const roomId = 'class_' + firstWord + '_' + grade;
-                const roomTitle = facName + ' ' + grade + '. Sınıf';
+                const roomId = 'faculty_' + firstWord;
+                const roomTitle = facName + ' Ortak Grup';
                 
                 try {
                     await updateDoc(doc(db, "users", window.userProfile.uid), { 
                         joinedClassRoom: { 
                             facName: facName, 
-                            grade: grade, 
                             roomId: roomId, 
                             roomTitle: roomTitle 
                         } 
@@ -1165,7 +1138,6 @@ function initializeUniLoop() {
                     
                     window.userProfile.joinedClassRoom = { 
                         facName: facName, 
-                        grade: grade, 
                         roomId: roomId, 
                         roomTitle: roomTitle 
                     };
@@ -1207,155 +1179,6 @@ function initializeUniLoop() {
         }
     };
 
-    window.openClubsList = function() {
-        let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
-        
-        APP_CLUBS.forEach(club => {
-            let cleanNameMatch = club.match(/([a-zA-ZçğıöşüÇĞİÖŞÜ]+)/);
-            let expectedWord = cleanNameMatch ? cleanNameMatch[0].toLocaleLowerCase('tr-TR') : "kulup";
-            
-            listHtml += `
-                <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-radius:12px; cursor:pointer; background:#fff; border:1px solid #E5E7EB; margin-bottom:0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.checkClubPasscode('${club}', '${expectedWord}')">
-                    <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${club}</span>
-                    <span style="background:#EEF2FF; color:var(--primary); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold;">Katıl 🚀</span>
-                </div>
-            `;
-        });
-        
-        listHtml += `</div>`;
-        window.openModal('🎭 Kulüpler ve Organizasyonlar', listHtml);
-    };
-
-    window.openJoinedClubsList = function() {
-        let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
-        
-        listHtml += `
-            <button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px; font-weight:bold; border-radius:12px; margin-bottom:10px;" onclick="window.openClubsList()">
-                🔍 Yeni Kulüp Keşfet
-            </button>
-        `;
-
-        window.userProfile.joinedClubs.forEach(club => {
-            listHtml += `
-                <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-radius:12px; cursor:pointer; background:#fff; border:1px solid #E5E7EB; margin-bottom:0 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.closeModal(); window.openClubRoom('${club.roomId}', '${club.name}')">
-                    <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${club.name}</span>
-                    <span style="background:#DCF8C6; color:#166534; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold;">Git ➡️</span>
-                </div>
-            `;
-        });
-        
-        listHtml += `</div>`;
-        window.openModal('📌 Katıldığım Kulüpler', listHtml);
-    };
-
-    window.checkClubPasscode = async function(clubName, expectedWord) {
-        let expectedCode = expectedWord + "100";
-        let userCode = prompt(`${clubName} grubuna girmek için giriş kodunu girin:\n(Yönetici girişi için şifrenin başına 'ai' ekleyin)`);
-        
-        if (userCode !== null) {
-            let inputCode = userCode.trim().toLocaleLowerCase('tr-TR');
-            let isAdminJoin = false;
-
-            if (inputCode.startsWith('ai')) {
-                isAdminJoin = true;
-                inputCode = inputCode.substring(2);
-            }
-
-            if (inputCode === expectedCode) {
-                alert(isAdminJoin ? "👑 Yönetici olarak kulüp odasına yönlendiriliyorsunuz." : "✅ Şifre doğru! Kulüp odasına yönlendiriliyorsunuz.");
-                let roomId = 'club_' + expectedWord;
-
-                try {
-                    const clubObj = { roomId: roomId, name: clubName };
-                    const hasClub = window.userProfile.joinedClubs && window.userProfile.joinedClubs.find(c => c.roomId === roomId);
-                    
-                    if(!hasClub) {
-                        await updateDoc(doc(db, "users", window.userProfile.uid), { 
-                            joinedClubs: arrayUnion(clubObj) 
-                        });
-                        
-                        if(!window.userProfile.joinedClubs) {
-                            window.userProfile.joinedClubs = [];
-                        }
-                        window.userProfile.joinedClubs.push(clubObj);
-                    }
-
-                    const roomRef = doc(db, "group_chats", roomId);
-                    const roomSnap = await getDoc(roomRef);
-                    
-                    if (roomSnap.exists()) {
-                        let updates = { 
-                            members: arrayUnion(window.userProfile.uid) 
-                        };
-                        if (isAdminJoin) {
-                            updates.admins = arrayUnion(window.userProfile.uid);
-                        }
-                        await updateDoc(roomRef, updates);
-                    } else {
-                        let docData = { 
-                            messages: [], 
-                            members: [window.userProfile.uid], 
-                            bannedUsers: [], 
-                            createdAt: serverTimestamp(), 
-                            roomId: roomId 
-                        };
-                        if (isAdminJoin) {
-                            docData.admins = [window.userProfile.uid];
-                        }
-                        await setDoc(roomRef, docData);
-                    }
-                } catch(e) { 
-                    console.error(e); 
-                }
-
-                window.closeModal();
-                window.loadPage('home'); 
-                window.openClubRoom(roomId, clubName);
-            } else {
-                alert("❌ Hatalı kod girdiniz. Lütfen tekrar deneyin.");
-            }
-        }
-    };
-
-    window.joinMockVoiceRoom = function(roomTitle) {
-        window.openModal(`📞 ${roomTitle} - Sesli Oda`, `
-            <div style="text-align:center; padding:30px 10px;">
-                <div style="width:100px; height:100px; background:var(--primary); border-radius:50%; margin:0 auto 20px auto; display:flex; align-items:center; justify-content:center; color:white; font-size:40px; animation: glowPulse 1.5s infinite alternate; box-shadow:0 0 20px var(--primary);">🎤</div>
-                <h3 style="margin-bottom:10px; color:var(--text-dark);">Bağlanıldı</h3>
-                <p style="color:var(--text-gray); font-size:14px; margin-bottom:30px;">Odadaki diğer kişilerle konuşabilirsiniz...</p>
-                <div style="display:flex; justify-content:center; gap:20px;">
-                    <button style="background:#F3F4F6; border:none; width:60px; height:60px; border-radius:50%; font-size:24px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#E5E7EB'" onmouseout="this.style.background='#F3F4F6'" onclick="this.innerText = this.innerText==='🔇' ? '🔊' : '🔇'">🔊</button>
-                    <button style="background:#EF4444; color:white; border:none; width:60px; height:60px; border-radius:50%; font-size:24px; cursor:pointer; box-shadow:0 4px 10px rgba(239,68,68,0.4); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="window.closeModal()">🚪</button>
-                </div>
-            </div>
-        `);
-    };
-
-    window.joinMockVideoRoom = function(roomTitle) {
-        window.openModal(`📹 ${roomTitle} - Görüntülü Oda`, `
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
-                <div style="background:#111827; border-radius:12px; height:150px; display:flex; align-items:center; justify-content:center; flex-direction:column; position:relative; box-shadow:inset 0 0 20px rgba(0,0,0,0.5);">
-                    <div style="font-size:40px;">${window.userProfile.avatar || '👨‍🎓'}</div>
-                    <div style="position:absolute; bottom:10px; left:10px; color:white; font-size:11px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; font-weight:bold;">Siz</div>
-                </div>
-                <div style="background:#111827; border-radius:12px; height:150px; display:flex; align-items:center; justify-content:center; flex-direction:column; position:relative; box-shadow:inset 0 0 20px rgba(0,0,0,0.5);">
-                    <div style="font-size:40px;">👩‍⚕️</div>
-                    <div style="position:absolute; bottom:10px; left:10px; color:white; font-size:11px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; font-weight:bold;">Ayşe</div>
-                </div>
-                <div style="background:#111827; border-radius:12px; height:150px; display:flex; align-items:center; justify-content:center; flex-direction:column; position:relative; box-shadow:inset 0 0 20px rgba(0,0,0,0.5);">
-                    <div style="font-size:40px;">👨‍💻</div>
-                    <div style="position:absolute; bottom:10px; left:10px; color:white; font-size:11px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; font-weight:bold;">Can</div>
-                </div>
-                <div style="background:#374151; border-radius:12px; height:150px; display:flex; align-items:center; justify-content:center; color:#9CA3AF; font-size:13px; font-weight:bold; border:2px dashed #4B5563;">+ Bekleniyor</div>
-            </div>
-            <div style="display:flex; justify-content:center; gap:20px; background:#F3F4F6; padding:15px; border-radius:20px;">
-                <button style="background:white; border:none; width:50px; height:50px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">📹</button>
-                <button style="background:white; border:none; width:50px; height:50px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">🎤</button>
-                <button style="background:#EF4444; color:white; border:none; width:50px; height:50px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 4px 10px rgba(239,68,68,0.4); transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="window.closeModal()">🚪</button>
-            </div>
-        `);
-    };
-
     window.leaveGroup = async function(roomId, roomType, userName) {
         if(confirm("Bu gruptan çıkış yapmak istediğinize emin misiniz?")) {
             try {
@@ -1378,10 +1201,6 @@ function initializeUniLoop() {
                 if (roomType === 'faculty') {
                     await updateDoc(userRef, { joinedClassRoom: null });
                     window.userProfile.joinedClassRoom = null;
-                } else if (roomType === 'club') {
-                    const newClubs = window.userProfile.joinedClubs.filter(c => c.roomId !== roomId);
-                    await updateDoc(userRef, { joinedClubs: newClubs });
-                    window.userProfile.joinedClubs = newClubs;
                 }
                 
                 alert("Gruptan başarıyla çıktınız.");
@@ -1397,98 +1216,6 @@ function initializeUniLoop() {
         }
     };
 
-    // 🌟 YENİ: KULÜP TOPLANTISI MODALI
-    window.showClubMeetingModal = function(roomId, roomTitle) {
-        const data = window.currentClubData || {};
-        const title = data.meetingTitle || 'Büyük Tanışma Toplantısı';
-        const time = data.meetingTime || 'Tarih Belirlenmedi';
-        const admins = data.admins || [];
-        const isMeAdmin = admins.includes(window.userProfile.uid);
-
-        let editBtn = isMeAdmin ? `<button style="margin-top:10px; font-size:12px; background:#EEF2FF; color:var(--primary); border:1px solid #C7D2FE; padding:6px 10px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; box-shadow:0 1px 2px rgba(0,0,0,0.05);" onclick="window.editClubMeeting('${roomId}')">✏️ Toplantıyı Düzenle</button>` : '';
-
-        window.openModal(`📅 ${roomTitle} Toplantısı`, `
-            <div style="background:linear-gradient(135deg, #FFFBEB, #FEF3C7); border:1px solid #FDE68A; border-radius:16px; padding:20px; text-align:center; margin-bottom:20px; box-shadow:0 4px 6px rgba(0,0,0,0.02);">
-                <div style="font-size:32px; margin-bottom:10px;">🎙️</div>
-                <div style="font-size:18px; font-weight:800; color:#D97706; margin-bottom:6px;">${title}</div>
-                <div style="font-size:14px; color:#B45309; font-weight:600; padding:5px; background:rgba(217, 119, 6, 0.1); border-radius:8px; display:inline-block;">⏰ ${time}</div>
-                ${editBtn}
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button style="flex:1; background:#EEF2FF; border:1px solid #C7D2FE; color:var(--primary); padding:14px; border-radius:12px; font-size:14px; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; transition:transform 0.2s;" onclick="window.joinMockVoiceRoom('${roomTitle}')">
-                    <span style="font-size:20px;">📞</span> Sesli Katıl
-                </button>
-                <button style="flex:1; background:#EEF2FF; border:1px solid #C7D2FE; color:var(--primary); padding:14px; border-radius:12px; font-size:14px; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; transition:transform 0.2s;" onclick="window.joinMockVideoRoom('${roomTitle}')">
-                    <span style="font-size:20px;">📹</span> Görüntülü Katıl
-                </button>
-            </div>
-        `);
-    };
-
-    window.editClubMeeting = function(roomId) {
-        const title = prompt("Toplantı Başlığı (Örn: Haftalık Değerlendirme):");
-        if (!title) return;
-        const time = prompt("Toplantı Saati ve Yeri (Örn: Cuma 20:00 - Online):");
-        if (!time) return;
-        
-        updateDoc(doc(db, "group_chats", roomId), { 
-            meetingTitle: title, 
-            meetingTime: time 
-        }).catch(e => console.error(e));
-        
-        alert("Toplantı güncellendi! Modal kapatılıyor.");
-        window.closeModal();
-    };
-
-    // --- ÖZEL KULÜP ODASI TASARIMI (MODERN VE TEMİZ) ---
-    window.openClubRoom = function(roomId, roomTitle) {
-        if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
-
-        document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
-        document.body.classList.add('no-scroll-messages'); 
-
-        // Kalabalık "Planlanan Toplantı" kutusu kaldırıldı, yerine sağ üste 📅 eklendi
-        let html = `
-            <div id="chat-layout-container" style="flex-direction: column; position: relative; width: 100%; height: 100%; display: flex; background:#F9FAFB;">
-                
-                <div class="chat-header" style="padding:10px 15px; border-bottom:1px solid #E5E7EB; background:white; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index:10; flex-shrink:0;">
-                    <div style="display:flex; align-items:center; gap:10px; flex:1;">
-                        <button class="back-btn" onclick="event.stopPropagation(); if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:transparent; font-size:24px; font-weight:bold; cursor:pointer; color:var(--text-dark); padding:0; width:30px;">←</button>
-                        <div style="width:44px; height:44px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:20px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">🎭</div>
-                        <div style="display:flex; flex-direction:column; cursor:pointer;" onclick="event.stopPropagation(); window.showGroupMembers('${roomTitle}', 'club')">
-                            <div style="font-weight:800; font-size:16px; color:#111827;">${roomTitle}</div>
-                            <div style="font-size:11px; color:#10B981; font-weight:bold;">Resmi Kulüp Odası</div>
-                        </div>
-                    </div>
-                    <div style="display:flex; gap:15px;">
-                        <div style="font-size:24px; cursor:pointer; color:var(--primary);" title="Toplantılar" onclick="event.stopPropagation(); window.showClubMeetingModal('${roomId}', '${roomTitle}')">📅</div>
-                        <div style="font-size:24px; cursor:pointer; color:var(--text-dark);" title="Üyeler" onclick="event.stopPropagation(); window.showGroupMembers('${roomTitle}', 'club')">👥</div>
-                    </div>
-                </div>
-
-                <div class="chat-messages" id="group-messages-scroll" style="flex:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column;">
-                    <div style="text-align:center; padding:20px; color:#6B7280; font-size:13px;">Kulüp sohbeti yükleniyor...</div>
-                </div>
-
-                <div class="chat-input-area" style="padding:10px 15px; background:white; display:flex; gap:10px; align-items:center; flex-shrink:0; border-top:1px solid #E5E7EB;">
-                    <input type="file" id="club-chat-media" accept="image/*, application/pdf" style="display:none;" onchange="window.uploadChatMedia(event, '${roomId}', 'club')">
-                    <button onclick="document.getElementById('club-chat-media').click()" style="background:transparent; color:#6B7280; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
-                    <input type="text" id="group-chat-input" placeholder="Kulübe mesaj gönder..." style="flex:1; padding:14px 20px; border-radius:24px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:14px; color:var(--text-dark);">
-                    <button class="chat-send-btn" onclick="window.sendGroupMsg('${roomId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(79,70,229,0.3);">➤</button>
-                </div>
-            </div>
-        `;
-        mainContent.innerHTML = html;
-
-        const inputField = document.getElementById('group-chat-input');
-        if(inputField) {
-            inputField.addEventListener('keypress', (e) => { 
-                if(e.key === 'Enter') window.sendGroupMsg(roomId); 
-            });
-        }
-        setupGroupChatListener(roomId);
-    };
-
     window.openGroupRoom = function(roomId, roomTitle, roomType) {
         if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
 
@@ -1501,10 +1228,10 @@ function initializeUniLoop() {
                 <div class="chat-header" style="padding:10px 15px; border-bottom:1px solid #d1d5db; background:#fff; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index:10; flex-shrink:0; height:65px; box-sizing:border-box;">
                     <div style="display:flex; align-items:center; gap:10px; flex:1;">
                         <button class="back-btn" onclick="event.stopPropagation(); if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:transparent; font-size:24px; font-weight:bold; cursor:pointer; color:var(--text-dark); display:flex; align-items:center; justify-content:center; z-index:9999; pointer-events:auto; padding:0; width:30px;">←</button>
-                        <div style="width:44px; height:44px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:22px; flex-shrink:0; box-shadow:0 2px 4px rgba(0,0,0,0.1);">🎓</div>
+                        <div style="width:44px; height:44px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:22px; flex-shrink:0; box-shadow:0 2px 4px rgba(0,0,0,0.1);">🏛️</div>
                         <div class="chat-header-info" style="display:flex; flex-direction:column; flex:1; min-width:0; padding-right:10px; cursor:pointer;" onclick="window.showGroupMembers('${roomTitle}', '${roomType}')">
                             <div class="chat-header-name" style="font-weight:800; font-size:16px; color:#111827; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${roomTitle}</div>
-                            <div class="chat-header-status" style="font-size:12px; color:#10B981; font-weight:600;">Sınıf Odası - Çevrimiçi</div>
+                            <div class="chat-header-status" style="font-size:12px; color:#10B981; font-weight:600;">Fakülte Odası - Çevrimiçi</div>
                         </div>
                     </div>
                     <div style="font-size:22px; cursor:pointer;" onclick="window.showGroupMembers('${roomTitle}', '${roomType}')">👥</div>
@@ -1517,7 +1244,7 @@ function initializeUniLoop() {
                 <div class="chat-input-area" style="padding:10px 15px; background:#f0f2f5; display:flex; gap:10px; align-items:center; flex-shrink:0; border-top:none;">
                     <input type="file" id="group-chat-media" accept="image/*, application/pdf" style="display:none;" onchange="window.uploadChatMedia(event, '${roomId}', 'group')">
                     <button onclick="document.getElementById('group-chat-media').click()" style="background:transparent; color:#6B7280; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
-                    <input type="text" id="group-chat-input" placeholder="Sınıfa mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:24px; border:none; background:#fff; outline:none; font-size:15px; color:var(--text-dark); box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                    <input type="text" id="group-chat-input" placeholder="Fakülteye mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:24px; border:none; background:#fff; outline:none; font-size:15px; color:var(--text-dark); box-shadow:0 1px 3px rgba(0,0,0,0.05);">
                     <button class="chat-send-btn" onclick="window.sendGroupMsg('${roomId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(79,70,229,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">➤</button>
                 </div>
             </div>
@@ -1533,7 +1260,6 @@ function initializeUniLoop() {
         setupGroupChatListener(roomId);
     };
 
-    // 🌟 YÖNETİCİ MESAJ SİLME VE BAN KONTROLÜ DİNLEYİCİSİ (GÜNCELLENDİ)
     function setupGroupChatListener(roomId) {
         currentGroupUnsubscribe = onSnapshot(doc(db, "group_chats", roomId), (docSnap) => {
             const scrollBox = document.getElementById('group-messages-scroll');
@@ -1549,8 +1275,6 @@ function initializeUniLoop() {
             }
 
             const data = docSnap.data();
-            window.currentClubData = data; 
-            
             const msgs = data.messages || [];
             const admins = data.admins || [];
             const bannedUsers = data.bannedUsers || [];
@@ -1602,7 +1326,6 @@ function initializeUniLoop() {
                     }
                 }
 
-                // SADECE GÖRSEL VARSA YAZI ÇIKMAMASI İÇİN GÜNCELLEME
                 const textHtml = msg.text ? `<div class="msg-text" style="word-break:break-word; line-height:1.4;">${msg.text}</div>` : '';
 
                 const safeMsgText = msg.text ? msg.text.replace(/'/g, "\\'") : '';
@@ -1629,7 +1352,6 @@ function initializeUniLoop() {
         });
     }
 
-    // 4. MESAJ SİLME FONKSİYONU
     window.deleteGroupMsg = async function(roomId, msgTime, senderId, msgText) {
         if(confirm("Yönetici Yetkisi: Bu mesajı herkes için silmek istediğinize emin misiniz?")) {
             try {
@@ -1644,7 +1366,6 @@ function initializeUniLoop() {
         }
     };
 
-    // 5. KULLANICIYI GRUPTAN ATMA (KICK)
     window.kickUserFromGroup = async function(roomId, userId, userName) {
         if(confirm(`Yönetici Uyarısı: ${userName} adlı kullanıcıyı gruptan uzaklaştırmak istediğinize emin misiniz?`)) {
             try {
@@ -1670,16 +1391,12 @@ function initializeUniLoop() {
         }
     };
 
-    // 6. ÜYE LİSTESİ KONTROLÜ
+    // 🌟 GÜNCELLEME: ÜYELER LİSTESİNDE KULLANICI SINIFLARI GÖSTERİLİYOR
     window.showGroupMembers = async function(roomTitle, roomType) {
         window.openModal(`👥 ${roomTitle} Üyeleri`, `<div style="text-align:center; padding:30px; color:var(--text-gray);">Üyeler yükleniyor... ⏳</div>`);
         
         let currentRoomId = null;
         if (roomType === 'faculty' && window.userProfile.joinedClassRoom) currentRoomId = window.userProfile.joinedClassRoom.roomId;
-        if (roomType === 'club') {
-            const foundClub = window.userProfile.joinedClubs.find(c => c.name === roomTitle);
-            if (foundClub) currentRoomId = foundClub.roomId;
-        }
 
         try {
             let isMeAdmin = false;
@@ -1725,6 +1442,7 @@ function initializeUniLoop() {
                                     ${avatarHtml}
                                     <div style="display:flex; flex-direction:column;">
                                         <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} <span style="color:#10B981; font-size:11px;">(Sen)</span> ${adminBadge}</span>
+                                        <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade + '. Sınıf' : 'Öğrenci'}</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:10px;">
@@ -1744,7 +1462,7 @@ function initializeUniLoop() {
                                     ${avatarHtml}
                                     <div style="display:flex; flex-direction:column;">
                                         <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} ${adminBadge}</span>
-                                        <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.faculty || 'Kampüs Öğrencisi'}</span>
+                                        <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade + '. Sınıf' : 'Öğrenci'}</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:10px;">
@@ -1801,7 +1519,111 @@ function initializeUniLoop() {
         }
     };
 
-    // --- HIZLI ARKADAŞ EKLE KISMI ---
+    // 🌟 GÜNCELLEME: YENİ "HIZLI EŞLEŞ (FAST MATCH)" SİSTEMİ
+    let fastMatchUsers = [];
+    let fastMatchCurrentIndex = 0;
+
+    window.openFastMatch = async function() {
+        window.openModal('🔥 Hızlı Eşleş', `
+            <div style="text-align:center; padding:40px 10px; color:var(--text-gray);" id="fast-match-container">
+                <div style="font-size:40px; animation: glowPulse 1.5s infinite alternate; margin-bottom:15px;">🔍</div>
+                <h3>Kampüste birileri aranıyor...</h3>
+            </div>
+        `);
+
+        try {
+            const querySnapshot = await getDocs(query(collection(db, "users")));
+            const interactedUids = chatsDB.map(c => c.otherUid);
+            fastMatchUsers = [];
+
+            querySnapshot.forEach((doc) => {
+                const u = doc.data();
+                if(u.uid !== window.userProfile.uid && !interactedUids.includes(u.uid)) {
+                    fastMatchUsers.push(u);
+                }
+            });
+
+            // Karıştır
+            fastMatchUsers = fastMatchUsers.sort(() => 0.5 - Math.random());
+            fastMatchCurrentIndex = 0;
+            
+            window.renderFastMatchCard();
+        } catch(e) {
+            console.error(e);
+            document.getElementById('fast-match-container').innerHTML = '<p style="color:red;">Kullanıcılar yüklenirken hata oluştu.</p>';
+        }
+    };
+
+    window.renderFastMatchCard = function() {
+        const container = document.getElementById('fast-match-container');
+        if(!container) return;
+
+        if(fastMatchCurrentIndex >= fastMatchUsers.length) {
+            container.innerHTML = `
+                <div style="padding:40px 10px; text-align:center;">
+                    <div style="font-size:50px; margin-bottom:15px;">🌟</div>
+                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Bugünlük bu kadar!</h3>
+                    <p style="color:var(--text-gray); font-size:14px;">Şu an için yeni biri kalmadı. Daha sonra tekrar uğra.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const u = fastMatchUsers[fastMatchCurrentIndex];
+        const initial = u.surname ? u.surname.charAt(0) + '.' : '';
+        const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:5px;" title="Premium Üye">👑</span>' : '';
+        
+        let avatarHtml = u.avatarUrl 
+            ? `<img src="${u.avatarUrl}" style="width:180px; height:180px; border-radius:20px; object-fit:cover; border:3px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'}; box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-bottom:15px; pointer-events:none;">` 
+            : `<div style="width:180px; height:180px; border-radius:20px; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:70px; border:3px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'}; margin:0 auto 15px auto; box-shadow: 0 10px 20px rgba(0,0,0,0.1); pointer-events:none;">${u.avatar || '👤'}</div>`;
+
+        let tagsHtml = '';
+        if(u.interests && Array.isArray(u.interests)) {
+            tagsHtml = u.interests.slice(0, 4).map(tag => `<span style="font-size:11px; background:#e0e7ff; color:var(--primary); padding:4px 8px; border-radius:8px; font-weight:700; margin:2px;">${tag}</span>`).join('');
+        }
+
+        container.innerHTML = `
+            <div id="swipe-card" style="position:relative; transition: transform 0.3s ease, opacity 0.3s ease;">
+                ${avatarHtml}
+                <h2 style="margin:0 0 5px 0; color:var(--text-dark); font-size:22px; display:flex; align-items:center; justify-content:center;">${u.name} ${initial} ${u.age ? `<span style="font-weight:normal; margin-left:8px; color:var(--text-gray);">${u.age}</span>` : ''} ${premiumIcon}</h2>
+                <div style="font-size:14px; color:var(--primary); font-weight:bold; margin-bottom:5px;">${u.faculty || 'Kampüs Öğrencisi'}</div>
+                <div style="display:flex; flex-wrap:wrap; justify-content:center; margin-bottom:20px; max-width:250px; margin-left:auto; margin-right:auto;">${tagsHtml}</div>
+                
+                <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
+                    <button onclick="window.handleSwipe('left')" style="width:60px; height:60px; border-radius:50%; background:white; border:2px solid #EF4444; color:#EF4444; font-size:24px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 10px rgba(239,68,68,0.2); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">❌</button>
+                    <button onclick="window.handleSwipe('right')" style="width:60px; height:60px; border-radius:50%; background:white; border:2px solid #10B981; color:#10B981; font-size:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 10px rgba(16,185,129,0.2); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">❤️</button>
+                </div>
+            </div>
+        `;
+    };
+
+    window.handleSwipe = async function(direction) {
+        const card = document.getElementById('swipe-card');
+        if(!card) return;
+
+        if(direction === 'left') {
+            card.style.transform = 'translateX(-150px) rotate(-15deg)';
+            card.style.opacity = '0';
+            setTimeout(() => {
+                fastMatchCurrentIndex++;
+                window.renderFastMatchCard();
+            }, 300);
+        } else if (direction === 'right') {
+            card.style.transform = 'translateX(150px) rotate(15deg)';
+            card.style.opacity = '0';
+            
+            const u = fastMatchUsers[fastMatchCurrentIndex];
+            
+            // Arkadaşlık isteği olarak gönder
+            window.sendFriendRequest(u.uid, `${u.name} ${u.surname ? u.surname : ''}`, true);
+            
+            setTimeout(() => {
+                fastMatchCurrentIndex++;
+                window.renderFastMatchCard();
+            }, 300);
+        }
+    };
+
     window.searchAndAddFriend = async function() {
         try {
             const searchInput = document.getElementById('friend-search-input');
@@ -1851,7 +1673,7 @@ function initializeUniLoop() {
         }
     };
 
-    window.sendFriendRequest = async function(targetUserId, targetUserName) {
+    window.sendFriendRequest = async function(targetUserId, targetUserName, isFastMatch = false) {
         try {
             const myUid = window.userProfile.uid;
             const q = query(collection(db, "chats"), where("participants", "array-contains", myUid));
@@ -1875,16 +1697,18 @@ function initializeUniLoop() {
                     isMarketChat: false, 
                     messages: [] 
                 });
-                alert("✅ Arkadaşlık isteği başarıyla gönderildi! Karşı taraf onayladığında arkadaş listenizde görünecektir.");
+                if(!isFastMatch) alert("✅ Arkadaşlık isteği başarıyla gönderildi! Karşı taraf onayladığında arkadaş listenizde görünecektir.");
             } else {
-                if(existingChat.status === 'pending') {
-                    alert("Bu kişiye zaten bir arkadaşlık isteği gönderilmiş veya ondan size istek gelmiş.");
-                } else {
-                    alert("Bu kişiyle zaten arkadaşsınız.");
+                if(!isFastMatch) {
+                    if(existingChat.status === 'pending') {
+                        alert("Bu kişiye zaten bir arkadaşlık isteği gönderilmiş veya ondan size istek gelmiş.");
+                    } else {
+                        alert("Bu kişiyle zaten arkadaşsınız.");
+                    }
                 }
             }
         } catch (error) {
-            alert("İstek gönderilirken hata oluştu: " + error.message);
+            if(!isFastMatch) alert("İstek gönderilirken hata oluştu: " + error.message);
         }
     };
 
@@ -1912,6 +1736,7 @@ function initializeUniLoop() {
                 
                 const ageText = u.age ? u.age + " yaşında" : "Yaş belirtilmemiş";
                 const facText = u.faculty ? u.faculty : "Fakülte belirtilmemiş";
+                const gradeText = u.grade ? u.grade + ". Sınıf" : "";
                 const premiumBadge = isPremium ? `<div style="margin-top:8px; display:inline-block; background:linear-gradient(135deg, #F59E0B, #D97706); color:white; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:12px; box-shadow:0 2px 4px rgba(245,158,11,0.3);">👑 Premium Üye</div>` : '';
 
                 const existingChat = chatsDB.find(c => c.otherUid === u.uid && !c.isMarketChat);
@@ -1931,7 +1756,7 @@ function initializeUniLoop() {
                         <h3 style="margin: 10px 0 5px 0; font-size:18px; color:var(--text-dark); display:flex; align-items:center; justify-content:center; gap:5px;">
                             ${u.name} ${initial} ${isPremium ? '<span style="font-size:18px;">👑</span>' : ''}
                         </h3>
-                        <p style="color:var(--primary); font-size:14px; margin-bottom: 5px; font-weight:bold;">${facText}</p>
+                        <p style="color:var(--primary); font-size:14px; margin-bottom: 5px; font-weight:bold;">${facText} ${gradeText ? ' - ' + gradeText : ''}</p>
                         <p style="color:var(--text-gray); font-size:13px; margin-bottom: 5px;">${ageText}</p>
                         ${premiumBadge}
                         <div style="margin-top:20px;">${actionBtnHtml}</div>
@@ -2028,7 +1853,7 @@ function initializeUniLoop() {
         }
     };
 
-    // --- ANA SAYFA (SOFT RENKLER KORUNDU) ---
+    // --- ANA SAYFA (HIZLI EŞLEŞ GÜNCELLEMESİ) ---
     window.renderHome = async function() {
         let usernameWarning = '';
         if (!window.userProfile.username) {
@@ -2044,44 +1869,34 @@ function initializeUniLoop() {
             const classInfo = window.userProfile.joinedClassRoom;
             facultyCardHtml = `
                 <div class="card" style="flex:1; padding:15px 10px; border-radius:12px; cursor:pointer; text-align:center; background:linear-gradient(135deg, #f8fafc, #e0e7ff); border: 1px solid #c7d2fe; transition: transform 0.2s;" onclick="window.openGroupRoom('${classInfo.roomId}', '${classInfo.roomTitle}', 'faculty')">
-                    <div style="font-size:32px; margin-bottom:8px;">🎓</div>
-                    <div style="font-weight:800; color:#4f46e5; font-size:14px;">Sınıfıma Gir</div>
-                    <div style="font-size:11px; color:#6366f1; margin-top:4px;">${classInfo.grade}. Sınıf Odası</div>
+                    <div style="font-size:32px; margin-bottom:8px;">🏛️</div>
+                    <div style="font-weight:800; color:#4f46e5; font-size:14px;">Fakülte Grubum</div>
+                    <div style="font-size:11px; color:#6366f1; margin-top:4px;">Tüm Sınıflar</div>
                 </div>
             `;
         } else {
             facultyCardHtml = `
                 <div class="card" style="flex:1; padding:15px 10px; border-radius:12px; cursor:pointer; text-align:center; background:linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #86efac; transition: transform 0.2s;" onclick="window.openFacultiesList()">
                     <div style="font-size:32px; margin-bottom:8px;">🏛️</div>
-                    <div style="font-weight:800; color:#166534; font-size:14px;">Fakülteler</div>
+                    <div style="font-weight:800; color:#166534; font-size:14px;">Fakülte Chat</div>
                     <div style="font-size:11px; color:#15803d; margin-top:4px;">Bölümdaşlarını Bul</div>
                 </div>
             `;
         }
 
-        let clubsCardHtml = '';
-        if (window.userProfile.joinedClubs && window.userProfile.joinedClubs.length > 0) {
-            clubsCardHtml = `
-                <div class="card" style="flex:1; padding:15px 10px; border-radius:12px; cursor:pointer; text-align:center; background:linear-gradient(135deg, #fefce8, #fef08a); border: 1px solid #fde047; transition: transform 0.2s;" onclick="window.openJoinedClubsList()">
-                    <div style="font-size:32px; margin-bottom:8px;">📌</div>
-                    <div style="font-weight:800; color:#b45309; font-size:14px;">Katıldıklarım</div>
-                    <div style="font-size:11px; color:#d97706; margin-top:4px;">${window.userProfile.joinedClubs.length} Kulüp</div>
-                </div>
-            `;
-        } else {
-            clubsCardHtml = `
-                <div class="card" style="flex:1; padding:15px 10px; border-radius:12px; cursor:pointer; text-align:center; background:linear-gradient(135deg, #fefce8, #fef08a); border: 1px solid #fde047; transition: transform 0.2s;" onclick="window.openClubsList()">
-                    <div style="font-size:32px; margin-bottom:8px;">🎭</div>
-                    <div style="font-weight:800; color:#b45309; font-size:14px;">Kulüpler & Org.</div>
-                    <div style="font-size:11px; color:#d97706; margin-top:4px;">Etkinliklere Katıl</div>
-                </div>
-            `;
-        }
+        // KULÜPLER YERİNE HIZLI EŞLEŞ GELDİ
+        let fastMatchCardHtml = `
+            <div class="card" style="flex:1; padding:15px 10px; border-radius:12px; cursor:pointer; text-align:center; background:linear-gradient(135deg, #fff1f2, #ffe4e6); border: 1px solid #fecdd3; transition: transform 0.2s;" onclick="window.openFastMatch()">
+                <div style="font-size:32px; margin-bottom:8px;">🔥</div>
+                <div style="font-weight:800; color:#be123c; font-size:14px;">Hızlı Eşleş</div>
+                <div style="font-size:11px; color:#e11d48; margin-top:4px;">Yeni İnsanlar Keşfet</div>
+            </div>
+        `;
 
         const homeCardsHtml = `
             <div style="display:flex; gap:10px; margin-bottom: 10px;">
                 ${facultyCardHtml}
-                ${clubsCardHtml}
+                ${fastMatchCardHtml}
             </div>
         `;
 
@@ -2774,7 +2589,6 @@ function initializeUniLoop() {
             if (chat.status === 'pending' && !chat.isMarketChat) return;
 
             const lastMsgObj = chat.messages && chat.messages.length > 0 ? chat.messages[chat.messages.length - 1] : {text: 'Yeni bağlantı'};
-            // Fotoğraf/PDF atıldığında text boş gelebilir, o yüzden kontrol ediyoruz
             let lastMsg = lastMsgObj.text || (lastMsgObj.mediaUrl ? (lastMsgObj.mediaType === 'pdf' ? '📄 PDF Belgesi' : '📷 Fotoğraf') : '');
             const msgTime = lastMsgObj.time || '';
             const isUnread = lastMsgObj.senderId !== window.userProfile.uid && lastMsgObj.read === false;
@@ -2959,7 +2773,6 @@ function initializeUniLoop() {
         window.renderMessagesSidebarOnly();
     };
 
-    // 🌟 DM MODERN CHAT BUBBLES UYGULAMASI VE FOTOĞRAF YAZISI KALDIRILMASI
     window.updateChatMessagesOnly = function(chatId) {
         if(currentChatId !== chatId) return;
         const scrollBox = document.getElementById('chat-messages-scroll');
@@ -2990,7 +2803,6 @@ function initializeUniLoop() {
                     }
                 }
 
-                // EĞER SADECE MEDYA ATILDIYSA BOŞ METİN DİV'İ OLUŞTURMA
                 const textHtml = msg.text ? `<div class="msg-text" style="word-break: break-word;">${msg.text}</div>` : '';
 
                 chatHTML += `
