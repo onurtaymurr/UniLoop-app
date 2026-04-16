@@ -58,7 +58,7 @@ const storage = getStorage(app);
 
 // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
 window.userProfile = { 
-    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: ""
+    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: "", lockedArchiveFaculty: "", lockedArchiveGrade: "", lastArchiveResetYear: 0
 };
 
 window.joinedFaculties = [];
@@ -659,6 +659,10 @@ function initializeUniLoop() {
         const user = auth.currentUser;
         let finalAvatarUrl = "";
 
+        const now = new Date();
+        let activeYear = now.getFullYear();
+        if (now.getMonth() < 7) activeYear -= 1;
+
         try {
             if (d.avatarDataUrl) {
                 const fileName = user.uid + '_avatar_' + Date.now() + '.jpg';
@@ -686,6 +690,9 @@ function initializeUniLoop() {
                 isPremium: false,
                 fastMatchCount: 0,
                 fastMatchDate: new Date().toLocaleDateString(),
+                lockedArchiveFaculty: "",
+                lockedArchiveGrade: "",
+                lastArchiveResetYear: activeYear,
                 profileViewers: [],
                 joinedClassRoom: null
             });
@@ -772,6 +779,70 @@ function initializeUniLoop() {
         }
     };
 
+    window.showAcademicYearUpdateModal = function(activeYear) {
+        let facOptions = allFaculties.map(f => `<option value="${f}" ${window.userProfile.faculty === f ? 'selected' : ''}>${f}</option>`).join('');
+        
+        window.openModal('🎓 Yeni Akademik Yıl!', `
+            <div style="text-align:center; padding:10px;">
+                <div style="font-size:40px; margin-bottom:10px;">🎉</div>
+                <h3 style="color:var(--text-dark); margin-bottom:10px;">Yeni Eğitim Yılı Başladı!</h3>
+                <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px;">Geçtiğimiz akademik yılı geride bıraktık. Arşiv haklarının sıfırlanması ve profilinin güncellenmesi için lütfen güncel sınıfını ve fakülteni onayla.</p>
+                
+                <select id="reset-faculty" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white; margin-bottom:10px;">
+                    <option value="">Fakülte Seçiniz</option>
+                    ${facOptions}
+                </select>
+                
+                <select id="reset-grade" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white; margin-bottom:15px;">
+                    <option value="1" ${window.userProfile.grade == '1' ? 'selected' : ''}>1. Sınıf</option>
+                    <option value="2" ${window.userProfile.grade == '2' ? 'selected' : ''}>2. Sınıf</option>
+                    <option value="3" ${window.userProfile.grade == '3' ? 'selected' : ''}>3. Sınıf</option>
+                    <option value="4" ${window.userProfile.grade == '4' ? 'selected' : ''}>4. Sınıf</option>
+                    <option value="5" ${window.userProfile.grade == '5' ? 'selected' : ''}>5. Sınıf</option>
+                    <option value="6" ${window.userProfile.grade == '6' ? 'selected' : ''}>6. Sınıf</option>
+                </select>
+                
+                <button class="btn-primary" style="width:100%; padding:14px; border-radius:10px; font-size:15px; font-weight:bold;" onclick="window.saveAcademicYearReset(${activeYear})">Güncelle ve Arşivi Sıfırla</button>
+            </div>
+        `);
+        
+        setTimeout(() => {
+            const closeBtn = document.querySelector('#app-modal .close-btn') || document.getElementById('modal-close');
+            if(closeBtn) closeBtn.style.display = 'none';
+        }, 100);
+    };
+
+    window.saveAcademicYearReset = async function(activeYear) {
+        const newFac = document.getElementById('reset-faculty').value;
+        const newGr = document.getElementById('reset-grade').value;
+        if(!newFac || !newGr) return alert("Lütfen fakülte ve sınıf seçin.");
+
+        try {
+            await updateDoc(doc(db, "users", window.userProfile.uid), {
+                faculty: newFac,
+                grade: newGr,
+                lastArchiveResetYear: activeYear,
+                lockedArchiveFaculty: "",
+                lockedArchiveGrade: ""
+            });
+            window.userProfile.faculty = newFac;
+            window.userProfile.grade = newGr;
+            window.userProfile.lastArchiveResetYear = activeYear;
+            window.userProfile.lockedArchiveFaculty = "";
+            window.userProfile.lockedArchiveGrade = "";
+            
+            alert("Harika! Yeni yıl profilin güncellendi ve arşiv kilidin sıfırlandı.");
+            
+            const closeBtn = document.querySelector('#app-modal .close-btn') || document.getElementById('modal-close');
+            if(closeBtn) closeBtn.style.display = 'block';
+            
+            window.closeModal();
+            window.renderProfile(); 
+        } catch(e) {
+            alert("Hata oluştu: " + e.message);
+        }
+    };
+
     onAuthStateChanged(auth, async (user) => {
         if (user && user.emailVerified) { 
             try {
@@ -796,9 +867,20 @@ function initializeUniLoop() {
                 if(window.userProfile.avatarUrl === undefined) window.userProfile.avatarUrl = "";
                 if(window.userProfile.joinedClassRoom === undefined) window.userProfile.joinedClassRoom = null;
                 if(window.userProfile.profileViewers === undefined) window.userProfile.profileViewers = [];
+                if(window.userProfile.lockedArchiveFaculty === undefined) window.userProfile.lockedArchiveFaculty = "";
+                if(window.userProfile.lockedArchiveGrade === undefined) window.userProfile.lockedArchiveGrade = "";
+                if(window.userProfile.lastArchiveResetYear === undefined) window.userProfile.lastArchiveResetYear = 2023;
 
                 await window.ensureWelcomeMessage(user, window.userProfile.name);
                 await updateDoc(userDocRef, { isOnline: true });
+
+                const now = new Date();
+                let activeYear = now.getFullYear();
+                if (now.getMonth() < 7) activeYear -= 1;
+
+                if (window.userProfile.lastArchiveResetYear < activeYear) {
+                    setTimeout(() => window.showAcademicYearUpdateModal(activeYear), 1000);
+                }
                 
                 const headerRightMenu = document.querySelector('.header-right-menu');
                 if (headerRightMenu) {
@@ -950,6 +1032,10 @@ function initializeUniLoop() {
             if (document.getElementById('app-modal').classList.contains('active') && document.getElementById('modal-title').innerText.includes('Bildirimler')) { window.renderNotifications(); }
         });
     }
+
+// ============================================================================
+// 🌟 BÖLÜM 1 SONU 🌟
+// ============================================================================
     // 🌟 MEDYA YÜKLEME SİSTEMİ
     window.uploadChatMedia = async function(event, targetId, chatType) {
         const file = event.target.files[0];
@@ -958,7 +1044,7 @@ function initializeUniLoop() {
         const isPdf = file.type === "application/pdf";
         
         try {
-            const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.\-]/g, "_");
             const storagePath = `chat_media/${window.userProfile.uid}/${Date.now()}_${cleanName}`;
             const storageRef = ref(storage, storagePath);
             
@@ -1071,16 +1157,22 @@ function initializeUniLoop() {
             try {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: false });
                 window.userProfile.isPremium = false;
+                
+                const navBtn = document.getElementById('nav-premium-action');
+                if(navBtn) {
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold; cursor:pointer;" onclick="window.openPremiumModal()">🌟 Premium</div>`;
+                }
+
                 alert("Premium üyeliğiniz başarıyla iptal edildi.");
                 window.closeModal();
-                window.location.reload();
+                window.renderSettings();
             } catch(e) {
                 alert("Hata oluştu: " + e.message);
             }
         }
     };
 
-       window.uploadArchiveFile = async function() {
+    window.uploadArchiveFile = async function() {
         const facBtn = document.getElementById('admin-archive-faculty');
         const grBtn = document.getElementById('admin-archive-grade');
         const fileInput = document.getElementById('admin-archive-file');
@@ -1091,14 +1183,12 @@ function initializeUniLoop() {
         const gr = grBtn.value.trim();
         const file = fileInput.files[0];
         
-        // Butonu yükleniyor moduna al
         const uploadBtn = document.getElementById('upload-archive-btn');
         const originalText = uploadBtn.innerText;
         uploadBtn.innerText = "Yükleniyor... Lütfen bekleyin ⏳";
         uploadBtn.disabled = true;
 
         try {
-            // 1. PDF'i Storage'a Yükleme
             const cleanName = file.name.replace(/[^a-zA-Z0-9.\-]/g, "_");
             const storagePath = `archives/${fac}/${gr}/${Date.now()}_${cleanName}`;
             const storageRef = ref(storage, storagePath);
@@ -1106,7 +1196,6 @@ function initializeUniLoop() {
             await uploadBytes(storageRef, file);
             const downloadUrl = await getDownloadURL(storageRef);
 
-            // 2. Belgeyi Firestore (Veritabanı) 'archives' koleksiyonuna kaydetme
             await addDoc(collection(db, "archives"), {
                 faculty: fac,
                 grade: gr,
@@ -1121,28 +1210,50 @@ function initializeUniLoop() {
             window.closeModal();
         } catch(e) {
             console.error("Yükleme Hatası:", e);
-            alert("Dosya yüklenirken hata oluştu: " + e.message + "\n(Eğer 'Missing or insufficient permissions' hatasıysa Firestore Kurallarınızı kontrol edin.)");
+            alert("Dosya yüklenirken hata oluştu: " + e.message);
         } finally {
             if(uploadBtn) { uploadBtn.innerText = originalText; uploadBtn.disabled = false; }
         }
     };
 
     window.viewArchive = async function() {
-        const fac = (window.userProfile.faculty || "").trim();
-        let rawGr = String(window.userProfile.grade || "").trim();
+        const u = window.userProfile;
         
-        if (!fac || !rawGr) {
-            alert("Profilinizde fakülte veya sınıf bilginiz eksik. Lütfen ayarlardan profilinizi güncelleyin.");
-            return;
+        // --- ARŞİV KİLİTLEME SİSTEMİ ---
+        // Kullanıcı arşivi bu yıl için henüz kilitlemediyse
+        if (!u.lockedArchiveFaculty || !u.lockedArchiveGrade) {
+            if (!u.faculty || !u.grade) {
+                alert("Profilinizde fakülte veya sınıf bilginiz eksik. Lütfen ayarlardan profilinizi güncelleyin.");
+                return;
+            }
+            
+            let currentGradeFormatted = u.grade.toString().includes("Sınıf") ? u.grade.toString().trim() : u.grade.toString().trim() + ". Sınıf";
+            
+            if(confirm(`⚠️ DİKKAT: Arşiv hakkınız tüm eğitim yılı boyunca [${u.faculty} - ${currentGradeFormatted}] olarak sabitlenecektir. \n\nDaha sonra profilinizden sınıf veya fakülte değiştirseniz bile diğer arşivleri GÖREMEZSİNİZ.\n\nOnaylıyor musunuz?`)) {
+                try {
+                    await updateDoc(doc(db, "users", u.uid), {
+                        lockedArchiveFaculty: u.faculty.trim(),
+                        lockedArchiveGrade: currentGradeFormatted
+                    });
+                    u.lockedArchiveFaculty = u.faculty.trim();
+                    u.lockedArchiveGrade = currentGradeFormatted;
+                    alert("✅ Arşiviniz başarıyla kilitlendi. Yıl boyunca bu bölümün sorularına erişebileceksiniz.");
+                } catch(e) {
+                    alert("Kilitlenme sırasında bir hata oluştu: " + e.message);
+                    return;
+                }
+            } else {
+                return; // Onaylamazsa iptal et
+            }
         }
 
-        // Kullanıcının sınıfını (örn: "1") Adminin yükleme formatıyla ("1. Sınıf") eşitle
-        const gr = rawGr.includes("Sınıf") ? rawGr : rawGr + ". Sınıf";
+        // Kilitli arşivi göster
+        const fac = u.lockedArchiveFaculty;
+        const gr = u.lockedArchiveGrade;
 
         window.openModal(`📚 ${fac} - ${gr} Arşivi`, `<div style="text-align:center; padding:20px; color:var(--text-gray);">Arşiv güvenli bir şekilde taranıyor... ⏳</div>`);
 
         try {
-            // Sadece Fakülte üzerinden Firestore sorgusu atıyoruz
             const q = query(collection(db, "archives"), where("faculty", "==", fac));
             const snap = await getDocs(q);
 
@@ -1159,7 +1270,7 @@ function initializeUniLoop() {
                 html += `
                 <div style="text-align:center; padding:30px 10px;">
                     <div style="font-size:40px; margin-bottom:10px;">📭</div>
-                    <div style="font-size:14px; color:var(--text-gray); line-height:1.5;">Henüz sizin bölümünüze <b>(${fac})</b> ve sınıfınıza <b>(${gr})</b> ait bir arşiv bulunamadı. Admin'in dosyaları yüklemesini bekleyin.</div>
+                    <div style="font-size:14px; color:var(--text-gray); line-height:1.5;">Henüz kilitlendiğiniz bölüm <b>(${fac})</b> ve sınıfa <b>(${gr})</b> ait bir arşiv bulunamadı. Lütfen daha sonra tekrar deneyin.</div>
                 </div>`;
             } else {
                 html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
@@ -1187,8 +1298,7 @@ function initializeUniLoop() {
             document.getElementById('modal-body').innerHTML = `
                 <div style="color:#EF4444; text-align:center; padding:20px;">
                     <strong>Bağlantı Hatası</strong><br><br>
-                    Arşiv yüklenirken bir hata oluştu: ${e.message}<br><br>
-                    Lütfen Firebase <b>Firestore Database</b> kurallarınızda <i>archives</i> koleksiyonuna okuma izni verdiğinizden emin olun.
+                    Arşiv yüklenirken bir hata oluştu: ${e.message}
                 </div>`;
         }
     };
@@ -1255,7 +1365,7 @@ function initializeUniLoop() {
                     <div class="card" style="background:linear-gradient(135deg, #F0FDF4, #DCFCE7); border:1px solid #86EFAC; padding:20px; border-radius:12px;">
                         <div style="font-size:30px; margin-bottom:10px; text-align:center;">📚</div>
                         <h4 style="color:#166534; margin-bottom:8px; font-size:16px; text-align:center;">Çıkmış Sorular Arşivi</h4>
-                        <p style="font-size:13px; color:#14532D; text-align:center; margin-bottom:15px; font-weight:bold;">${fac} ${grade} Arşivi</p>
+                        <p style="font-size:13px; color:#14532D; text-align:center; margin-bottom:15px; font-weight:bold;">Tüm Yıl Boyunca Sabit Erişim</p>
                         <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#22C55E; border:none;" onclick="window.viewArchive()">
                             Arşive Git ➡️
                         </button>
@@ -1281,7 +1391,6 @@ function initializeUniLoop() {
             console.error("Premium özellikler yüklenirken hata oluştu:", e);
         }
     };
-
 
     window.goToMessages = function() {
         document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
