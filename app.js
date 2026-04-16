@@ -69,7 +69,6 @@ let currentChatId = null;
 let currentGroupUnsubscribe = null; 
 
 window.registrationData = { interests: [] };
-
 window.resetCurrentChatId = function() { currentChatId = null; };
 
 const allFaculties = [
@@ -313,6 +312,7 @@ function initializeUniLoop() {
         window.renderSettings(); 
     };
 
+    // 🔴 EVENT DELEGATION (ÖNEMLİ: BU KISIM HTML ID'LERİYLE EŞLEŞMELİDİR)
     document.addEventListener('click', async function(e) {
         const isTarget = (id) => e.target.id === id || (e.target.closest && e.target.closest('#' + id));
 
@@ -748,7 +748,6 @@ function initializeUniLoop() {
         } catch(error) { console.error(error); }
     };
 
-    // 🔒 GÜVENLİ HESAP SİLME İŞLEMİ UX
     window.deleteAccountSafe = function(e) {
         if(e) e.preventDefault();
         if(confirm("🚨 1/3: Hesabınızı silmek istediğinize emin misiniz?")) {
@@ -956,11 +955,6 @@ function initializeUniLoop() {
             if (document.getElementById('app-modal').classList.contains('active') && document.getElementById('modal-title').innerText.includes('Bildirimler')) { window.renderNotifications(); }
         });
     }
-
-    // 🌟 MEDYA YÜKLEME SİSTEMİ
-    window.uploadChatMedia = async function(event, targetId, chatType) {
-        // ... (Bu fonksiyon yapısı aynı kalacak, 2. bölümde devam edecek)
-    };
 
     window.openPremiumModal = function() {
         const fac = window.userProfile.faculty || "Fakültenizin";
@@ -2528,8 +2522,7 @@ function initializeUniLoop() {
         if (event) {
             const btn = event.currentTarget || event.target;
             const rect = btn.getBoundingClientRect();
-            const flying
-Heart = document.createElement('div');
+            const flyingHeart = document.createElement('div');
             flyingHeart.innerHTML = '❤️';
             flyingHeart.style.position = 'fixed';
             flyingHeart.style.left = (rect.left + rect.width / 2 - 12) + 'px';
