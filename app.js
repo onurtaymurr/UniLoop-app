@@ -898,9 +898,9 @@ function initializeUniLoop() {
                     headerRightMenu.innerHTML = ''; 
                     
                     if (!window.userProfile.isPremium) {
-                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="color:#111827; background:#fff; border:1px solid #111827; font-weight:bold; cursor:pointer;" onclick="window.openPremiumModal()">🌟 Premium</div>`);
+                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold; cursor:pointer;" onclick="window.openPremiumModal()">🌟 Premium</div>`);
                     } else {
-                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background:#111827; color:white; border:1px solid #111827; padding:4px 10px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">🌟 Premium Özellikler</div>`);
+                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background:linear-gradient(135deg, #F59E0B, #D97706); color:white; padding:4px 10px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">🌟 Premium Özellikler</div>`);
                     }
 
                     headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler">🔔 <span id="notif-badge-top" style="display:none; position:absolute; top:-2px; right:-2px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
@@ -959,36 +959,29 @@ function initializeUniLoop() {
             if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
         });
 
-        // 💸 OPTİMİZASYON: Instagram tarzı kademeli yükleme (Lazy Loading) için revize edildi
-        window.confessionsLimit = 5;
-        window.confessionsUnsubscribe = null;
-        window.initConfessionsListener = function(uid) {
-            if(window.confessionsUnsubscribe) window.confessionsUnsubscribe();
-            window.confessionsUnsubscribe = onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc"), limit(window.confessionsLimit)), (snapshot) => {
-                confessionsDB = [];
-                snapshot.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
-                confessionsDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
-                const activeTab = document.querySelector('.bottom-nav-item.active');
-                if(activeTab && activeTab.getAttribute('data-target') === 'confessions') {
-                    const feedContainer = document.getElementById('conf-feed');
-                    // DOM optimizasyonu için render limit kontrolü
-                    if (feedContainer && feedContainer.children.length > 0 && feedContainer.children.length - 1 === confessionsDB.length) { 
-                        confessionsDB.forEach(post => {
-                            const isLiked = post.likes && post.likes.includes(uid);
-                            const likeBtn = document.getElementById(`like-btn-${post.id}`);
-                            if (likeBtn) likeBtn.innerHTML = `${isLiked ? '❤️' : '🤍'} <span style="margin-left:4px;">${post.likes ? post.likes.length : 0}</span>`;
-                            const commentCountBtn = document.getElementById(`comment-count-${post.id}`);
-                            if (commentCountBtn) commentCountBtn.innerHTML = `💬 <span style="margin-left:4px;">${post.comments ? post.comments.length : 0}</span>`;
-                        });
-                    } else { window.drawConfessionsFeed(); }
-                }
-                if(document.getElementById('app-modal').classList.contains('active') && document.getElementById('active-post-id')) {
-                    const activePostId = document.getElementById('active-post-id').value;
-                    if(activePostId) window.updateConfessionDetailLive(activePostId);
-                }
-            });
-        };
-        window.initConfessionsListener(currentUid);
+        // 💸 OPTİMİZASYON: Sınırsız çekim yerine son 50 itiraf (gönderi) getiriliyor
+        onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
+            confessionsDB = [];
+            snapshot.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
+            confessionsDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
+            const activeTab = document.querySelector('.bottom-nav-item.active');
+            if(activeTab && activeTab.getAttribute('data-target') === 'confessions') {
+                const feedContainer = document.getElementById('conf-feed');
+                if (feedContainer && feedContainer.children.length === confessionsDB.length) {
+                    confessionsDB.forEach(post => {
+                        const isLiked = post.likes && post.likes.includes(currentUid);
+                        const likeBtn = document.getElementById(`like-btn-${post.id}`);
+                        if (likeBtn) likeBtn.innerHTML = `${isLiked ? '❤️' : '🤍'} <span style="margin-left:4px;">${post.likes ? post.likes.length : 0}</span>`;
+                        const commentCountBtn = document.getElementById(`comment-count-${post.id}`);
+                        if (commentCountBtn) commentCountBtn.innerHTML = `💬 <span style="margin-left:4px;">${post.comments ? post.comments.length : 0}</span>`;
+                    });
+                } else { window.drawConfessionsFeed(); }
+            }
+            if(document.getElementById('app-modal').classList.contains('active') && document.getElementById('active-post-id')) {
+                const activePostId = document.getElementById('active-post-id').value;
+                if(activePostId) window.updateConfessionDetailLive(activePostId);
+            }
+        });
 
         onSnapshot(query(collection(db, "chats"), where("participants", "array-contains", currentUid)), (snapshot) => {
             chatsDB = [];
@@ -1117,20 +1110,20 @@ function initializeUniLoop() {
         window.openModal('🌟 UniLoop Premium', `
             <div style="text-align:center; padding: 10px;">
                 <div style="font-size: 48px; margin-bottom: 10px;">👑</div>
-                <h3 style="color:#111827; margin-bottom: 10px; font-size: 22px;">Kampüsün Zirvesine Çık!</h3>
+                <h3 style="color:#D97706; margin-bottom: 10px; font-size: 22px;">Kampüsün Zirvesine Çık!</h3>
                 <p style="margin-bottom:20px; font-size:15px; color:var(--text-gray);">
                     UniLoop Premium ile sınırları kaldır ve kampüsün en donanımlı ağına dahil ol.
                 </p>
                 <div style="font-size:32px; font-weight:800; margin-bottom:20px; color:var(--text-dark);">
                     79.99 ₺ <span style="font-size:14px; color:var(--text-gray); font-weight:normal;">/ aylık</span>
                 </div>
-                <ul style="text-align:left; font-size:14px; margin-bottom:20px; line-height:1.6; color:var(--text-dark); background:#F3F4F6; padding:15px 15px 15px 35px; border-radius:12px; border:1px solid #E5E7EB;">
+                <ul style="text-align:left; font-size:14px; margin-bottom:20px; line-height:1.6; color:var(--text-dark); background:#FFFBEB; padding:15px 15px 15px 35px; border-radius:12px; border:1px solid #FDE68A;">
                     <li>👀 <b>Diğer kullanıcıların detaylı profillerini görüntüleme hakkı!</b> Blurları kaldır.</li>
                     <li>📚 <b>${fac} ${grade}</b> çıkmış sorularına anında erişim!</li>
                     <li>🔥 <b>Sınırsız</b> Hızlı Eşleşme hakkı.</li>
                     <li>🕵️ <b>Kimler Profilime Baktı?</b> Seni görüntüleyen gizli hayranlarını gör.</li>
                 </ul>
-                <button id="buy-premium-btn" onclick="window.upgradeToPremium()" class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center; padding: 16px; font-size: 16px; background:#111827; color:white;">
+                <button id="buy-premium-btn" onclick="window.upgradeToPremium()" class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center; padding: 16px; font-size: 16px;">
                     💳 Güvenli Ödeme İle Satın Al
                 </button>
                 <p style="font-size:11px; color:#9CA3AF; margin-top:10px;">*İstediğin zaman iptal edebilirsin.</p>
@@ -1167,7 +1160,7 @@ function initializeUniLoop() {
                 
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:#111827; color:white; padding:4px 10px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">🌟 Premium Özellikler</div>`;
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:linear-gradient(135deg, #F59E0B, #D97706); color:white; padding:4px 10px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">🌟 Premium Özellikler</div>`;
                 }
                 
                 window.closeModal();
@@ -1189,7 +1182,7 @@ function initializeUniLoop() {
                 
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="color:#111827; background:#fff; border:1px solid #111827; font-weight:bold; cursor:pointer;" onclick="window.openPremiumModal()">🌟 Premium</div>`;
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold; cursor:pointer;" onclick="window.openPremiumModal()">🌟 Premium</div>`;
                 }
 
                 alert("Premium üyeliğiniz başarıyla iptal edildi.");
@@ -1310,7 +1303,7 @@ function initializeUniLoop() {
                                     <div style="font-size:11px; color:var(--text-gray);">Çıkmış Sorular / Ders Notu</div>
                                 </div>
                             </div>
-                            <a href="${data.fileUrl}" target="_blank" style="background:#111827; color:white; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:bold; flex-shrink:0; box-shadow:0 2px 4px rgba(0,0,0,0.3);">İndir / Aç</a>
+                            <a href="${data.fileUrl}" target="_blank" style="background:#10B981; color:white; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:bold; flex-shrink:0; box-shadow:0 2px 4px rgba(16,185,129,0.3);">İndir / Aç</a>
                         </div>
                     `;
                 });
@@ -1381,18 +1374,18 @@ function initializeUniLoop() {
                         </select>
                         <input type="file" id="admin-archive-file" accept="application/pdf" style="margin-bottom:15px; width:100%; font-size:12px;">
                         
-                        <button id="upload-archive-btn" class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#111827; border:none;" onclick="window.uploadArchiveFile()">
+                        <button id="upload-archive-btn" class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#3B82F6; border:none;" onclick="window.uploadArchiveFile()">
                             PDF'i Arşive Ekle ➡️
                         </button>
                     </div>
                 `;
             } else {
                 archiveSectionHtml = `
-                    <div class="card" style="background:linear-gradient(135deg, #F9FAFB, #F3F4F6); border:1px solid #E5E7EB; padding:20px; border-radius:12px;">
+                    <div class="card" style="background:linear-gradient(135deg, #F0FDF4, #DCFCE7); border:1px solid #86EFAC; padding:20px; border-radius:12px;">
                         <div style="font-size:30px; margin-bottom:10px; text-align:center;">📚</div>
-                        <h4 style="color:#111827; margin-bottom:8px; font-size:16px; text-align:center;">Çıkmış Sorular Arşivi</h4>
-                        <p style="font-size:13px; color:#4B5563; text-align:center; margin-bottom:15px; font-weight:bold;">Tüm Yıl Boyunca Sabit Erişim</p>
-                        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#111827; border:none;" onclick="window.viewArchive()">
+                        <h4 style="color:#166534; margin-bottom:8px; font-size:16px; text-align:center;">Çıkmış Sorular Arşivi</h4>
+                        <p style="font-size:13px; color:#14532D; text-align:center; margin-bottom:15px; font-weight:bold;">Tüm Yıl Boyunca Sabit Erişim</p>
+                        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#22C55E; border:none;" onclick="window.viewArchive()">
                             Arşive Git ➡️
                         </button>
                     </div>
@@ -1403,8 +1396,8 @@ function initializeUniLoop() {
                 <div style="display:flex; flex-direction:column; gap:15px;">
                     ${archiveSectionHtml}
                     
-                    <div class="card" style="background:#F9FAFB; border:1px solid #E5E7EB; padding:20px; border-radius:12px;">
-                        <h4 style="color:#111827; margin-bottom:12px; font-size:15px; display:flex; align-items:center; gap:5px;">
+                    <div class="card" style="background:#FFFBEB; border:1px solid #FDE68A; padding:20px; border-radius:12px;">
+                        <h4 style="color:#D97706; margin-bottom:12px; font-size:15px; display:flex; align-items:center; gap:5px;">
                             <span>🕵️</span> Kimler Profilime Baktı?
                         </h4>
                         <div style="max-height:200px; overflow-y:auto; padding-right:5px;">
@@ -1861,7 +1854,7 @@ function initializeUniLoop() {
     let fastMatchUsers = [];
     let fastMatchCurrentIndex = 0;
 
-    // 🚀 Tam ekrana gömülü Hızlı Eşleşme (SINIR 30'A ÇIKARILDI)
+    // Tam ekrana gömülü Hızlı Eşleşme Başlatıcısı
     window.initEmbeddedFastMatch = async function() {
         let count = window.userProfile.fastMatchCount || 0;
         let today = new Date().toLocaleDateString();
@@ -1876,13 +1869,13 @@ function initializeUniLoop() {
         const container = document.getElementById('embedded-fast-match-container');
         if(!container) return;
 
-        if (!window.userProfile.isPremium && count >= 30) {
+        if (!window.userProfile.isPremium && count >= 10) {
             container.innerHTML = `
                 <div style="text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 6px rgba(0,0,0,0.05); width:100%; max-width:320px;">
                     <div style="font-size:50px; margin-bottom:15px;">🛑</div>
                     <h3 style="color:var(--text-dark); margin-bottom:10px;">Günlük Hakkın Doldu!</h3>
-                    <p style="color:var(--text-gray); font-size:13px; margin-bottom:20px;">Ücretsiz kullanımda günlük 30 kişiyle eşleşme hakkın var. Sınırları kaldırmak için Premium'a geç!</p>
-                    <button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center; background:#111827; color:white;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
+                    <p style="color:var(--text-gray); font-size:13px; margin-bottom:20px;">Ücretsiz kullanımda günlük 10 kişiyle eşleşme hakkın var. Sınırları kaldırmak için Premium'a geç!</p>
+                    <button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
                 </div>
             `;
             return;
@@ -1946,8 +1939,8 @@ function initializeUniLoop() {
         }
 
         let headerText = window.userProfile.isPremium ? 
-            '<span style="color:#111827; font-size:12px; font-weight:bold; background:#F3F4F6; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block;">Sınırsız Eşleşme (Premium)</span>' : 
-            `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block;">Kalan Hakkın: ${30 - window.userProfile.fastMatchCount} / 30</span>`;
+            '<span style="color:#10B981; font-size:12px; font-weight:bold; background:#ECFDF5; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block;">Sınırsız Eşleşme (Premium)</span>' : 
+            `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block;">Kalan Hakkın: ${10 - window.userProfile.fastMatchCount} / 10</span>`;
 
         container.innerHTML = `
             ${headerText}
@@ -1985,7 +1978,7 @@ function initializeUniLoop() {
             card.style.opacity = '0';
             setTimeout(() => {
                 fastMatchCurrentIndex++;
-                if (!window.userProfile.isPremium && window.userProfile.fastMatchCount >= 30) {
+                if (!window.userProfile.isPremium && window.userProfile.fastMatchCount >= 10) {
                     window.initEmbeddedFastMatch(); 
                 } else {
                     window.renderEmbeddedFastMatchCard();
@@ -2000,7 +1993,7 @@ function initializeUniLoop() {
             
             setTimeout(() => {
                 fastMatchCurrentIndex++;
-                if (!window.userProfile.isPremium && window.userProfile.fastMatchCount >= 30) {
+                if (!window.userProfile.isPremium && window.userProfile.fastMatchCount >= 10) {
                     window.initEmbeddedFastMatch(); 
                 } else {
                     window.renderEmbeddedFastMatchCard();
@@ -2052,12 +2045,12 @@ function initializeUniLoop() {
                 const premiumIcon = targetUser.isPremium ? '<span style="font-size:18px; margin-left:5px;" title="Premium Üye">👑</span>' : '';
                 window.openModal('🔍 Kullanıcı Bulundu', `
                     <div style="text-align:center; padding:10px;">
-                        <div style="width:80px; height:80px; border-radius:50%; margin:0 auto 10px auto; overflow:hidden; border:2px solid ${targetUser.isPremium ? '#111827' : '#E5E7EB'}; display:flex; align-items:center; justify-content:center; background:#F3F4F6; font-size:32px;">
+                        <div style="width:80px; height:80px; border-radius:50%; margin:0 auto 10px auto; overflow:hidden; border:2px solid ${targetUser.isPremium ? '#F59E0B' : '#E5E7EB'}; display:flex; align-items:center; justify-content:center; background:#F3F4F6; font-size:32px;">
                             ${targetUser.avatarUrl ? `<img src="${targetUser.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (targetUser.avatar || '👤')}
                         </div>
                         <h3 style="margin-bottom:5px; color:var(--text-dark); display:flex; align-items:center; justify-content:center;">${targetUser.name} ${targetUser.surname.charAt(0)}. ${premiumIcon}</h3>
                         <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px;">${targetUser.faculty || 'Kampüs Öğrencisi'}</p>
-                        <button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:#111827; border:none;" onclick="window.sendFriendRequest('${targetUser.uid}', '${targetUser.name} ${targetUser.surname}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>
+                        <button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px;" onclick="window.sendFriendRequest('${targetUser.uid}', '${targetUser.name} ${targetUser.surname}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>
                     </div>
                 `);
             }
@@ -2126,7 +2119,7 @@ function initializeUniLoop() {
                     <div style="font-size:50px; margin-bottom:15px; filter: blur(2px);">👀</div>
                     <h3 style="color:var(--text-dark); margin-bottom:10px;">Gizli Profil!</h3>
                     <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px; line-height:1.5;">Detaylı profile bakabilmek için Premium üye ol. Tüm blurları kaldır ve kampüstekileri yakından tanı!</p>
-                    <button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center; background:#111827; color:white;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
+                    <button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
                 </div>
             `);
             return;
@@ -2158,13 +2151,13 @@ function initializeUniLoop() {
                 const isPremium = u.isPremium;
 
                 let avatarHtml = u.avatarUrl 
-                    ? `<img src="${u.avatarUrl}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid ${isPremium ? '#111827' : '#E5E7EB'};">` 
-                    : `<div style="width:100px; height:100px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:40px; border:3px solid ${isPremium ? '#111827' : '#E5E7EB'}; margin:0 auto;">${u.avatar || '👤'}</div>`;
+                    ? `<img src="${u.avatarUrl}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid ${isPremium ? '#F59E0B' : '#E5E7EB'};">` 
+                    : `<div style="width:100px; height:100px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:40px; border:3px solid ${isPremium ? '#F59E0B' : '#E5E7EB'}; margin:0 auto;">${u.avatar || '👤'}</div>`;
                 
                 const ageText = u.age ? u.age + " yaşında" : "Yaş belirtilmemiş";
                 const facText = u.faculty ? u.faculty : "Fakülte belirtilmemiş";
                 const gradeText = u.grade ? u.grade + ". Sınıf" : "";
-                const premiumBadge = isPremium ? `<div style="margin-top:8px; display:inline-block; background:#111827; color:white; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:12px; box-shadow:0 2px 4px rgba(0,0,0,0.3);">👑 Premium Üye</div>` : '';
+                const premiumBadge = isPremium ? `<div style="margin-top:8px; display:inline-block; background:linear-gradient(135deg, #F59E0B, #D97706); color:white; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:12px; box-shadow:0 2px 4px rgba(245,158,11,0.3);">👑 Premium Üye</div>` : '';
 
                 const existingChat = chatsDB.find(c => c.otherUid === u.uid && !c.isMarketChat);
                 let actionBtnHtml = '';
@@ -2670,7 +2663,6 @@ function initializeUniLoop() {
         }
     };
 
-    // 🚀 Instagram tarzı aşağı kaydırdıkça yüklenen (Lazy Load) Keşfet
     window.drawConfessionsFeed = function() {
         let html = `
             <div class="feed-layout-container">
@@ -2723,18 +2715,7 @@ function initializeUniLoop() {
                 </div>
             `;
         });
-        
         feedContainer.innerHTML = feedHtml;
-
-        // Lazy Load (Sonsuz Kaydırma) Tetikleyicisi
-        feedContainer.onscroll = function() {
-            if (feedContainer.scrollTop + feedContainer.clientHeight >= feedContainer.scrollHeight - 100) {
-                if (window.confessionsLimit <= confessionsDB.length) {
-                    window.confessionsLimit += 5; // Her aşağı inildiğinde 5 tane daha yükle
-                    window.initConfessionsListener(window.userProfile.uid);
-                }
-            }
-        };
     };
 
     window.openConfessionForm = function() {
@@ -3013,8 +2994,7 @@ function initializeUniLoop() {
     window.renderMessages = function() {
         document.body.classList.add('no-scroll-messages');
 
-        let unreadCount = 0
-;
+        let unreadCount = 0;
         chatsDB.forEach(chat => {
             if (chat.status === 'accepted' || chat.isMarketChat) {
                 if (chat.messages && chat.messages.length > 0) {
@@ -3055,6 +3035,7 @@ function initializeUniLoop() {
         setTimeout(() => { window.openChatView(chatId); }, 100);
     };
 
+    // --- MESAJ SEÇENEKLERİ EKLENDİ (ENGELLEME & SİLME) ---
     window.clearChatHistory = async function(chatId) {
         if(confirm("Bu kişiyle olan tüm mesaj geçmişini silmek istediğinize emin misiniz?")) {
             try {
@@ -3087,15 +3068,8 @@ function initializeUniLoop() {
         }
     };
 
-    // 🚀 WhatsApp Tarzı (Lazy Load) Mesaj Limiti Değişkeni
-    window.chatMessageLimits = {}; 
-
     window.openChatView = function(chatId) {
         currentChatId = chatId;
-        
-        // Başlangıçta sadece son 15 mesajı yükle (Hızlı açılış)
-        if(!window.chatMessageLimits[chatId]) window.chatMessageLimits[chatId] = 15; 
-
         const chatLayout = document.getElementById('chat-layout-container');
         if(chatLayout) chatLayout.classList.add('chat-active');
         
@@ -3166,36 +3140,7 @@ function initializeUniLoop() {
         }
 
         mainArea.innerHTML = mainHtml;
-        window.updateChatMessagesOnly(chatId, true); // true = en alta kaydır
-
-        const scrollBox = document.getElementById('chat-messages-scroll');
-        if (scrollBox) {
-            // 🚀 Yukarı kaydırdıkça önceki mesajları yükleme (Lazy Load)
-            scrollBox.addEventListener('scroll', function() {
-                if (scrollBox.scrollTop === 0) {
-                    const currentLimit = window.chatMessageLimits[chatId];
-                    const totalMsgs = chat.messages ? chat.messages.length : 0;
-                    
-                    if (currentLimit < totalMsgs) {
-                        const loadingDiv = document.createElement('div');
-                        loadingDiv.id = 'chat-loading-indicator';
-                        loadingDiv.style.cssText = "text-align:center; padding:10px; color:#6B7280; font-size:12px; font-weight:600;";
-                        loadingDiv.innerText = "⏳ Önceki mesajlar yükleniyor...";
-                        scrollBox.prepend(loadingDiv);
-
-                        setTimeout(() => {
-                            const oldScrollHeight = scrollBox.scrollHeight;
-                            window.chatMessageLimits[chatId] += 15; // 15 mesaj daha göster
-                            window.updateChatMessagesOnly(chatId, false); // false = en alta kaydırma
-                            
-                            // Ekranın zıplamasını engelle, kaydırma konumunu koru
-                            const newScrollHeight = scrollBox.scrollHeight;
-                            scrollBox.scrollTop = newScrollHeight - oldScrollHeight;
-                        }, 500); 
-                    }
-                }
-            });
-        }
+        window.updateChatMessagesOnly(chatId);
 
         const inputField = document.getElementById('chat-input-field');
         if (inputField) {
@@ -3224,7 +3169,7 @@ function initializeUniLoop() {
         window.renderMessagesSidebarOnly();
     };
 
-    window.updateChatMessagesOnly = function(chatId, forceScrollBottom = false) {
+    window.updateChatMessagesOnly = function(chatId) {
         if(currentChatId !== chatId) return;
         const scrollBox = document.getElementById('chat-messages-scroll');
         if(!scrollBox) return;
@@ -3233,19 +3178,12 @@ function initializeUniLoop() {
         if(!chat) return;
 
         let chatHTML = '';
-        const allMsgs = chat.messages || [];
-        const limit = window.chatMessageLimits[chatId] || 15;
+        const msgs = chat.messages || [];
         
-        // 🚀 Sadece limiti kadar mesajı ekrana bas (Daha az DOM manipülasyonu = Daha hızlı)
-        const msgs = allMsgs.slice(-limit);
-        
-        if (allMsgs.length === 0) {
+        if (msgs.length === 0) {
             chatHTML = `<div style="text-align:center; padding:20px; color:#9CA3AF; font-size:14px;">Henüz mesaj yok. İlk mesajı sen gönder!</div>`;
         } else {
-            if (allMsgs.length > limit) {
-                chatHTML += `<div style="text-align:center; padding:10px; color:#6B7280; font-size:11px; cursor:pointer;" onclick="this.parentNode.scrollTop=0;">↑ Önceki mesajları gör ↑</div>`;
-            }
-            
+            let lastDate = null;
             msgs.forEach((msg, index) => {
                 const isMe = msg.senderId === window.userProfile.uid;
                 const type = isMe ? 'sent' : 'received';
@@ -3276,10 +3214,8 @@ function initializeUniLoop() {
         }
 
         const isScrolledToBottom = scrollBox.scrollHeight - scrollBox.clientHeight <= scrollBox.scrollTop + 50;
-        
         scrollBox.innerHTML = chatHTML;
-        
-        if(forceScrollBottom || isScrolledToBottom || msgs.length <= 1) {
+        if(isScrolledToBottom || msgs.length <= 1) {
             scrollBox.scrollTop = scrollBox.scrollHeight;
         }
     };
@@ -3304,9 +3240,6 @@ function initializeUniLoop() {
                     messages: arrayUnion(newMsg),
                     lastUpdated: serverTimestamp()
                 });
-                
-                // Mesaj atınca görünmesi için limiti artır
-                window.chatMessageLimits[chatId] = Math.max(window.chatMessageLimits[chatId] || 15, (chatsDB.find(c => c.id === chatId)?.messages?.length || 0) + 1);
             } catch(error) {
                 console.error("Mesaj gönderilemedi:", error);
                 alert("Mesaj gönderilirken bir hata oluştu.");
@@ -3344,11 +3277,11 @@ function initializeUniLoop() {
         
         let avatarHtml = u.avatarUrl 
             ? `<div style="position:relative; cursor:pointer;" onclick="document.getElementById('profile-avatar-upload').click()">
-                 <img src="${u.avatarUrl}" class="id-card-avatar" style="${isPremium ? 'border-color:#111827;' : ''}">
+                 <img src="${u.avatarUrl}" class="id-card-avatar" style="${isPremium ? 'border-color:#F59E0B;' : ''}">
                  <div style="position:absolute; bottom:0; right:0; background:var(--primary); color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.2);">📷</div>
                </div>` 
             : `<div style="position:relative; cursor:pointer;" onclick="document.getElementById('profile-avatar-upload').click()">
-                 <div class="id-card-avatar" style="${isPremium ? 'border-color:#111827;' : ''}">${u.avatar || '👤'}</div>
+                 <div class="id-card-avatar" style="${isPremium ? 'border-color:#F59E0B;' : ''}">${u.avatar || '👤'}</div>
                  <div style="position:absolute; bottom:0; right:0; background:var(--primary); color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.2);">📷</div>
                </div>`;
 
@@ -3358,7 +3291,7 @@ function initializeUniLoop() {
         }
 
         const premiumBadgeHtml = isPremium 
-            ? `<div style="background:#111827; color:white; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 4px rgba(0,0,0,0.3); margin-top:5px;">👑 Premium Üye</div>` 
+            ? `<div style="background:linear-gradient(135deg, #F59E0B, #D97706); color:white; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 4px rgba(245,158,11,0.3); margin-top:5px;">👑 Premium Üye</div>` 
             : ``;
 
         const friendsCount = chatsDB.filter(c => c.status === 'accepted' && !c.isMarketChat).length;
@@ -3366,7 +3299,7 @@ function initializeUniLoop() {
         let html = `
             <input type="file" id="profile-avatar-upload" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
 
-            <div class="id-card ${isPremium ? 'premium-glow' : ''}" style="width:100%; max-width:100%; box-sizing:border-box; margin-top:10px; margin-bottom:15px; position:relative; ${isPremium ? 'border-color:#111827;' : ''}">
+            <div class="id-card ${isPremium ? 'premium-glow' : ''}" style="width:100%; max-width:100%; box-sizing:border-box; margin-top:10px; margin-bottom:15px; position:relative; ${isPremium ? 'border-color:#F59E0B;' : ''}">
                 <button class="edit-profile-icon" style="position:absolute; top:15px; right:15px;" onclick="window.openProfileEditModal()">✏️ Düzenle</button>
                 <div class="id-card-left">${avatarHtml}</div>
                 <div class="id-card-right">
@@ -3405,11 +3338,11 @@ function initializeUniLoop() {
             </div>
             
             ${!isPremium ? `
-            <div class="card premium-glow" style="margin-bottom:15px; background:linear-gradient(135deg, #F3F4F6, #E5E7EB); border-color:#D1D5DB; cursor:pointer;" onclick="window.openPremiumModal()">
+            <div class="card premium-glow" style="margin-bottom:15px; background:linear-gradient(135deg, #FFFBEB, #FEF3C7); border-color:#FDE68A; cursor:pointer;" onclick="window.openPremiumModal()">
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div>
-                        <div style="font-weight:800; color:#111827; font-size:16px; margin-bottom:4px;">🌟 UniLoop Premium'a Geç</div>
-                        <div style="font-size:12px; color:#4B5563;">Kampüsün en popüler kişisi ol, sınırları kaldır!</div>
+                        <div style="font-weight:800; color:#D97706; font-size:16px; margin-bottom:4px;">🌟 UniLoop Premium'a Geç</div>
+                        <div style="font-size:12px; color:#B45309;">Kampüsün en popüler kişisi ol, sınırları kaldır!</div>
                     </div>
                     <div style="font-size:24px;">👑</div>
                 </div>
@@ -3463,7 +3396,7 @@ function initializeUniLoop() {
     window.renderSettings = function() {
         const currentLang = localStorage.getItem('uniloop_lang') || 'tr';
         
-        let premiumCancelHtml = window.userProfile.isPremium ? `<a href="#" onclick="event.preventDefault(); window.cancelPremium()" style="display:block; text-align:center; font-size:12px; color:#111827; text-decoration:underline; margin-bottom:15px; font-weight:bold;">Premium Üyeliğimi İptal Et</a>` : '';
+        let premiumCancelHtml = window.userProfile.isPremium ? `<a href="#" onclick="event.preventDefault(); window.cancelPremium()" style="display:block; text-align:center; font-size:12px; color:#F59E0B; text-decoration:underline; margin-bottom:15px;">Premium Üyeliğimi İptal Et</a>` : '';
 
         window.openModal('⚙️ Ayarlar', `
             <div style="display:flex; flex-direction:column; gap:15px;">
