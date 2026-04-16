@@ -1518,13 +1518,13 @@ function initializeUniLoop() {
             }
         }
     };
-    // 🌟 GÜNCELLEME: YENİ "HIZLI EŞLEŞ (FAST MATCH)" SİSTEMİ (TINDER UI)
+    // 🌟 GÜNCELLEME: YENİ "HIZLI EŞLEŞ (FAST MATCH)" SİSTEMİ (TINDER UI) - DÜZELTİLMİŞ ŞIK TASARIM
     let fastMatchUsers = [];
     let fastMatchCurrentIndex = 0;
 
     window.openFastMatch = async function() {
         window.openModal('🔥 Hızlı Eşleş', `
-            <div style="text-align:center; padding:10px; padding-bottom:40px; display:flex; flex-direction:column; align-items:center;" id="fast-match-container">
+            <div style="text-align:center; padding:10px; display:flex; flex-direction:column; align-items:center;" id="fast-match-container">
                 <div style="font-size:40px; animation: glowPulse 1.5s infinite alternate; margin-bottom:15px;">🔍</div>
                 <h3 style="color:var(--text-gray);">Kampüste birileri aranıyor...</h3>
             </div>
@@ -1570,33 +1570,34 @@ function initializeUniLoop() {
 
         const u = fastMatchUsers[fastMatchCurrentIndex];
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
-        const premiumIcon = u.isPremium ? '<span style="font-size:22px; margin-left:8px; text-shadow:0 2px 4px rgba(0,0,0,0.5);" title="Premium Üye">👑</span>' : '';
+        const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:6px; text-shadow:0 1px 2px rgba(0,0,0,0.5);" title="Premium Üye">👑</span>' : '';
         
         let avatarHtml = u.avatarUrl 
-            ? `<img src="${u.avatarUrl}" style="width:100%; height:480px; object-fit:cover; border-radius:24px; display:block; pointer-events:none;">` 
-            : `<div style="width:100%; height:480px; border-radius:24px; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:120px; pointer-events:none;">${u.avatar || '👤'}</div>`;
+            ? `<img src="${u.avatarUrl}" style="width:100%; height:320px; object-fit:cover; border-radius:20px; display:block; pointer-events:none;">` 
+            : `<div style="width:100%; height:320px; border-radius:20px; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:80px; pointer-events:none;">${u.avatar || '👤'}</div>`;
 
         let tagsHtml = '';
         if(u.interests && Array.isArray(u.interests)) {
-            tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:12px; background:rgba(255,255,255,0.25); color:white; padding:6px 12px; border-radius:16px; font-weight:700; margin-right:6px; margin-bottom:6px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join('');
+            tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:11px; background:rgba(255,255,255,0.25); color:white; padding:4px 10px; border-radius:12px; font-weight:700; margin-right:4px; margin-bottom:4px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join('');
         }
 
+        // Kartın boyutu optimize edildi (max-width: 300px), daha şık ve derli toplu.
         container.innerHTML = `
-            <div id="swipe-card" style="position:relative; width:100%; max-width:360px; margin:0 auto; transition: transform 0.3s ease, opacity 0.3s ease; border-radius:24px; box-shadow:0 20px 40px rgba(0,0,0,0.25); background:#fff;">
+            <div id="swipe-card" style="position:relative; width:100%; max-width:300px; margin:0 auto; transition: transform 0.3s ease, opacity 0.3s ease; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.15); background:#fff;">
                 ${avatarHtml}
                 
-                <div style="position:absolute; bottom:0; left:0; right:0; padding:40px 20px 45px 20px; background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); border-bottom-left-radius:24px; border-bottom-right-radius:24px; text-align:left;">
-                    <h2 style="margin:0 0 8px 0; color:white; font-size:28px; display:flex; align-items:center; text-shadow:0 2px 6px rgba(0,0,0,0.6);">${u.name} ${initial} ${u.age ? `<span style="font-weight:normal; margin-left:10px; font-size:24px; opacity:0.9;">${u.age}</span>` : ''} ${premiumIcon}</h2>
-                    <div style="font-size:15px; color:#e2e8f0; font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:6px; text-shadow:0 1px 3px rgba(0,0,0,0.5);"><span style="font-size:18px;">🏛️</span> ${u.faculty || 'Kampüs Öğrencisi'}</div>
-                    <div style="display:flex; flex-wrap:wrap; margin-bottom:5px;">${tagsHtml}</div>
+                <div style="position:absolute; bottom:0; left:0; right:0; padding:30px 15px 35px 15px; background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); border-bottom-left-radius:20px; border-bottom-right-radius:20px; text-align:left;">
+                    <h2 style="margin:0 0 6px 0; color:white; font-size:22px; display:flex; align-items:center; text-shadow:0 2px 4px rgba(0,0,0,0.6);">${u.name} ${initial} ${u.age ? `<span style="font-weight:normal; margin-left:8px; font-size:18px; opacity:0.9;">${u.age}</span>` : ''} ${premiumIcon}</h2>
+                    <div style="font-size:13px; color:#e2e8f0; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:4px; text-shadow:0 1px 2px rgba(0,0,0,0.5);"><span style="font-size:15px;">🏛️</span> ${u.faculty || 'Kampüs Öğrencisi'}</div>
+                    <div style="display:flex; flex-wrap:wrap; margin-bottom:0;">${tagsHtml}</div>
                 </div>
                 
-                <div style="position:absolute; bottom:-35px; left:0; right:0; display:flex; justify-content:center; gap:30px; z-index:10;">
-                    <button onclick="window.handleSwipe('left')" style="width:70px; height:70px; border-radius:50%; background:white; border:none; color:#EF4444; font-size:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 10px 25px rgba(239,68,68,0.4); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.15)'; this.style.boxShadow='0 15px 35px rgba(239,68,68,0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 10px 25px rgba(239,68,68,0.4)';">✖</button>
-                    <button onclick="window.handleSwipe('right')" style="width:70px; height:70px; border-radius:50%; background:white; border:none; color:#10B981; font-size:35px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 10px 25px rgba(16,185,129,0.4); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.15)'; this.style.boxShadow='0 15px 35px rgba(16,185,129,0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 10px 25px rgba(16,185,129,0.4)';">❤</button>
+                <div style="position:absolute; bottom:-25px; left:0; right:0; display:flex; justify-content:center; gap:20px; z-index:10;">
+                    <button onclick="window.handleSwipe('left')" style="width:56px; height:56px; border-radius:50%; background:white; border:none; color:#EF4444; font-size:24px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(239,68,68,0.3); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 12px 25px rgba(239,68,68,0.5)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px rgba(239,68,68,0.3)';">✖</button>
+                    <button onclick="window.handleSwipe('right')" style="width:56px; height:56px; border-radius:50%; background:white; border:none; color:#10B981; font-size:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(16,185,129,0.3); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 12px 25px rgba(16,185,129,0.5)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px rgba(16,185,129,0.3)';">❤</button>
                 </div>
             </div>
-            <div style="height:45px;"></div>
+            <div style="height:35px;"></div>
         `;
     };
 
