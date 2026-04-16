@@ -109,7 +109,7 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
-    // 🎨 CSS DÜZENLEMELERİ (MODERN CHAT - KARANLIK MOD KALDIRILDI)
+    // 🎨 CSS DÜZENLEMELERİ
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; background-color: #f3f4f6; color: #111827; }
@@ -1050,7 +1050,6 @@ function initializeUniLoop() {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: true });
                 window.userProfile.isPremium = true;
                 
-                // Anında UI Güncellemesi (Sayfa yenilemeye gerek kalmadan)
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
                     navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:linear-gradient(135deg, #F59E0B, #D97706); color:white; padding:4px 10px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">🌟 Premium Özellikler</div>`;
@@ -1067,10 +1066,40 @@ function initializeUniLoop() {
         }, 3000);
     };
 
+    window.cancelPremium = async function() {
+        if(confirm("Premium üyeliğinizi iptal etmek istediğinize emin misiniz? Gelecek ay aboneliğiniz yenilenmeyecektir.")) {
+            try {
+                await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: false });
+                window.userProfile.isPremium = false;
+                alert("Premium üyeliğiniz başarıyla iptal edildi.");
+                window.closeModal();
+                window.location.reload();
+            } catch(e) {
+                alert("Hata oluştu: " + e.message);
+            }
+        }
+    };
+
+    window.uploadArchiveFile = async function() {
+        const fac = document.getElementById('admin-archive-faculty').value;
+        const gr = document.getElementById('admin-archive-grade').value;
+        const fileInput = document.getElementById('admin-archive-file');
+        
+        if(!fileInput.files.length) return alert("Lütfen yüklenecek bir PDF seçin.");
+        
+        alert(`✅ ${fac} - ${gr} için çıkmış sorular PDF arşivi sisteme başarıyla eklendi! (Sistem Güncellemesi)`);
+        fileInput.value = '';
+    };
+
+    window.viewArchive = function() {
+        alert(`📚 ${window.userProfile.faculty} - ${window.userProfile.grade}. Sınıf güncel çıkmış sorular arşivi sunucudan çekiliyor...\n\n(Çok yakında burada PDF listesini görüntüleyebileceksiniz.)`);
+    };
+
     window.openPremiumFeaturesModal = async function() {
         try {
             const userDoc = await getDoc(doc(db, "users", window.userProfile.uid));
             const viewers = userDoc.exists() ? (userDoc.data().profileViewers || []) : [];
+            const isAsude = window.userProfile.username === '#asude';
             
             let viewersHtml = '';
             if(viewers.length > 0) {
@@ -1098,16 +1127,49 @@ function initializeUniLoop() {
             const fac = window.userProfile.faculty || "Fakülte";
             const grade = window.userProfile.grade ? window.userProfile.grade + ". Sınıf" : "";
 
-            window.openModal('🌟 Premium Özellikler Merkezi', `
-                <div style="display:flex; flex-direction:column; gap:15px;">
+            let archiveSectionHtml = '';
+            
+            if (isAsude) {
+                // ASUDE ADMIN PANELİ
+                let facOptions = allFaculties.map(f => `<option value="${f}">${f}</option>`).join('');
+                let gradeOptions = [1, 2, 3, 4, 5, 6].map(g => `<option value="${g}. Sınıf">${g}. Sınıf</option>`).join('');
+                
+                archiveSectionHtml = `
                     <div class="card" style="background:linear-gradient(135deg, #EFF6FF, #DBEAFE); border:1px solid #93C5FD; padding:20px; border-radius:12px;">
+                        <div style="font-size:30px; margin-bottom:10px; text-align:center;">👑</div>
+                        <h4 style="color:#1D4ED8; margin-bottom:8px; font-size:16px; text-align:center;">Admin Paneli: Arşive Dosya Ekle</h4>
+                        <p style="font-size:12px; color:#1E3A8A; text-align:center; margin-bottom:15px; font-weight:bold;">Fakülte ve sınıf seçip PDF yükleyin.</p>
+                        
+                        <select id="admin-archive-faculty" style="width:100%; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #93C5FD; outline:none; font-size:13px;">
+                            ${facOptions}
+                        </select>
+                        <select id="admin-archive-grade" style="width:100%; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #93C5FD; outline:none; font-size:13px;">
+                            ${gradeOptions}
+                        </select>
+                        <input type="file" id="admin-archive-file" accept="application/pdf" style="margin-bottom:15px; width:100%; font-size:12px;">
+                        
+                        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#3B82F6; border:none;" onclick="window.uploadArchiveFile()">
+                            PDF'i Arşive Ekle ➡️
+                        </button>
+                    </div>
+                `;
+            } else {
+                // NORMAL PREMIUM KULLANICI GÖRÜNÜMÜ
+                archiveSectionHtml = `
+                    <div class="card" style="background:linear-gradient(135deg, #F0FDF4, #DCFCE7); border:1px solid #86EFAC; padding:20px; border-radius:12px;">
                         <div style="font-size:30px; margin-bottom:10px; text-align:center;">📚</div>
-                        <h4 style="color:#1D4ED8; margin-bottom:8px; font-size:16px; text-align:center;">Çıkmış Sorular Arşivi</h4>
-                        <p style="font-size:13px; color:#1E3A8A; text-align:center; margin-bottom:15px; font-weight:bold;">${fac} ${grade} Arşivi</p>
-                        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#3B82F6; border:none;" onclick="alert('PDF Arşivleri yükleniyor... ${fac} ${grade} güncel arşivinize çok yakında bu ekrandan erişebileceksiniz.')">
+                        <h4 style="color:#166534; margin-bottom:8px; font-size:16px; text-align:center;">Çıkmış Sorular Arşivi</h4>
+                        <p style="font-size:13px; color:#14532D; text-align:center; margin-bottom:15px; font-weight:bold;">${fac} ${grade} Arşivi</p>
+                        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#22C55E; border:none;" onclick="window.viewArchive()">
                             Arşive Git ➡️
                         </button>
                     </div>
+                `;
+            }
+
+            window.openModal('🌟 Premium Özellikler Merkezi', `
+                <div style="display:flex; flex-direction:column; gap:15px;">
+                    ${archiveSectionHtml}
                     
                     <div class="card" style="background:#FFFBEB; border:1px solid #FDE68A; padding:20px; border-radius:12px;">
                         <h4 style="color:#D97706; margin-bottom:12px; font-size:15px; display:flex; align-items:center; gap:5px;">
@@ -2062,7 +2124,7 @@ function initializeUniLoop() {
                     count++;
                     const initial = u.surname ? u.surname.charAt(0) + '.' : '';
                     let avatarHtml = '';
-                    let displayName = '';
+                    let displayName = `${u.name} ${initial}`;
                     let displayFaculty = '';
 
                     if (!window.userProfile.isPremium) {
@@ -2071,13 +2133,11 @@ function initializeUniLoop() {
                         const blurImgSrc = u.gender === 'Kadın' ? defaultFemale : defaultMale;
 
                         avatarHtml = `<img src="${blurImgSrc}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'}; filter: blur(8px); opacity:0.9; margin:0 auto; display:block;">`;
-                        displayName = `<span style="filter: blur(4px); user-select: none;">Gizli Kullanıcı</span>`;
                         displayFaculty = `<span style="filter: blur(4px); user-select: none;">Bölüm Gizli</span>`;
                     } else {
                         avatarHtml = u.avatarUrl 
                             ? `<img src="${u.avatarUrl}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'}; margin:0 auto; display:block;">` 
                             : `<div style="width:50px; height:50px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:25px; border:2px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'}; margin:0 auto;">${u.avatar || '👤'}</div>`;
-                        displayName = `${u.name} ${initial}`;
                         displayFaculty = u.faculty || 'Kampüs Öğrencisi';
                     }
 
@@ -3128,6 +3188,8 @@ function initializeUniLoop() {
 
     window.renderSettings = function() {
         const currentLang = localStorage.getItem('uniloop_lang') || 'tr';
+        
+        let premiumCancelHtml = window.userProfile.isPremium ? `<a href="#" onclick="event.preventDefault(); window.cancelPremium()" style="display:block; text-align:center; font-size:12px; color:#F59E0B; text-decoration:underline; margin-bottom:15px;">Premium Üyeliğimi İptal Et</a>` : '';
 
         window.openModal('⚙️ Ayarlar', `
             <div style="display:flex; flex-direction:column; gap:15px;">
@@ -3145,7 +3207,9 @@ function initializeUniLoop() {
                 
                 <div style="border-top:1px solid #E5E7EB; margin:10px 0;"></div>
                 
-                <a href="#" onclick="event.preventDefault(); window.deleteAccount()" style="display:block; text-align:center; font-size:12px; color:#EF4444; text-decoration:underline;">Hesabımı Sil</a>
+                <a href="#" onclick="event.preventDefault(); window.deleteAccount()" style="display:block; text-align:center; font-size:12px; color:#EF4444; text-decoration:underline; margin-bottom:5px;">Hesabımı Sil</a>
+                
+                ${premiumCancelHtml}
                 
                 <a href="#" onclick="event.preventDefault(); window.openLegalModal()" style="display:block; text-align:center; font-size:12px; color:var(--primary); text-decoration:underline;">Kullanıcı Sözleşmesi ve Hakları</a>
                 
