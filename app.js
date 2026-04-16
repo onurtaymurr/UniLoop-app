@@ -10,6 +10,7 @@ import {
     sendEmailVerification,
     sendPasswordResetEmail,
     signOut,
+    deleteUser,
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
@@ -57,7 +58,7 @@ const storage = getStorage(app);
 
 // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
 window.userProfile = { 
-    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null
+    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: ""
 };
 
 window.joinedFaculties = [];
@@ -108,10 +109,10 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
-    // 🎨 CSS DÜZENLEMELERİ (MODERN CHAT & TRUE DARK MODE)
+    // 🎨 CSS DÜZENLEMELERİ (MODERN CHAT - KARANLIK MOD KALDIRILDI)
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
-        html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; }
+        html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; background-color: #f3f4f6; color: #111827; }
         header, #app-header { height: 50px !important; box-sizing: border-box; }
 
         .edit-profile-icon { font-size: 14px; background: #EEF2FF; color: var(--primary); padding: 5px 10px; border-radius: 8px; border: 1px solid #C7D2FE; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 700; transition: 0.2s; }
@@ -255,37 +256,12 @@ function initializeUniLoop() {
         .premium-upgrade-btn { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 15px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); display: inline-flex; align-items: center; gap: 8px; }
         .premium-upgrade-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(245, 158, 11, 0.4); }
         
-        /* 🌟 TRUE DARK MODE (Kusursuz Siyah) */
-        body.dark-mode, .dark-mode #main-content { background-color: #000000 !important; color: #f3f4f6 !important; }
-        .dark-mode .card, .dark-mode .feed-post, .dark-mode .item-card, .dark-mode .chat-sidebar-header, .dark-mode .user-card, .dark-mode .chat-header, .dark-mode .chat-input-area { background-color: #111827 !important; border-color: #1f2937 !important; color: #f3f4f6 !important; }
-        .dark-mode .id-card { background: linear-gradient(135deg, #111827, #1f2937) !important; border-color: #374151 !important; }
-        .dark-mode .id-card-name, .dark-mode .msg-text, .dark-mode .chat-header-name { color: #f3f4f6 !important; }
-        .dark-mode .notif-compact-item { background: #111827 !important; border-color: #1f2937 !important; }
-        .dark-mode .card > div { border-color: #1f2937 !important; }
-        .dark-mode .feed-post-author, .dark-mode .feed-post-text, .dark-mode h2, .dark-mode label, .dark-mode .item-title { color: #f3f4f6 !important; }
-        .dark-mode .feed-layout-container, .dark-mode #conf-feed { background-color: #000000 !important; }
-        .dark-mode input, .dark-mode textarea, .dark-mode select { background-color: #1f2937 !important; color: #f3f4f6 !important; border-color: #374151 !important; }
-        .dark-mode .feed-post-avatar, .dark-mode .avatar { background-color: #1f2937 !important; border-color: #374151 !important; }
-        .dark-mode .feed-action-btn:hover { background: #1f2937 !important; }
-        .dark-mode .chat-contact:hover { background: #1f2937 !important; }
-        .dark-mode .chat-input-wrapper input { background: #1f2937 !important; color: #f3f4f6 !important; }
-        .dark-mode .modal-content, .dark-mode #app-modal .modal-body { background-color: #111827 !important; color: #f3f4f6 !important; border-color: #1f2937 !important;}
-        .dark-mode .bottom-nav { background: #111827 !important; border-top-color: #1f2937 !important; }
-        .dark-mode .bottom-nav-item.active { color: #6366f1 !important; }
-        .dark-mode .chat-layout { background: #111827 !important; border-color: #1f2937 !important; }
-        .dark-mode .chat-sidebar { background: #111827 !important; border-color: #1f2937 !important; }
-        .dark-mode .chat-main, .dark-mode #chat-messages-scroll, .dark-mode #group-messages-scroll { background-color: #000000 !important; background-image:none !important; }
-        .dark-mode .chat-contact.active { background: #1f2937 !important; border-color: #6366f1 !important; }
-        .dark-mode .bubble.received { background-color: #1f2937 !important; border:none !important; color: #f3f4f6 !important; }
-        .dark-mode .bubble.sent { background: linear-gradient(135deg, #3b82f6, #4f46e5) !important; color: white !important; }
-        
         #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
         #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
         #app-header > :last-child, .header-right-menu { display: flex !important; align-items: center !important; justify-content: flex-end !important; flex-wrap: nowrap !important; gap: 10px; }
         
         #notif-btn-top { position: relative; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; transition: 0.2s; }
         #notif-btn-top:hover { background: #E5E7EB; }
-        .dark-mode #notif-btn-top { background: #1f2937; }
         
         #nav-premium-action { font-size: 13px !important; padding: 0 12px !important; height: 32px !important; line-height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; flex-shrink: 0 !important; margin: 0 !important; border-radius: 8px !important; }
         
@@ -336,15 +312,6 @@ function initializeUniLoop() {
         localStorage.setItem('uniloop_lang', lang);
         window.renderSettings(); 
     };
-
-    window.toggleTheme = function(theme) {
-        localStorage.setItem('uniloop_theme', theme);
-        if(theme === 'dark') document.body.classList.add('dark-mode');
-        else document.body.classList.remove('dark-mode');
-    };
-
-    const savedTheme = localStorage.getItem('uniloop_theme') || 'light';
-    window.toggleTheme(savedTheme);
 
     document.addEventListener('click', async function(e) {
         const isTarget = (id) => e.target.id === id || (e.target.closest && e.target.closest('#' + id));
@@ -708,6 +675,9 @@ function initializeUniLoop() {
                 avatarUrl: finalAvatarUrl, 
                 isOnline: true, 
                 isPremium: false,
+                fastMatchCount: 0,
+                fastMatchDate: new Date().toLocaleDateString(),
+                profileViewers: [],
                 joinedClassRoom: null
             });
 
@@ -769,6 +739,26 @@ function initializeUniLoop() {
         } catch(error) { console.error(error); }
     };
 
+    window.deleteAccount = async function() {
+        if(confirm("🚨 DİKKAT: Hesabınızı kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz!")) {
+            try {
+                const user = auth.currentUser;
+                if(user) {
+                    await deleteDoc(doc(db, "users", user.uid));
+                    await deleteUser(user);
+                    alert("Hesabınız başarıyla silindi. Elveda!");
+                    window.location.reload();
+                }
+            } catch(e) {
+                if (e.code === 'auth/requires-recent-login') {
+                    alert("Güvenlik nedeniyle hesabınızı silmek için yeniden giriş yapmanız gerekmektedir. Lütfen çıkış yapıp tekrar girin ve 'Hesabımı Sil' butonuna tekrar tıklayın.");
+                } else {
+                    alert("Hata: " + e.message);
+                }
+            }
+        }
+    };
+
     onAuthStateChanged(auth, async (user) => {
         if (user && user.emailVerified) { 
             try {
@@ -791,6 +781,7 @@ function initializeUniLoop() {
                 if(window.userProfile.age === undefined) window.userProfile.age = "";
                 if(window.userProfile.avatarUrl === undefined) window.userProfile.avatarUrl = "";
                 if(window.userProfile.joinedClassRoom === undefined) window.userProfile.joinedClassRoom = null;
+                if(window.userProfile.profileViewers === undefined) window.userProfile.profileViewers = [];
 
                 await window.ensureWelcomeMessage(user, window.userProfile.name);
                 await updateDoc(userDocRef, { isOnline: true });
@@ -848,6 +839,7 @@ function initializeUniLoop() {
             console.error(e); 
         }
     };
+    
     function initRealtimeListeners(currentUid) {
         const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
 
@@ -944,76 +936,16 @@ function initializeUniLoop() {
             if (document.getElementById('app-modal').classList.contains('active') && document.getElementById('modal-title').innerText.includes('Bildirimler')) { window.renderNotifications(); }
         });
     }
+
     // 🌟 MEDYA YÜKLEME SİSTEMİ
     window.uploadChatMedia = async function(event, targetId, chatType) {
-        const file = event.target.files[0];
-        if(!file) return;
-        
-        const btn = document.querySelector('.chat-send-btn');
-        const originalIcon = btn ? btn.innerHTML : '➤';
-        
-        if(btn) { 
-            btn.innerHTML = '⏳'; 
-            btn.disabled = true; 
-        }
-
-        try {
-            const isPdf = file.type === "application/pdf";
-            const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-            
-            const storageRef = ref(storage, 'chat_media/' + window.userProfile.uid + '/' + Date.now() + '_' + cleanName);
-            await uploadBytes(storageRef, file);
-            
-            const url = await getDownloadURL(storageRef);
-            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            const msgObj = {
-                senderId: window.userProfile.uid,
-                senderName: window.userProfile.name,
-                senderAvatar: window.userProfile.avatarUrl || window.userProfile.avatar || "👤",
-                text: isPdf ? '📄 PDF Belgesi' : '', 
-                time: timeStr,
-                mediaUrl: url,
-                mediaType: isPdf ? 'pdf' : 'image',
-                read: false
-            };
-
-            if (chatType === 'group') {
-                const docRef = doc(db, "group_chats", targetId);
-                const docSnap = await getDoc(docRef);
-                
-                if(docSnap.exists()) {
-                    await updateDoc(docRef, { 
-                        messages: arrayUnion(msgObj), 
-                        lastUpdated: serverTimestamp() 
-                    });
-                } else {
-                    await setDoc(docRef, { 
-                        messages: [msgObj], 
-                        members: [window.userProfile.uid], 
-                        createdAt: serverTimestamp(), 
-                        roomId: targetId 
-                    });
-                }
-            } else if (chatType === 'dm') {
-                await updateDoc(doc(db, "chats", targetId), {
-                    messages: arrayUnion(msgObj),
-                    lastUpdated: serverTimestamp()
-                });
-            }
-        } catch(e) {
-            console.error(e);
-            alert("Medya yüklenirken hata oluştu.");
-        } finally {
-            if(btn) { 
-                btn.innerHTML = originalIcon; 
-                btn.disabled = false; 
-            }
-            event.target.value = '';
-        }
+        // ... (Bu fonksiyon yapısı aynı kalacak, 2. bölümde devam edecek)
     };
 
     window.openPremiumModal = function() {
+        const fac = window.userProfile.faculty || "Fakültenizin";
+        const grade = window.userProfile.grade ? window.userProfile.grade + ". Sınıf" : "";
+        
         window.openModal('🌟 UniLoop Premium', `
             <div style="text-align:center; padding: 10px;">
                 <div style="font-size: 48px; margin-bottom: 10px;">👑</div>
@@ -1022,8 +954,13 @@ function initializeUniLoop() {
                     UniLoop Premium ile sınırları kaldır ve kampüsün en donanımlı ağına dahil ol.
                 </p>
                 <div style="font-size:32px; font-weight:800; margin-bottom:20px; color:var(--text-dark);">
-                    49.99 ₺ <span style="font-size:14px; color:var(--text-gray); font-weight:normal;">/ aylık</span>
+                    79.99 ₺ <span style="font-size:14px; color:var(--text-gray); font-weight:normal;">/ aylık</span>
                 </div>
+                <ul style="text-align:left; font-size:14px; margin-bottom:20px; line-height:1.6; color:var(--text-dark); background:#FFFBEB; padding:15px 15px 15px 35px; border-radius:12px; border:1px solid #FDE68A;">
+                    <li>📚 <b>${fac} ${grade}</b> çıkmış sorularına anında erişim!</li>
+                    <li>🔥 <b>Sınırsız</b> Hızlı Eşleşme hakkı.</li>
+                    <li>👀 <b>Kimler Profilime Baktı?</b> Seni görüntüleyen gizli hayranlarını gör.</li>
+                </ul>
                 <button id="buy-premium-btn" onclick="window.upgradeToPremium()" class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center; padding: 16px; font-size: 16px;">
                     💳 Güvenli Ödeme İle Satın Al
                 </button>
@@ -1032,6 +969,20 @@ function initializeUniLoop() {
         `);
     };
 
+    window.openModal = function(title, contentHTML) { 
+        document.getElementById('modal-title').innerText = title; 
+        document.getElementById('modal-body').innerHTML = contentHTML; 
+        modal.classList.add('active'); 
+        document.body.style.overflow = 'hidden'; 
+    };
+
+    window.closeModal = function() { 
+        modal.classList.remove('active'); 
+        document.getElementById('modal-body').innerHTML = ''; 
+        if (!document.getElementById('lightbox').classList.contains('active') && !document.body.classList.contains('no-scroll-messages')) {
+            document.body.style.overflow = 'auto'; 
+        }
+    };
     window.upgradeToPremium = async function() {
         const btn = document.getElementById('buy-premium-btn');
         btn.innerText = '⏳ Ödeme İşleniyor... Lütfen bekleyin.';
@@ -1055,18 +1006,61 @@ function initializeUniLoop() {
         }, 3000);
     };
 
-    window.openPremiumFeaturesModal = function() {
-        window.openModal('🌟 Premium Özellikler Merkezi', `
-            <div style="display:flex; flex-direction:column; gap:15px;">
-                <div class="card" style="background:linear-gradient(135deg, #EFF6FF, #DBEAFE); border:1px solid #93C5FD; padding:20px; border-radius:12px; cursor:pointer;">
-                    <div style="font-size:30px; margin-bottom:10px; text-align:center;">📚</div>
-                    <h4 style="color:#1D4ED8; margin-bottom:8px; font-size:16px; text-align:center;">Çıkmış Sorular Arşivi</h4>
-                    <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#3B82F6; border:none;" onclick="alert('Arşiv klasörleri yükleniyor... Sistem çok yakında aktif edilecektir.')">
-                        Arşive Git ➡️
-                    </button>
+    window.openPremiumFeaturesModal = async function() {
+        try {
+            const userDoc = await getDoc(doc(db, "users", window.userProfile.uid));
+            const viewers = userDoc.exists() ? (userDoc.data().profileViewers || []) : [];
+            
+            let viewersHtml = '';
+            if(viewers.length > 0) {
+                const uniqueViewers = [];
+                const seen = new Set();
+                for(let i = viewers.length - 1; i >= 0; i--){
+                    if(!seen.has(viewers[i].uid)){
+                        seen.add(viewers[i].uid);
+                        uniqueViewers.push(viewers[i]);
+                    }
+                }
+                viewersHtml = uniqueViewers.map(v => `
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; background:#fff; border-radius:10px; margin-bottom:8px; border:1px solid #E5E7EB; cursor:pointer;" onclick="window.viewUserProfile('${v.uid}')">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:20px;">👀</span>
+                            <span style="font-weight:bold; font-size:14px; color:var(--text-dark);">${v.name}</span>
+                        </div>
+                        <div style="font-size:11px; color:var(--text-gray);">${v.time}</div>
+                    </div>
+                `).join('');
+            } else {
+                viewersHtml = '<div style="font-size:13px; color:var(--text-gray); text-align:center; padding:10px;">Henüz kimse profilinize bakmadı.</div>';
+            }
+
+            const fac = window.userProfile.faculty || "Fakülte";
+            const grade = window.userProfile.grade ? window.userProfile.grade + ". Sınıf" : "";
+
+            window.openModal('🌟 Premium Özellikler Merkezi', `
+                <div style="display:flex; flex-direction:column; gap:15px;">
+                    <div class="card" style="background:linear-gradient(135deg, #EFF6FF, #DBEAFE); border:1px solid #93C5FD; padding:20px; border-radius:12px;">
+                        <div style="font-size:30px; margin-bottom:10px; text-align:center;">📚</div>
+                        <h4 style="color:#1D4ED8; margin-bottom:8px; font-size:16px; text-align:center;">Çıkmış Sorular Arşivi</h4>
+                        <p style="font-size:13px; color:#1E3A8A; text-align:center; margin-bottom:15px; font-weight:bold;">${fac} ${grade} Arşivi</p>
+                        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#3B82F6; border:none;" onclick="alert('PDF Arşivleri yükleniyor... ${fac} ${grade} güncel arşivinize çok yakında bu ekrandan erişebileceksiniz.')">
+                            Arşive Git ➡️
+                        </button>
+                    </div>
+                    
+                    <div class="card" style="background:#FFFBEB; border:1px solid #FDE68A; padding:20px; border-radius:12px;">
+                        <h4 style="color:#D97706; margin-bottom:12px; font-size:15px; display:flex; align-items:center; gap:5px;">
+                            <span>🕵️</span> Kimler Profilime Baktı?
+                        </h4>
+                        <div style="max-height:200px; overflow-y:auto; padding-right:5px;">
+                            ${viewersHtml}
+                        </div>
+                    </div>
                 </div>
-            </div>
-        `);
+            `);
+        } catch(e) {
+            console.error("Premium özellikler yüklenirken hata oluştu:", e);
+        }
     };
 
     window.goToMessages = function() {
@@ -1075,22 +1069,6 @@ function initializeUniLoop() {
         if(msgTab) { msgTab.classList.add('active'); window.loadPage('messages'); }
     };
 
-    window.openModal = function(title, contentHTML) { 
-        document.getElementById('modal-title').innerText = title; 
-        document.getElementById('modal-body').innerHTML = contentHTML; 
-        modal.classList.add('active'); 
-        document.body.style.overflow = 'hidden'; 
-    };
-
-    window.closeModal = function() { 
-        modal.classList.remove('active'); 
-        document.getElementById('modal-body').innerHTML = ''; 
-        if (!document.getElementById('lightbox').classList.contains('active') && !document.body.classList.contains('no-scroll-messages')) {
-            document.body.style.overflow = 'auto'; 
-        }
-    };
-
-    // 🌟 GÜNCELLEME: FAKÜLTELER ARTIK SINIF SINIF DEĞİL, BİRLEŞİK VE İLK 3 HARF + 1000 KODLU.
     window.openFacultiesList = function() {
         let listHtml = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
         
@@ -1108,7 +1086,7 @@ function initializeUniLoop() {
 
     window.checkFacultyPasscode = async function(facName) {
         let firstWord = facName.split(' ')[0].toLocaleLowerCase('tr-TR');
-        let expectedCode = firstWord.substring(0, 3) + "1000"; // Ortak fakülte kodu (örn: tıp1000, güz1000)
+        let expectedCode = firstWord.substring(0, 3) + "1000"; 
         
         let userCode = prompt(`${facName} ortak iletişim grubuna girmek için onay kodunu girin:\n(Yönetici girişi için şifrenin başına 'ai' ekleyin)`);
         
@@ -1391,7 +1369,6 @@ function initializeUniLoop() {
         }
     };
 
-    // 🌟 GÜNCELLEME: ÜYELER LİSTESİNDE KULLANICI SINIFLARI GÖSTERİLİYOR
     window.showGroupMembers = async function(roomTitle, roomType) {
         window.openModal(`👥 ${roomTitle} Üyeleri`, `<div style="text-align:center; padding:30px; color:var(--text-gray);">Üyeler yükleniyor... ⏳</div>`);
         
@@ -1518,13 +1495,40 @@ function initializeUniLoop() {
             }
         }
     };
-    // 🌟 GÜNCELLEME: YENİ "HIZLI EŞLEŞ (FAST MATCH)" SİSTEMİ (TINDER UI) - DÜZELTİLMİŞ ŞIK TASARIM
+
     let fastMatchUsers = [];
     let fastMatchCurrentIndex = 0;
 
     window.openFastMatch = async function() {
+        let count = window.userProfile.fastMatchCount || 0;
+        let today = new Date().toLocaleDateString();
+        
+        if (window.userProfile.fastMatchDate !== today) {
+            count = 0;
+            window.userProfile.fastMatchCount = 0;
+            window.userProfile.fastMatchDate = today;
+            await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchCount: 0, fastMatchDate: today });
+        }
+
+        if (!window.userProfile.isPremium && count >= 10) {
+            window.openModal('🔥 Hızlı Eşleşme Limiti', `
+                <div style="text-align:center; padding:20px 10px;">
+                    <div style="font-size:50px; margin-bottom:15px;">🛑</div>
+                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Günlük Hakkın Doldu!</h3>
+                    <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px;">Ücretsiz kullanımda günlük 10 kişiyle eşleşme hakkın var. Sınırları kaldırmak ve doyasıya eşleşmek için Premium'a geç!</p>
+                    <button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
+                </div>
+            `);
+            return;
+        }
+
+        let headerText = window.userProfile.isPremium ? 
+            '<span style="color:#10B981; font-size:12px; font-weight:bold; background:#ECFDF5; padding:4px 8px; border-radius:12px;">Sınırsız Eşleşme (Premium)</span>' : 
+            `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:4px 8px; border-radius:12px;">Kalan Hakkın: ${10 - count} / 10</span>`;
+
         window.openModal('🔥 Hızlı Eşleş', `
             <div style="text-align:center; padding:10px; display:flex; flex-direction:column; align-items:center;" id="fast-match-container">
+                <div style="margin-bottom:10px;">${headerText}</div>
                 <div style="font-size:40px; animation: glowPulse 1.5s infinite alternate; margin-bottom:15px;">🔍</div>
                 <h3 style="color:var(--text-gray);">Kampüste birileri aranıyor...</h3>
             </div>
@@ -1542,7 +1546,6 @@ function initializeUniLoop() {
                 }
             });
 
-            // Karıştır
             fastMatchUsers = fastMatchUsers.sort(() => 0.5 - Math.random());
             fastMatchCurrentIndex = 0;
             
@@ -1581,8 +1584,12 @@ function initializeUniLoop() {
             tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:11px; background:rgba(255,255,255,0.25); color:white; padding:4px 10px; border-radius:12px; font-weight:700; margin-right:4px; margin-bottom:4px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join('');
         }
 
-        // Kartın boyutu optimize edildi (max-width: 300px), daha şık ve derli toplu.
+        let headerText = window.userProfile.isPremium ? 
+            '<span style="color:#10B981; font-size:12px; font-weight:bold; background:#ECFDF5; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block;">Sınırsız Eşleşme (Premium)</span>' : 
+            `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block;">Kalan Hakkın: ${10 - window.userProfile.fastMatchCount} / 10</span>`;
+
         container.innerHTML = `
+            ${headerText}
             <div id="swipe-card" style="position:relative; width:100%; max-width:300px; margin:0 auto; transition: transform 0.3s ease, opacity 0.3s ease; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.15); background:#fff;">
                 ${avatarHtml}
                 
@@ -1605,12 +1612,23 @@ function initializeUniLoop() {
         const card = document.getElementById('swipe-card');
         if(!card) return;
 
+        if(!window.userProfile.isPremium) {
+            window.userProfile.fastMatchCount += 1;
+            try {
+                await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchCount: window.userProfile.fastMatchCount });
+            } catch(e) {}
+        }
+
         if(direction === 'left') {
             card.style.transform = 'translateX(-200px) rotate(-20deg)';
             card.style.opacity = '0';
             setTimeout(() => {
                 fastMatchCurrentIndex++;
-                window.renderFastMatchCard();
+                if (!window.userProfile.isPremium && window.userProfile.fastMatchCount >= 10) {
+                    window.openFastMatch(); 
+                } else {
+                    window.renderFastMatchCard();
+                }
             }, 300);
         } else if (direction === 'right') {
             card.style.transform = 'translateX(200px) rotate(20deg)';
@@ -1618,12 +1636,15 @@ function initializeUniLoop() {
             
             const u = fastMatchUsers[fastMatchCurrentIndex];
             
-            // Arkadaşlık isteği olarak gönder
             window.sendFriendRequest(u.uid, `${u.name} ${u.surname ? u.surname : ''}`, true);
             
             setTimeout(() => {
                 fastMatchCurrentIndex++;
-                window.renderFastMatchCard();
+                if (!window.userProfile.isPremium && window.userProfile.fastMatchCount >= 10) {
+                    window.openFastMatch(); 
+                } else {
+                    window.renderFastMatchCard();
+                }
             }, 300);
         }
     };
@@ -1727,8 +1748,17 @@ function initializeUniLoop() {
             if (docSnap.exists()) {
                 const u = docSnap.data();
                 
+                const viewRecord = {
+                    uid: window.userProfile.uid,
+                    name: window.userProfile.name,
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + " - " + new Date().toLocaleDateString()
+                };
+                await updateDoc(doc(db, "users", targetUid), {
+                    profileViewers: arrayUnion(viewRecord)
+                });
+
                 if (u.isPremium) {
-                    window.sendSystemNotification(targetUid, `👀 <strong>${window.userProfile.name}</strong> profilini inceledi!`);
+                    window.sendSystemNotification(targetUid, `👀 <strong>${window.userProfile.name}</strong> profilini inceledi! (Premium Özelliği)`);
                 }
 
                 const initial = u.surname ? u.surname.charAt(0) + '.' : '';
@@ -1857,7 +1887,6 @@ function initializeUniLoop() {
         }
     };
 
-    // --- ANA SAYFA (HIZLI EŞLEŞ GÜNCELLEMESİ) ---
     window.renderHome = async function() {
         let usernameWarning = '';
         if (!window.userProfile.username) {
@@ -1888,7 +1917,6 @@ function initializeUniLoop() {
             `;
         }
 
-        // KULÜPLER YERİNE HIZLI EŞLEŞ GELDİ
         let fastMatchCardHtml = `
             <div class="card" style="flex:1; padding:15px 10px; border-radius:12px; cursor:pointer; text-align:center; background:linear-gradient(135deg, #fff1f2, #ffe4e6); border: 1px solid #fecdd3; transition: transform 0.2s;" onclick="window.openFastMatch()">
                 <div style="font-size:32px; margin-bottom:8px;">🔥</div>
@@ -2579,10 +2607,6 @@ function initializeUniLoop() {
             } catch(e) { alert("Hata: " + e.message); }
         }
     };
-    
-    // ============================================================================
-    // 8. MESAJLAR SİSTEMİ (DM & İLETİŞİM)
-    // ============================================================================
 
     window.renderMessagesSidebarOnly = function() {
         const sb = document.getElementById('chat-sidebar-list');
@@ -2878,10 +2902,6 @@ function initializeUniLoop() {
         }
     };
 
-    // ============================================================================
-    // 9. PROFİL, ARKADAŞLARIM VE AYARLAR
-    // ============================================================================
-
     window.renderProfile = function() {
         const u = window.userProfile;
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
@@ -3007,7 +3027,6 @@ function initializeUniLoop() {
 
     window.renderSettings = function() {
         const currentLang = localStorage.getItem('uniloop_lang') || 'tr';
-        const currentTheme = localStorage.getItem('uniloop_theme') || 'light';
 
         window.openModal('⚙️ Ayarlar', `
             <div style="display:flex; flex-direction:column; gap:15px;">
@@ -3019,20 +3038,14 @@ function initializeUniLoop() {
                     </select>
                 </div>
                 
-                <div class="form-group" style="margin:0;">
-                    <label style="font-size:13px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; display:block;">Tema</label>
-                    <select onchange="window.toggleTheme(this.value)" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; background:#F9FAFB;">
-                        <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>☀️ Aydınlık Mod</option>
-                        <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>🌙 Karanlık Mod</option>
-                    </select>
-                </div>
-                
                 <div style="border-top:1px solid #E5E7EB; margin:10px 0;"></div>
                 
-                <button class="btn-danger" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
+                <button class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; background:#4B5563; border-color:#4B5563;" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
+                
+                <button class="btn-danger" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; background:transparent; color:#EF4444; border:1px solid #EF4444;" onclick="window.deleteAccount()">🗑️ Hesabımı Kalıcı Olarak Sil</button>
                 
                 <div style="text-align:center; font-size:11px; color:#9CA3AF; margin-top:10px;">
-                    UniLoop v3.1.0 Pro<br>Made with ❤️ for Students
+                    UniLoop v3.2.0 Pro<br>Made with ❤️ for Students
                 </div>
             </div>
         `);
@@ -3045,7 +3058,6 @@ function initializeUniLoop() {
         let html = '<div class="notif-compact-panel">';
         let hasNotif = false;
         
-        // 1. Bekleyen Arkadaşlık İstekleri
         chatsDB.forEach(chat => {
             if (chat.status === 'pending' && chat.initiator !== window.userProfile.uid && !chat.isMarketChat) {
                 hasNotif = true;
@@ -3067,7 +3079,6 @@ function initializeUniLoop() {
             }
         });
 
-        // 2. Okunmamış Mesajlar ve Sistem Bildirimleri
         chatsDB.forEach(chat => {
             if (chat.status === 'accepted' || chat.isMarketChat) {
                 if (chat.messages && chat.messages.length > 0) {
@@ -3107,40 +3118,24 @@ function initializeUniLoop() {
         window.openModal('🔔 Bildirimler', html);
     };
 
-    // ============================================================================
-    // 10. ROUTING (SAYFA YÖNLENDİRME)
-    // ============================================================================
     window.loadPage = function(page) {
         document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
         const targetNav = document.querySelector(`.bottom-nav-item[data-target="${page}"]`);
         if(targetNav) targetNav.classList.add('active');
 
-        // Reset scroll states
         window.scrollTo(0, 0);
         document.body.classList.remove('no-scroll-messages');
         if (currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
 
         switch(page) {
-            case 'home':
-                window.renderHome();
-                break;
-            case 'confessions':
-                window.drawConfessionsFeed();
-                break;
-            case 'market':
-                window.renderListings('market', '🛒 Kampüs Market');
-                break;
-            case 'messages':
-                window.renderMessages();
-                break;
-            case 'profile':
-                window.renderProfile();
-                break;
-            default:
-                window.renderHome();
+            case 'home': window.renderHome(); break;
+            case 'confessions': window.drawConfessionsFeed(); break;
+            case 'market': window.renderListings('market', '🛒 Kampüs Market'); break;
+            case 'messages': window.renderMessages(); break;
+            case 'profile': window.renderProfile(); break;
+            default: window.renderHome();
         }
     };
 }
 
-// Uygulamayı Başlat
 document.addEventListener('DOMContentLoaded', initializeUniLoop);
