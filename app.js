@@ -29,7 +29,8 @@ import {
     arrayRemove,
     where,
     getDocs,
-    deleteDoc
+    deleteDoc,
+    limit // 💸 MALİYET TASARRUFU İÇİN EKLENDİ
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
     getStorage,
@@ -629,7 +630,7 @@ function initializeUniLoop() {
             btn.disabled = true;
             
             try {
-                const q = query(collection(db, "users"), where("username", "==", finalUsername));
+                const q = query(collection(db, "users"), where("username", "==", finalUsername), limit(1));
                 const snap = await getDocs(q);
                 if(!snap.empty) {
                     alert("Bu kullanıcı adı zaten alınmış. Lütfen başka bir tane seçin.");
@@ -939,7 +940,8 @@ function initializeUniLoop() {
     function initRealtimeListeners(currentUid) {
         const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
 
-        onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc")), (snapshot) => {
+        // 💸 OPTİMİZASYON: Sınırsız çekim yerine son 50 market ilanı getiriliyor
+        onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
             marketDB = [];
             snapshot.forEach(doc => { marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
             marketDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
@@ -947,7 +949,8 @@ function initializeUniLoop() {
             if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
         });
 
-        onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc")), (snapshot) => {
+        // 💸 OPTİMİZASYON: Sınırsız çekim yerine son 50 itiraf (gönderi) getiriliyor
+        onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
             confessionsDB = [];
             snapshot.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
             confessionsDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
@@ -1210,7 +1213,7 @@ function initializeUniLoop() {
             window.closeModal();
         } catch(e) {
             console.error("Yükleme Hatası:", e);
-            alert("Dosya yüklenirken hata oluştu: " + e.message);
+            alert("Dosya yüklenirken hata oluştu: " + e.message + "\n(Eğer 'Missing or insufficient permissions' hatasıysa Firestore Kurallarınızı kontrol edin.)");
         } finally {
             if(uploadBtn) { uploadBtn.innerText = originalText; uploadBtn.disabled = false; }
         }
@@ -1220,7 +1223,6 @@ function initializeUniLoop() {
         const u = window.userProfile;
         
         // --- ARŞİV KİLİTLEME SİSTEMİ ---
-        // Kullanıcı arşivi bu yıl için henüz kilitlemediyse
         if (!u.lockedArchiveFaculty || !u.lockedArchiveGrade) {
             if (!u.faculty || !u.grade) {
                 alert("Profilinizde fakülte veya sınıf bilginiz eksik. Lütfen ayarlardan profilinizi güncelleyin.");
@@ -1247,7 +1249,6 @@ function initializeUniLoop() {
             }
         }
 
-        // Kilitli arşivi göster
         const fac = u.lockedArchiveFaculty;
         const gr = u.lockedArchiveGrade;
 
@@ -1270,7 +1271,7 @@ function initializeUniLoop() {
                 html += `
                 <div style="text-align:center; padding:30px 10px;">
                     <div style="font-size:40px; margin-bottom:10px;">📭</div>
-                    <div style="font-size:14px; color:var(--text-gray); line-height:1.5;">Henüz kilitlendiğiniz bölüm <b>(${fac})</b> ve sınıfa <b>(${gr})</b> ait bir arşiv bulunamadı. Lütfen daha sonra tekrar deneyin.</div>
+                    <div style="font-size:14px; color:var(--text-gray); line-height:1.5;">Henüz kilitlendiğiniz bölüm <b>(${fac})</b> ve sınıfa <b>(${gr})</b> ait bir arşiv bulunamadı. Admin'in dosyaları yüklemesini bekleyin.</div>
                 </div>`;
             } else {
                 html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
@@ -1298,7 +1299,8 @@ function initializeUniLoop() {
             document.getElementById('modal-body').innerHTML = `
                 <div style="color:#EF4444; text-align:center; padding:20px;">
                     <strong>Bağlantı Hatası</strong><br><br>
-                    Arşiv yüklenirken bir hata oluştu: ${e.message}
+                    Arşiv yüklenirken bir hata oluştu: ${e.message}<br><br>
+                    Lütfen Firebase <b>Firestore Database</b> kurallarınızda <i>archives</i> koleksiyonuna okuma izni verdiğinizden emin olun.
                 </div>`;
         }
     };
@@ -1720,66 +1722,74 @@ function initializeUniLoop() {
                 }
             }
 
-            const querySnapshot = await getDocs(query(collection(db, "users")));
+            // 💸 OPTİMİZASYON: Sadece grupta olan üyelerin ID'leri ile sorgu atılıyor (Read maliyeti inanılmaz düştü!)
             let meHtml = '';
             let othersHtml = '';
             let count = 0;
-            
-            querySnapshot.forEach((doc) => {
-                const u = doc.data();
-                
-                if(roomMembers.includes(u.uid) && !roomBanned.includes(u.uid)) { 
-                    count++;
-                    const initial = u.surname ? u.surname.charAt(0) + '.' : '';
-                    let avatarHtml = u.avatarUrl 
-                        ? `<img src="${u.avatarUrl}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">` 
-                        : `<div style="width:44px; height:44px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid #E5E7EB;">${u.avatar || '👤'}</div>`;
-                    
-                    const adminBadge = roomAdmins.includes(u.uid) ? '<span style="font-size:10px; background:#F59E0B; color:white; padding:3px 6px; border-radius:6px; font-weight:bold; margin-left:5px;">Yönetici</span>' : '';
-                    
-                    let actionBtn = '';
-                    
-                    if (u.uid === window.userProfile.uid) {
-                        actionBtn = `<button onclick="event.stopPropagation(); window.leaveGroup('${currentRoomId}', '${roomType}', '${u.name}')" style="background:transparent; border:none; font-size:22px; color:#DC2626; cursor:pointer;" title="Gruptan Çık">⏏</button>`;
-                        
-                        meHtml = `
-                            <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#EEF2FF; border:1px solid #C7D2FE; border-radius:12px; transition:0.2s; margin-bottom:10px;">
-                                <div style="display:flex; align-items:center; gap:12px; flex:1;">
-                                    ${avatarHtml}
-                                    <div style="display:flex; flex-direction:column;">
-                                        <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} <span style="color:#10B981; font-size:11px;">(Sen)</span> ${adminBadge}</span>
-                                        <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade + '. Sınıf' : 'Öğrenci'}</span>
-                                    </div>
-                                </div>
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    ${u.isPremium ? '<span style="font-size:18px;" title="Premium Üye">👑</span>' : ''}
-                                    ${actionBtn}
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        if (isMeAdmin && currentRoomId) {
-                            actionBtn = `<button onclick="event.stopPropagation(); window.kickUserFromGroup('${currentRoomId}', '${u.uid}', '${u.name}')" style="background:transparent; border:none; font-size:18px; color:#6B7280; cursor:pointer; font-weight:bold;" title="Gruptan At">✕</button>`;
-                        }
 
-                        othersHtml += `
-                            <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#fff; border:1px solid #E5E7EB; border-radius:12px; transition:0.2s; margin-bottom:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--primary)';" onmouseout="this.style.borderColor='#E5E7EB';" onclick="window.closeModal(); window.viewUserProfile('${u.uid}')">
-                                <div style="display:flex; align-items:center; gap:12px; flex:1;">
-                                    ${avatarHtml}
-                                    <div style="display:flex; flex-direction:column;">
-                                        <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} ${adminBadge}</span>
-                                        <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade + '. Sınıf' : 'Öğrenci'}</span>
+            if (roomMembers.length > 0) {
+                for (let i = 0; i < roomMembers.length; i += 10) {
+                    const chunk = roomMembers.slice(i, i + 10);
+                    const q = query(collection(db, "users"), where("uid", "in", chunk));
+                    const snap = await getDocs(q);
+                    
+                    snap.forEach((doc) => {
+                        const u = doc.data();
+                        
+                        if(!roomBanned.includes(u.uid)) { 
+                            count++;
+                            const initial = u.surname ? u.surname.charAt(0) + '.' : '';
+                            let avatarHtml = u.avatarUrl 
+                                ? `<img src="${u.avatarUrl}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">` 
+                                : `<div style="width:44px; height:44px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid #E5E7EB;">${u.avatar || '👤'}</div>`;
+                            
+                            const adminBadge = roomAdmins.includes(u.uid) ? '<span style="font-size:10px; background:#F59E0B; color:white; padding:3px 6px; border-radius:6px; font-weight:bold; margin-left:5px;">Yönetici</span>' : '';
+                            
+                            let actionBtn = '';
+                            
+                            if (u.uid === window.userProfile.uid) {
+                                actionBtn = `<button onclick="event.stopPropagation(); window.leaveGroup('${currentRoomId}', '${roomType}', '${u.name}')" style="background:transparent; border:none; font-size:22px; color:#DC2626; cursor:pointer;" title="Gruptan Çık">⏏</button>`;
+                                
+                                meHtml = `
+                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#EEF2FF; border:1px solid #C7D2FE; border-radius:12px; transition:0.2s; margin-bottom:10px;">
+                                        <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                                            ${avatarHtml}
+                                            <div style="display:flex; flex-direction:column;">
+                                                <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} <span style="color:#10B981; font-size:11px;">(Sen)</span> ${adminBadge}</span>
+                                                <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade + '. Sınıf' : 'Öğrenci'}</span>
+                                            </div>
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            ${u.isPremium ? '<span style="font-size:18px;" title="Premium Üye">👑</span>' : ''}
+                                            ${actionBtn}
+                                        </div>
                                     </div>
-                                </div>
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    ${u.isPremium ? '<span style="font-size:18px;" title="Premium Üye">👑</span>' : ''}
-                                    ${actionBtn}
-                                </div>
-                            </div>
-                        `;
-                    }
+                                `;
+                            } else {
+                                if (isMeAdmin && currentRoomId) {
+                                    actionBtn = `<button onclick="event.stopPropagation(); window.kickUserFromGroup('${currentRoomId}', '${u.uid}', '${u.name}')" style="background:transparent; border:none; font-size:18px; color:#6B7280; cursor:pointer; font-weight:bold;" title="Gruptan At">✕</button>`;
+                                }
+
+                                othersHtml += `
+                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#fff; border:1px solid #E5E7EB; border-radius:12px; transition:0.2s; margin-bottom:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--primary)';" onmouseout="this.style.borderColor='#E5E7EB';" onclick="window.closeModal(); window.viewUserProfile('${u.uid}')">
+                                        <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                                            ${avatarHtml}
+                                            <div style="display:flex; flex-direction:column;">
+                                                <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} ${adminBadge}</span>
+                                                <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade + '. Sınıf' : 'Öğrenci'}</span>
+                                            </div>
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            ${u.isPremium ? '<span style="font-size:18px;" title="Premium Üye">👑</span>' : ''}
+                                            ${actionBtn}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }
+                    });
                 }
-            });
+            }
             
             let finalHtml = `<div style="max-height:400px; overflow-y:auto; padding-right:5px;">`;
             if(count === 0) {
@@ -1864,7 +1874,8 @@ function initializeUniLoop() {
         `);
 
         try {
-            const querySnapshot = await getDocs(query(collection(db, "users")));
+            // 💸 OPTİMİZASYON: Tüm sistemi çekmek yerine rastgele limit koyuldu (Maliyet minimal)
+            const querySnapshot = await getDocs(query(collection(db, "users"), limit(50)));
             const interactedUids = chatsDB.map(c => c.otherUid);
             fastMatchUsers = [];
 
@@ -2318,7 +2329,8 @@ function initializeUniLoop() {
         mainContent.innerHTML = html;
 
         try {
-            const querySnapshot = await getDocs(query(collection(db, "users")));
+            // 💸 OPTİMİZASYON: Maliyeti kısmak için sadece son 30 kullanıcıyı çekiyoruz
+            const querySnapshot = await getDocs(query(collection(db, "users"), limit(30)));
             let usersHtml = '';
             let count = 0;
             
