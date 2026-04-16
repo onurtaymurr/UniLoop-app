@@ -950,18 +950,12 @@ function initializeUniLoop() {
             if (document.getElementById('app-modal').classList.contains('active') && document.getElementById('modal-title').innerText.includes('Bildirimler')) { window.renderNotifications(); }
         });
     }
-
-// ============================================================================
-// 🌟 BÖLÜM 1 SONU 🌟
-// ============================================================================
     // 🌟 MEDYA YÜKLEME SİSTEMİ
     window.uploadChatMedia = async function(event, targetId, chatType) {
         const file = event.target.files[0];
         if(!file) return;
 
         const isPdf = file.type === "application/pdf";
-        const btnId = chatType === 'group' ? 'group-chat-media' : 'dm-chat-media';
-        const inputFieldId = chatType === 'group' ? 'group-chat-input' : 'chat-input-field';
         
         try {
             const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
@@ -1055,8 +1049,16 @@ function initializeUniLoop() {
             try {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: true });
                 window.userProfile.isPremium = true;
+                
+                // Anında UI Güncellemesi (Sayfa yenilemeye gerek kalmadan)
                 const navBtn = document.getElementById('nav-premium-action');
-                if(navBtn) navBtn.style.display = 'none';
+                if(navBtn) {
+                    navBtn.style.background = 'linear-gradient(135deg, #F59E0B, #D97706)';
+                    navBtn.style.color = 'white';
+                    navBtn.style.padding = '4px 10px';
+                    navBtn.innerText = '🌟 Premium Özellikler';
+                    navBtn.setAttribute('onclick', 'window.openPremiumFeaturesModal()');
+                }
                 
                 window.closeModal();
                 alert("🎉 Tebrikler! Ödemeniz başarıyla alındı. UniLoop Premium ayrıcalıklarına artık sahipsiniz!");
@@ -1638,25 +1640,14 @@ function initializeUniLoop() {
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
         const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:6px; text-shadow:0 1px 2px rgba(0,0,0,0.5);" title="Premium Üye">👑</span>' : '';
         
-        let avatarHtml = '';
-        let displayName = '';
-        let displayFaculty = '';
-        let tagsHtml = '';
+        // Hızlı eşleşmede herkesi BLURSUZ görür.
+        let avatarHtml = u.avatarUrl 
+            ? `<img src="${u.avatarUrl}" style="width:100%; height:320px; object-fit:cover; border-radius:20px; display:block; pointer-events:none;">` 
+            : `<div style="width:100%; height:320px; border-radius:20px; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:80px; pointer-events:none;">${u.avatar || '👤'}</div>`;
 
-        if (!window.userProfile.isPremium) {
-            const silhouette = u.gender === 'Kadın' ? '👩' : '👨';
-            avatarHtml = `<div style="width:100%; height:320px; border-radius:20px; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:120px; filter: blur(12px); opacity:0.9; pointer-events:none;">${silhouette}</div>`;
-            displayName = `<span style="filter: blur(4px); user-select: none;">Gizli Kullanıcı</span>`;
-            displayFaculty = `<span style="filter: blur(4px); user-select: none;">Bölüm Gizli</span>`;
-        } else {
-            avatarHtml = u.avatarUrl 
-                ? `<img src="${u.avatarUrl}" style="width:100%; height:320px; object-fit:cover; border-radius:20px; display:block; pointer-events:none;">` 
-                : `<div style="width:100%; height:320px; border-radius:20px; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:80px; pointer-events:none;">${u.avatar || '👤'}</div>`;
-            displayName = `${u.name} ${initial} ${u.age ? `<span style="font-weight:normal; margin-left:8px; font-size:18px; opacity:0.9;">${u.age}</span>` : ''}`;
-            displayFaculty = u.faculty || 'Kampüs Öğrencisi';
-            if(u.interests && Array.isArray(u.interests)) {
-                tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:11px; background:rgba(255,255,255,0.25); color:white; padding:4px 10px; border-radius:12px; font-weight:700; margin-right:4px; margin-bottom:4px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join('');
-            }
+        let tagsHtml = '';
+        if(u.interests && Array.isArray(u.interests)) {
+            tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:11px; background:rgba(255,255,255,0.25); color:white; padding:4px 10px; border-radius:12px; font-weight:700; margin-right:4px; margin-bottom:4px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join('');
         }
 
         let headerText = window.userProfile.isPremium ? 
@@ -1669,8 +1660,8 @@ function initializeUniLoop() {
                 ${avatarHtml}
                 
                 <div style="position:absolute; bottom:0; left:0; right:0; padding:30px 15px 35px 15px; background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); border-bottom-left-radius:20px; border-bottom-right-radius:20px; text-align:left;">
-                    <h2 style="margin:0 0 6px 0; color:white; font-size:22px; display:flex; align-items:center; text-shadow:0 2px 4px rgba(0,0,0,0.6);">${displayName} ${window.userProfile.isPremium ? premiumIcon : ''}</h2>
-                    <div style="font-size:13px; color:#e2e8f0; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:4px; text-shadow:0 1px 2px rgba(0,0,0,0.5);"><span style="font-size:15px;">🏛️</span> ${displayFaculty}</div>
+                    <h2 style="margin:0 0 6px 0; color:white; font-size:22px; display:flex; align-items:center; text-shadow:0 2px 4px rgba(0,0,0,0.6);">${u.name} ${initial} ${u.age ? `<span style="font-weight:normal; margin-left:8px; font-size:18px; opacity:0.9;">${u.age}</span>` : ''} ${premiumIcon}</h2>
+                    <div style="font-size:13px; color:#e2e8f0; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:4px; text-shadow:0 1px 2px rgba(0,0,0,0.5);"><span style="font-size:15px;">🏛️</span> ${u.faculty || 'Kampüs Öğrencisi'}</div>
                     <div style="display:flex; flex-wrap:wrap; margin-bottom:0;">${tagsHtml}</div>
                 </div>
                 
@@ -1813,24 +1804,30 @@ function initializeUniLoop() {
     };
 
     window.viewUserProfile = async function(targetUid) {
+        // Hata Önlemi
+        if (!targetUid) {
+            alert("Kullanıcı verisi eksik!");
+            return;
+        }
+
         if(targetUid === window.userProfile.uid) { 
             window.loadPage('profile'); 
             return; 
         }
 
-        if (!window.userProfile.isPremium) {
-            const isFriend = chatsDB.some(c => c.otherUid === targetUid && c.status === 'accepted' && !c.isMarketChat);
-            if(!isFriend) {
-                window.openModal('🔒 Profil Kilitli', `
-                    <div style="text-align:center; padding:20px;">
-                        <div style="font-size:50px; margin-bottom:15px; filter: blur(2px);">👀</div>
-                        <h3 style="color:var(--text-dark); margin-bottom:10px;">Gizli Profil!</h3>
-                        <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px; line-height:1.5;">Detaylı profile bakabilmek için Premium üye ol. Tüm blurları kaldır ve kampüstekileri yakından tanı!</p>
-                        <button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
-                    </div>
-                `);
-                return;
-            }
+        const isFriend = chatsDB.some(c => c.otherUid === targetUid && c.status === 'accepted' && !c.isMarketChat);
+
+        // Premium değilse ve arkadaşı değilse Paywall çıkart.
+        if (!window.userProfile.isPremium && !isFriend) {
+            window.openModal('🔒 Detaylı Profil Kilitli', `
+                <div style="text-align:center; padding:20px;">
+                    <div style="font-size:50px; margin-bottom:15px; filter: blur(2px);">👀</div>
+                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Gizli Profil!</h3>
+                    <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px; line-height:1.5;">Detaylı profile bakabilmek için Premium üye ol. Tüm blurları kaldır ve kampüstekileri yakından tanı!</p>
+                    <button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
+                </div>
+            `);
+            return;
         }
         
         try {
@@ -2071,14 +2068,18 @@ function initializeUniLoop() {
                     let displayName = '';
                     let displayFaculty = '';
 
+                    // Kullanıcı Premium değilse bulanık kadın/erkek gerçekçi resim göster ve ad/soyadı ilk harfini açık ver.
                     if (!window.userProfile.isPremium) {
-                        const silhouette = u.gender === 'Kadın' ? '👩' : '👨';
-                        avatarHtml = `<div style="width:50px; height:50px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:25px; border:2px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'}; margin:0 auto; filter: blur(4px); opacity:0.8;">${silhouette}</div>`;
-                        displayName = `<span style="filter: blur(4px); user-select: none;">Gizli Kullanıcı</span>`;
+                        const defaultFemale = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop';
+                        const defaultMale = 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop';
+                        const blurImgSrc = u.gender === 'Kadın' ? defaultFemale : defaultMale;
+
+                        avatarHtml = `<img src="${blurImgSrc}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'}; filter: blur(8px); opacity:0.9; margin:0 auto; display:block;">`;
+                        displayName = `${u.name} ${initial}`;
                         displayFaculty = `<span style="filter: blur(4px); user-select: none;">Bölüm Gizli</span>`;
                     } else {
                         avatarHtml = u.avatarUrl 
-                            ? `<img src="${u.avatarUrl}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'};">` 
+                            ? `<img src="${u.avatarUrl}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'}; margin:0 auto; display:block;">` 
                             : `<div style="width:50px; height:50px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:25px; border:2px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'}; margin:0 auto;">${u.avatar || '👤'}</div>`;
                         displayName = `${u.name} ${initial}`;
                         displayFaculty = u.faculty || 'Kampüs Öğrencisi';
@@ -2086,13 +2087,13 @@ function initializeUniLoop() {
 
                     const premiumIcon = u.isPremium ? '<span style="font-size:14px; position:absolute; top:5px; right:5px;" title="Premium Üye">👑</span>' : '';
 
+                    // Kartın tamamı tıklanabilir, buton kaldırıldı.
                     usersHtml += `
-                        <div class="user-card" onclick="window.viewUserProfile('${u.uid}')" style="min-height:120px; padding:10px; position:relative;">
+                        <div class="user-card" onclick="window.viewUserProfile('${u.uid}')" style="min-height:100px; padding:15px 10px; position:relative; cursor:pointer;">
                             ${premiumIcon}
                             <div style="margin-bottom: 8px;">${avatarHtml}</div>
                             <div style="font-weight:bold; font-size:14px; color:var(--text-dark);">${displayName}</div>
                             <div style="font-size:11px; color:var(--text-gray); margin-top:4px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100%;">${displayFaculty}</div>
-                            <button class="btn-primary" style="margin-top:10px; padding:6px; font-size:12px; border-radius:8px; width:100%; box-shadow:none;" onclick="event.stopPropagation(); window.viewUserProfile('${u.uid}')">Profili Gör</button>
                         </div>
                     `;
                 }
