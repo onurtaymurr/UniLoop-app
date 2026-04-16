@@ -2168,14 +2168,17 @@ function initializeUniLoop() {
                     const premiumIcon = u.isPremium ? '<span style="font-size:14px; position:absolute; top:5px; right:5px;" title="Premium Üye">👑</span>' : '';
 
                     // Kartın tamamı tıklanabilir, buton kaldırıldı.
-                    usersHtml += `
+                                        usersHtml += `
                         <div class="user-card" onclick="window.viewUserProfile('${u.uid}')" style="min-height:100px; padding:15px 10px; position:relative; cursor:pointer;">
                             ${premiumIcon}
                             <div style="margin-bottom: 8px;">${avatarHtml}</div>
                             <div style="font-weight:bold; font-size:14px; color:var(--text-dark);">${displayName}</div>
-                            <div style="font-size:11px; color:var(--text-gray); margin-top:4px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100%;">${displayFaculty}</div>
+                            <div style="font-size:11px; color:var(--text-gray); margin-top:4px; margin-bottom:10px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100%;">${displayFaculty}</div>
+                            
+                            <button class="btn-primary" style="padding:6px; font-size:12px; border-radius:8px; width:100%; box-shadow:none; background:#10B981; border-color:#10B981;" onclick="event.stopPropagation(); window.sendFriendRequest('${u.uid}', '${u.name} ${initial}')">➕ Takip Et</button>
                         </div>
                     `;
+
                 }
             });
             
