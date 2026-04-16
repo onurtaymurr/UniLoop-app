@@ -1803,8 +1803,7 @@ function initializeUniLoop() {
         }
     };
 
-    window.viewUserProfile = async function(targetUid) {
-        // Hata Önlemi
+        window.viewUserProfile = async function(targetUid) {
         if (!targetUid) {
             alert("Kullanıcı verisi eksik!");
             return;
@@ -1814,6 +1813,87 @@ function initializeUniLoop() {
             window.loadPage('profile'); 
             return; 
         }
+
+        const isFriend = chatsDB.some(c => c.otherUid === targetUid && c.status === 'accepted' && !c.isMarketChat);
+
+        // Premium değilse ve arkadaşı değilse Paywall çıkart.
+        if (!window.userProfile.isPremium && !isFriend) {
+            window.openModal('🔒 Detaylı Profil Kilitli', `
+                <div style="text-align:center; padding:20px;">
+                    <div style="font-size:50px; margin-bottom:15px; filter: blur(2px);">👀</div>
+                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Gizli Profil!</h3>
+                    <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px; line-height:1.5;">Detaylı profile bakabilmek için Premium üye ol. Tüm blurları kaldır ve kampüstekileri yakından tanı!</p>
+                    <button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
+                </div>
+            `);
+            return;
+        }
+        
+        try {
+            const docSnap = await getDoc(doc(db, "users", targetUid));
+            if (docSnap.exists()) {
+                const u = docSnap.data();
+                
+                // HATA ÇÖZÜMÜ: Görüntülenme kaydını ayrı bir try-catch'e aldık.
+                try {
+                    const viewRecord = {
+                        uid: window.userProfile.uid,
+                        name: window.userProfile.name,
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + " - " + new Date().toLocaleDateString()
+                    };
+                    await updateDoc(doc(db, "users", targetUid), {
+                        profileViewers: arrayUnion(viewRecord)
+                    });
+
+                    if (u.isPremium) {
+                        window.sendSystemNotification(targetUid, `👀 <strong>${window.userProfile.name}</strong> profilini inceledi! (Premium Özelliği)`);
+                    }
+                } catch(err) {
+                    console.warn("Görüntülenme kaydedilemedi (Firestore Yetki Hatası olabilir), ancak profil açılıyor.");
+                }
+
+                const initial = u.surname ? u.surname.charAt(0) + '.' : '';
+                const isPremium = u.isPremium;
+
+                let avatarHtml = u.avatarUrl 
+                    ? `<img src="${u.avatarUrl}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid ${isPremium ? '#F59E0B' : '#E5E7EB'};">` 
+                    : `<div style="width:100px; height:100px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:40px; border:3px solid ${isPremium ? '#F59E0B' : '#E5E7EB'}; margin:0 auto;">${u.avatar || '👤'}</div>`;
+                
+                const ageText = u.age ? u.age + " yaşında" : "Yaş belirtilmemiş";
+                const facText = u.faculty ? u.faculty : "Fakülte belirtilmemiş";
+                const gradeText = u.grade ? u.grade + ". Sınıf" : "";
+                const premiumBadge = isPremium ? `<div style="margin-top:8px; display:inline-block; background:linear-gradient(135deg, #F59E0B, #D97706); color:white; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:12px; box-shadow:0 2px 4px rgba(245,158,11,0.3);">👑 Premium Üye</div>` : '';
+
+                const existingChat = chatsDB.find(c => c.otherUid === u.uid && !c.isMarketChat);
+                let actionBtnHtml = '';
+                
+                if (existingChat && existingChat.status === 'accepted') {
+                    actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">💬 Mesaj Gönder</button>`;
+                } else if (existingChat && existingChat.status === 'pending') {
+                    actionBtnHtml = `<button class="btn-primary" disabled style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:#9CA3AF; box-shadow:none;">⏳ İstek Bekleniyor</button>`;
+                } else {
+                    actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendFriendRequest('${u.uid}', '${u.name} ${initial}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>`;
+                }
+
+                window.openModal('Kullanıcı Profili', `
+                    <div style="text-align:center;">
+                        ${avatarHtml}
+                        <h3 style="margin: 10px 0 5px 0; font-size:18px; color:var(--text-dark); display:flex; align-items:center; justify-content:center; gap:5px;">
+                            ${u.name} ${initial} ${isPremium ? '<span style="font-size:18px;">👑</span>' : ''}
+                        </h3>
+                        <p style="color:var(--primary); font-size:14px; margin-bottom: 5px; font-weight:bold;">${facText} ${gradeText ? ' - ' + gradeText : ''}</p>
+                        <p style="color:var(--text-gray); font-size:13px; margin-bottom: 5px;">${ageText}</p>
+                        ${premiumBadge}
+                        <div style="margin-top:20px;">${actionBtnHtml}</div>
+                    </div>
+                `);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Profil yüklenirken hata oluştu.");
+        }
+    };
+
 
         const isFriend = chatsDB.some(c => c.otherUid === targetUid && c.status === 'accepted' && !c.isMarketChat);
 
