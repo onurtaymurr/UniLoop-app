@@ -1053,11 +1053,7 @@ function initializeUniLoop() {
                 // Anında UI Güncellemesi (Sayfa yenilemeye gerek kalmadan)
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.style.background = 'linear-gradient(135deg, #F59E0B, #D97706)';
-                    navBtn.style.color = 'white';
-                    navBtn.style.padding = '4px 10px';
-                    navBtn.innerText = '🌟 Premium Özellikler';
-                    navBtn.setAttribute('onclick', 'window.openPremiumFeaturesModal()');
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:linear-gradient(135deg, #F59E0B, #D97706); color:white; padding:4px 10px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">🌟 Premium Özellikler</div>`;
                 }
                 
                 window.closeModal();
@@ -1640,7 +1636,6 @@ function initializeUniLoop() {
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
         const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:6px; text-shadow:0 1px 2px rgba(0,0,0,0.5);" title="Premium Üye">👑</span>' : '';
         
-        // Hızlı eşleşmede herkesi BLURSUZ görür.
         let avatarHtml = u.avatarUrl 
             ? `<img src="${u.avatarUrl}" style="width:100%; height:320px; object-fit:cover; border-radius:20px; display:block; pointer-events:none;">` 
             : `<div style="width:100%; height:320px; border-radius:20px; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:80px; pointer-events:none;">${u.avatar || '👤'}</div>`;
@@ -1803,7 +1798,7 @@ function initializeUniLoop() {
         }
     };
 
-        window.viewUserProfile = async function(targetUid) {
+    window.viewUserProfile = async function(targetUid) {
         if (!targetUid) {
             alert("Kullanıcı verisi eksik!");
             return;
@@ -1816,7 +1811,6 @@ function initializeUniLoop() {
 
         const isFriend = chatsDB.some(c => c.otherUid === targetUid && c.status === 'accepted' && !c.isMarketChat);
 
-        // Premium değilse ve arkadaşı değilse Paywall çıkart.
         if (!window.userProfile.isPremium && !isFriend) {
             window.openModal('🔒 Detaylı Profil Kilitli', `
                 <div style="text-align:center; padding:20px;">
@@ -1834,7 +1828,6 @@ function initializeUniLoop() {
             if (docSnap.exists()) {
                 const u = docSnap.data();
                 
-                // HATA ÇÖZÜMÜ: Görüntülenme kaydını ayrı bir try-catch'e aldık.
                 try {
                     const viewRecord = {
                         uid: window.userProfile.uid,
@@ -1849,83 +1842,7 @@ function initializeUniLoop() {
                         window.sendSystemNotification(targetUid, `👀 <strong>${window.userProfile.name}</strong> profilini inceledi! (Premium Özelliği)`);
                     }
                 } catch(err) {
-                    console.warn("Görüntülenme kaydedilemedi (Firestore Yetki Hatası olabilir), ancak profil açılıyor.");
-                }
-
-                const initial = u.surname ? u.surname.charAt(0) + '.' : '';
-                const isPremium = u.isPremium;
-
-                let avatarHtml = u.avatarUrl 
-                    ? `<img src="${u.avatarUrl}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid ${isPremium ? '#F59E0B' : '#E5E7EB'};">` 
-                    : `<div style="width:100px; height:100px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:40px; border:3px solid ${isPremium ? '#F59E0B' : '#E5E7EB'}; margin:0 auto;">${u.avatar || '👤'}</div>`;
-                
-                const ageText = u.age ? u.age + " yaşında" : "Yaş belirtilmemiş";
-                const facText = u.faculty ? u.faculty : "Fakülte belirtilmemiş";
-                const gradeText = u.grade ? u.grade + ". Sınıf" : "";
-                const premiumBadge = isPremium ? `<div style="margin-top:8px; display:inline-block; background:linear-gradient(135deg, #F59E0B, #D97706); color:white; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:12px; box-shadow:0 2px 4px rgba(245,158,11,0.3);">👑 Premium Üye</div>` : '';
-
-                const existingChat = chatsDB.find(c => c.otherUid === u.uid && !c.isMarketChat);
-                let actionBtnHtml = '';
-                
-                if (existingChat && existingChat.status === 'accepted') {
-                    actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">💬 Mesaj Gönder</button>`;
-                } else if (existingChat && existingChat.status === 'pending') {
-                    actionBtnHtml = `<button class="btn-primary" disabled style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:#9CA3AF; box-shadow:none;">⏳ İstek Bekleniyor</button>`;
-                } else {
-                    actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendFriendRequest('${u.uid}', '${u.name} ${initial}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>`;
-                }
-
-                window.openModal('Kullanıcı Profili', `
-                    <div style="text-align:center;">
-                        ${avatarHtml}
-                        <h3 style="margin: 10px 0 5px 0; font-size:18px; color:var(--text-dark); display:flex; align-items:center; justify-content:center; gap:5px;">
-                            ${u.name} ${initial} ${isPremium ? '<span style="font-size:18px;">👑</span>' : ''}
-                        </h3>
-                        <p style="color:var(--primary); font-size:14px; margin-bottom: 5px; font-weight:bold;">${facText} ${gradeText ? ' - ' + gradeText : ''}</p>
-                        <p style="color:var(--text-gray); font-size:13px; margin-bottom: 5px;">${ageText}</p>
-                        ${premiumBadge}
-                        <div style="margin-top:20px;">${actionBtnHtml}</div>
-                    </div>
-                `);
-            }
-        } catch (e) {
-            console.error(e);
-            alert("Profil yüklenirken hata oluştu.");
-        }
-    };
-
-
-        const isFriend = chatsDB.some(c => c.otherUid === targetUid && c.status === 'accepted' && !c.isMarketChat);
-
-        // Premium değilse ve arkadaşı değilse Paywall çıkart.
-        if (!window.userProfile.isPremium && !isFriend) {
-            window.openModal('🔒 Detaylı Profil Kilitli', `
-                <div style="text-align:center; padding:20px;">
-                    <div style="font-size:50px; margin-bottom:15px; filter: blur(2px);">👀</div>
-                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Gizli Profil!</h3>
-                    <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px; line-height:1.5;">Detaylı profile bakabilmek için Premium üye ol. Tüm blurları kaldır ve kampüstekileri yakından tanı!</p>
-                    <button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
-                </div>
-            `);
-            return;
-        }
-        
-        try {
-            const docSnap = await getDoc(doc(db, "users", targetUid));
-            if (docSnap.exists()) {
-                const u = docSnap.data();
-                
-                const viewRecord = {
-                    uid: window.userProfile.uid,
-                    name: window.userProfile.name,
-                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + " - " + new Date().toLocaleDateString()
-                };
-                await updateDoc(doc(db, "users", targetUid), {
-                    profileViewers: arrayUnion(viewRecord)
-                });
-
-                if (u.isPremium) {
-                    window.sendSystemNotification(targetUid, `👀 <strong>${window.userProfile.name}</strong> profilini inceledi! (Premium Özelliği)`);
+                    console.warn("Görüntülenme kaydedilemedi, ancak profil açılıyor.");
                 }
 
                 const initial = u.surname ? u.surname.charAt(0) + '.' : '';
@@ -2148,14 +2065,13 @@ function initializeUniLoop() {
                     let displayName = '';
                     let displayFaculty = '';
 
-                    // Kullanıcı Premium değilse bulanık kadın/erkek gerçekçi resim göster ve ad/soyadı ilk harfini açık ver.
                     if (!window.userProfile.isPremium) {
                         const defaultFemale = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop';
                         const defaultMale = 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop';
                         const blurImgSrc = u.gender === 'Kadın' ? defaultFemale : defaultMale;
 
                         avatarHtml = `<img src="${blurImgSrc}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'}; filter: blur(8px); opacity:0.9; margin:0 auto; display:block;">`;
-                        displayName = `${u.name} ${initial}`;
+                        displayName = `<span style="filter: blur(4px); user-select: none;">Gizli Kullanıcı</span>`;
                         displayFaculty = `<span style="filter: blur(4px); user-select: none;">Bölüm Gizli</span>`;
                     } else {
                         avatarHtml = u.avatarUrl 
@@ -2167,8 +2083,7 @@ function initializeUniLoop() {
 
                     const premiumIcon = u.isPremium ? '<span style="font-size:14px; position:absolute; top:5px; right:5px;" title="Premium Üye">👑</span>' : '';
 
-                    // Kartın tamamı tıklanabilir, buton kaldırıldı.
-                                        usersHtml += `
+                    usersHtml += `
                         <div class="user-card" onclick="window.viewUserProfile('${u.uid}')" style="min-height:100px; padding:15px 10px; position:relative; cursor:pointer;">
                             ${premiumIcon}
                             <div style="margin-bottom: 8px;">${avatarHtml}</div>
@@ -2178,7 +2093,6 @@ function initializeUniLoop() {
                             <button class="btn-primary" style="padding:6px; font-size:12px; border-radius:8px; width:100%; box-shadow:none; background:#10B981; border-color:#10B981;" onclick="event.stopPropagation(); window.sendFriendRequest('${u.uid}', '${u.name} ${initial}')">➕ Takip Et</button>
                         </div>
                     `;
-
                 }
             });
             
