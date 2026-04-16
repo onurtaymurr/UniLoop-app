@@ -1080,19 +1080,117 @@ function initializeUniLoop() {
         }
     };
 
-    window.uploadArchiveFile = async function() {
-        const fac = document.getElementById('admin-archive-faculty').value;
-        const gr = document.getElementById('admin-archive-grade').value;
+       window.uploadArchiveFile = async function() {
+        const facBtn = document.getElementById('admin-archive-faculty');
+        const grBtn = document.getElementById('admin-archive-grade');
         const fileInput = document.getElementById('admin-archive-file');
         
-        if(!fileInput.files.length) return alert("Lütfen yüklenecek bir PDF seçin.");
+        if(!fileInput || !fileInput.files.length) return alert("Lütfen yüklenecek bir PDF seçin.");
         
-        alert(`✅ ${fac} - ${gr} için çıkmış sorular PDF arşivi sisteme başarıyla eklendi! (Sistem Güncellemesi)`);
-        fileInput.value = '';
+        const fac = facBtn.value.trim();
+        const gr = grBtn.value.trim();
+        const file = fileInput.files[0];
+        
+        // Butonu yükleniyor moduna al
+        const uploadBtn = document.getElementById('upload-archive-btn');
+        const originalText = uploadBtn.innerText;
+        uploadBtn.innerText = "Yükleniyor... Lütfen bekleyin ⏳";
+        uploadBtn.disabled = true;
+
+        try {
+            // 1. PDF'i Storage'a Yükleme
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.\-]/g, "_");
+            const storagePath = `archives/${fac}/${gr}/${Date.now()}_${cleanName}`;
+            const storageRef = ref(storage, storagePath);
+            
+            await uploadBytes(storageRef, file);
+            const downloadUrl = await getDownloadURL(storageRef);
+
+            // 2. Belgeyi Firestore (Veritabanı) 'archives' koleksiyonuna kaydetme
+            await addDoc(collection(db, "archives"), {
+                faculty: fac,
+                grade: gr,
+                fileName: file.name,
+                fileUrl: downloadUrl,
+                uploadedBy: window.userProfile.uid,
+                createdAt: serverTimestamp()
+            });
+
+            alert(`✅ Başarılı! ${fac} - ${gr} için çıkmış sorular sisteme eklendi.`);
+            fileInput.value = '';
+            window.closeModal();
+        } catch(e) {
+            console.error("Yükleme Hatası:", e);
+            alert("Dosya yüklenirken hata oluştu: " + e.message + "\n(Eğer 'Missing or insufficient permissions' hatasıysa Firestore Kurallarınızı kontrol edin.)");
+        } finally {
+            if(uploadBtn) { uploadBtn.innerText = originalText; uploadBtn.disabled = false; }
+        }
     };
 
-    window.viewArchive = function() {
-        alert(`📚 ${window.userProfile.faculty} - ${window.userProfile.grade}. Sınıf güncel çıkmış sorular arşivi sunucudan çekiliyor...\n\n(Çok yakında burada PDF listesini görüntüleyebileceksiniz.)`);
+    window.viewArchive = async function() {
+        const fac = (window.userProfile.faculty || "").trim();
+        let rawGr = String(window.userProfile.grade || "").trim();
+        
+        if (!fac || !rawGr) {
+            alert("Profilinizde fakülte veya sınıf bilginiz eksik. Lütfen ayarlardan profilinizi güncelleyin.");
+            return;
+        }
+
+        // Kullanıcının sınıfını (örn: "1") Adminin yükleme formatıyla ("1. Sınıf") eşitle
+        const gr = rawGr.includes("Sınıf") ? rawGr : rawGr + ". Sınıf";
+
+        window.openModal(`📚 ${fac} - ${gr} Arşivi`, `<div style="text-align:center; padding:20px; color:var(--text-gray);">Arşiv güvenli bir şekilde taranıyor... ⏳</div>`);
+
+        try {
+            // Sadece Fakülte üzerinden Firestore sorgusu atıyoruz
+            const q = query(collection(db, "archives"), where("faculty", "==", fac));
+            const snap = await getDocs(q);
+
+            let matchedDocs = [];
+            snap.forEach(doc => {
+                if (doc.data().grade === gr) {
+                    matchedDocs.push(doc.data());
+                }
+            });
+
+            let html = '<div style="max-height: 400px; overflow-y: auto; padding-right: 5px;">';
+            
+            if(matchedDocs.length === 0) {
+                html += `
+                <div style="text-align:center; padding:30px 10px;">
+                    <div style="font-size:40px; margin-bottom:10px;">📭</div>
+                    <div style="font-size:14px; color:var(--text-gray); line-height:1.5;">Henüz sizin bölümünüze <b>(${fac})</b> ve sınıfınıza <b>(${gr})</b> ait bir arşiv bulunamadı. Admin'in dosyaları yüklemesini bekleyin.</div>
+                </div>`;
+            } else {
+                html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
+                matchedDocs.forEach(data => {
+                    html += `
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:15px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:12px;">
+                            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                                <div style="font-size:24px;">📄</div>
+                                <div style="flex:1; min-width:0;">
+                                    <div style="font-weight:700; font-size:14px; color:var(--text-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${data.fileName}</div>
+                                    <div style="font-size:11px; color:var(--text-gray);">Çıkmış Sorular / Ders Notu</div>
+                                </div>
+                            </div>
+                            <a href="${data.fileUrl}" target="_blank" style="background:#10B981; color:white; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:bold; flex-shrink:0; box-shadow:0 2px 4px rgba(16,185,129,0.3);">İndir / Aç</a>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            html += '</div>';
+            document.getElementById('modal-body').innerHTML = html;
+
+        } catch(e) {
+            console.error("Arşiv Çekme Hatası:", e);
+            document.getElementById('modal-body').innerHTML = `
+                <div style="color:#EF4444; text-align:center; padding:20px;">
+                    <strong>Bağlantı Hatası</strong><br><br>
+                    Arşiv yüklenirken bir hata oluştu: ${e.message}<br><br>
+                    Lütfen Firebase <b>Firestore Database</b> kurallarınızda <i>archives</i> koleksiyonuna okuma izni verdiğinizden emin olun.
+                </div>`;
+        }
     };
 
     window.openPremiumFeaturesModal = async function() {
@@ -1130,7 +1228,6 @@ function initializeUniLoop() {
             let archiveSectionHtml = '';
             
             if (isAsude) {
-                // ASUDE ADMIN PANELİ
                 let facOptions = allFaculties.map(f => `<option value="${f}">${f}</option>`).join('');
                 let gradeOptions = [1, 2, 3, 4, 5, 6].map(g => `<option value="${g}. Sınıf">${g}. Sınıf</option>`).join('');
                 
@@ -1148,13 +1245,12 @@ function initializeUniLoop() {
                         </select>
                         <input type="file" id="admin-archive-file" accept="application/pdf" style="margin-bottom:15px; width:100%; font-size:12px;">
                         
-                        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#3B82F6; border:none;" onclick="window.uploadArchiveFile()">
+                        <button id="upload-archive-btn" class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#3B82F6; border:none;" onclick="window.uploadArchiveFile()">
                             PDF'i Arşive Ekle ➡️
                         </button>
                     </div>
                 `;
             } else {
-                // NORMAL PREMIUM KULLANICI GÖRÜNÜMÜ
                 archiveSectionHtml = `
                     <div class="card" style="background:linear-gradient(135deg, #F0FDF4, #DCFCE7); border:1px solid #86EFAC; padding:20px; border-radius:12px;">
                         <div style="font-size:30px; margin-bottom:10px; text-align:center;">📚</div>
@@ -1185,6 +1281,7 @@ function initializeUniLoop() {
             console.error("Premium özellikler yüklenirken hata oluştu:", e);
         }
     };
+
 
     window.goToMessages = function() {
         document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
