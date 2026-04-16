@@ -30,8 +30,7 @@ import {
     where,
     getDocs,
     deleteDoc,
-    limit,
-    enableIndexedDbPersistence
+    limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
     getStorage,
@@ -57,15 +56,6 @@ const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-
-// 🌟 OFFLINE PERSISTENCE (YEREL ÖNBELLEK) AKTİVASYONU 🌟
-enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code == 'failed-precondition') {
-        console.warn("Birden fazla sekme açık olduğundan önbellek sadece bir sekmede çalışır.");
-    } else if (err.code == 'unimplemented') {
-        console.warn("Tarayıcı offline persistence özelliğini desteklemiyor.");
-    }
-});
 
 // --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
 window.userProfile = { 
@@ -110,31 +100,6 @@ function initializeUniLoop() {
         }
     });
 
-    // 🔄 PULL TO REFRESH (Aşağı Kaydırıp Yenileme) HTML EKLEMESİ
-    const ptrHtml = `<div id="ptr-spinner" style="display:none; text-align:center; padding:15px; width:100%; position:absolute; top:50px; z-index:90;"><div style="font-size:28px; display:inline-block; animation: ptr-spin 1s linear infinite; color:var(--primary);">↻</div></div>`;
-    document.body.insertAdjacentHTML('beforeend', ptrHtml);
-
-    let touchstartY = 0;
-    document.addEventListener('touchstart', e => { touchstartY = e.touches[0].clientY; }, {passive:true});
-    document.addEventListener('touchend', async e => {
-        const touchendY = e.changedTouches[0].clientY;
-        const mainContentScroll = document.getElementById('main-content') ? document.getElementById('main-content').scrollTop : 0;
-        
-        if (touchendY - touchstartY > 100 && (window.scrollY <= 5 && mainContentScroll <= 5)) {
-            const activeTab = document.querySelector('.bottom-nav-item.active');
-            const target = activeTab ? activeTab.getAttribute('data-target') : '';
-            if (target === 'market' || target === 'confessions') {
-                const spinner = document.getElementById('ptr-spinner');
-                if (spinner) spinner.style.display = 'block';
-                
-                if (target === 'market') await window.fetchMarketData();
-                if (target === 'confessions') await window.fetchConfessionsData();
-                
-                if (spinner) spinner.style.display = 'none';
-            }
-        }
-    });
-
     // ✂️ CROPPER.JS ENJEKSİYONU
     const cropperCss = document.createElement('link');
     cropperCss.rel = 'stylesheet';
@@ -150,15 +115,6 @@ function initializeUniLoop() {
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; background-color: #f3f4f6; color: #111827; }
         header, #app-header { height: 50px !important; box-sizing: border-box; }
-
-        .stroke-ui {
-            color: #ffffff !important;
-            -webkit-text-stroke: 1.2px #000000;
-            text-shadow: none !important;
-            font-weight: 900 !important;
-        }
-
-        @keyframes ptr-spin { 100% { transform: rotate(360deg); } }
 
         .edit-profile-icon { font-size: 14px; background: #EEF2FF; color: var(--primary); padding: 5px 10px; border-radius: 8px; border: 1px solid #C7D2FE; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 700; transition: 0.2s; }
         .edit-profile-icon:hover { background: #DBEAFE; }
@@ -307,8 +263,8 @@ function initializeUniLoop() {
         #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
         #app-header > :last-child, .header-right-menu { display: flex !important; align-items: center !important; justify-content: flex-end !important; flex-wrap: nowrap !important; gap: 10px; }
         
-        #notif-btn-top { position: relative; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; background: transparent; width: 36px; height: 36px; border-radius: 50%; transition: 0.2s; }
-        #notif-btn-top:hover { background: rgba(0,0,0,0.05); }
+        #notif-btn-top { position: relative; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; transition: 0.2s; }
+        #notif-btn-top:hover { background: #E5E7EB; }
         
         #nav-premium-action { font-size: 13px !important; padding: 0 12px !important; height: 32px !important; line-height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; flex-shrink: 0 !important; margin: 0 !important; border-radius: 8px !important; }
         
@@ -325,7 +281,7 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
 
-    // 🌟 UNILOOP LOGO ENJEKSİYONU (Siyah Stroke Eklendi)
+    // 🌟 UNILOOP LOGO ENJEKSİYONU
     setTimeout(() => {
         const headerLogoCandidates = document.querySelectorAll('.logo, .logo-title, #logo-btn, #app-header > :first-child, header > :first-child');
         headerLogoCandidates.forEach(el => {
@@ -333,7 +289,7 @@ function initializeUniLoop() {
                 el.innerHTML = `
                     <div style="display: flex; align-items: flex-end; gap: 6px;">
                         <div style="width: 48px; height: 48px; min-width: 48px; min-height: 48px; border-radius: 50%; background-image: url('uniloop-logo.png'); background-size: 155%; background-position: center 12%; background-repeat: no-repeat; border: none;"></div>
-                        <span class="stroke-ui" style="font-size: 18px; margin-bottom: 8px; letter-spacing: -0.5px;">UniLoop</span>
+                        <span style="font-weight: 800; font-size: 15px; color: var(--text-dark); margin-bottom: 8px; letter-spacing: -0.5px;">UniLoop</span>
                     </div>
                 `;
                 el.setAttribute('data-logo-applied', 'true');
@@ -360,30 +316,8 @@ function initializeUniLoop() {
         window.renderSettings(); 
     };
 
-    // Veri Getirme Optimizasyon Fonksiyonları (getDocs)
-    window.fetchMarketData = async function() {
-        try {
-            const snap = await getDocs(query(collection(db, "listings"), orderBy("createdAt", "desc"), limit(50)));
-            marketDB = [];
-            snap.forEach(doc => { marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
-            marketDB.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-            const activeTab = document.querySelector('.bottom-nav-item.active');
-            if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
-        } catch(e) { console.error("Market veri çekme hatası:", e); }
-    };
-
-    window.fetchConfessionsData = async function() {
-        try {
-            const snap = await getDocs(query(collection(db, "confessions"), orderBy("createdAt", "desc"), limit(50)));
-            confessionsDB = [];
-            snap.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
-            confessionsDB.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-            const activeTab = document.querySelector('.bottom-nav-item.active');
-            if(activeTab && activeTab.getAttribute('data-target') === 'confessions') window.drawConfessionsFeed();
-        } catch(e) { console.error("İtiraf veri çekme hatası:", e); }
-    };
-
     document.addEventListener('click', async function(e) {
+        // Chat Opsiyon Menüsü Kapanma Kontrolü
         const chatMenu = document.getElementById('chat-options-menu');
         if (chatMenu && !e.target.closest('#chat-options-dropdown-wrapper')) {
             chatMenu.classList.add('hidden');
@@ -963,14 +897,13 @@ function initializeUniLoop() {
                 if (headerRightMenu) {
                     headerRightMenu.innerHTML = ''; 
                     
-                    // 🎨 SİYAH KONTURLU UI EKLENTİSİ
                     if (!window.userProfile.isPremium) {
-                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow stroke-ui" id="nav-premium-action" style="cursor:pointer; font-size:14px; padding-right:5px;" onclick="window.openPremiumModal()">🌟 Premium</div>`);
+                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold; cursor:pointer;" onclick="window.openPremiumModal()">🌟 Premium</div>`);
                     } else {
-                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow stroke-ui" id="nav-premium-action" style="cursor:pointer; font-size:14px; padding-right:5px;" onclick="window.openPremiumFeaturesModal()">🌟 Premium Özellikler</div>`);
+                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background:linear-gradient(135deg, #F59E0B, #D97706); color:white; padding:4px 10px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">🌟 Premium Özellikler</div>`);
                     }
 
-                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler" class="stroke-ui" style="font-size:22px; cursor:pointer; position:relative;">🔔 <span id="notif-badge-top" style="display:none; position:absolute; top:-2px; right:-2px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white; -webkit-text-stroke: 0px;">0</span></div>`);
+                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler">🔔 <span id="notif-badge-top" style="display:none; position:absolute; top:-2px; right:-2px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
                 }
 
                 if (!document.getElementById('uniloop-bottom-nav')) {
@@ -987,10 +920,6 @@ function initializeUniLoop() {
                     if (appScreen) appScreen.appendChild(bottomNav);
                 }
                 
-                // 🔄 UYGULAMA AÇILDIĞINDA GETDOCS İLE VERİLERİ İLK VE TEK SEFERLİĞİNE ÇEK (OPTIMİZASYON)
-                await window.fetchMarketData();
-                await window.fetchConfessionsData();
-
                 initRealtimeListeners(user.uid);
                 const activeTab = document.querySelector('.bottom-nav-item.active');
                 if(typeof window.loadPage === 'function') { window.loadPage(activeTab ? activeTab.getAttribute('data-target') : 'home'); }
@@ -1019,7 +948,41 @@ function initializeUniLoop() {
     };
     
     function initRealtimeListeners(currentUid) {
-        // SADECE CANLI OLMASI GEREKEN MESAJLAR (CHATS) İÇİN ONSNAPSHOT BIRAKILDI. PULL TO REFRESH YÜZÜNDEN DİĞERLERİ İPTAL!
+        const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
+
+        // 💸 OPTİMİZASYON: Sınırsız çekim yerine son 50 market ilanı getiriliyor
+        onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
+            marketDB = [];
+            snapshot.forEach(doc => { marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
+            marketDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
+            const activeTab = document.querySelector('.bottom-nav-item.active');
+            if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
+        });
+
+        // 💸 OPTİMİZASYON: Sınırsız çekim yerine son 50 itiraf (gönderi) getiriliyor
+        onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
+            confessionsDB = [];
+            snapshot.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
+            confessionsDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
+            const activeTab = document.querySelector('.bottom-nav-item.active');
+            if(activeTab && activeTab.getAttribute('data-target') === 'confessions') {
+                const feedContainer = document.getElementById('conf-feed');
+                if (feedContainer && feedContainer.children.length === confessionsDB.length) {
+                    confessionsDB.forEach(post => {
+                        const isLiked = post.likes && post.likes.includes(currentUid);
+                        const likeBtn = document.getElementById(`like-btn-${post.id}`);
+                        if (likeBtn) likeBtn.innerHTML = `${isLiked ? '❤️' : '🤍'} <span style="margin-left:4px;">${post.likes ? post.likes.length : 0}</span>`;
+                        const commentCountBtn = document.getElementById(`comment-count-${post.id}`);
+                        if (commentCountBtn) commentCountBtn.innerHTML = `💬 <span style="margin-left:4px;">${post.comments ? post.comments.length : 0}</span>`;
+                    });
+                } else { window.drawConfessionsFeed(); }
+            }
+            if(document.getElementById('app-modal').classList.contains('active') && document.getElementById('active-post-id')) {
+                const activePostId = document.getElementById('active-post-id').value;
+                if(activePostId) window.updateConfessionDetailLive(activePostId);
+            }
+        });
+
         onSnapshot(query(collection(db, "chats"), where("participants", "array-contains", currentUid)), (snapshot) => {
             chatsDB = [];
             let pendingRequestsCount = 0;
@@ -1157,10 +1120,10 @@ function initializeUniLoop() {
                 <ul style="text-align:left; font-size:14px; margin-bottom:20px; line-height:1.6; color:var(--text-dark); background:#FFFBEB; padding:15px 15px 15px 35px; border-radius:12px; border:1px solid #FDE68A;">
                     <li>👀 <b>Diğer kullanıcıların detaylı profillerini görüntüleme hakkı!</b> Blurları kaldır.</li>
                     <li>📚 <b>${fac} ${grade}</b> çıkmış sorularına anında erişim!</li>
-                    <li>🔥 <b>Günlük 30</b> Hızlı Eşleşme hakkı.</li>
+                    <li>🔥 <b>Sınırsız</b> Hızlı Eşleşme hakkı.</li>
                     <li>🕵️ <b>Kimler Profilime Baktı?</b> Seni görüntüleyen gizli hayranlarını gör.</li>
                 </ul>
-                <button id="buy-premium-btn" onclick="window.upgradeToPremium()" class="premium-upgrade-btn premium-glow stroke-ui" style="width:100%; justify-content:center; padding: 16px; font-size: 16px;">
+                <button id="buy-premium-btn" onclick="window.upgradeToPremium()" class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center; padding: 16px; font-size: 16px;">
                     💳 Güvenli Ödeme İle Satın Al
                 </button>
                 <p style="font-size:11px; color:#9CA3AF; margin-top:10px;">*İstediğin zaman iptal edebilirsin.</p>
@@ -1197,7 +1160,7 @@ function initializeUniLoop() {
                 
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.outerHTML = `<div class="menu-item premium-glow stroke-ui" id="nav-premium-action" style="cursor:pointer; font-size:14px; padding-right:5px;" onclick="window.openPremiumFeaturesModal()">🌟 Premium Özellikler</div>`;
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:linear-gradient(135deg, #F59E0B, #D97706); color:white; padding:4px 10px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">🌟 Premium Özellikler</div>`;
                 }
                 
                 window.closeModal();
@@ -1219,7 +1182,7 @@ function initializeUniLoop() {
                 
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.outerHTML = `<div class="menu-item premium-glow stroke-ui" id="nav-premium-action" style="cursor:pointer; font-size:14px; padding-right:5px;" onclick="window.openPremiumModal()">🌟 Premium</div>`;
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold; cursor:pointer;" onclick="window.openPremiumModal()">🌟 Premium</div>`;
                 }
 
                 alert("Premium üyeliğiniz başarıyla iptal edildi.");
@@ -1906,20 +1869,13 @@ function initializeUniLoop() {
         const container = document.getElementById('embedded-fast-match-container');
         if(!container) return;
 
-        // 🌟 PREMIUM 30 HAK KONTROLÜ
-        let isLimitReached = (!window.userProfile.isPremium && count >= 10) || (window.userProfile.isPremium && count >= 30);
-
-        if (isLimitReached) {
-            let limitMsg = window.userProfile.isPremium ?
-                "Günlük 30 eşleşme hakkının sonuna geldin. Kampüsü daha sonra tekrar keşfet!" :
-                "Ücretsiz kullanımda günlük 10 kişiyle eşleşme hakkın var. Sınırları kaldırmak için Premium'a geç!";
-
+        if (!window.userProfile.isPremium && count >= 10) {
             container.innerHTML = `
                 <div style="text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 6px rgba(0,0,0,0.05); width:100%; max-width:320px;">
                     <div style="font-size:50px; margin-bottom:15px;">🛑</div>
                     <h3 style="color:var(--text-dark); margin-bottom:10px;">Günlük Hakkın Doldu!</h3>
-                    <p style="color:var(--text-gray); font-size:13px; margin-bottom:20px;">${limitMsg}</p>
-                    ${!window.userProfile.isPremium ? `<button class="premium-upgrade-btn premium-glow stroke-ui" style="width:100%; justify-content:center;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>` : ''}
+                    <p style="color:var(--text-gray); font-size:13px; margin-bottom:20px;">Ücretsiz kullanımda günlük 10 kişiyle eşleşme hakkın var. Sınırları kaldırmak için Premium'a geç!</p>
+                    <button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
                 </div>
             `;
             return;
@@ -1982,9 +1938,9 @@ function initializeUniLoop() {
             tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:11px; background:rgba(255,255,255,0.25); color:white; padding:4px 10px; border-radius:12px; font-weight:700; margin-right:4px; margin-bottom:4px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join('');
         }
 
-        let remaining = window.userProfile.isPremium ? (30 - window.userProfile.fastMatchCount) : (10 - window.userProfile.fastMatchCount);
-        let maxLimit = window.userProfile.isPremium ? 30 : 10;
-        let headerText = `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block;">Kalan Hakkın: ${remaining} / ${maxLimit}</span>`;
+        let headerText = window.userProfile.isPremium ? 
+            '<span style="color:#10B981; font-size:12px; font-weight:bold; background:#ECFDF5; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block;">Sınırsız Eşleşme (Premium)</span>' : 
+            `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block;">Kalan Hakkın: ${10 - window.userProfile.fastMatchCount} / 10</span>`;
 
         container.innerHTML = `
             ${headerText}
@@ -2010,19 +1966,19 @@ function initializeUniLoop() {
         const card = document.getElementById('swipe-card');
         if(!card) return;
 
-        window.userProfile.fastMatchCount += 1;
-        try {
-            await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchCount: window.userProfile.fastMatchCount });
-        } catch(e) {}
+        if(!window.userProfile.isPremium) {
+            window.userProfile.fastMatchCount += 1;
+            try {
+                await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchCount: window.userProfile.fastMatchCount });
+            } catch(e) {}
+        }
 
         if(direction === 'left') {
             card.style.transform = 'translateX(-200px) rotate(-20deg)';
             card.style.opacity = '0';
             setTimeout(() => {
                 fastMatchCurrentIndex++;
-                let count = window.userProfile.fastMatchCount;
-                let isLimitReached = (!window.userProfile.isPremium && count >= 10) || (window.userProfile.isPremium && count >= 30);
-                if (isLimitReached) {
+                if (!window.userProfile.isPremium && window.userProfile.fastMatchCount >= 10) {
                     window.initEmbeddedFastMatch(); 
                 } else {
                     window.renderEmbeddedFastMatchCard();
@@ -2037,9 +1993,7 @@ function initializeUniLoop() {
             
             setTimeout(() => {
                 fastMatchCurrentIndex++;
-                let count = window.userProfile.fastMatchCount;
-                let isLimitReached = (!window.userProfile.isPremium && count >= 10) || (window.userProfile.isPremium && count >= 30);
-                if (isLimitReached) {
+                if (!window.userProfile.isPremium && window.userProfile.fastMatchCount >= 10) {
                     window.initEmbeddedFastMatch(); 
                 } else {
                     window.renderEmbeddedFastMatchCard();
@@ -2165,7 +2119,7 @@ function initializeUniLoop() {
                     <div style="font-size:50px; margin-bottom:15px; filter: blur(2px);">👀</div>
                     <h3 style="color:var(--text-dark); margin-bottom:10px;">Gizli Profil!</h3>
                     <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px; line-height:1.5;">Detaylı profile bakabilmek için Premium üye ol. Tüm blurları kaldır ve kampüstekileri yakından tanı!</p>
-                    <button class="premium-upgrade-btn premium-glow stroke-ui" style="width:100%; justify-content:center;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
+                    <button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
                 </div>
             `);
             return;
@@ -2843,7 +2797,6 @@ function initializeUniLoop() {
             });
 
             window.closeModal();
-            window.fetchConfessionsData(); 
         } catch(error) {
             console.error(error);
             alert("Paylaşılırken hata oluştu: " + error.message);
@@ -2979,7 +2932,6 @@ function initializeUniLoop() {
                 await deleteDoc(doc(db, "confessions", postId));
                 window.closeModal();
                 alert("Gönderi silindi.");
-                window.fetchConfessionsData();
             } catch(e) { alert("Hata: " + e.message); }
         }
     };
@@ -3083,6 +3035,7 @@ function initializeUniLoop() {
         setTimeout(() => { window.openChatView(chatId); }, 100);
     };
 
+    // --- MESAJ SEÇENEKLERİ EKLENDİ (ENGELLEME & SİLME) ---
     window.clearChatHistory = async function(chatId) {
         if(confirm("Bu kişiyle olan tüm mesaj geçmişini silmek istediğinize emin misiniz?")) {
             try {
@@ -3385,13 +3338,13 @@ function initializeUniLoop() {
             </div>
             
             ${!isPremium ? `
-            <div class="card premium-glow stroke-ui" style="margin-bottom:15px; background:linear-gradient(135deg, #FFFBEB, #FEF3C7); border-color:#FDE68A; cursor:pointer;" onclick="window.openPremiumModal()">
+            <div class="card premium-glow" style="margin-bottom:15px; background:linear-gradient(135deg, #FFFBEB, #FEF3C7); border-color:#FDE68A; cursor:pointer;" onclick="window.openPremiumModal()">
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div>
-                        <div style="font-weight:800; color:#D97706; font-size:16px; margin-bottom:4px; text-shadow:none;">🌟 UniLoop Premium'a Geç</div>
-                        <div style="font-size:12px; color:#B45309; text-shadow:none; -webkit-text-stroke:0;">Kampüsün en popüler kişisi ol, sınırları kaldır!</div>
+                        <div style="font-weight:800; color:#D97706; font-size:16px; margin-bottom:4px;">🌟 UniLoop Premium'a Geç</div>
+                        <div style="font-size:12px; color:#B45309;">Kampüsün en popüler kişisi ol, sınırları kaldır!</div>
                     </div>
-                    <div style="font-size:24px; -webkit-text-stroke:0;">👑</div>
+                    <div style="font-size:24px;">👑</div>
                 </div>
             </div>
             ` : ''}
