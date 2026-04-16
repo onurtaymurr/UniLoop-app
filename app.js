@@ -1090,7 +1090,7 @@ function initializeUniLoop() {
         }
     };
 
-    // 🌟 GÜNCELLEME: FAKÜLTELER ARTIK SINIF SINIF DEĞİL, BİRLEŞİK.
+    // 🌟 GÜNCELLEME: FAKÜLTELER ARTIK SINIF SINIF DEĞİL, BİRLEŞİK VE İLK 3 HARF + 1000 KODLU.
     window.openFacultiesList = function() {
         let listHtml = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
         
@@ -1108,7 +1108,7 @@ function initializeUniLoop() {
 
     window.checkFacultyPasscode = async function(facName) {
         let firstWord = facName.split(' ')[0].toLocaleLowerCase('tr-TR');
-        let expectedCode = firstWord + "00"; // Ortak fakülte kodu (örn: tıp00)
+        let expectedCode = firstWord.substring(0, 3) + "1000"; // Ortak fakülte kodu (örn: tıp1000, güz1000)
         
         let userCode = prompt(`${facName} ortak iletişim grubuna girmek için onay kodunu girin:\n(Yönetici girişi için şifrenin başına 'ai' ekleyin)`);
         
@@ -1518,16 +1518,15 @@ function initializeUniLoop() {
             }
         }
     };
-
-    // 🌟 GÜNCELLEME: YENİ "HIZLI EŞLEŞ (FAST MATCH)" SİSTEMİ
+    // 🌟 GÜNCELLEME: YENİ "HIZLI EŞLEŞ (FAST MATCH)" SİSTEMİ (TINDER UI)
     let fastMatchUsers = [];
     let fastMatchCurrentIndex = 0;
 
     window.openFastMatch = async function() {
         window.openModal('🔥 Hızlı Eşleş', `
-            <div style="text-align:center; padding:40px 10px; color:var(--text-gray);" id="fast-match-container">
+            <div style="text-align:center; padding:10px; padding-bottom:40px; display:flex; flex-direction:column; align-items:center;" id="fast-match-container">
                 <div style="font-size:40px; animation: glowPulse 1.5s infinite alternate; margin-bottom:15px;">🔍</div>
-                <h3>Kampüste birileri aranıyor...</h3>
+                <h3 style="color:var(--text-gray);">Kampüste birileri aranıyor...</h3>
             </div>
         `);
 
@@ -1571,29 +1570,33 @@ function initializeUniLoop() {
 
         const u = fastMatchUsers[fastMatchCurrentIndex];
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
-        const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:5px;" title="Premium Üye">👑</span>' : '';
+        const premiumIcon = u.isPremium ? '<span style="font-size:22px; margin-left:8px; text-shadow:0 2px 4px rgba(0,0,0,0.5);" title="Premium Üye">👑</span>' : '';
         
         let avatarHtml = u.avatarUrl 
-            ? `<img src="${u.avatarUrl}" style="width:180px; height:180px; border-radius:20px; object-fit:cover; border:3px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'}; box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-bottom:15px; pointer-events:none;">` 
-            : `<div style="width:180px; height:180px; border-radius:20px; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:70px; border:3px solid ${u.isPremium ? '#F59E0B' : '#E5E7EB'}; margin:0 auto 15px auto; box-shadow: 0 10px 20px rgba(0,0,0,0.1); pointer-events:none;">${u.avatar || '👤'}</div>`;
+            ? `<img src="${u.avatarUrl}" style="width:100%; height:480px; object-fit:cover; border-radius:24px; display:block; pointer-events:none;">` 
+            : `<div style="width:100%; height:480px; border-radius:24px; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:120px; pointer-events:none;">${u.avatar || '👤'}</div>`;
 
         let tagsHtml = '';
         if(u.interests && Array.isArray(u.interests)) {
-            tagsHtml = u.interests.slice(0, 4).map(tag => `<span style="font-size:11px; background:#e0e7ff; color:var(--primary); padding:4px 8px; border-radius:8px; font-weight:700; margin:2px;">${tag}</span>`).join('');
+            tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:12px; background:rgba(255,255,255,0.25); color:white; padding:6px 12px; border-radius:16px; font-weight:700; margin-right:6px; margin-bottom:6px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join('');
         }
 
         container.innerHTML = `
-            <div id="swipe-card" style="position:relative; transition: transform 0.3s ease, opacity 0.3s ease;">
+            <div id="swipe-card" style="position:relative; width:100%; max-width:360px; margin:0 auto; transition: transform 0.3s ease, opacity 0.3s ease; border-radius:24px; box-shadow:0 20px 40px rgba(0,0,0,0.25); background:#fff;">
                 ${avatarHtml}
-                <h2 style="margin:0 0 5px 0; color:var(--text-dark); font-size:22px; display:flex; align-items:center; justify-content:center;">${u.name} ${initial} ${u.age ? `<span style="font-weight:normal; margin-left:8px; color:var(--text-gray);">${u.age}</span>` : ''} ${premiumIcon}</h2>
-                <div style="font-size:14px; color:var(--primary); font-weight:bold; margin-bottom:5px;">${u.faculty || 'Kampüs Öğrencisi'}</div>
-                <div style="display:flex; flex-wrap:wrap; justify-content:center; margin-bottom:20px; max-width:250px; margin-left:auto; margin-right:auto;">${tagsHtml}</div>
                 
-                <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
-                    <button onclick="window.handleSwipe('left')" style="width:60px; height:60px; border-radius:50%; background:white; border:2px solid #EF4444; color:#EF4444; font-size:24px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 10px rgba(239,68,68,0.2); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">❌</button>
-                    <button onclick="window.handleSwipe('right')" style="width:60px; height:60px; border-radius:50%; background:white; border:2px solid #10B981; color:#10B981; font-size:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 10px rgba(16,185,129,0.2); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">❤️</button>
+                <div style="position:absolute; bottom:0; left:0; right:0; padding:40px 20px 45px 20px; background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); border-bottom-left-radius:24px; border-bottom-right-radius:24px; text-align:left;">
+                    <h2 style="margin:0 0 8px 0; color:white; font-size:28px; display:flex; align-items:center; text-shadow:0 2px 6px rgba(0,0,0,0.6);">${u.name} ${initial} ${u.age ? `<span style="font-weight:normal; margin-left:10px; font-size:24px; opacity:0.9;">${u.age}</span>` : ''} ${premiumIcon}</h2>
+                    <div style="font-size:15px; color:#e2e8f0; font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:6px; text-shadow:0 1px 3px rgba(0,0,0,0.5);"><span style="font-size:18px;">🏛️</span> ${u.faculty || 'Kampüs Öğrencisi'}</div>
+                    <div style="display:flex; flex-wrap:wrap; margin-bottom:5px;">${tagsHtml}</div>
+                </div>
+                
+                <div style="position:absolute; bottom:-35px; left:0; right:0; display:flex; justify-content:center; gap:30px; z-index:10;">
+                    <button onclick="window.handleSwipe('left')" style="width:70px; height:70px; border-radius:50%; background:white; border:none; color:#EF4444; font-size:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 10px 25px rgba(239,68,68,0.4); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.15)'; this.style.boxShadow='0 15px 35px rgba(239,68,68,0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 10px 25px rgba(239,68,68,0.4)';">✖</button>
+                    <button onclick="window.handleSwipe('right')" style="width:70px; height:70px; border-radius:50%; background:white; border:none; color:#10B981; font-size:35px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 10px 25px rgba(16,185,129,0.4); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.15)'; this.style.boxShadow='0 15px 35px rgba(16,185,129,0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 10px 25px rgba(16,185,129,0.4)';">❤</button>
                 </div>
             </div>
+            <div style="height:45px;"></div>
         `;
     };
 
@@ -1602,14 +1605,14 @@ function initializeUniLoop() {
         if(!card) return;
 
         if(direction === 'left') {
-            card.style.transform = 'translateX(-150px) rotate(-15deg)';
+            card.style.transform = 'translateX(-200px) rotate(-20deg)';
             card.style.opacity = '0';
             setTimeout(() => {
                 fastMatchCurrentIndex++;
                 window.renderFastMatchCard();
             }, 300);
         } else if (direction === 'right') {
-            card.style.transform = 'translateX(150px) rotate(15deg)';
+            card.style.transform = 'translateX(200px) rotate(20deg)';
             card.style.opacity = '0';
             
             const u = fastMatchUsers[fastMatchCurrentIndex];
