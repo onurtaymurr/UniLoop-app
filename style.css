@@ -70,13 +70,35 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .preview-container { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
 .preview-box { width: 70px; height: 70px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); position: relative; background: #F3F4F6;}
 .preview-box img { width: 100%; height: 100%; object-fit: cover; }
-.image-gallery { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100%; height: 100%; scrollbar-width: none; -ms-overflow-style: none; }
-.image-gallery::-webkit-scrollbar { display: none; }
-.gallery-item { flex: 0 0 100%; scroll-snap-align: start; width: 100%; height: 100%; position: relative; }
-.gallery-item img { width: 100%; height: 100%; object-fit: cover; }
-.gallery-indicators { position: absolute; bottom: 10px; left: 0; right: 0; display: flex; justify-content: center; gap: 5px; pointer-events: none;}
-.gallery-dot { width: 8px; height: 8px; background: rgba(255,255,255,0.4); border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-.gallery-dot.active { background: white; }
+
+/* 🌟 KUSURSUZ EŞLEŞME KARTI YENİLEMESİ 🌟 */
+.swipe-card {
+    height: 420px; /* SABİT BOYUT, ASLA DEĞİŞMEZ */
+    width: 100%;
+    max-width: 320px;
+    position: relative;
+    margin: 0 auto;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    border-radius: 20px;
+    background: #fff;
+    /* OVERFLOW MÜDAHALESİ YOK, BUTONLAR GÖZÜKECEK */
+}
+.swipe-card-img-wrapper {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 20px;
+    overflow: hidden; /* SADECE RESİM OVALLEŞSİN */
+    z-index: 1;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+.swipe-card-img-wrapper img, .swipe-card-img-wrapper .emoji-avatar {
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    display: block;
+}
+
+.premium-card-bw::before { background: #111827 !important; }
 
 .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 20px;}
 @media (max-width: 600px) { .market-grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
