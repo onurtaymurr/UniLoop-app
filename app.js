@@ -58,7 +58,7 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 window.userProfile = { 
-    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: "", lockedArchiveFaculty: "", lockedArchiveGrade: "", lastArchiveResetYear: 0, blockedUsers: [], popularity: 0
+    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: "", lockedArchiveFaculty: "", lockedArchiveGrade: "", lastArchiveResetYear: 0, blockedUsers: [], popularity: 0, lastTournamentDate: 0
 };
 
 window.joinedFaculties = [];
@@ -67,6 +67,7 @@ let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
 let currentGroupUnsubscribe = null; 
+window.tournamentInterval = null;
 
 window.registrationData = { interests: [] };
 
@@ -87,7 +88,7 @@ const modal = document.getElementById('app-modal');
 
 let cropper = null;
 
-// TURNUVA DEĞİŞKENLERİ (Bölüm 1'e taşındı)
+// TURNUVA DEĞİŞKENLERİ
 window.tData = { 
     bracket: [], winners: [], currentMatch: 0, stage: 'none', 
     semiLosers: [], finalists: [], finalWinner: null, secondPlace: null, thirdPlace: null 
@@ -164,14 +165,12 @@ function initializeUniLoop() {
         .bottom-nav-item.active .bottom-nav-icon svg.fill-active { fill: currentColor; }
         .bottom-nav-item.active .bottom-nav-icon svg { stroke-width: 2.2; }
 
-        /* YENİ: TURNUVA (POPÜLERLİK SAVAŞI) TASARIMLARI */
         .white-flame-icon { filter: grayscale(100%) brightness(200%); text-shadow: 0 0 8px rgba(255,255,255,0.8); cursor:pointer; font-size:24px; transition: 0.2s; display:inline-block; }
         .white-flame-icon:hover { transform: scale(1.15) rotate(5deg); }
         
         .tour-grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width:100%; max-width:400px; margin: 0 auto; }
         .tour-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width:100%; max-width:400px; align-items:center; margin: 0 auto; padding-top:20px; }
         
-        /* HOVER EFEKTİ KALDIRILDI - YERİNE ACTIVE EKLENDİ */
         .tour-card { background: #fff; border-radius:16px; overflow:hidden; position:relative; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.08); transition:all 0.15s ease-out; aspect-ratio: 1; display:flex; flex-direction:column; border:3px solid transparent; -webkit-tap-highlight-color: transparent; }
         .tour-card:active { transform: scale(0.95) !important; border-color: #6366f1 !important; box-shadow:0 8px 20px rgba(99, 102, 241, 0.3) !important; }
         
@@ -661,7 +660,8 @@ function initializeUniLoop() {
                 profileViewers: [],
                 joinedClassRoom: null,
                 blockedUsers: [],
-                popularity: 0
+                popularity: 0,
+                lastTournamentDate: 0
             });
 
             alert("Harika! Profilin başarıyla oluşturuldu. Şimdi uygulamaya yönlendiriliyorsun.");
@@ -839,6 +839,7 @@ function initializeUniLoop() {
                 if(window.userProfile.lastArchiveResetYear === undefined) window.userProfile.lastArchiveResetYear = 2023;
                 if(window.userProfile.blockedUsers === undefined) window.userProfile.blockedUsers = [];
                 if(window.userProfile.popularity === undefined) window.userProfile.popularity = 0; 
+                if(window.userProfile.lastTournamentDate === undefined) window.userProfile.lastTournamentDate = 0; 
 
                 await window.ensureWelcomeMessage(user, window.userProfile.name);
                 await updateDoc(userDocRef, { isOnline: true });
@@ -850,6 +851,44 @@ function initializeUniLoop() {
                 if (window.userProfile.lastArchiveResetYear < activeYear) {
                     setTimeout(() => window.showAcademicYearUpdateModal(activeYear), 1000);
                 }
+                
+                // CANLI GERİ SAYIM INTERVAL (HER SANİYE ÇALIŞIR)
+                if(window.tournamentInterval) clearInterval(window.tournamentInterval);
+                window.tournamentInterval = setInterval(() => {
+                    if (!window.userProfile || !window.userProfile.lastTournamentDate) return;
+                    let timeDiff = Date.now() - window.userProfile.lastTournamentDate;
+                    let cooldown = 24 * 60 * 60 * 1000; // 24 Saat
+                    
+                    let btn1 = document.getElementById('join-tour-btn-embedded');
+                    let btn2 = document.getElementById('join-tour-btn-modal');
+                    let btn3 = document.getElementById('join-tour-btn-empty'); 
+                    
+                    if (timeDiff < cooldown) {
+                        let remaining = cooldown - timeDiff;
+                        let h = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        let m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                        let s = Math.floor((remaining % (1000 * 60)) / 1000);
+                        
+                        let hStr = h.toString().padStart(2, '0');
+                        let mStr = m.toString().padStart(2, '0');
+                        let sStr = s.toString().padStart(2, '0');
+                        let timeStr = `${hStr}:${mStr}:${sStr}`;
+                        
+                        [btn1, btn2, btn3].forEach(btn => {
+                            if(btn) {
+                                btn.innerText = `⏳ ${timeStr} Sonra Katıl`;
+                                btn.disabled = true;
+                                btn.style.background = '#9CA3AF';
+                                btn.style.cursor = 'not-allowed';
+                                btn.style.opacity = '0.7';
+                            }
+                        });
+                    } else {
+                        if(btn1 && btn1.disabled) { btn1.innerText = "🤍🔥 Popülerlik Savaşına Katıl"; btn1.disabled = false; btn1.style.background = "linear-gradient(135deg, #111827, #374151)"; btn1.style.cursor = "pointer"; btn1.style.opacity = '1'; }
+                        if(btn2 && btn2.disabled) { btn2.innerText = "Savaşa Katıl ⚔️"; btn2.disabled = false; btn2.style.background = "#111827"; btn2.style.cursor = "pointer"; btn2.style.opacity = '1'; }
+                        if(btn3 && btn3.disabled) { btn3.innerText = "Savaşa Katıl ⚔️"; btn3.disabled = false; btn3.style.background = "#111827"; btn3.style.cursor = "pointer"; btn3.style.opacity = '1'; }
+                    }
+                }, 1000);
                 
                 const headerRightMenu = document.querySelector('.header-right-menu');
                 if (headerRightMenu) {
@@ -1824,16 +1863,19 @@ function initializeUniLoop() {
     window.showLeaderboard = async function() {
         window.openModal('🔥 Popülerlik Sıralaması', `<div style="text-align:center; padding:30px;"><div style="font-size:30px; animation: glowPulse 1.5s infinite alternate;">🔥</div><p style="color:var(--text-gray); margin-top:10px;">Sıralama yükleniyor...</p></div>`);
         try {
-            const q = query(collection(db, "users"), orderBy("popularity", "desc"), limit(10));
+            // LİDERLİK TABLOSU GÜNCELLEMESİ (10'dan 15'e çıkarıldı)
+            const q = query(collection(db, "users"), orderBy("popularity", "desc"), limit(15));
             const snap = await getDocs(q);
-            let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
+            
+            // Kaydırılabilir (Scrollable) Liste, Buton Sabit
+            let html = '<div style="display:flex; flex-direction:column; gap:8px; max-height: 350px; overflow-y: auto; padding-right: 5px; margin-bottom: 15px;">';
             let rank = 1;
             snap.forEach(doc => {
                 const u = doc.data();
                 if(u.popularity > 0) {
                     let medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
                     html += `
-                        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#F9FAFB; border-radius:12px; border:1px solid #E5E7EB;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#F9FAFB; border-radius:12px; border:1px solid #E5E7EB; cursor:pointer; transition:0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'" onclick="window.closeModal(); window.viewUserProfile('${u.uid}')">
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <div style="font-size:18px; font-weight:800; width:25px; text-align:center;">${medal}</div>
                                 <div style="width:40px; height:40px; border-radius:50%; overflow:hidden; background:#E5E7EB; border:1px solid #111827;">
@@ -1849,7 +1891,8 @@ function initializeUniLoop() {
             });
             if(rank === 1) html += '<p style="text-align:center; color:var(--text-gray); padding:20px;">Henüz popülerlik puanı kazanan kimse yok. İlk sen ol!</p>';
             html += `</div>
-            <button class="btn-primary" style="width:100%; margin-top:15px; padding:12px; border-radius:12px; background:#111827; border:none;" onclick="window.closeModal(); window.startPopularityTournament();">Savaşa Katıl ⚔️</button>`;
+            <button id="join-tour-btn-modal" class="btn-primary" style="width:100%; padding:14px; border-radius:12px; background:#111827; border:none; font-weight:bold;" onclick="window.closeModal(); window.startPopularityTournament();">Savaşa Katıl ⚔️</button>`;
+            
             document.getElementById('modal-body').innerHTML = html;
         } catch(e) {
             document.getElementById('modal-body').innerHTML = '<p style="color:red; text-align:center;">Sıralama yüklenirken hata oluştu.</p>';
@@ -1937,12 +1980,12 @@ function initializeUniLoop() {
             else if (t.stage === 'quarters') { t.stage = 'semis'; t.bracket = [...t.winners]; }
             else if (t.stage === 'semis') { 
                 t.stage = 'thirdPlace'; 
-                t.finalists = [...t.winners]; // Hata Çözümü: Finalistleri kaybetmemek için ayrı diziye aldık
+                t.finalists = [...t.winners];
                 t.bracket = [...t.semiLosers]; 
             }
             else if (t.stage === 'thirdPlace') { 
                 t.stage = 'final'; 
-                t.bracket = [...t.finalists]; // Finalde finalistleri kullanıyoruz
+                t.bracket = [...t.finalists]; 
             } 
             else if (t.stage === 'final') { window.finishTournament(); return; }
             
@@ -2016,6 +2059,11 @@ function initializeUniLoop() {
         container.innerHTML = `<div style="text-align:center; padding:30px;"><div style="font-size:40px; animation: glowPulse 1s infinite alternate;">⏳</div><h3 style="color:var(--text-dark);">Sonuçlar Kaydediliyor...</h3></div>`;
 
         try {
+            // TURNUVA BİTİŞ ZAMANI (COOLDOWN) KAYDEDİLİYOR
+            const nowTs = Date.now();
+            await updateDoc(doc(db, "users", window.userProfile.uid), { lastTournamentDate: nowTs });
+            window.userProfile.lastTournamentDate = nowTs;
+
             if(t.finalWinner && !t.finalWinner.isClone) {
                 const uDoc = await getDoc(doc(db, "users", t.finalWinner.uid));
                 if(uDoc.exists()) await updateDoc(doc(db, "users", t.finalWinner.uid), { popularity: (uDoc.data().popularity || 0) + 3 });
@@ -2030,8 +2078,9 @@ function initializeUniLoop() {
             }
 
             container.innerHTML = `
-                <div style="text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,0.05); width:100%; max-width:350px;">
-                    <div style="font-size:50px; margin-bottom:10px;">🎉</div>
+                <div style="position:relative; text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,0.05); width:100%; max-width:350px;">
+                    <button onclick="window.loadPage('home')" style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:24px; color:#9CA3AF; cursor:pointer; font-weight:bold; transition:0.2s;" onmouseover="this.style.color='#EF4444'" onmouseout="this.style.color='#9CA3AF'">✖</button>
+                    <div style="font-size:50px; margin-bottom:10px; margin-top:10px;">🎉</div>
                     <h3 style="color:#111827; margin-bottom:20px;">Savaş Sona Erdi!</h3>
                     
                     <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px; text-align:left;">
@@ -2077,14 +2126,13 @@ function initializeUniLoop() {
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
         
-        // Günlük eşleşme limiti biterse Turnuvaya at!
         if (count >= maxSwipes) {
             container.innerHTML = `
                 <div style="text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 6px rgba(0,0,0,0.05); width:100%; max-width:320px;">
                     <div style="font-size:50px; margin-bottom:15px;" class="white-flame-icon" onclick="window.showLeaderboard()">🔥</div>
                     <h3 style="color:var(--text-dark); margin-bottom:10px;">Popülerlik Savaşı</h3>
                     <p style="color:var(--text-gray); font-size:13px; margin-bottom:20px;">Günlük eşleşme hakkın doldu ama eğlence bitmedi! İnsanlar geri döndü ve oylamanı bekliyor.</p>
-                    <button class="btn-primary premium-glow" style="width:100%; justify-content:center; padding:14px; background:linear-gradient(135deg, #111827, #374151); color:white; border:none; border-radius:12px; font-weight:800; box-shadow:0 4px 10px rgba(0,0,0,0.2);" onclick="window.startPopularityTournament()">🤍🔥 Popülerlik Savaşına Katıl</button>
+                    <button id="join-tour-btn-embedded" class="btn-primary premium-glow" style="width:100%; justify-content:center; padding:14px; background:linear-gradient(135deg, #111827, #374151); color:white; border:none; border-radius:12px; font-weight:800; box-shadow:0 4px 10px rgba(0,0,0,0.2);" onclick="window.startPopularityTournament()">🤍🔥 Popülerlik Savaşına Katıl</button>
                 </div>
             `;
             return;
@@ -2099,9 +2147,6 @@ function initializeUniLoop() {
 
         try {
             const querySnapshot = await getDocs(query(collection(db, "users"), limit(50)));
-            // Hızlı Eşleşme Başa Sarma Sorunu Çözümü: 
-            // Yalnızca "accepted" (kabul edilen arkadaşlıklar) veya "blocked" olanları filtreliyoruz!
-            // Reddedilenler ve sadece sağa kaydırdıkların (pending) dönmeye devam edecek.
             const interactedUids = chatsDB
                 .filter(c => c.status === 'accepted' || c.status === 'blocked')
                 .map(c => c.otherUid);
@@ -2121,7 +2166,7 @@ function initializeUniLoop() {
                         <div style="font-size:50px; margin-bottom:15px;">🌟</div>
                         <h3 style="color:var(--text-dark); margin-bottom:10px;">Şu an kimse yok!</h3>
                         <p style="color:var(--text-gray); font-size:13px; margin-bottom:15px;">Ağda karşılaşacak kimse kalmadı. Lütfen daha sonra tekrar kontrol et.</p>
-                        <button class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#111827; border:none; border-radius:12px;" onclick="window.startPopularityTournament()">Savaşa Katıl ⚔️</button>
+                        <button id="join-tour-btn-empty" class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#111827; border:none; border-radius:12px;" onclick="window.startPopularityTournament()">Savaşa Katıl ⚔️</button>
                     </div>
                 `;
                 return;
@@ -2143,7 +2188,6 @@ function initializeUniLoop() {
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
 
-        // Başa Sarma Mantığı: Kullanıcı listesi biterse ama günlük hakkı varsa diziyi baştan karıştırıp tekrar göster!
         if(fastMatchCurrentIndex >= fastMatchUsers.length) {
             fastMatchUsers = fastMatchUsers.sort(() => 0.5 - Math.random());
             fastMatchCurrentIndex = 0;
@@ -3523,8 +3567,7 @@ function initializeUniLoop() {
         const friendsCount = chatsDB.filter(c => c.status === 'accepted' && !c.isMarketChat).length;
 
         let html = `
-            <input type="file" id="profile-avatar-upload" accept="
-image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
+            <input type="file" id="profile-avatar-upload" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
 
             <div class="id-card ${isPremium ? 'premium-card-bw' : ''}" style="width:100%; max-width:100%; box-sizing:border-box; margin-top:10px; margin-bottom:15px; position:relative; ${isPremium ? 'border-color:#111827;' : ''}">
                 <button class="edit-profile-icon" style="position:absolute; top:15px; right:15px; background:white; color:#111827; border:1px solid #111827;" onclick="window.openProfileEditModal()">✏️ Düzenle</button>
@@ -3736,7 +3779,8 @@ image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
             html += `
                 <div style="text-align:center; padding:30px 10px; color:var(--text-gray);">
                     <div style="font-size:40px; margin-bottom:10px;">🔔</div>
-                    <div style="font-size:14px;">Şu an için yeni bir bildiriminiz yok.</div>
+                    <div style="font-size:14px;">Şu an için yeni bir bildiriminiz yok.
+</div>
                 </div>
             `;
         }
