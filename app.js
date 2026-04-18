@@ -1863,11 +1863,9 @@ function initializeUniLoop() {
     window.showLeaderboard = async function() {
         window.openModal('🔥 Popülerlik Sıralaması', `<div style="text-align:center; padding:30px;"><div style="font-size:30px; animation: glowPulse 1.5s infinite alternate;">🔥</div><p style="color:var(--text-gray); margin-top:10px;">Sıralama yükleniyor...</p></div>`);
         try {
-            // LİDERLİK TABLOSU GÜNCELLEMESİ (10'dan 15'e çıkarıldı)
             const q = query(collection(db, "users"), orderBy("popularity", "desc"), limit(15));
             const snap = await getDocs(q);
             
-            // Kaydırılabilir (Scrollable) Liste, Buton Sabit
             let html = '<div style="display:flex; flex-direction:column; gap:8px; max-height: 350px; overflow-y: auto; padding-right: 5px; margin-bottom: 15px;">';
             let rank = 1;
             snap.forEach(doc => {
@@ -2059,7 +2057,6 @@ function initializeUniLoop() {
         container.innerHTML = `<div style="text-align:center; padding:30px;"><div style="font-size:40px; animation: glowPulse 1s infinite alternate;">⏳</div><h3 style="color:var(--text-dark);">Sonuçlar Kaydediliyor...</h3></div>`;
 
         try {
-            // TURNUVA BİTİŞ ZAMANI (COOLDOWN) KAYDEDİLİYOR
             const nowTs = Date.now();
             await updateDoc(doc(db, "users", window.userProfile.uid), { lastTournamentDate: nowTs });
             window.userProfile.lastTournamentDate = nowTs;
@@ -2110,6 +2107,9 @@ function initializeUniLoop() {
         }
     };
 
+// ============================================================================
+// 🌟 GÜNCELLENMİŞ HIZLI EŞLEŞME FONKSİYONU (İkili Şablon Modeli)
+// ============================================================================
     window.initEmbeddedFastMatch = async function() {
         let count = window.userProfile.fastMatchCount || 0;
         let today = new Date().toLocaleDateString();
@@ -2126,16 +2126,59 @@ function initializeUniLoop() {
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
         
+        // ---------------------------------------------------------
+        // HAK BİTTİĞİNDE GÖSTERİLECEK YENİ İKİLİ ŞABLON EKRANI
+        // ---------------------------------------------------------
         if (count >= maxSwipes) {
+            const isPremium = window.userProfile.isPremium;
+            
             container.innerHTML = `
-                <div style="text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 6px rgba(0,0,0,0.05); width:100%; max-width:320px;">
-                    <div style="font-size:50px; margin-bottom:15px;" class="white-flame-icon" onclick="window.showLeaderboard()">🔥</div>
-                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Popülerlik Savaşı</h3>
-                    <p style="color:var(--text-gray); font-size:13px; margin-bottom:20px;">Günlük eşleşme hakkın doldu ama eğlence bitmedi! İnsanlar geri döndü ve oylamanı bekliyor.</p>
-                    <button id="join-tour-btn-embedded" class="btn-primary premium-glow" style="width:100%; justify-content:center; padding:14px; background:linear-gradient(135deg, #111827, #374151); color:white; border:none; border-radius:12px; font-weight:800; box-shadow:0 4px 10px rgba(0,0,0,0.2);" onclick="window.startPopularityTournament()">🤍🔥 Popülerlik Savaşına Katıl</button>
+                <div style="width:100%; max-width:380px; display:flex; flex-direction:row; gap:12px; padding:10px;">
+                    
+                    <div style="flex:1; background:white; border-radius:16px; padding:15px 10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; box-shadow:0 4px 6px rgba(0,0,0,0.05); aspect-ratio:1/1.15; border:1px solid #E5E7EB;">
+                        <div style="font-size:24px; margin-bottom:5px;">⚡</div>
+                        <h4 style="margin:0 0 5px 0; color:#111827; font-size:13px; text-align:center;">Hızlı Eşleşme</h4>
+                        
+                        ${isPremium ? `
+                            <p style="font-size:11px; color:var(--text-gray); text-align:center; margin:0 0 10px 0; line-height:1.4;">Bugünlük hakkın doldu, yarın bir daha gel!</p>
+                            <div style="background:#F3F4F6; padding:8px 5px; border-radius:8px; font-weight:800; color:#111827; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Hesaplanıyor...</div>
+                        ` : `
+                            <p style="font-size:11px; color:var(--text-gray); text-align:center; margin:0 0 5px 0; line-height:1.4;">Bugünlük hakkın doldu.</p>
+                            <button onclick="window.openPremiumModal()" style="background:linear-gradient(135deg, #F59E0B, #FBBF24); color:#fff; border:none; border-radius:8px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:8px; box-shadow:0 2px 4px rgba(245,158,11,0.3);">Premium Ol ✨</button>
+                            <div style="background:#F3F4F6; padding:6px 5px; border-radius:8px; font-weight:800; color:#111827; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Hesaplanıyor...</div>
+                        `}
+                    </div>
+
+                    <div style="flex:1; background:white; border-radius:16px; padding:15px 10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; box-shadow:0 4px 6px rgba(0,0,0,0.05); aspect-ratio:1/1.15; border:1px solid #E5E7EB;">
+                        <div style="font-size:24px; margin-bottom:5px;" class="white-flame-icon">🔥</div>
+                        <h4 style="margin:0 0 5px 0; color:#111827; font-size:13px; text-align:center;">Popülerlik Savaşı</h4>
+                        <p style="font-size:11px; color:var(--text-gray); text-align:center; margin:0 0 10px 0; line-height:1.4;">Kampüsün en popülerlerini seç veya seçil! 👑</p>
+                        
+                        <button id="join-tour-btn-embedded" onclick="window.startPopularityTournament()" style="background:#111827; color:white; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%; transition:0.2s;">Savaşa Katıl ⚔️</button>
+                    </div>
+                    
                 </div>
+                
+                <div style="flex:1; width:100%; min-height:60px;"></div>
             `;
-            return;
+
+            if (window.fastMatchTimerInterval) clearInterval(window.fastMatchTimerInterval);
+            window.fastMatchTimerInterval = setInterval(() => {
+                const timerEl = document.getElementById('fast-match-timer');
+                if(timerEl) {
+                    const now = new Date();
+                    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    const diff = tomorrow - now;
+                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                    const s = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+                    timerEl.innerText = `⏳ ${h}:${m}:${s}`;
+                } else {
+                    clearInterval(window.fastMatchTimerInterval);
+                }
+            }, 1000);
+
+            return; 
         }
 
         container.innerHTML = `
@@ -3779,8 +3822,7 @@ function initializeUniLoop() {
             html += `
                 <div style="text-align:center; padding:30px 10px; color:var(--text-gray);">
                     <div style="font-size:40px; margin-bottom:10px;">🔔</div>
-                    <div style="font-size:14px;">Şu an için yeni bir bildiriminiz yok.
-</div>
+                    <div style="font-size:14px;">Şu an için yeni bir bildiriminiz yok.</div>
                 </div>
             `;
         }
