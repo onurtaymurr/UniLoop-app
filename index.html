@@ -9,7 +9,7 @@
     <style>
         #main-content { padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
 
-        body.no-scroll-messages #main-content, body.game-active #main-content {
+        body.no-scroll-messages #main-content {
             position: fixed !important;
             top: 50px !important; 
             bottom: calc(65px + env(safe-area-inset-bottom)) !important; 
@@ -33,17 +33,8 @@
         .premium-glow { animation: glowPulse 2s infinite alternate; }
         @keyframes glowPulse {
             0% { box-shadow: 0 0 5px rgba(17, 24, 39, 0.2); }
-            100% { box-shadow: 0 0 15px rgba(17, 24, 39, 0.5); }
+            100% { box-shadow: 0 0 15px rgba(17, 24, 39, 0.4); }
         }
-
-        /* OYUN İÇİN CSS EKLENTİLERİ */
-        #campus-challenge-view { background: #F9FAFB; overflow: hidden; }
-        #gameCanvas { display: block; width: 100%; height: 100%; touch-action: none; }
-        .game-ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .game-leaderboard { pointer-events: auto; position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.95); border: 2px solid #111827; padding: 10px; border-radius: 12px; width: 160px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 100; }
-        .game-leaderboard h4 { margin-bottom: 8px; font-size: 13px; color: #111827; border-bottom: 1px solid #E5E7EB; padding-bottom: 5px; display: flex; align-items: center; gap: 5px; }
-        .game-score-display { position: absolute; top: 15px; left: 15px; background: white; border: 2px solid #111827; padding: 8px 15px; border-radius: 12px; font-weight: 900; font-size: 16px; color: #111827; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .game-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(249, 250, 251, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; z-index: 150; pointer-events: auto; }
     </style>
 </head>
 <body>
@@ -64,7 +55,7 @@
         </div>
         
         <div style="text-align: right; margin-bottom: 20px;">
-            <span id="forgot-password-btn" style="font-size: 13px; color: var(--text-dark); cursor: pointer; font-weight: 800;">Şifremi Unuttum</span>
+            <span id="forgot-password-btn" style="font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 600;">Şifremi Unuttum</span>
         </div>
         
         <button class="btn-primary" id="login-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Giriş Yap</button>
