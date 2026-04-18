@@ -57,7 +57,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// YENİ ÖZELLİK: popularity (Beyaz Alev Puanı) sisteme eklendi.
 window.userProfile = { 
     uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: "", lockedArchiveFaculty: "", lockedArchiveGrade: "", lastArchiveResetYear: 0, blockedUsers: [], popularity: 0
 };
@@ -167,9 +166,9 @@ function initializeUniLoop() {
         .tour-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width:100%; max-width:400px; align-items:center; margin: 0 auto; padding-top:20px; }
         
         .tour-card { background: #fff; border-radius:16px; overflow:hidden; position:relative; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.08); transition:all 0.2s; aspect-ratio: 1; display:flex; flex-direction:column; border:3px solid transparent; }
-        .tour-card:hover { transform: scale(1.03); border-color: #6366f1; box-shadow:0 8px 20px rgba(99, 102, 241, 0.3); }
+        .tour-card:hover { border-color: #6366f1; box-shadow:0 8px 20px rgba(99, 102, 241, 0.3); }
         .tour-card-img { width: 100%; height: 100%; object-fit: cover; }
-        .tour-card-name { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(to top, rgba(0,0,0,0.8), transparent); color:white; padding: 25px 10px 10px 10px; font-size:14px; font-weight:800; text-align:center; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        .tour-card-name { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.4), transparent); color:white; padding: 30px 10px 10px 10px; font-size:14px; font-weight:800; text-align:center; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 
         .stepper-container { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 400px; margin: 0 auto; width: 100%; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -654,7 +653,7 @@ function initializeUniLoop() {
                 profileViewers: [],
                 joinedClassRoom: null,
                 blockedUsers: [],
-                popularity: 0 // YENİ: Başlangıçta 0 alev
+                popularity: 0
             });
 
             alert("Harika! Profilin başarıyla oluşturuldu. Şimdi uygulamaya yönlendiriliyorsun.");
@@ -831,7 +830,7 @@ function initializeUniLoop() {
                 if(window.userProfile.lockedArchiveGrade === undefined) window.userProfile.lockedArchiveGrade = "";
                 if(window.userProfile.lastArchiveResetYear === undefined) window.userProfile.lastArchiveResetYear = 2023;
                 if(window.userProfile.blockedUsers === undefined) window.userProfile.blockedUsers = [];
-                if(window.userProfile.popularity === undefined) window.userProfile.popularity = 0; // POPÜLERLİK
+                if(window.userProfile.popularity === undefined) window.userProfile.popularity = 0; 
 
                 await window.ensureWelcomeMessage(user, window.userProfile.name);
                 await updateDoc(userDocRef, { isOnline: true });
@@ -1874,13 +1873,16 @@ function initializeUniLoop() {
             
             allUsers = allUsers.sort(() => 0.5 - Math.random()).slice(0, 32);
             
-            if(allUsers.length === 0) {
-                container.innerHTML = '<p style="text-align:center; padding:20px;">Sistemde yeterli kullanıcı bulunamadı.</p>';
-                return;
-            }
-
+            // Eğer kampüste yeterli kişi yoksa, gerçek kişileri kopyalamak yerine sahte botlar ekleyelim (Klon Hatası Çözümü).
             while(allUsers.length < 32) {
-                allUsers.push({ ...allUsers[Math.floor(Math.random()*allUsers.length)], isClone: true });
+                allUsers.push({ 
+                    uid: "bot_" + Math.random().toString(36).substr(2, 9), 
+                    name: "Kampüs Botu 🤖", 
+                    age: "?",
+                    faculty: "Sistem Ekledi",
+                    avatar: "🤖",
+                    isClone: true 
+                });
             }
             
             window.tData = { bracket: allUsers, winners: [], currentMatch: 0, stage: 'groups', semiLosers: [], finalWinner: null, secondPlace: null, thirdPlace: null };
@@ -1947,6 +1949,7 @@ function initializeUniLoop() {
         if(t.stage === 'thirdPlace') stageTitle = `🥉 3. lük Maçı`;
         if(t.stage === 'final') stageTitle = `🏆 BÜYÜK FİNAL`;
 
+        // Tasarım Güncellemesi: İsmin üzerine Yaş ve Fakülte eklendi. Tıklamada asılı kalmayı çözen timeout (scale efekti) eklendi.
         if (t.stage === 'groups') {
             const baseIdx = t.currentMatch * 4;
             const users = [t.bracket[baseIdx], t.bracket[baseIdx+1], t.bracket[baseIdx+2], t.bracket[baseIdx+3]];
@@ -1957,9 +1960,12 @@ function initializeUniLoop() {
                 </div>
                 <div class="tour-grid-4">
                     ${users.map((u, i) => `
-                        <div class="tour-card" onclick="window.tourSelect(${baseIdx+i})">
+                        <div class="tour-card" onclick="this.style.transform='scale(0.95)'; setTimeout(() => window.tourSelect(${baseIdx+i}), 150);">
                             ${u.avatarUrl ? `<img src="${u.avatarUrl}" class="tour-card-img">` : `<div style="width:100%;height:100%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:40px;">${u.avatar||'👤'}</div>`}
-                            <div class="tour-card-name">${u.name}</div>
+                            <div class="tour-card-name" style="padding-top:40px;">
+                                <span style="font-size:10px; color:#D1D5DB; display:block; margin-bottom:2px; font-weight:normal;">${u.age ? u.age : '?'} Yaş • ${u.faculty ? u.faculty : 'Belirtilmemiş'}</span>
+                                ${u.name}
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -1974,13 +1980,19 @@ function initializeUniLoop() {
                     <p style="font-size:12px; color:var(--text-gray); margin:5px 0 0 0;">Kazanması gerekeni seç!</p>
                 </div>
                 <div class="tour-grid-2">
-                    <div class="tour-card" onclick="window.tourSelect(${baseIdx})" style="aspect-ratio: 0.8;">
+                    <div class="tour-card" onclick="this.style.transform='scale(0.95)'; setTimeout(() => window.tourSelect(${baseIdx}), 150);" style="aspect-ratio: 0.8;">
                         ${u1.avatarUrl ? `<img src="${u1.avatarUrl}" class="tour-card-img">` : `<div style="width:100%;height:100%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:50px;">${u1.avatar||'👤'}</div>`}
-                        <div class="tour-card-name" style="font-size:16px;">${u1.name}</div>
+                        <div class="tour-card-name" style="font-size:16px; padding-top:40px;">
+                            <span style="font-size:11px; color:#D1D5DB; display:block; margin-bottom:4px; font-weight:normal;">${u1.age ? u1.age : '?'} Yaş • ${u1.faculty ? u1.faculty : 'Belirtilmemiş'}</span>
+                            ${u1.name}
+                        </div>
                     </div>
-                    <div class="tour-card" onclick="window.tourSelect(${baseIdx+1})" style="aspect-ratio: 0.8;">
+                    <div class="tour-card" onclick="this.style.transform='scale(0.95)'; setTimeout(() => window.tourSelect(${baseIdx+1}), 150);" style="aspect-ratio: 0.8;">
                         ${u2.avatarUrl ? `<img src="${u2.avatarUrl}" class="tour-card-img">` : `<div style="width:100%;height:100%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:50px;">${u2.avatar||'👤'}</div>`}
-                        <div class="tour-card-name" style="font-size:16px;">${u2.name}</div>
+                        <div class="tour-card-name" style="font-size:16px; padding-top:40px;">
+                            <span style="font-size:11px; color:#D1D5DB; display:block; margin-bottom:4px; font-weight:normal;">${u2.age ? u2.age : '?'} Yaş • ${u2.faculty ? u2.faculty : 'Belirtilmemiş'}</span>
+                            ${u2.name}
+                        </div>
                     </div>
                 </div>
             `;
@@ -1995,6 +2007,7 @@ function initializeUniLoop() {
         container.innerHTML = `<div style="text-align:center; padding:30px;"><div style="font-size:40px; animation: glowPulse 1s infinite alternate;">⏳</div><h3 style="color:var(--text-dark);">Sonuçlar Kaydediliyor...</h3></div>`;
 
         try {
+            // Hata Çözümü: Gerçek kullanıcıları botlardan (isClone) ayırt ederek kaydet.
             if(t.finalWinner && !t.finalWinner.isClone) {
                 const uDoc = await getDoc(doc(db, "users", t.finalWinner.uid));
                 if(uDoc.exists()) await updateDoc(doc(db, "users", t.finalWinner.uid), { popularity: (uDoc.data().popularity || 0) + 3 });
@@ -2017,17 +2030,17 @@ function initializeUniLoop() {
                         <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:10px; border-radius:10px; border:1px solid #E5E7EB;">
                             <span style="font-size:24px;">🥇</span> 
                             <span style="font-weight:800; flex:1; color:#111827;">${t.finalWinner.name}</span> 
-                            <span style="font-weight:bold; color:var(--text-gray);">+3 🔥</span>
+                            <span style="font-weight:bold; color:var(--text-gray);">${t.finalWinner.isClone ? 'BOT' : '+3 🔥'}</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:10px; border-radius:10px; border:1px solid #E5E7EB;">
                             <span style="font-size:24px;">🥈</span> 
                             <span style="font-weight:800; flex:1; color:#111827;">${t.secondPlace.name}</span> 
-                            <span style="font-weight:bold; color:var(--text-gray);">+2 🔥</span>
+                            <span style="font-weight:bold; color:var(--text-gray);">${t.secondPlace.isClone ? 'BOT' : '+2 🔥'}</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:10px; border-radius:10px; border:1px solid #E5E7EB;">
                             <span style="font-size:24px;">🥉</span> 
                             <span style="font-weight:800; flex:1; color:#111827;">${t.thirdPlace.name}</span> 
-                            <span style="font-weight:bold; color:var(--text-gray);">+1 🔥</span>
+                            <span style="font-weight:bold; color:var(--text-gray);">${t.thirdPlace.isClone ? 'BOT' : '+1 🔥'}</span>
                         </div>
                     </div>
                     
@@ -2056,6 +2069,7 @@ function initializeUniLoop() {
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
         
+        // Sadece kullanıcının DÜNLÜK KAYDIRMA LİMİTİ BİTERSE turnuva ekranını göster!
         if (count >= maxSwipes) {
             container.innerHTML = `
                 <div style="text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 6px rgba(0,0,0,0.05); width:100%; max-width:320px;">
@@ -2087,6 +2101,18 @@ function initializeUniLoop() {
                 }
             });
 
+            if(fastMatchUsers.length === 0) {
+                 container.innerHTML = `
+                    <div style="padding:40px 10px; text-align:center; background:white; border-radius:16px; width:100%; max-width:320px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+                        <div style="font-size:50px; margin-bottom:15px;">🌟</div>
+                        <h3 style="color:var(--text-dark); margin-bottom:10px;">Şu an kimse yok!</h3>
+                        <p style="color:var(--text-gray); font-size:13px; margin-bottom:15px;">Ağda karşılaşacak kimse kalmadı. Lütfen daha sonra tekrar kontrol et.</p>
+                        <button class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#111827; border:none; border-radius:12px;" onclick="window.startPopularityTournament()">Savaşa Katıl ⚔️</button>
+                    </div>
+                `;
+                return;
+            }
+
             fastMatchUsers = fastMatchUsers.sort(() => 0.5 - Math.random());
             fastMatchCurrentIndex = 0;
             
@@ -2101,16 +2127,12 @@ function initializeUniLoop() {
         const container = document.getElementById('embedded-fast-match-container');
         if(!container) return;
 
+        let maxSwipes = window.userProfile.isPremium ? 30 : 10;
+
+        // Mantık Hatası Çözümü: Dizi bittiyse ve hakkı hala varsa, listeyi başa sar!
         if(fastMatchCurrentIndex >= fastMatchUsers.length) {
-            container.innerHTML = `
-                <div style="padding:40px 10px; text-align:center; background:white; border-radius:16px; width:100%; max-width:320px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
-                    <div style="font-size:50px; margin-bottom:15px;">🌟</div>
-                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Bugünlük bu kadar!</h3>
-                    <p style="color:var(--text-gray); font-size:13px; margin-bottom:15px;">Şu an için yeni biri kalmadı. Turnuvaya katıl!</p>
-                    <button class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#111827; border:none; border-radius:12px;" onclick="window.startPopularityTournament()">Savaşa Katıl ⚔️</button>
-                </div>
-            `;
-            return;
+            fastMatchUsers = fastMatchUsers.sort(() => 0.5 - Math.random());
+            fastMatchCurrentIndex = 0;
         }
 
         const u = fastMatchUsers[fastMatchCurrentIndex];
@@ -2126,7 +2148,6 @@ function initializeUniLoop() {
             tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:11px; background:rgba(255,255,255,0.25); color:white; padding:4px 10px; border-radius:12px; font-weight:700; margin-right:4px; margin-bottom:4px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join('');
         }
 
-        let maxSwipes = window.userProfile.isPremium ? 30 : 10;
         let remaining = maxSwipes - window.userProfile.fastMatchCount;
         
         let headerText = window.userProfile.isPremium ? 
@@ -2489,7 +2510,6 @@ function initializeUniLoop() {
             `;
         }
 
-        // 🌟 BEYAZ ALEV İKONU (POPÜLERLİK SAVAŞI) BURAYA EKLENDİ 🌟
         let html = `
             <div style="display:flex; flex-direction:column; height:100%; overflow:hidden;">
                 ${usernameWarning}
@@ -3302,7 +3322,8 @@ function initializeUniLoop() {
                 statusAreaHtml = `<div style="padding:15px; background:#EEF2FF; text-align:center; font-size:13px; color:#4F46E5; border-bottom:1px solid #E5E7EB; font-weight:700; flex-shrink:0;">⏳ Karşı tarafın onayı bekleniyor. ${chat.isMarketChat ? 'Onaylanana kadar manuel mesaj gönderemezsiniz.' : ''}</div>`;
             } else {
                 statusAreaHtml = `
-                    <div style="padding:20px 15px; background:#F0FDF4; text-align:center; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
+                    <div style="padding:20px 15px; background:#F0
+FDF4; text-align:center; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
                     <div style="font-size:14px; color:#166534; margin-bottom:12px; font-weight:700;">👋 ${chat.name} seninle bağlantı kurmak istiyor.</div>
                     <div style="display:flex; justify-content:center; gap:10px;">
                         <button class="btn-primary" style="padding:10px 20px; background:#10B981; border-color:#10B981; font-size:14px; box-shadow:none; border-radius:10px;" onclick="window.acceptChatRequest('${chat.id}')">✅ Kabul Et</button>
