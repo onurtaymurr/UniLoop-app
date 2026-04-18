@@ -897,14 +897,14 @@ function initializeUniLoop() {
                 if (headerRightMenu) {
                     headerRightMenu.innerHTML = ''; 
                     
-                                        if (!window.userProfile.isPremium) {
+                    if (!window.userProfile.isPremium) {
                         headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumModal()">★ Premium</div>`);
                     } else {
                         headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">★ Premium Özellikler</div>`);
                     }
 
-                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler" style="background:white; border:2px solid black; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="black" stroke-width="2" fill="white" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> <span id="notif-badge-top" style="display:none; position:absolute; top:-4px; right:-4px; background:black; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
-
+                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler" style="background:white; border:2px solid black; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="black" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> <span id="notif-badge-top" style="display:none; position:absolute; top:-4px; right:-4px; background:black; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
+                }
 
                 if (!document.getElementById('uniloop-bottom-nav')) {
                     const bottomNav = document.createElement('div');
@@ -1158,11 +1158,10 @@ function initializeUniLoop() {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: true });
                 window.userProfile.isPremium = true;
                 
-                                const navBtn = document.getElementById('nav-premium-action');
+                const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
                     navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">★ Premium Özellikler</div>`;
                 }
-
                 
                 window.closeModal();
                 alert("🎉 Tebrikler! Ödemeniz başarıyla alındı. UniLoop Premium ayrıcalıklarına artık sahipsiniz!");
@@ -1181,11 +1180,10 @@ function initializeUniLoop() {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: false });
                 window.userProfile.isPremium = false;
                 
-                                const navBtn = document.getElementById('nav-premium-action');
+                const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
                     navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumModal()">★ Premium</div>`;
                 }
-
 
                 alert("Premium üyeliğiniz başarıyla iptal edildi.");
                 window.closeModal();
