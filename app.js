@@ -1,6 +1,6 @@
 // ============================================================================
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
-// 🌟 DARK MODE, SLIDER VE KÜRSÜ GÜNCELLEMESİ - BÖLÜM 1 🌟
+// 🌟 GİRİŞ HATALARI GİDERİLDİ, DARK MODE VE KÜRSÜ EKLENDİ - BÖLÜM 1 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -310,9 +310,14 @@ function initializeUniLoop() {
         }
         else if (isTarget('login-btn')) {
             e.preventDefault(); 
+            // HATAYI ENGELLEYEN GÜVENLİ INPUT SEÇİMİ
             const emailInput = document.getElementById('login-email');
             const passInput = document.getElementById('login-password');
-            if(!emailInput || !passInput) return;
+            
+            if(!emailInput || !passInput) {
+                console.error("Giriş inputları (login-email veya login-password) HTML içinde bulunamadı!");
+                return;
+            }
 
             const email = emailInput.value.trim();
             const password = passInput.value;
@@ -816,6 +821,7 @@ function initializeUniLoop() {
         }
     };
 
+    // YETKİLENDİRME (AUTH) HATASI BURADA GİDERİLDİ (EKSİK ELSE BLOĞU EKLENDİ)
     onAuthStateChanged(auth, async (user) => {
         if (user && user.emailVerified) { 
             try {
@@ -823,9 +829,12 @@ function initializeUniLoop() {
                 const docSnap = await getDoc(userDocRef);
                 
                 if(!docSnap.exists()) {
-                    authScreen.style.display = 'flex';
-                    appScreen.style.display = 'none';
-                    document.getElementById('login-card').style.display = 'none';
+                    if(authScreen && appScreen) {
+                        authScreen.style.display = 'flex';
+                        appScreen.style.display = 'none';
+                    }
+                    const logCard = document.getElementById('login-card');
+                    if(logCard) logCard.style.display = 'none';
                     window.registrationData.email = user.email;
                     startRegistrationStepper(3);
                     return; 
@@ -889,6 +898,16 @@ function initializeUniLoop() {
                 const activeTab = document.querySelector('.bottom-nav-item.active');
                 if(typeof window.loadPage === 'function') { window.loadPage(activeTab ? activeTab.getAttribute('data-target') : 'home'); }
             } catch(error) { console.error(error); }
+        } else {
+            // BURASI EKSİKTİ: Giriş yapılmamışsa login ekranını GÖSTER!
+            if(authScreen && appScreen) {
+                appScreen.style.display = 'none';
+                authScreen.style.display = 'flex';
+                const logCard = document.getElementById('login-card');
+                const regCard = document.getElementById('register-card');
+                if(logCard) logCard.style.display = 'block';
+                if(regCard) regCard.style.display = 'none';
+            }
         }
     });
 
@@ -1008,6 +1027,281 @@ function initializeUniLoop() {
 // ============================================================================
 // 🌟 BÖLÜM 1 SONU 🌟
 // ============================================================================
+
+}
+
+// Tarayıcı hazır olmadan kodun çalışıp kilitlenmesini engelleyen güvenlik bloğu eklendi
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeUniLoop);
+} else {
+    initializeUniLoop();
+}
+// ============================================================================
+// 🌟 MEDYA YÜKLEME SİSTEMİ, POPÜLERLİK SAVAŞI, KÜRSÜ VE SLIDER (BÖLÜM 2) 🌟
+// ============================================================================
+
+    window.uploadChatMedia = async function(event, targetId, chatType) {
+        const file = event.target.files[0];
+        if(!file) return;
+
+        const isPdf = file.type === "application/pdf";
+        
+        try {
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.\-]/g, "_");
+            const storagePath = `chat_media/${window.userProfile.uid}/${Date.now()}_${cleanName}`;
+            const storageRef = ref(storage, storagePath);
+            
+            alert("Medya yükleniyor, lütfen bekleyin...");
+            await uploadBytes(storageRef, file);
+            const downloadUrl = await getDownloadURL(storageRef);
+
+            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const msgObj = {
+                senderId: window.userProfile.uid,
+                text: "",
+                time: timeStr,
+                mediaUrl: downloadUrl,
+                mediaType: isPdf ? 'pdf' : 'image',
+                read: false
+            };
+
+            if (chatType === 'group') {
+                msgObj.senderName = window.userProfile.name;
+                msgObj.senderAvatar = window.userProfile.avatarUrl || window.userProfile.avatar || "👤";
+                await updateDoc(doc(db, "group_chats", targetId), { 
+                    messages: arrayUnion(msgObj), 
+                    lastUpdated: serverTimestamp() 
+                });
+            } else {
+                await updateDoc(doc(db, "chats", targetId), {
+                    messages: arrayUnion(msgObj),
+                    lastUpdated: serverTimestamp()
+                });
+            }
+
+            event.target.value = ''; 
+        } catch(error) {
+            console.error("Medya yüklenemedi:", error);
+            alert("Medya gönderilirken bir hata oluştu.");
+        }
+    };
+
+    window.openPremiumModal = function() {
+        const fac = window.userProfile.faculty || "Fakültenizin";
+        const grade = window.userProfile.grade ? window.userProfile.grade + ". Sınıf" : "";
+        
+        window.openModal('🌟 UniLoop Premium', `
+            <div style="text-align:center; padding: 10px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">👑</div>
+                <h3 style="color:#111827; margin-bottom: 10px; font-size: 22px;">Kampüsün Zirvesine Çık!</h3>
+                <p style="margin-bottom:20px; font-size:15px; color:var(--text-gray);">
+                    UniLoop Premium ile sınırları kaldır ve kampüsün en donanımlı ağına dahil ol.
+                </p>
+                <div style="font-size:32px; font-weight:800; margin-bottom:20px; color:var(--text-dark);">
+                    79.99 ₺ <span style="font-size:14px; color:var(--text-gray); font-weight:normal;">/ aylık</span>
+                </div>
+                <ul style="text-align:left; font-size:14px; margin-bottom:20px; line-height:1.6; color:var(--text-dark); background:#F9FAFB; padding:15px 15px 15px 35px; border-radius:12px; border:1px solid #111827;">
+                    <li>👀 <b>Diğer kullanıcıların detaylı profillerini görüntüleme hakkı!</b> Blurları kaldır.</li>
+                    <li>📚 <b>${fac} ${grade}</b> çıkmış sorularına anında erişim!</li>
+                    <li>🔥 <b>Günlük 30 Adet</b> Hızlı Eşleşme hakkı. (Daha Fazla Eşleşme)</li>
+                    <li>🕵️ <b>Kimler Profilime Baktı?</b> Seni görüntüleyen gizli hayranlarını gör.</li>
+                </ul>
+                <button id="buy-premium-btn" onclick="window.upgradeToPremium()" style="width:100%; justify-content:center; padding: 16px; font-size: 16px; background:linear-gradient(135deg, #111827, #374151); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; box-shadow:0 4px 6px rgba(0,0,0,0.3); transition:0.2s;" class="premium-glow">
+                    💳 Güvenli Ödeme İle Satın Al
+                </button>
+                <p style="font-size:11px; color:#9CA3AF; margin-top:10px;">*İstediğin zaman iptal edebilirsin.</p>
+            </div>
+        `);
+    };
+
+    window.openModal = function(title, contentHTML) { 
+        document.getElementById('modal-title').innerText = title; 
+        document.getElementById('modal-body').innerHTML = contentHTML; 
+        modal.classList.add('active'); 
+        if(!document.body.classList.contains('no-scroll-home')) {
+            document.body.style.overflow = 'hidden'; 
+        }
+    };
+
+    window.closeModal = function() { 
+        modal.classList.remove('active'); 
+        document.getElementById('modal-body').innerHTML = ''; 
+        if (!document.getElementById('lightbox').classList.contains('active') && !document.body.classList.contains('no-scroll-messages') && !document.body.classList.contains('no-scroll-home')) {
+            document.body.style.overflow = 'auto'; 
+        }
+    };
+
+    window.upgradeToPremium = async function() {
+        const btn = document.getElementById('buy-premium-btn');
+        btn.innerText = '⏳ Ödeme İşleniyor... Lütfen bekleyin.';
+        btn.disabled = true;
+        
+        setTimeout(async () => {
+            try {
+                await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: true });
+                window.userProfile.isPremium = true;
+                
+                const navBtn = document.getElementById('nav-premium-action');
+                if(navBtn) {
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="height:36px; display:inline-flex; align-items:center; justify-content:center; background:white; color:#111827; border:1px solid #111827; padding:0 16px; border-radius:18px; font-weight:700; font-size:13px; cursor:pointer; box-sizing:border-box; margin:0;" onclick="window.openPremiumFeaturesModal()">☆ Ayrıcalıklar</div>`;
+                }
+                
+                window.closeModal();
+                alert("🎉 Tebrikler! Ödemeniz başarıyla alındı. UniLoop Premium ayrıcalıklarına artık sahipsiniz!");
+                window.loadPage('home'); 
+            } catch(e) {
+                alert("Hata oluştu: Lütfen internet bağlantınızı kontrol edin.");
+                btn.innerText = '💳 Güvenli Ödeme İle Satın Al';
+                btn.disabled = false;
+            }
+        }, 3000);
+    };
+
+    window.cancelPremium = async function() {
+        if(confirm("Premium üyeliğinizi iptal etmek istediğinize emin misiniz? Gelecek ay aboneliğiniz yenilenmeyecektir.")) {
+            try {
+                await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: false });
+                window.userProfile.isPremium = false;
+                
+                const navBtn = document.getElementById('nav-premium-action');
+                if(navBtn) {
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="height:36px; display:inline-flex; align-items:center; justify-content:center; background:white; color:#111827; border:1px solid #111827; padding:0 16px; border-radius:18px; font-weight:700; font-size:13px; cursor:pointer; box-sizing:border-box; margin:0;" onclick="window.openPremiumModal()">☆ Premium</div>`;
+                }
+
+                alert("Premium üyeliğiniz başarıyla iptal edildi.");
+                window.closeModal();
+                window.renderSettings();
+            } catch(e) {
+                alert("Hata oluştu: " + e.message);
+            }
+        }
+    };
+
+    window.uploadArchiveFile = async function() {
+        const facBtn = document.getElementById('admin-archive-faculty');
+        const grBtn = document.getElementById('admin-archive-grade');
+        const fileInput = document.getElementById('admin-archive-file');
+        
+        if(!fileInput || !fileInput.files.length) return alert("Lütfen yüklenecek bir PDF seçin.");
+        
+        const fac = facBtn.value.trim();
+        const gr = grBtn.value.trim();
+        const file = fileInput.files[0];
+        
+        const uploadBtn = document.getElementById('upload-archive-btn');
+        const originalText = uploadBtn.innerText;
+        uploadBtn.innerText = "Yükleniyor... Lütfen bekleyin ⏳";
+        uploadBtn.disabled = true;
+
+        try {
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.\-]/g, "_");
+            const storagePath = `archives/${fac}/${gr}/${Date.now()}_${cleanName}`;
+            const storageRef = ref(storage, storagePath);
+            
+            await uploadBytes(storageRef, file);
+            const downloadUrl = await getDownloadURL(storageRef);
+
+            await addDoc(collection(db, "archives"), {
+                faculty: fac,
+                grade: gr,
+                fileName: file.name,
+                fileUrl: downloadUrl,
+                uploadedBy: window.userProfile.uid,
+                createdAt: serverTimestamp()
+            });
+
+            alert(`✅ Başarılı! ${fac} - ${gr} için çıkmış sorular sisteme eklendi.`);
+            fileInput.value = '';
+            window.closeModal();
+        } catch(e) {
+            console.error("Yükleme Hatası:", e);
+            alert("Dosya yüklenirken hata oluştu: " + e.message);
+        } finally {
+            if(uploadBtn) { uploadBtn.innerText = originalText; uploadBtn.disabled = false; }
+        }
+    };
+
+    window.viewArchive = async function() {
+        const u = window.userProfile;
+        
+        if (!u.lockedArchiveFaculty || !u.lockedArchiveGrade) {
+            if (!u.faculty || !u.grade) {
+                alert("Profilinizde fakülte veya sınıf bilginiz eksik. Lütfen ayarlardan profilinizi güncelleyin.");
+                return;
+            }
+            
+            let currentGradeFormatted = u.grade.toString().includes("Sınıf") ? u.grade.toString().trim() : u.grade.toString().trim() + ". Sınıf";
+            
+            if(confirm(`⚠️ DİKKAT: Arşiv hakkınız tüm eğitim yılı boyunca [${u.faculty} - ${currentGradeFormatted}] olarak sabitlenecektir. \n\nDaha sonra profilinizden sınıf veya fakülte değiştirseniz bile diğer arşivleri GÖREMEZSİNİZ.\n\nOnaylıyor musunuz?`)) {
+                try {
+                    await updateDoc(doc(db, "users", u.uid), {
+                        lockedArchiveFaculty: u.faculty.trim(),
+                        lockedArchiveGrade: currentGradeFormatted
+                    });
+                    u.lockedArchiveFaculty = u.faculty.trim();
+                    u.lockedArchiveGrade = currentGradeFormatted;
+                    alert("✅ Arşiviniz başarıyla kilitlendi. Yıl boyunca bu bölümün sorularına erişebileceksiniz.");
+                } catch(e) {
+                    alert("Kilitlenme sırasında bir hata oluştu: " + e.message);
+                    return;
+                }
+            } else {
+                return; 
+            }
+        }
+
+        const fac = u.lockedArchiveFaculty;
+        const gr = u.lockedArchiveGrade;
+
+        window.openModal(`📚 ${fac} - ${gr} Arşivi`, `<div style="text-align:center; padding:20px; color:var(--text-gray);">Arşiv güvenli bir şekilde taranıyor... ⏳</div>`);
+
+        try {
+            const q = query(collection(db, "archives"), where("faculty", "==", fac));
+            const snap = await getDocs(q);
+
+            let matchedDocs = [];
+            snap.forEach(doc => {
+                if (doc.data().grade === gr) {
+                    matchedDocs.push(doc.data());
+                }
+            });
+
+            let html = '<div style="max-height: 400px; overflow-y: auto; padding-right: 5px;">';
+            
+            if(matchedDocs.length === 0) {
+                html += `
+                <div style="text-align:center; padding:30px 10px;">
+                    <div style="font-size:40px; margin-bottom:10px;">📭</div>
+                    <div style="font-size:14px; color:var(--text-gray); line-height:1.5;">Henüz kilitlendiğiniz bölüm <b>(${fac})</b> ve sınıfa <b>(${gr})</b> ait bir arşiv bulunamadı. Admin'in dosyaları yüklemesini bekleyin.</div>
+                </div>`;
+            } else {
+                html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
+                matchedDocs.forEach(data => {
+                    html += `
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:15px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:12px;">
+                            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                                <div style="font-size:24px;">📄</div>
+                                <div style="flex:1; min-width:0;">
+                                    <div style="font-weight:700; font-size:14px; color:var(--text-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${data.fileName}</div>
+                                    <div style="font-size:11px; color:var(--text-gray);">Çıkmış Sorular / Ders Notu</div>
+                                </div>
+                            </div>
+                            <a href="${data.fileUrl}" target="_blank" style="background:#111827; color:white; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:bold; flex-shrink:0; box-shadow:0 2px 4px rgba(0,0,0,0.3);">İndir / Aç</a>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            html += '</div>';
+            document.getElementById('modal-body').innerHTML = html;
+
+        } catch(e) {
+            console.error("Arşiv Çekme Hatası:", e);
+            document.getElementById('modal-body').innerHTML = `
+                <div style="color:#EF4444; text-align:center; padding:20px;">
+                    <strong>Bağlantı Hatası</strong><br><br>
+                    Arşiv yüklenirken bir hata oluştu: ${e.message}
+                </div>`;
 // ============================================================================
 // 🌟 MEDYA YÜKLEME SİSTEMİ VE POPÜLERLİK SAVAŞI (BÖLÜM 2) 🌟
 // ============================================================================
@@ -3529,7 +3823,8 @@ function initializeUniLoop() {
             } else {
                 statusAreaHtml = `
                     <div style="padding:20px 15px; background:#F0FDF4; text-align:center; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
-                    <div style="font-size:14px; color:#166534; margin-bottom:12px; font-weight:700;">👋 ${chat.name} seninle bağlantı kurmak istiyor.</div>
+                    <div style="font-size:14px
+; color:#166534; margin-bottom:12px; font-weight:700;">👋 ${chat.name} seninle bağlantı kurmak istiyor.</div>
                     <div style="display:flex; justify-content:center; gap:10px;">
                         <button class="btn-primary" style="padding:10px 20px; background:#10B981; border-color:#10B981; font-size:14px; box-shadow:none; border-radius:10px;" onclick="window.acceptChatRequest('${chat.id}')">✅ Kabul Et</button>
                         <button class="btn-danger" style="padding:10px 20px; font-size:14px; box-shadow:none; border-radius:10px;" onclick="window.rejectChatRequest('${chat.id}')">❌ Reddet</button>
@@ -3660,8 +3955,7 @@ function initializeUniLoop() {
                 });
             } catch(error) {
                 console.error("Mesaj gönderilemedi:", error);
-                alert("Mesaj gönderilirken bir hata
- oluştu.");
+                alert("Mesaj gönderilirken bir hata oluştu.");
             }
         }
     };
@@ -3958,4 +4252,8 @@ function initializeUniLoop() {
     };
 }
 
-document.addEventListener('DOMContentLoaded', initializeUniLoop);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeUniLoop);
+} else {
+    initializeUniLoop();
+}
