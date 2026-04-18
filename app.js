@@ -1,6 +1,6 @@
 // ============================================================================
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
-// 🌟 MONOKROM TEMA & COOLDOWN GÜNCELLEMESİ - BÖLÜM 1 🌟
+// 🌟 MONOKROM TEMA & YATAY UPSELL GÜNCELLEMESİ - BÖLÜM 1 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -88,7 +88,6 @@ const modal = document.getElementById('app-modal');
 
 let cropper = null;
 
-// TURNUVA DEĞİŞKENLERİ
 window.tData = { 
     bracket: [], winners: [], currentMatch: 0, stage: 'none', 
     semiLosers: [], finalists: [], finalWinner: null, secondPlace: null, thirdPlace: null 
@@ -452,7 +451,7 @@ function initializeUniLoop() {
                     </div>
                     <input type="file" id="final-avatar-upload" accept="image/*" style="position:absolute; width:1px; height:1px; opacity:0; z-index:-1;" onchange="window.openCropper(event, 'register')">
                 </div>
-                <button id="final-register-btn" class="btn-primary" style="width:100%; padding:16px; font-size:16px; font-weight:bold; border-radius:12px; background:#111827; border:none;" onclick="window.finalizeRegistration()">Profili Tamamla ve Giriş Yap ✨</button>
+                <button id="final-register-btn" class="btn-primary" style="width:100%; padding:16px; font-size:16px; font-weight:bold; border-radius:12px; background:linear-gradient(135deg, #111827, #374151);" onclick="window.finalizeRegistration()">Profili Tamamla ve Giriş Yap ✨</button>
             `;
         }
         wrapper.innerHTML = html;
@@ -861,10 +860,10 @@ function initializeUniLoop() {
                     let timeDiff = Date.now() - window.userProfile.lastTournamentDate;
                     let cooldown = 24 * 60 * 60 * 1000; // 24 Saat
                     
+                    let timerEl = document.getElementById('horizontal-cooldown-timer');
                     let btn1 = document.getElementById('join-tour-btn-embedded');
                     let btn2 = document.getElementById('join-tour-btn-modal');
                     let btn3 = document.getElementById('join-tour-btn-empty'); 
-                    let homeTimer = document.getElementById('home-cooldown-timer');
                     
                     if (timeDiff < cooldown) {
                         let remaining = cooldown - timeDiff;
@@ -877,6 +876,8 @@ function initializeUniLoop() {
                         let sStr = s.toString().padStart(2, '0');
                         let timeStr = `${hStr}:${mStr}:${sStr}`;
                         
+                        if(timerEl) timerEl.innerText = timeStr;
+                        
                         [btn1, btn2, btn3].forEach(btn => {
                             if(btn) {
                                 btn.innerText = `⏳ ${timeStr} Sonra Katıl`;
@@ -886,14 +887,18 @@ function initializeUniLoop() {
                                 btn.style.opacity = '0.7';
                             }
                         });
-
-                        if (homeTimer) homeTimer.innerText = timeStr;
-
                     } else {
+                        // SÜRE BİTTİ, OTOMATİK YENİLE
+                        if(timerEl && timerEl.innerText !== "00:00:00") {
+                            timerEl.innerText = "00:00:00";
+                            const activeTab = document.querySelector('.bottom-nav-item.active');
+                            if(activeTab && activeTab.getAttribute('data-target') === 'home') {
+                                window.loadPage('home'); 
+                            }
+                        }
                         if(btn1 && btn1.disabled) { btn1.innerText = "🤍🔥 Popülerlik Savaşına Katıl"; btn1.disabled = false; btn1.style.background = "linear-gradient(135deg, #111827, #374151)"; btn1.style.cursor = "pointer"; btn1.style.opacity = '1'; }
                         if(btn2 && btn2.disabled) { btn2.innerText = "Savaşa Katıl ⚔️"; btn2.disabled = false; btn2.style.background = "#111827"; btn2.style.cursor = "pointer"; btn2.style.opacity = '1'; }
                         if(btn3 && btn3.disabled) { btn3.innerText = "Savaşa Katıl ⚔️"; btn3.disabled = false; btn3.style.background = "#111827"; btn3.style.cursor = "pointer"; btn3.style.opacity = '1'; }
-                        if (homeTimer) homeTimer.innerText = "00:00:00";
                     }
                 }, 1000);
                 
@@ -1044,11 +1049,87 @@ function initializeUniLoop() {
         });
     }
 
+    window.renderHome = async function() {
+        document.body.classList.add('no-scroll-home');
+
+        let usernameWarning = '';
+        if (!window.userProfile.username) {
+            usernameWarning = `
+                <div style="background: #FEF2F2; color: #DC2626; padding: 12px; border-radius: 12px; border: 1px solid #FCA5A5; margin-bottom: 6px; font-weight: bold; text-align: center; cursor:pointer; flex-shrink:0;" onclick="window.loadPage('profile')">
+                    ⚠️ Lütfen profilinden bir kullanıcı adı belirle!
+                </div>
+            `;
+        }
+
+        // COOLDOWN & YATAY UPSELL MANTIĞI
+        let count = window.userProfile.fastMatchCount || 0;
+        let maxSwipes = window.userProfile.isPremium ? 30 : 10;
+        let timeDiff = Date.now() - (window.userProfile.lastTournamentDate || 0);
+        let isTournamentCooldown = timeDiff < (24 * 60 * 60 * 1000);
+        let showUpsell = (count >= maxSwipes) && isTournamentCooldown;
+
+        let upsellHtml = '';
+        if (showUpsell) {
+            if (window.userProfile.isPremium) {
+                upsellHtml = `
+                    <div style="margin: 0 10px 10px 10px; padding: 15px; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); flex-shrink:0;">
+                        <div style="font-size: 13px; color: #111827; font-weight: 700;">🖤 Bugünlük hakkın doldu, yarın görüşürüz.</div>
+                        <div id="horizontal-cooldown-timer" style="font-size: 16px; font-weight: 900; color: #111827; font-variant-numeric: tabular-nums;">--:--:--</div>
+                    </div>
+                `;
+            } else {
+                upsellHtml = `
+                    <div style="margin: 0 10px 10px 10px; padding: 15px; background: #111827; color: white; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s; flex-shrink:0;" onclick="window.openPremiumModal()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                        <div style="flex: 1; padding-right: 10px;">
+                            <div style="font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 5px;">👑 Daha Fazla Kaydır!</div>
+                            <div style="font-size: 11px; color: #D1D5DB; margin-top: 3px;">Premium'a geçerek günlük 30 hak kazan.</div>
+                        </div>
+                        <div id="horizontal-cooldown-timer" style="font-size: 18px; font-weight: 900; color: #10B981; font-variant-numeric: tabular-nums; text-shadow: 0 0 5px rgba(16,185,129,0.5);">--:--:--</div>
+                    </div>
+                `;
+            }
+        }
+
+        let html = `
+            <div style="display:flex; flex-direction:column; height:100%; overflow:hidden;">
+                ${usernameWarning}
+                
+                <div class="card" style="background: linear-gradient(135deg, #111827, #374151); color: white; border:none; margin: 10px; padding: 15px; display:flex; justify-content:space-between; align-items:center; border-radius:16px; flex-shrink:0; box-shadow:0 4px 10px rgba(0, 0, 0, 0.2);">
+                    <div>
+                        <h2 style="font-size:18px; margin-bottom:4px; margin-top:0;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
+                        <p style="opacity:0.9; font-size:12px; margin:0;"><strong style="color:#D9FDD3;">${window.userProfile.university}</strong></p>
+                    </div>
+                    
+                    <div id="home-icons-container" style="display:flex; gap:15px; align-items:center;">
+                        <div class="white-flame-icon" onclick="window.showLeaderboard()" title="Popülerlik Savaşı Sıralaması">🔥</div>
+                        <div style="font-size:24px; cursor:pointer;" onclick="window.openFacultiesList()" title="Fakültem">🏛️</div>
+                        <div style="font-size:24px; cursor:pointer;" onclick="window.toggleHomeSearch()" title="Arkadaşını Bul">🔍</div>
+                    </div>
+
+                    <div id="home-search-container" class="hidden" style="display:flex; align-items:center; background:white; border-radius:20px; padding:5px 12px; width:55%;">
+                            <span style="color:#111827; font-weight:800; font-size:14px; margin-right:5px;">#</span>
+                            <input type="text" id="home-friend-search-input" style="border:none; background:transparent; width:100%; outline:none; font-size:13px; color:black;" placeholder="Kullanıcı adı..." onkeypress="if(event.key==='Enter') window.searchAndAddFriendHome()">
+                            <button onclick="window.searchAndAddFriendHome()" style="background:transparent; border:none; font-size:16px; cursor:pointer;">➡️</button>
+                            <button onclick="window.toggleHomeSearch()" style="background:transparent; border:none; font-size:16px; cursor:pointer; color:#EF4444; margin-left:5px;">✖</button>
+                    </div>
+                </div>
+
+                ${upsellHtml}
+
+                <div id="embedded-fast-match-container" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:5px 10px 10px 10px; overflow:hidden;">
+                </div>
+            </div>
+        `;
+        
+        mainContent.innerHTML = html;
+        window.initEmbeddedFastMatch();
+    };
+
 // ============================================================================
 // 🌟 BÖLÜM 1 SONU 🌟
 // ============================================================================
 // ============================================================================
-// 🌟 MEDYA YÜKLEME SİSTEMİ VE POPÜLERLİK SAVAŞI (BÖLÜM 2) 🌟
+// 🌟 MEDYA YÜKLEME SİSTEMİ VE POPÜLERLİK SAVAŞI (BÖLÜM 2 - %100 EKSİKSİZ) 🌟
 // ============================================================================
     window.uploadChatMedia = async function(event, targetId, chatType) {
         const file = event.target.files[0];
@@ -1116,7 +1197,7 @@ function initializeUniLoop() {
                     <li>🔥 <b>Günlük 30 Adet</b> Hızlı Eşleşme hakkı. (Daha Fazla Eşleşme)</li>
                     <li>🕵️ <b>Kimler Profilime Baktı?</b> Seni görüntüleyen gizli hayranlarını gör.</li>
                 </ul>
-                <button id="buy-premium-btn" onclick="window.upgradeToPremium()" style="width:100%; justify-content:center; padding: 16px; font-size: 16px; background:linear-gradient(135deg, #111827, #374151); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; box-shadow:0 4px 6px rgba(0,0,0,0.3); transition:0.2s;" class="premium-glow">
+                <button id="buy-premium-btn" onclick="window.upgradeToPremium()" style="width:100%; justify-content:center; padding: 16px; font-size: 16px; background:#111827; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; box-shadow:0 4px 6px rgba(0,0,0,0.3); transition:0.2s;" class="premium-glow">
                     💳 Güvenli Ödeme İle Satın Al
                 </button>
                 <p style="font-size:11px; color:#9CA3AF; margin-top:10px;">*İstediğin zaman iptal edebilirsin.</p>
@@ -1288,7 +1369,7 @@ function initializeUniLoop() {
                 html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
                 matchedDocs.forEach(data => {
                     html += `
-                        <div style="display:flex; align-items:center; justify-content:space-between; padding:15px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:12px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:15px; background:#F9FAFB; border:1px solid #111827; border-radius:12px;">
                             <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
                                 <div style="font-size:24px;">📄</div>
                                 <div style="flex:1; min-width:0;">
@@ -1332,7 +1413,7 @@ function initializeUniLoop() {
                     }
                 }
                 viewersHtml = uniqueViewers.map(v => `
-                    <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; background:#fff; border-radius:10px; margin-bottom:8px; border:1px solid #E5E7EB; cursor:pointer;" onclick="window.viewUserProfile('${v.uid}')">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; background:#fff; border-radius:10px; margin-bottom:8px; border:1px solid #111827; cursor:pointer;" onclick="window.viewUserProfile('${v.uid}')">
                         <div style="display:flex; align-items:center; gap:10px;">
                             <span style="font-size:20px;">👀</span>
                             <span style="font-weight:bold; font-size:14px; color:var(--text-dark);">${v.name}</span>
@@ -1354,7 +1435,7 @@ function initializeUniLoop() {
                 let gradeOptions = [1, 2, 3, 4, 5, 6].map(g => `<option value="${g}. Sınıf">${g}. Sınıf</option>`).join('');
                 
                 archiveSectionHtml = `
-                    <div class="card" style="background:linear-gradient(135deg, #F3F4F6, #E5E7EB); border:1px solid #111827; padding:20px; border-radius:12px;">
+                    <div class="card" style="background:#F9FAFB; border:1px solid #111827; padding:20px; border-radius:12px;">
                         <div style="font-size:30px; margin-bottom:10px; text-align:center;">👑</div>
                         <h4 style="color:#111827; margin-bottom:8px; font-size:16px; text-align:center;">Admin Paneli: Arşive Dosya Ekle</h4>
                         <p style="font-size:12px; color:#374151; text-align:center; margin-bottom:15px; font-weight:bold;">Fakülte ve sınıf seçip PDF yükleyin.</p>
@@ -1367,18 +1448,18 @@ function initializeUniLoop() {
                         </select>
                         <input type="file" id="admin-archive-file" accept="application/pdf" style="margin-bottom:15px; width:100%; font-size:12px;">
                         
-                        <button id="upload-archive-btn" class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#111827; border:none;" onclick="window.uploadArchiveFile()">
+                        <button id="upload-archive-btn" class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#111827; color:white; border:none;" onclick="window.uploadArchiveFile()">
                             PDF'i Arşive Ekle ➡️
                         </button>
                     </div>
                 `;
             } else {
                 archiveSectionHtml = `
-                    <div class="card" style="background:linear-gradient(135deg, #F9FAFB, #F3F4F6); border:1px solid #111827; padding:20px; border-radius:12px;">
+                    <div class="card" style="background:#F9FAFB; border:1px solid #111827; padding:20px; border-radius:12px;">
                         <div style="font-size:30px; margin-bottom:10px; text-align:center;">📚</div>
                         <h4 style="color:#111827; margin-bottom:8px; font-size:16px; text-align:center;">Çıkmış Sorular Arşivi</h4>
                         <p style="font-size:13px; color:#374151; text-align:center; margin-bottom:15px; font-weight:bold;">Tüm Yıl Boyunca Sabit Erişim</p>
-                        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#111827; border:none;" onclick="window.viewArchive()">
+                        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#111827; color:white; border:none;" onclick="window.viewArchive()">
                             Arşive Git ➡️
                         </button>
                     </div>
@@ -1420,7 +1501,7 @@ function initializeUniLoop() {
         
         allFaculties.forEach(fac => {
             listHtml += `
-                <button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px 8px; font-size:13px; font-weight:600; border-radius:12px;" onclick="window.handleFacultyClick('${fac}')">
+                <button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #111827; box-shadow:none; padding:12px 8px; font-size:13px; font-weight:600; border-radius:12px;" onclick="window.handleFacultyClick('${fac}')">
                     ${fac}
                 </button>
             `;
@@ -1564,9 +1645,9 @@ function initializeUniLoop() {
         let html = `
             <div id="chat-layout-container" style="flex-direction: column; position: relative; width: 100%; height: 100%; display: flex; background:#e5ded8;">
                 
-                <div class="chat-header" style="padding:10px 15px; border-bottom:1px solid #d1d5db; background:#fff; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index:10; flex-shrink:0; height:65px; box-sizing:border-box;">
+                <div class="chat-header" style="padding:10px 15px; border-bottom:1px solid #111827; background:#fff; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index:10; flex-shrink:0; height:65px; box-sizing:border-box;">
                     <div style="display:flex; align-items:center; gap:10px; flex:1;">
-                        <button class="back-btn" onclick="event.stopPropagation(); if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:transparent; font-size:24px; font-weight:bold; cursor:pointer; color:var(--text-dark); display:flex; align-items:center; justify-content:center; z-index:9999; pointer-events:auto; padding:0; width:30px;">←</button>
+                        <button class="back-btn" onclick="event.stopPropagation(); if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:transparent; font-size:24px; font-weight:bold; cursor:pointer; color:#111827; display:flex; align-items:center; justify-content:center; z-index:9999; pointer-events:auto; padding:0; width:30px;">←</button>
                         <div style="width:44px; height:44px; background:#111827; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:22px; flex-shrink:0; box-shadow:0 2px 4px rgba(0,0,0,0.1);">🏛️</div>
                         <div class="chat-header-info" style="display:flex; flex-direction:column; flex:1; min-width:0; padding-right:10px; cursor:pointer;" onclick="window.showGroupMembers('${roomTitle}', '${roomType}')">
                             <div class="chat-header-name" style="font-weight:800; font-size:16px; color:#111827; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${roomTitle}</div>
@@ -1582,7 +1663,7 @@ function initializeUniLoop() {
 
                 <div class="chat-input-area" style="padding:10px 15px; background:#f0f2f5; display:flex; gap:10px; align-items:center; flex-shrink:0; border-top:none;">
                     <input type="file" id="group-chat-media" accept="image/*, application/pdf" style="display:none;" onchange="window.uploadChatMedia(event, '${roomId}', 'group')">
-                    <button onclick="document.getElementById('group-chat-media').click()" style="background:transparent; color:#6B7280; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
+                    <button onclick="document.getElementById('group-chat-media').click()" style="background:transparent; color:#111827; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
                     <input type="text" id="group-chat-input" placeholder="Fakülteye mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:24px; border:1px solid #111827; background:#fff; outline:none; font-size:15px; color:var(--text-dark); box-shadow:0 1px 3px rgba(0,0,0,0.05);">
                     <button class="chat-send-btn" onclick="window.sendGroupMsg('${roomId}')" style="background:#111827; color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">➤</button>
                 </div>
@@ -1606,7 +1687,7 @@ function initializeUniLoop() {
 
             if(!docSnap.exists()) {
                 scrollBox.innerHTML = `
-                    <div style="text-align:center; padding:20px; color:#6B7280; font-size:13px; background:rgba(255,255,255,0.8); border-radius:12px; margin:20px auto; width:fit-content; max-width:80%; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                    <div style="text-align:center; padding:20px; color:#111827; font-size:13px; background:white; border-radius:12px; margin:20px auto; width:fit-content; max-width:80%; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.05); border:1px solid #111827;">
                         🔒 Bu odanın mesajları uçtan uca şifrelidir.<br>İlk mesajı gönderen sen ol!
                     </div>
                 `;
@@ -1632,7 +1713,7 @@ function initializeUniLoop() {
                 if (msg.isSystem) {
                     chatHTML += `
                         <div style="text-align:center; margin: 12px 0; align-self:center;">
-                            <span style="background:rgba(0,0,0,0.08); color:#4B5563; font-size:11px; padding:6px 14px; border-radius:16px; font-weight:600; display:inline-block; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
+                            <span style="background:rgba(0,0,0,0.08); color:#111827; font-size:11px; padding:6px 14px; border-radius:16px; font-weight:600; display:inline-block; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
                                 ${msg.text}
                             </span>
                         </div>
@@ -1780,11 +1861,11 @@ function initializeUniLoop() {
                                 actionBtn = `<button onclick="event.stopPropagation(); window.leaveGroup('${currentRoomId}', '${roomType}', '${u.name}')" style="background:transparent; border:none; font-size:22px; color:#DC2626; cursor:pointer;" title="Gruptan Çık">⏏</button>`;
                                 
                                 meHtml = `
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#EEF2FF; border:1px solid #111827; border-radius:12px; transition:0.2s; margin-bottom:10px;">
+                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#F9FAFB; border:1px solid #111827; border-radius:12px; transition:0.2s; margin-bottom:10px;">
                                         <div style="display:flex; align-items:center; gap:12px; flex:1;">
                                             ${avatarHtml}
                                             <div style="display:flex; flex-direction:column;">
-                                                <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} <span style="color:#10B981; font-size:11px;">(Sen)</span> ${adminBadge}</span>
+                                                <span style="font-weight:800; font-size:15px; color:#111827;">${u.name} ${initial} <span style="color:#10B981; font-size:11px;">(Sen)</span> ${adminBadge}</span>
                                                 <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade + '. Sınıf' : 'Öğrenci'}</span>
                                             </div>
                                         </div>
@@ -1804,7 +1885,7 @@ function initializeUniLoop() {
                                         <div style="display:flex; align-items:center; gap:12px; flex:1;">
                                             ${avatarHtml}
                                             <div style="display:flex; flex-direction:column;">
-                                                <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} ${adminBadge}</span>
+                                                <span style="font-weight:800; font-size:15px; color:#111827;">${u.name} ${initial} ${adminBadge}</span>
                                                 <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade + '. Sınıf' : 'Öğrenci'}</span>
                                             </div>
                                         </div>
@@ -1911,7 +1992,7 @@ function initializeUniLoop() {
         container.innerHTML = `
             <div style="text-align:center; padding:20px;">
                 <div style="font-size:50px; animation: glowPulse 1.5s infinite alternate;" class="white-flame-icon">🔥</div>
-                <h3 style="color:var(--text-dark); margin-bottom:10px;">Adaylar Toplanıyor...</h3>
+                <h3 style="color:#111827; margin-bottom:10px;">Adaylar Toplanıyor...</h3>
                 <p style="color:var(--text-gray); font-size:13px;">Tarafını seçmeye hazırlan!</p>
             </div>
         `;
@@ -2061,7 +2142,7 @@ function initializeUniLoop() {
         if(!container) return;
         const t = window.tData;
 
-        container.innerHTML = `<div style="text-align:center; padding:30px;"><div style="font-size:40px; animation: glowPulse 1s infinite alternate;">⏳</div><h3 style="color:var(--text-dark);">Sonuçlar Kaydediliyor...</h3></div>`;
+        container.innerHTML = `<div style="text-align:center; padding:30px;"><div style="font-size:40px; animation: glowPulse 1s infinite alternate;">⏳</div><h3 style="color:#111827;">Sonuçlar Kaydediliyor...</h3></div>`;
 
         try {
             const nowTs = Date.now();
@@ -2081,9 +2162,10 @@ function initializeUniLoop() {
                 if(uDoc.exists()) await updateDoc(doc(db, "users", t.thirdPlace.uid), { popularity: (uDoc.data().popularity || 0) + 1 });
             }
 
+            // HANTAL EKRANI KAPATIP DİREKT ANA SAYFAYA ATAN X TUŞU
             container.innerHTML = `
                 <div style="position:relative; text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,0.05); width:100%; max-width:350px; border:1px solid #111827;">
-                    <button onclick="window.loadPage('home')" style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:24px; color:#111827; cursor:pointer; font-weight:bold; transition:0.2s;" onmouseover="this.style.color='#EF4444'" onmouseout="this.style.color='#111827'">✖</button>
+                    <button onclick="window.loadPage('home')" style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:24px; color:#111827; cursor:pointer; font-weight:bold; transition:0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">✖</button>
                     <div style="font-size:50px; margin-bottom:10px; margin-top:10px;">🎉</div>
                     <h3 style="color:#111827; margin-bottom:20px;">Savaş Sona Erdi!</h3>
                     
@@ -2133,35 +2215,20 @@ function initializeUniLoop() {
         let cooldown = 24 * 60 * 60 * 1000;
         let isTournamentCooldown = timeDiff < cooldown;
         
-        // EŞLEŞME LİMİTİ BİTİNCE
         if (count >= maxSwipes) {
             if (isTournamentCooldown) {
-                // BEKLEME EKRANI (COOLDOWN) VE PREMIUM UPSELL (MONOKROM)
-                let premiumUpsellHtml = window.userProfile.isPremium 
-                    ? `<p style="color:var(--text-gray); font-size:14px; font-weight:600; margin-top:20px;">Bugünlük hakkın doldu, yarın görüşürüz. 🖤</p>`
-                    : `
-                    <div style="background:#111827; color:white; padding:20px; border-radius:12px; margin-top:20px; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; border:1px solid #374151; box-shadow:0 4px 10px rgba(0,0,0,0.2);" onclick="window.openPremiumModal()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                        <div style="font-size:28px; margin-bottom:10px;">👑</div>
-                        <h4 style="margin:0 0 5px 0; font-size:16px;">Daha Fazla Kaydır!</h4>
-                        <p style="margin:0; font-size:12px; color:#D1D5DB;">Premium'a geçerek günlük 30 hak kazan.</p>
-                    </div>
-                    `;
-
                 container.innerHTML = `
-                    <div style="text-align:center; padding:30px 20px; background:white; border-radius:16px; border:1px solid #111827; box-shadow:0 4px 6px rgba(0,0,0,0.05); width:100%; max-width:320px;">
-                        <div style="font-size:50px; margin-bottom:15px;">⏳</div>
-                        <h3 style="color:#111827; margin-bottom:10px; font-weight:800;">Savaş Sonuçlandı</h3>
-                        <p style="color:var(--text-gray); font-size:13px; margin-bottom:15px; font-weight:500;">Bir sonraki savaşa kalan süre:</p>
-                        <div id="home-cooldown-timer" style="font-size:32px; font-weight:900; color:#111827; letter-spacing:2px; font-variant-numeric: tabular-nums;">--:--:--</div>
-                        ${premiumUpsellHtml}
+                    <div style="text-align:center; padding:40px 20px; background:white; border-radius:16px; border:1px solid #111827; width:100%; max-width:320px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+                        <div style="font-size:50px; margin-bottom:15px;">🌙</div>
+                        <h3 style="color:#111827; margin-bottom:10px;">Kampüs Dinleniyor...</h3>
+                        <p style="color:var(--text-gray); font-size:13px;">Bugünlük sınırlarına ulaştın ve savaş alanındaki görevini tamamladın. Yeni kişilerle tanışmak ve yeni bir savaş başlatmak için yarın tekrar gel!</p>
                     </div>
                 `;
             } else {
-                // TURNUVA HAZIR EKRANI
                 container.innerHTML = `
                     <div style="text-align:center; padding:20px; background:white; border-radius:16px; border:1px solid #111827; box-shadow:0 4px 6px rgba(0,0,0,0.05); width:100%; max-width:320px;">
                         <div style="font-size:50px; margin-bottom:15px;" class="white-flame-icon" onclick="window.showLeaderboard()">🔥</div>
-                        <h3 style="color:var(--text-dark); margin-bottom:10px;">Popülerlik Savaşı</h3>
+                        <h3 style="color:#111827; margin-bottom:10px;">Popülerlik Savaşı</h3>
                         <p style="color:var(--text-gray); font-size:13px; margin-bottom:20px;">Günlük eşleşme hakkın doldu ama eğlence bitmedi! İnsanlar geri döndü ve oylamanı bekliyor.</p>
                         <button id="join-tour-btn-embedded" class="btn-primary" style="width:100%; justify-content:center; padding:14px; background:#111827; color:white; border:none; border-radius:12px; font-weight:800;" onclick="window.startPopularityTournament()">🤍🔥 Popülerlik Savaşına Katıl</button>
                     </div>
@@ -2454,8 +2521,8 @@ function initializeUniLoop() {
                 const isPremium = u.isPremium;
 
                 let avatarHtml = u.avatarUrl 
-                    ? `<img src="${u.avatarUrl}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid #111827;">` 
-                    : `<div style="width:100px; height:100px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:40px; border:3px solid #111827; margin:0 auto; color:#111827;">${u.avatar || '👤'}</div>`;
+                    ? `<img src="${u.avatarUrl}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid ${isPremium ? '#111827' : '#E5E7EB'};">` 
+                    : `<div style="width:100px; height:100px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:40px; border:3px solid ${isPremium ? '#111827' : '#E5E7EB'}; margin:0 auto; color:#111827;">${u.avatar || '👤'}</div>`;
                 
                 const ageText = u.age ? u.age + " yaşında" : "Yaş belirtilmemiş";
                 const facText = u.faculty ? u.faculty : "Fakülte belirtilmemiş";
@@ -2600,6 +2667,34 @@ function initializeUniLoop() {
             `;
         }
 
+        let count = window.userProfile.fastMatchCount || 0;
+        let maxSwipes = window.userProfile.isPremium ? 30 : 10;
+        let timeDiff = Date.now() - (window.userProfile.lastTournamentDate || 0);
+        let isTournamentCooldown = timeDiff < (24 * 60 * 60 * 1000);
+        let showUpsell = (count >= maxSwipes) && isTournamentCooldown;
+
+        let upsellHtml = '';
+        if (showUpsell) {
+            if (window.userProfile.isPremium) {
+                upsellHtml = `
+                    <div style="margin: 0 10px 10px 10px; padding: 15px; background: #F9FAFB; border: 1px solid #111827; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); flex-shrink:0;">
+                        <div style="font-size: 13px; color: #111827; font-weight: 700;">🖤 Bugünlük hakkın doldu, yarın görüşürüz.</div>
+                        <div id="horizontal-cooldown-timer" style="font-size: 16px; font-weight: 900; color: #111827; font-variant-numeric: tabular-nums;">--:--:--</div>
+                    </div>
+                `;
+            } else {
+                upsellHtml = `
+                    <div style="margin: 0 10px 10px 10px; padding: 15px; background: #111827; color: white; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s; flex-shrink:0;" onclick="window.openPremiumModal()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                        <div style="flex: 1; padding-right: 10px;">
+                            <div style="font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 5px;">👑 Daha Fazla Kaydır!</div>
+                            <div style="font-size: 11px; color: #D1D5DB; margin-top: 3px;">Premium'a geçerek günlük 30 hak kazan.</div>
+                        </div>
+                        <div id="horizontal-cooldown-timer" style="font-size: 18px; font-weight: 900; color: #10B981; font-variant-numeric: tabular-nums; text-shadow: 0 0 5px rgba(16,185,129,0.5);">--:--:--</div>
+                    </div>
+                `;
+            }
+        }
+
         let html = `
             <div style="display:flex; flex-direction:column; height:100%; overflow:hidden;">
                 ${usernameWarning}
@@ -2623,6 +2718,8 @@ function initializeUniLoop() {
                             <button onclick="window.toggleHomeSearch()" style="background:transparent; border:none; font-size:16px; cursor:pointer; color:#EF4444; margin-left:5px;">✖</button>
                     </div>
                 </div>
+
+                ${upsellHtml}
 
                 <div id="embedded-fast-match-container" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:5px 10px 10px 10px; overflow:hidden;">
                     </div>
@@ -2824,7 +2921,7 @@ function initializeUniLoop() {
 
             if(hasMessagedThisListing) {
                  actionButtonsHtml = `
-                    <button class="btn-primary" style="margin-top: 20px; width:100%; padding:12px; font-size:15px; background:#111827; color:white; border:none; box-shadow:0 4px 6px rgba(0,0,0,0.3);" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">
+                    <button class="btn-primary" style="margin-top: 20px; width:100%; padding:12px; font-size:15px; background:#10B981; border-color:#10B981; box-shadow:0 4px 6px rgba(16,185,129,0.3);" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">
                         💬 Mevcut Sohbete Git
                     </button>
                  `;
@@ -2840,7 +2937,7 @@ function initializeUniLoop() {
         window.openModal(item.title, `
             <div style="position:relative;">${imgHtml}</div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <div style="font-size:24px; font-weight:800; color:#111827;">${item.price} ${displayCurrency}</div>
+                <div style="font-size:24px; font-weight:800; color:#059669;">${item.price} ${displayCurrency}</div>
                 <div style="font-size:13px; color:var(--text-gray); background:#F3F4F6; padding:6px 12px; border-radius:20px;">Satıcı: <strong>${item.sellerName}</strong></div>
             </div>
             <div style="font-size:15px; line-height:1.6; color:var(--text-dark); background:#F9FAFB; padding:16px; border-radius:12px; border:1px solid var(--border-color);">${item.desc}</div>
@@ -2973,7 +3070,7 @@ function initializeUniLoop() {
                     <div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; border:1px solid #111827; flex-shrink:0;">
                         ${window.userProfile.avatarUrl ? `<img src="${window.userProfile.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : window.userProfile.avatar}
                     </div>
-                    <button onclick="window.openConfessionForm()" style="background:#111827; color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Yeni Paylaşım Ekle">+</button>
+                    <button onclick="window.openConfessionForm()" style="background:#111827; color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,0.2); flex-shrink:0; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Yeni Paylaşım Ekle">+</button>
                     <button class="btn-primary" style="flex:1; text-align:left; background:#F9FAFB; color:var(--text-gray); border:1px solid #111827; box-shadow:none; padding:12px 15px; font-weight:normal; border-radius:20px;" onclick="window.openConfessionForm()">Kampüste neler oluyor?</button>
                 </div>
                 <div id="conf-feed"></div>
@@ -3001,9 +3098,9 @@ function initializeUniLoop() {
             let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" class="feed-post-img" onclick="event.stopPropagation(); window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
             
             feedHtml += `
-                <div class="feed-post" onclick="window.openConfessionDetail('${post.id}')" style="cursor:pointer; transition: transform 0.2s;">
+                <div class="feed-post" onclick="window.openConfessionDetail('${post.id}')" style="cursor:pointer; transition: transform 0.2s; border:1px solid #E5E7EB;">
                     <div class="feed-post-header">
-                        <div class="feed-post-avatar">${post.isAnonymous ? '🕵️' : (post.authorAvatarUrl ? `<img src="${post.authorAvatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (post.authorAvatar || '👤'))}</div>
+                        <div class="feed-post-avatar" style="border:1px solid #111827;">${post.isAnonymous ? '🕵️' : (post.authorAvatarUrl ? `<img src="${post.authorAvatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (post.authorAvatar || '👤'))}</div>
                         <div class="feed-post-meta">
                             <span class="feed-post-author">${post.isAnonymous ? 'Gizli Kullanıcı' : post.authorName}</span>
                             <span class="feed-post-time">${post.time || 'Yeni'}</span>
@@ -3030,17 +3127,17 @@ function initializeUniLoop() {
                     <input type="checkbox" id="new-post-anon" style="width:18px; height:18px; accent-color:#111827;"> 🕵️ Gizli Paylaş
                 </label>
                 <div style="position:relative;">
-                    <button class="action-btn" onclick="document.getElementById('post-img-upload').click()" style="padding:8px 16px; font-size:13px; background:#EEF2FF; color:#111827; border:none; font-weight:bold;">📷 Fotoğraf Ekle</button>
+                    <button class="action-btn" onclick="document.getElementById('post-img-upload').click()" style="padding:8px 16px; font-size:13px; background:#F3F4F6; color:#111827; border:1px solid #111827; font-weight:bold; border-radius:8px;">📷 Fotoğraf Ekle</button>
                     <input type="file" id="post-img-upload" accept="image/*" style="display:none;" onchange="window.previewPostImage(event)">
                 </div>
             </div>
             
-            <div id="post-img-preview" style="margin-bottom:15px; display:none; position:relative; border-radius:12px; overflow:hidden; border:1px solid #E5E7EB;">
+            <div id="post-img-preview" style="margin-bottom:15px; display:none; position:relative; border-radius:12px; overflow:hidden; border:1px solid #111827;">
                 <img id="post-img-display" style="width:100%; max-height:250px; object-fit:cover; display:block;">
                 <button onclick="document.getElementById('post-img-upload').value=''; document.getElementById('post-img-preview').style.display='none';" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:30px; height:30px; font-size:16px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center;">×</button>
             </div>
             
-            <button id="publish-post-btn" class="btn-primary" style="width:100%; padding:16px; font-size:16px; font-weight:bold; border-radius:12px; background:#111827; color:white; border:none;" onclick="window.submitPost()">Paylaş 🚀</button>
+            <button id="publish-post-btn" class="btn-primary" style="width:100%; padding:16px; font-size:16px; font-weight:bold; border-radius:12px; background:#111827; color:white; border:none; box-shadow:0 4px 10px rgba(0,0,0,0.2);" onclick="window.submitPost()">Paylaş 🚀</button>
         `);
     };
 
@@ -3151,7 +3248,7 @@ function initializeUniLoop() {
         const isLiked = post.likes && post.likes.includes(window.userProfile.uid);
         const likeIcon = isLiked ? '❤️' : '🤍';
         const likeCount = post.likes ? post.likes.length : 0;
-        let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" style="width:100%; border-radius:12px; margin-bottom:15px; cursor:pointer; max-height:400px; object-fit:cover; border:1px solid #E5E7EB;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
+        let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" style="width:100%; border-radius:12px; margin-bottom:15px; cursor:pointer; max-height:400px; object-fit:cover; border:1px solid #111827;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
 
         let commentsHtml = '';
         if(post.comments && post.comments.length > 0) {
@@ -3179,7 +3276,7 @@ function initializeUniLoop() {
             <input type="hidden" id="active-post-id" value="${post.id}">
             <div class="feed-post-header" style="justify-content:space-between; margin-bottom:15px;">
                 <div style="display:flex; align-items:center; gap:12px;">
-                    <div class="feed-post-avatar">${post.isAnonymous ? '🕵️' : (post.authorAvatarUrl ? `<img src="${post.authorAvatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (post.authorAvatar || '👤'))}</div>
+                    <div class="feed-post-avatar" style="border:1px solid #111827;">${post.isAnonymous ? '🕵️' : (post.authorAvatarUrl ? `<img src="${post.authorAvatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (post.authorAvatar || '👤'))}</div>
                     <div class="feed-post-meta">
                         <span class="feed-post-author">${post.isAnonymous ? 'Gizli Kullanıcı' : post.authorName}</span>
                         <span class="feed-post-time">${post.time || ''}</span>
@@ -3195,7 +3292,7 @@ function initializeUniLoop() {
             <div class="answers-container" id="comments-container" style="margin-bottom:15px; max-height: 300px; overflow-y:auto;">${commentsHtml}</div>
             <div style="display:flex; gap:10px; background:white; padding-top:10px;">
                 <input type="text" id="comment-input" placeholder="Bir yanıt yaz..." style="flex:1; padding:14px 15px; border-radius:25px; border:1px solid #111827; outline:none; background:#F9FAFB; font-size:14px;" onkeypress="if(event.key==='Enter') window.addComment('${post.id}')">
-                <button class="chat-send-btn" onclick="window.addComment('${post.id}')" style="width:46px; height:46px; border-radius:50%; background:#111827; color:white; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px;">➤</button>
+                <button class="chat-send-btn" onclick="window.addComment('${post.id}')" style="width:46px; height:46px; border-radius:50%; background:#111827; color:white; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,0.2); font-size:18px;">➤</button>
             </div>
         `;
         
@@ -3397,7 +3494,8 @@ function initializeUniLoop() {
                 </div>
                 
                 <div style="position:relative;">
-                    <button onclick="document.getElementById('chat-options-menu').classList.toggle('hidden'); event.stopPropagation();" style="background:none; border:none; font-size:20px; color:#111827; cursor:pointer;" id="chat-options-dropdown-wrapper">⋮</button>
+                    <button onclick="document.getElementById('chat-options-menu').classList.toggle('hidden'); event.stopPropagation();" style="background:none; border:none; font-size:20px; color:#111827; cursor:pointer
+" id="chat-options-dropdown-wrapper">⋮</button>
                     <div id="chat-options-menu" class="hidden" style="position:absolute; right:0; top:35px; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); border-radius:12px; overflow:hidden; z-index:100; min-width:180px; border:1px solid #111827;">
                         <div onclick="window.clearChatHistory('${chat.id}')" style="padding:14px 15px; font-size:13px; font-weight:600; color:var(--text-dark); cursor:pointer; border-bottom:1px solid #111827; display:flex; align-items:center; gap:10px; transition:0.2s;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='white'">🗑️ Geçmişi Sil</div>
                         <div onclick="window.blockUser('${chat.otherUid}', '${chat.id}', '${chat.name}')" style="padding:14px 15px; font-size:13px; font-weight:600; color:#EF4444; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.2s;" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='white'">🚫 Kişiyi Engelle</div>
@@ -3630,8 +3728,7 @@ function initializeUniLoop() {
                         <div style="font-size:11px; color:#111827; font-weight:bold; margin-top:4px;">Gönderi</div>
                     </div>
                     <div style="background:white; padding:15px 10px; border-radius:12px; border:1px solid #111827;">
-                        <div style="font-size:20px; font-weight
-:800; color:#111827;">${marketDB.filter(m => m.sellerId === u.uid).length}</div>
+                        <div style="font-size:20px; font-weight:800; color:#111827;">${marketDB.filter(m => m.sellerId === u.uid).length}</div>
                         <div style="font-size:11px; color:#111827; font-weight:bold; margin-top:4px;">Market İlanı</div>
                     </div>
                     <div style="background:white; padding:15px 10px; border-radius:12px; border:1px solid #111827;">
