@@ -838,18 +838,18 @@ function initializeUniLoop() {
                     setTimeout(() => window.showAcademicYearUpdateModal(activeYear), 1000);
                 }
                 
-                // PREMIUM BUTONU VE BİLDİRİM ZİLİ RENGİ (SİYAH YERİNE VAR(--PRIMARY) VE İNCE YAZI KULLANILDI)
+                // ORANTILI VE MAVİ TEMA AĞIRLIKLI PREMIUM VE BİLDİRİM BUTONLARI
                 const headerRightMenu = document.querySelector('.header-right-menu');
                 if (headerRightMenu) {
                     headerRightMenu.innerHTML = ''; 
                     
                     if (!window.userProfile.isPremium) {
-                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background:var(--bg-color); color:var(--primary); border:1px solid #C7D2FE; padding:6px 12px; border-radius:12px; font-weight:600; font-size:13px; cursor:pointer;" onclick="window.openPremiumModal()">★ Premium</div>`);
+                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="height:36px; display:inline-flex; align-items:center; justify-content:center; background:var(--bg-color); color:var(--primary); border:1px solid #C7D2FE; padding:0 16px; border-radius:18px; font-weight:700; font-size:13px; cursor:pointer; box-sizing:border-box;" onclick="window.openPremiumModal()">★ Premium</div>`);
                     } else {
-                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background:#111827; color:white; border:1px solid #111827; padding:6px 12px; border-radius:12px; font-weight:600; font-size:13px; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">★ Ayrıcalıklar</div>`);
+                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="height:36px; display:inline-flex; align-items:center; justify-content:center; background:#111827; color:white; border:none; padding:0 16px; border-radius:18px; font-weight:700; font-size:13px; cursor:pointer; box-sizing:border-box;" onclick="window.openPremiumFeaturesModal()">★ Ayrıcalıklar</div>`);
                     }
 
-                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler" style="background:var(--bg-color); border:1px solid #E5E7EB; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--primary)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> <span id="notif-badge-top" style="display:none; position:absolute; top:-4px; right:-4px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
+                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler" style="background:var(--bg-color); border:1px solid #E5E7EB; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer; box-sizing:border-box;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--primary)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> <span id="notif-badge-top" style="display:none; position:absolute; top:-4px; right:-4px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
                 }
 
                 if (!document.getElementById('uniloop-bottom-nav')) {
@@ -1042,7 +1042,6 @@ function initializeUniLoop() {
         const fac = window.userProfile.faculty || "Fakültenizin";
         const grade = window.userProfile.grade ? window.userProfile.grade + ". Sınıf" : "";
         
-        // PREMIUM TEMA: TURUNCU YERİNE KOYU SİYAH/ANTRASİT
         window.openModal('🌟 UniLoop Premium', `
             <div style="text-align:center; padding: 10px;">
                 <div style="font-size: 48px; margin-bottom: 10px;">👑</div>
@@ -1056,7 +1055,7 @@ function initializeUniLoop() {
                 <ul style="text-align:left; font-size:14px; margin-bottom:20px; line-height:1.6; color:var(--text-dark); background:#F9FAFB; padding:15px 15px 15px 35px; border-radius:12px; border:1px solid #111827;">
                     <li>👀 <b>Diğer kullanıcıların detaylı profillerini görüntüleme hakkı!</b> Blurları kaldır.</li>
                     <li>📚 <b>${fac} ${grade}</b> çıkmış sorularına anında erişim!</li>
-                    <li>🔥 <b>Daha Fazla</b> Hızlı Eşleşme hakkı.</li>
+                    <li>🔥 <b>Günlük 30 Adet</b> Hızlı Eşleşme hakkı. (Daha Fazla Eşleşme)</li>
                     <li>🕵️ <b>Kimler Profilime Baktı?</b> Seni görüntüleyen gizli hayranlarını gör.</li>
                 </ul>
                 <button id="buy-premium-btn" onclick="window.upgradeToPremium()" style="width:100%; justify-content:center; padding: 16px; font-size: 16px; background:linear-gradient(135deg, #111827, #374151); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; box-shadow:0 4px 6px rgba(0,0,0,0.3); transition:0.2s;" class="premium-glow">
@@ -1096,7 +1095,7 @@ function initializeUniLoop() {
                 
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:#111827; color:white; border:1px solid #111827; padding:6px 12px; border-radius:12px; font-weight:600; font-size:13px; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">★ Ayrıcalıklar</div>`;
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="height:36px; display:inline-flex; align-items:center; justify-content:center; background:#111827; color:white; border:none; padding:0 16px; border-radius:18px; font-weight:700; font-size:13px; cursor:pointer; box-sizing:border-box;" onclick="window.openPremiumFeaturesModal()">★ Ayrıcalıklar</div>`;
                 }
                 
                 window.closeModal();
@@ -1118,7 +1117,7 @@ function initializeUniLoop() {
                 
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:var(--bg-color); color:var(--primary); border:1px solid #C7D2FE; padding:6px 12px; border-radius:12px; font-weight:600; font-size:13px; cursor:pointer;" onclick="window.openPremiumModal()">★ Premium</div>`;
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="height:36px; display:inline-flex; align-items:center; justify-content:center; background:var(--bg-color); color:var(--primary); border:1px solid #C7D2FE; padding:0 16px; border-radius:18px; font-weight:700; font-size:13px; cursor:pointer; box-sizing:border-box;" onclick="window.openPremiumModal()">★ Premium</div>`;
                 }
 
                 alert("Premium üyeliğiniz başarıyla iptal edildi.");
@@ -1353,7 +1352,13 @@ function initializeUniLoop() {
         if(msgTab) { msgTab.classList.add('active'); window.loadPage('messages'); }
     };
 
+    // FAKÜLTE LİSTESİ VEYA DİREKT GİRİŞ (HAFIZA SİSTEMİ)
     window.openFacultiesList = function() {
+        if (window.userProfile && window.userProfile.joinedClassRoom && window.userProfile.joinedClassRoom.roomId) {
+            window.openGroupRoom(window.userProfile.joinedClassRoom.roomId, window.userProfile.joinedClassRoom.roomTitle, 'faculty');
+            return;
+        }
+
         let listHtml = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
         
         allFaculties.forEach(fac => {
@@ -1365,10 +1370,9 @@ function initializeUniLoop() {
         });
         
         listHtml += `</div>`;
-        window.openModal('🏛️ Fakülte Sohbetleri', listHtml);
+        window.openModal('🏛️ Fakülte Seçimi', listHtml);
     };
 
-    // FAKÜLTE HAFIZA SİSTEMİ (Direkt Bağlantı)
     window.handleFacultyClick = function(facName) {
         if (window.userProfile.joinedClassRoom && window.userProfile.joinedClassRoom.facName === facName) {
             window.closeModal();
@@ -1820,14 +1824,24 @@ function initializeUniLoop() {
         const container = document.getElementById('embedded-fast-match-container');
         if(!container) return;
 
-        // 30 GÜNLÜK HAK KONTROLÜ
-        if (!window.userProfile.isPremium && count >= 30) {
+        // 10 VE 30 GÜNLÜK HAK KONTROLÜ
+        let maxSwipes = window.userProfile.isPremium ? 30 : 10;
+        
+        if (count >= maxSwipes) {
+            let limitMessage = window.userProfile.isPremium 
+                ? "Premium kullanıcılar için belirlenen günlük 30 kişiyle eşleşme limitine ulaştın. Yarın tekrar gel!"
+                : "Ücretsiz kullanımda günlük 10 kişiyle eşleşme hakkın var. Daha fazla eşleşme için Premium'a geç!";
+                
+            let actionButton = window.userProfile.isPremium 
+                ? `<button class="btn-primary" style="width:100%; justify-content:center;" onclick="window.loadPage('home')">Anasayfaya Dön</button>`
+                : `<button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center; background:linear-gradient(135deg, #111827, #374151); color:white; border:none;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>`;
+
             container.innerHTML = `
                 <div style="text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 6px rgba(0,0,0,0.05); width:100%; max-width:320px;">
                     <div style="font-size:50px; margin-bottom:15px;">🛑</div>
                     <h3 style="color:var(--text-dark); margin-bottom:10px;">Günlük Hakkın Doldu!</h3>
-                    <p style="color:var(--text-gray); font-size:13px; margin-bottom:20px;">Ücretsiz kullanımda günlük 30 kişiyle eşleşme hakkın var. Daha fazla eşleşme için Premium'a geç!</p>
-                    <button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center; background:linear-gradient(135deg, #111827, #374151); color:white; border:none;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>
+                    <p style="color:var(--text-gray); font-size:13px; margin-bottom:20px;">${limitMessage}</p>
+                    ${actionButton}
                 </div>
             `;
             return;
@@ -1881,6 +1895,7 @@ function initializeUniLoop() {
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
         const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:6px; text-shadow:0 1px 2px rgba(0,0,0,0.5);" title="Premium Üye">👑</span>' : '';
         
+        // FOTOĞRAF VE EMOJİ KARTLARI TAM OLARAK AYNI BOYUTTA VE ALT KISMI KESİLMİŞ OVAL
         let avatarHtml = u.avatarUrl 
             ? `<img src="${u.avatarUrl}" style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;">` 
             : `<div style="width:100%; height:100%; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:80px; pointer-events:none;">${u.avatar || '👤'}</div>`;
@@ -1890,10 +1905,13 @@ function initializeUniLoop() {
             tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:11px; background:rgba(255,255,255,0.25); color:white; padding:4px 10px; border-radius:12px; font-weight:700; margin-right:4px; margin-bottom:4px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join('');
         }
 
-        // PREMIUM VE GÜNLÜK 30 HAK YAZISI GÜNCELLENDİ
+        // HAK METNİ 10 VEYA 30 OLARAK EKRANDA YAZACAK
+        let maxSwipes = window.userProfile.isPremium ? 30 : 10;
+        let remaining = maxSwipes - window.userProfile.fastMatchCount;
+        
         let headerText = window.userProfile.isPremium ? 
-            '<span style="color:#111827; font-size:12px; font-weight:bold; background:#F3F4F6; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #111827;">Daha Fazla Hızlı Eşleşme Hakkı (Premium)</span>' : 
-            `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block;">Kalan Hakkın: ${30 - window.userProfile.fastMatchCount} / 30</span>`;
+            `<span style="color:#111827; font-size:12px; font-weight:bold; background:#F3F4F6; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #111827;">Kalan Hakkın: ${remaining} / 30 (Premium)</span>` : 
+            `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:4px 8px; border-radius:12px; margin-bottom:10px; display:inline-block;">Kalan Hakkın: ${remaining} / 10</span>`;
 
         container.innerHTML = `
             ${headerText}
@@ -1921,19 +1939,19 @@ function initializeUniLoop() {
         const card = document.getElementById('swipe-card');
         if(!card) return;
 
-        if(!window.userProfile.isPremium) {
-            window.userProfile.fastMatchCount += 1;
-            try {
-                await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchCount: window.userProfile.fastMatchCount });
-            } catch(e) {}
-        }
+        window.userProfile.fastMatchCount += 1;
+        try {
+            await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchCount: window.userProfile.fastMatchCount });
+        } catch(e) {}
+
+        let maxSwipes = window.userProfile.isPremium ? 30 : 10;
 
         if(direction === 'left') {
             card.style.transform = 'translateX(-200px) rotate(-20deg)';
             card.style.opacity = '0';
             setTimeout(() => {
                 fastMatchCurrentIndex++;
-                if (!window.userProfile.isPremium && window.userProfile.fastMatchCount >= 30) {
+                if (window.userProfile.fastMatchCount >= maxSwipes) {
                     window.initEmbeddedFastMatch(); 
                 } else {
                     window.renderEmbeddedFastMatchCard();
@@ -1948,7 +1966,7 @@ function initializeUniLoop() {
             
             setTimeout(() => {
                 fastMatchCurrentIndex++;
-                if (!window.userProfile.isPremium && window.userProfile.fastMatchCount >= 30) {
+                if (window.userProfile.fastMatchCount >= maxSwipes) {
                     window.initEmbeddedFastMatch(); 
                 } else {
                     window.renderEmbeddedFastMatchCard();
@@ -3227,7 +3245,6 @@ function initializeUniLoop() {
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
         const isPremium = u.isPremium;
         
-        // PREMIUM KİMLİK KARTI: ÇEVRESİ SİYAH OLDU
         let avatarHtml = u.avatarUrl 
             ? `<div style="position:relative; cursor:pointer;" onclick="document.getElementById('profile-avatar-upload').click()">
                  <img src="${u.avatarUrl}" class="id-card-avatar" style="${isPremium ? 'border-color:#111827;' : ''}">
@@ -3243,7 +3260,6 @@ function initializeUniLoop() {
             tagsHtml = u.interests.map(tag => `<span class="id-tag">${tag}</span>`).join('');
         }
 
-        // PREMIUM ÜYE BADGE SİYAH-BEYAZ TONLARINA ÇEVRİLDİ
         const premiumBadgeHtml = isPremium 
             ? `<div style="background:linear-gradient(135deg, #111827, #374151); color:white; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:12px; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 4px rgba(0,0,0,0.3); margin-top:5px;">👑 Premium Üye</div>` 
             : ``;
@@ -3324,7 +3340,7 @@ function initializeUniLoop() {
             return;
         }
 
-        let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px;">`;
+        let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
         friends.forEach(f => {
             let avatarHtml = f.avatar && f.avatar.startsWith('http') 
                 ? `<img src="${f.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">`
@@ -3350,7 +3366,6 @@ function initializeUniLoop() {
     window.renderSettings = function() {
         const currentLang = localStorage.getItem('uniloop_lang') || 'tr';
         
-        // PREMIUM İPTAL BUTONU SİYAH TEMA
         let premiumCancelHtml = window.userProfile.isPremium ? `<a href="#" onclick="event.preventDefault(); window.cancelPremium()" style="display:block; text-align:center; font-size:12px; color:#111827; font-weight:bold; text-decoration:underline; margin-bottom:15px;">Premium Üyeliğimi İptal Et</a>` : '';
 
         window.openModal('⚙️ Ayarlar', `
