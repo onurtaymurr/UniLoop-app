@@ -40,7 +40,6 @@ import {
     getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-// — GÜNCEL FIREBASE YAPILANDIRMASI —
 const firebaseConfig = {
     apiKey: "AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
     authDomain: "uniloop-app.firebaseapp.com",
@@ -57,7 +56,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// --- SİSTEM HAFIZASI (GLOBAL DEĞİŞKENLER) ---
+// --- SİSTEM HAFIZASI ---
 window.userProfile = { 
     uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: "", lockedArchiveFaculty: "", lockedArchiveGrade: "", lastArchiveResetYear: 0, blockedUsers: []
 };
@@ -90,7 +89,6 @@ let cropper = null;
 
 function initializeUniLoop() {
 
-    // 🌟 KLAVYE SCROLL/DONMA BUG FİXİ
     document.addEventListener('focusout', function(e) {
         if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
             setTimeout(() => { 
@@ -100,7 +98,6 @@ function initializeUniLoop() {
         }
     });
 
-    // ✂️ CROPPER.JS ENJEKSİYONU
     const cropperCss = document.createElement('link');
     cropperCss.rel = 'stylesheet';
     cropperCss.href = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css';
@@ -110,7 +107,6 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
-    // 🎨 CSS DÜZENLEMELERİ (Eşleşme Tam Ekran & Dropdown için Güncellendi)
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; background-color: #f3f4f6; color: #111827; }
@@ -166,31 +162,8 @@ function initializeUniLoop() {
         #sidebar { display: none !important; }
         #mobile-menu-btn { display: none !important; }
 
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #ffffff;
-            border-top: 1px solid #f1f1f1;
-            display: flex;
-            justify-content: space-around;
-            align-items: center; 
-            height: calc(60px + env(safe-area-inset-bottom));
-            padding-bottom: env(safe-area-inset-bottom);
-            box-sizing: border-box;
-            z-index: 99999;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
-        }
-        .bottom-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #8E8E93; font-size: 10px; text-decoration: none; cursor: pointer; transition: 0.2s; flex: 1; background: transparent !important; border: none !important; font-weight: 500; -webkit-tap-highlight-color: transparent; 
-            height: 60px; 
-            padding: 0;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #ffffff; border-top: 1px solid #f1f1f1; display: flex; justify-content: space-around; align-items: center; height: calc(60px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; z-index: 99999; box-shadow: 0 -2px 10px rgba(0,0,0,0.02); }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8E8E93; font-size: 10px; text-decoration: none; cursor: pointer; transition: 0.2s; flex: 1; background: transparent !important; border: none !important; font-weight: 500; -webkit-tap-highlight-color: transparent; height: 60px; padding: 0; }
         .bottom-nav-item.active { color: #6366f1 !important; font-weight: 600; }
         .bottom-nav-icon { width: 22px; height: 22px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; }
         .bottom-nav-icon svg { width: 100%; height: 100%; transition: 0.2s; }
@@ -228,7 +201,6 @@ function initializeUniLoop() {
         .chat-contact.active { background: #EEF2FF; border-left: 4px solid var(--primary); }
         .chat-contact:hover { background: #F9FAFB; }
         
-        /* 🌟 MODERN WHATSAPP/TELEGRAM TARZI CHAT BUBBLES */
         .bubble { position: relative; max-width: 75%; padding: 10px 14px; border-radius: 16px; margin-bottom: 8px; font-size: 15px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); width: fit-content; }
         .bubble.sent { align-self: flex-end; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border-bottom-right-radius: 4px; }
         .bubble.received { align-self: flex-start; background: #ffffff; color: #111827; border: 1px solid #e5e7eb; border-bottom-left-radius: 4px; }
@@ -251,11 +223,6 @@ function initializeUniLoop() {
         .feed-post-actions { display: flex; border-top: 1px solid #E5E7EB; padding-top: 12px; gap: 20px; }
         .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
         .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
-        .user-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; width: 100%; }
-        .user-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 15px 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; justify-content: center; min-height: 140px;}
-        .user-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); border-color: var(--primary); }
-        .premium-glow { animation: glowPulse 2s infinite alternate; }
-        @keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); } 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); } }
         .premium-upgrade-btn { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 15px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); display: inline-flex; align-items: center; gap: 8px; }
         .premium-upgrade-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(245, 158, 11, 0.4); }
         
@@ -265,8 +232,6 @@ function initializeUniLoop() {
         
         #notif-btn-top { position: relative; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; transition: 0.2s; }
         #notif-btn-top:hover { background: #E5E7EB; }
-        
-        #nav-premium-action { font-size: 13px !important; padding: 0 12px !important; height: 32px !important; line-height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; flex-shrink: 0 !important; margin: 0 !important; border-radius: 8px !important; }
         
         @media (max-width: 1024px) {
             .chat-sidebar { width: 100%; display: block; border-right: none; }
@@ -280,22 +245,6 @@ function initializeUniLoop() {
         ::-webkit-scrollbar-thumb:hover { background: rgba(107, 114, 128, 0.8); }
     `;
     document.head.appendChild(styleFix);
-
-        // 🌟 UNILOOP LOGO ENJEKSİYONU
-    setTimeout(() => {
-        const headerLogoCandidates = document.querySelectorAll('.logo, .logo-title, #logo-btn, #app-header > :first-child, header > :first-child');
-        headerLogoCandidates.forEach(el => {
-            if(el && !el.hasAttribute('data-logo-applied')) {
-                el.innerHTML = `
-                    <div style="display: flex; align-items: center; height: 100%; padding-left: 5px;">
-                        <img src="uniloop-yeni-logo.png" alt="UniLoop" style="max-height: 32px; width: auto; object-fit: contain; display: block;">
-                    </div>
-                `;
-                el.setAttribute('data-logo-applied', 'true');
-            }
-        });
-    }, 100);
-
 
     const cropperModalHtml = `
         <div id="cropper-modal" class="cropper-modal-container">
@@ -317,7 +266,6 @@ function initializeUniLoop() {
     };
 
     document.addEventListener('click', async function(e) {
-        // Chat Opsiyon Menüsü Kapanma Kontrolü
         const chatMenu = document.getElementById('chat-options-menu');
         if (chatMenu && !e.target.closest('#chat-options-dropdown-wrapper')) {
             chatMenu.classList.add('hidden');
@@ -893,17 +841,18 @@ function initializeUniLoop() {
                     setTimeout(() => window.showAcademicYearUpdateModal(activeYear), 1000);
                 }
                 
+                // PREMIUM BUTON ÇAKIŞMA ÇÖZÜMÜ: SADECE JS ÇİZECEK
                 const headerRightMenu = document.querySelector('.header-right-menu');
                 if (headerRightMenu) {
                     headerRightMenu.innerHTML = ''; 
                     
                     if (!window.userProfile.isPremium) {
-                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumModal()">★ Premium</div>`);
+                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 4px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.4);" onclick="window.openPremiumModal()">🌟 Premium</div>`);
                     } else {
-                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">★ Premium Özellikler</div>`);
+                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background: white; color: #D97706; border: 2px solid #D97706; padding: 4px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer;" onclick="window.openPremiumFeaturesModal()">👑 Ayrıcalıklar</div>`);
                     }
 
-                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler" style="background:white; border:2px solid black; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="black" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> <span id="notif-badge-top" style="display:none; position:absolute; top:-4px; right:-4px; background:black; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
+                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler" style="background:white; border:1px solid #E5E7EB; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#111827" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> <span id="notif-badge-top" style="display:none; position:absolute; top:-4px; right:-4px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
                 }
 
                 if (!document.getElementById('uniloop-bottom-nav')) {
@@ -933,24 +882,15 @@ function initializeUniLoop() {
             const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
             await updateDoc(doc(db, "chats", chatId), {
-                messages: arrayUnion({
-                    senderId: "system",
-                    text: text,
-                    time: timeStr,
-                    read: false,
-                    isSystem: true
-                }),
+                messages: arrayUnion({ senderId: "system", text: text, time: timeStr, read: false, isSystem: true }),
                 lastUpdated: serverTimestamp()
             });
-        } catch(e) { 
-            console.error(e); 
-        }
+        } catch(e) { console.error(e); }
     };
     
     function initRealtimeListeners(currentUid) {
         const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
 
-        // 💸 OPTİMİZASYON: Sınırsız çekim yerine son 50 market ilanı getiriliyor
         onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
             marketDB = [];
             snapshot.forEach(doc => { marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
@@ -959,7 +899,6 @@ function initializeUniLoop() {
             if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
         });
 
-        // 💸 OPTİMİZASYON: Sınırsız çekim yerine son 50 itiraf (gönderi) getiriliyor
         onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
             confessionsDB = [];
             snapshot.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
@@ -993,7 +932,6 @@ function initializeUniLoop() {
                     if (!data.participants || !Array.isArray(data.participants)) return;
                     const otherUid = data.participants.find(p => p !== currentUid) || "system";
                     
-                    // Engellenmiş kullanıcıların sohbetlerini atla (UI için)
                     if (window.userProfile.blockedUsers && window.userProfile.blockedUsers.includes(otherUid)) return;
                     if (data.status === 'blocked' && data.blockedBy !== window.userProfile.uid) return;
 
@@ -1017,7 +955,7 @@ function initializeUniLoop() {
                             if (lastMsg.senderId !== currentUid && lastMsg.read === false) unreadMessagesCount++;
                         }
                     }
-                } catch(err) { console.error("Hatalı mesaj belgesi es geçildi:", err); }
+                } catch(err) { console.error(err); }
             });
 
             chatsDB.sort((a, b) => b.lastUpdatedTS - a.lastUpdatedTS);
@@ -1160,7 +1098,7 @@ function initializeUniLoop() {
                 
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">★ Premium Özellikler</div>`;
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background: white; color: #D97706; border: 2px solid #D97706; padding: 4px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer;" onclick="window.openPremiumFeaturesModal()">👑 Ayrıcalıklar</div>`;
                 }
                 
                 window.closeModal();
@@ -1182,7 +1120,7 @@ function initializeUniLoop() {
                 
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumModal()">★ Premium</div>`;
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 4px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.4);" onclick="window.openPremiumModal()">🌟 Premium</div>`;
                 }
 
                 alert("Premium üyeliğiniz başarıyla iptal edildi.");
@@ -1422,7 +1360,7 @@ function initializeUniLoop() {
         
         allFaculties.forEach(fac => {
             listHtml += `
-                <button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px 8px; font-size:13px; font-weight:600; border-radius:12px;" onclick="window.checkFacultyPasscode('${fac}')">
+                <button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px 8px; font-size:13px; font-weight:600; border-radius:12px;" onclick="window.handleFacultyClick('${fac}')">
                     ${fac}
                 </button>
             `;
@@ -1430,6 +1368,22 @@ function initializeUniLoop() {
         
         listHtml += `</div>`;
         window.openModal('🏛️ Fakülte Sohbetleri', listHtml);
+    };
+
+    // YENİ EKLENEN FAKÜLTE HAFIZA SİSTEMİ
+    window.handleFacultyClick = function(facName) {
+        if (window.userProfile.joinedClassRoom && window.userProfile.joinedClassRoom.facName === facName) {
+            window.closeModal();
+            window.openGroupRoom(window.userProfile.joinedClassRoom.roomId, window.userProfile.joinedClassRoom.roomTitle, 'faculty');
+            return;
+        }
+        
+        if (window.userProfile.joinedClassRoom && window.userProfile.joinedClassRoom.facName !== facName) {
+            alert(`Zaten "${window.userProfile.joinedClassRoom.facName}" grubundasınız. Başka bir fakülteye girmek için önce mevcut grubunuzun içinden '⏏ Gruptan Çık' butonuna basarak çıkış yapmalısınız.`);
+            return;
+        }
+        
+        window.checkFacultyPasscode(facName);
     };
 
     window.checkFacultyPasscode = async function(facName) {
@@ -1854,7 +1808,6 @@ function initializeUniLoop() {
     let fastMatchUsers = [];
     let fastMatchCurrentIndex = 0;
 
-    // Tam ekrana gömülü Hızlı Eşleşme Başlatıcısı
     window.initEmbeddedFastMatch = async function() {
         let count = window.userProfile.fastMatchCount || 0;
         let today = new Date().toLocaleDateString();
@@ -1910,6 +1863,7 @@ function initializeUniLoop() {
         }
     };
 
+    // SABİT BOYUTLU KART DÜZENLEMESİ (UI KAYMASI ÇÖZÜLDÜ)
     window.renderEmbeddedFastMatchCard = function() {
         const container = document.getElementById('embedded-fast-match-container');
         if(!container) return;
@@ -1930,8 +1884,8 @@ function initializeUniLoop() {
         const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:6px; text-shadow:0 1px 2px rgba(0,0,0,0.5);" title="Premium Üye">👑</span>' : '';
         
         let avatarHtml = u.avatarUrl 
-            ? `<img src="${u.avatarUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:20px; display:block; pointer-events:none;">` 
-            : `<div style="width:100%; height:100%; border-radius:20px; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:80px; pointer-events:none;">${u.avatar || '👤'}</div>`;
+            ? `<img src="${u.avatarUrl}" style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;">` 
+            : `<div style="width:100%; height:100%; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:80px; pointer-events:none;">${u.avatar || '👤'}</div>`;
 
         let tagsHtml = '';
         if(u.interests && Array.isArray(u.interests)) {
@@ -1944,10 +1898,12 @@ function initializeUniLoop() {
 
         container.innerHTML = `
             ${headerText}
-            <div id="swipe-card" style="position:relative; width:100%; max-width:320px; flex:1; max-height:450px; margin:0 auto; transition: transform 0.3s ease, opacity 0.3s ease; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.15); background:#fff; display:flex; flex-direction:column;">
-                ${avatarHtml}
+            <div id="swipe-card" class="swipe-card">
+                <div class="swipe-card-avatar-wrapper">
+                    ${avatarHtml}
+                </div>
                 
-                <div style="position:absolute; bottom:0; left:0; right:0; padding:40px 15px 45px 15px; background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); border-bottom-left-radius:20px; border-bottom-right-radius:20px; text-align:left;">
+                <div style="position:absolute; bottom:0; left:0; right:0; padding:40px 15px 45px 15px; background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); z-index:2; text-align:left;">
                     <h2 style="margin:0 0 6px 0; color:white; font-size:22px; display:flex; align-items:center; text-shadow:0 2px 4px rgba(0,0,0,0.6);">${u.name} ${initial} ${u.age ? `<span style="font-weight:normal; margin-left:8px; font-size:18px; opacity:0.9;">${u.age}</span>` : ''} ${premiumIcon}</h2>
                     <div style="font-size:13px; color:#e2e8f0; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:4px; text-shadow:0 1px 2px rgba(0,0,0,0.5);"><span style="font-size:15px;">🏛️</span> ${u.faculty || 'Kampüs Öğrencisi'}</div>
                     <div style="display:flex; flex-wrap:wrap; margin-bottom:0;">${tagsHtml}</div>
@@ -2006,7 +1962,6 @@ function initializeUniLoop() {
         const input = document.getElementById('home-friend-search-input');
         if(input) {
             const val = input.value;
-            // Fake a structure to reuse searchAndAddFriend
             const fakeInput = document.createElement('input');
             fakeInput.id = 'friend-search-input';
             fakeInput.value = val;
@@ -2273,7 +2228,6 @@ function initializeUniLoop() {
         }
     };
 
-    // --- YENİ ANA SAYFA (HIZLI EŞLEŞME GÖMÜLÜ, ARAMA EKLİ) ---
     window.toggleHomeSearch = function() {
         const searchContainer = document.getElementById('home-search-container');
         const iconsContainer = document.getElementById('home-icons-container');
@@ -3035,7 +2989,6 @@ function initializeUniLoop() {
         setTimeout(() => { window.openChatView(chatId); }, 100);
     };
 
-    // --- MESAJ SEÇENEKLERİ EKLENDİ (ENGELLEME & SİLME) ---
     window.clearChatHistory = async function(chatId) {
         if(confirm("Bu kişiyle olan tüm mesaj geçmişini silmek istediğinize emin misiniz?")) {
             try {
