@@ -1181,10 +1181,11 @@ function initializeUniLoop() {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: false });
                 window.userProfile.isPremium = false;
                 
-                const navBtn = document.getElementById('nav-premium-action');
+                                const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="color:#D97706; font-weight:bold; cursor:pointer;" onclick="window.openPremiumModal()">🌟 Premium</div>`;
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumModal()">★ Premium</div>`;
                 }
+
 
                 alert("Premium üyeliğiniz başarıyla iptal edildi.");
                 window.closeModal();
