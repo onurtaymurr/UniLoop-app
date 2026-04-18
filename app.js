@@ -1158,10 +1158,11 @@ function initializeUniLoop() {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: true });
                 window.userProfile.isPremium = true;
                 
-                const navBtn = document.getElementById('nav-premium-action');
+                                const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:linear-gradient(135deg, #F59E0B, #D97706); color:white; padding:4px 10px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">🌟 Premium Özellikler</div>`;
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">★ Premium Özellikler</div>`;
                 }
+
                 
                 window.closeModal();
                 alert("🎉 Tebrikler! Ödemeniz başarıyla alındı. UniLoop Premium ayrıcalıklarına artık sahipsiniz!");
