@@ -87,6 +87,12 @@ const modal = document.getElementById('app-modal');
 
 let cropper = null;
 
+// TURNUVA DEĞİŞKENLERİ (Bölüm 1'e taşındı)
+window.tData = { 
+    bracket: [], winners: [], currentMatch: 0, stage: 'none', 
+    semiLosers: [], finalists: [], finalWinner: null, secondPlace: null, thirdPlace: null 
+};
+
 function initializeUniLoop() {
 
     document.addEventListener('focusout', function(e) {
@@ -165,10 +171,12 @@ function initializeUniLoop() {
         .tour-grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width:100%; max-width:400px; margin: 0 auto; }
         .tour-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width:100%; max-width:400px; align-items:center; margin: 0 auto; padding-top:20px; }
         
-        .tour-card { background: #fff; border-radius:16px; overflow:hidden; position:relative; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.08); transition:all 0.2s; aspect-ratio: 1; display:flex; flex-direction:column; border:3px solid transparent; }
-        .tour-card:hover { border-color: #6366f1; box-shadow:0 8px 20px rgba(99, 102, 241, 0.3); }
+        /* HOVER EFEKTİ KALDIRILDI - YERİNE ACTIVE EKLENDİ */
+        .tour-card { background: #fff; border-radius:16px; overflow:hidden; position:relative; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.08); transition:all 0.15s ease-out; aspect-ratio: 1; display:flex; flex-direction:column; border:3px solid transparent; -webkit-tap-highlight-color: transparent; }
+        .tour-card:active { transform: scale(0.95) !important; border-color: #6366f1 !important; box-shadow:0 8px 20px rgba(99, 102, 241, 0.3) !important; }
+        
         .tour-card-img { width: 100%; height: 100%; object-fit: cover; }
-        .tour-card-name { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.4), transparent); color:white; padding: 30px 10px 10px 10px; font-size:14px; font-weight:800; text-align:center; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        .tour-card-name { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.4), transparent); color:white; padding: 30px 10px 10px 10px; font-size:14px; font-weight:800; text-align:center; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;}
 
         .stepper-container { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 400px; margin: 0 auto; width: 100%; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -1813,9 +1821,6 @@ function initializeUniLoop() {
     let fastMatchUsers = [];
     let fastMatchCurrentIndex = 0;
 
-    // 🌟 TURNUVA DEĞİŞKENLERİ 🌟
-    window.tData = { bracket: [], winners: [], currentMatch: 0, stage: 'none', semiLosers: [], finalWinner: null, secondPlace: null, thirdPlace: null };
-
     window.showLeaderboard = async function() {
         window.openModal('🔥 Popülerlik Sıralaması', `<div style="text-align:center; padding:30px;"><div style="font-size:30px; animation: glowPulse 1.5s infinite alternate;">🔥</div><p style="color:var(--text-gray); margin-top:10px;">Sıralama yükleniyor...</p></div>`);
         try {
@@ -1873,19 +1878,18 @@ function initializeUniLoop() {
             
             allUsers = allUsers.sort(() => 0.5 - Math.random()).slice(0, 32);
             
-            // Eğer kampüste yeterli kişi yoksa, gerçek kişileri kopyalamak yerine sahte botlar ekleyelim (Klon Hatası Çözümü).
             while(allUsers.length < 32) {
                 allUsers.push({ 
                     uid: "bot_" + Math.random().toString(36).substr(2, 9), 
-                    name: "Kampüs Botu 🤖", 
+                    name: "Sistem Botu 🤖", 
                     age: "?",
-                    faculty: "Sistem Ekledi",
+                    faculty: "UniLoop",
                     avatar: "🤖",
                     isClone: true 
                 });
             }
             
-            window.tData = { bracket: allUsers, winners: [], currentMatch: 0, stage: 'groups', semiLosers: [], finalWinner: null, secondPlace: null, thirdPlace: null };
+            window.tData = { bracket: allUsers, winners: [], currentMatch: 0, stage: 'groups', semiLosers: [], finalists: [], finalWinner: null, secondPlace: null, thirdPlace: null };
             window.renderTournamentRound();
         } catch(e) {
             console.error(e);
@@ -1931,13 +1935,19 @@ function initializeUniLoop() {
         if (t.currentMatch >= totalMatchesInStage) {
             if (t.stage === 'groups') { t.stage = 'quarters'; t.bracket = [...t.winners]; }
             else if (t.stage === 'quarters') { t.stage = 'semis'; t.bracket = [...t.winners]; }
-            else if (t.stage === 'semis') { t.stage = 'thirdPlace'; t.bracket = [...t.semiLosers]; }
-            else if (t.stage === 'thirdPlace') { t.stage = 'final'; t.bracket = [t.winners[t.winners.length-3], t.winners[t.winners.length-2]]; } 
+            else if (t.stage === 'semis') { 
+                t.stage = 'thirdPlace'; 
+                t.finalists = [...t.winners]; // Hata Çözümü: Finalistleri kaybetmemek için ayrı diziye aldık
+                t.bracket = [...t.semiLosers]; 
+            }
+            else if (t.stage === 'thirdPlace') { 
+                t.stage = 'final'; 
+                t.bracket = [...t.finalists]; // Finalde finalistleri kullanıyoruz
+            } 
             else if (t.stage === 'final') { window.finishTournament(); return; }
             
             t.winners = [];
             t.currentMatch = 0;
-            if(t.stage === 'final') t.winners = []; 
             window.renderTournamentRound();
             return;
         }
@@ -1949,7 +1959,6 @@ function initializeUniLoop() {
         if(t.stage === 'thirdPlace') stageTitle = `🥉 3. lük Maçı`;
         if(t.stage === 'final') stageTitle = `🏆 BÜYÜK FİNAL`;
 
-        // Tasarım Güncellemesi: İsmin üzerine Yaş ve Fakülte eklendi. Tıklamada asılı kalmayı çözen timeout (scale efekti) eklendi.
         if (t.stage === 'groups') {
             const baseIdx = t.currentMatch * 4;
             const users = [t.bracket[baseIdx], t.bracket[baseIdx+1], t.bracket[baseIdx+2], t.bracket[baseIdx+3]];
@@ -2007,7 +2016,6 @@ function initializeUniLoop() {
         container.innerHTML = `<div style="text-align:center; padding:30px;"><div style="font-size:40px; animation: glowPulse 1s infinite alternate;">⏳</div><h3 style="color:var(--text-dark);">Sonuçlar Kaydediliyor...</h3></div>`;
 
         try {
-            // Hata Çözümü: Gerçek kullanıcıları botlardan (isClone) ayırt ederek kaydet.
             if(t.finalWinner && !t.finalWinner.isClone) {
                 const uDoc = await getDoc(doc(db, "users", t.finalWinner.uid));
                 if(uDoc.exists()) await updateDoc(doc(db, "users", t.finalWinner.uid), { popularity: (uDoc.data().popularity || 0) + 3 });
@@ -2069,7 +2077,7 @@ function initializeUniLoop() {
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
         
-        // Sadece kullanıcının DÜNLÜK KAYDIRMA LİMİTİ BİTERSE turnuva ekranını göster!
+        // Günlük eşleşme limiti biterse Turnuvaya at!
         if (count >= maxSwipes) {
             container.innerHTML = `
                 <div style="text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 6px rgba(0,0,0,0.05); width:100%; max-width:320px;">
@@ -2091,7 +2099,13 @@ function initializeUniLoop() {
 
         try {
             const querySnapshot = await getDocs(query(collection(db, "users"), limit(50)));
-            const interactedUids = chatsDB.map(c => c.otherUid);
+            // Hızlı Eşleşme Başa Sarma Sorunu Çözümü: 
+            // Yalnızca "accepted" (kabul edilen arkadaşlıklar) veya "blocked" olanları filtreliyoruz!
+            // Reddedilenler ve sadece sağa kaydırdıkların (pending) dönmeye devam edecek.
+            const interactedUids = chatsDB
+                .filter(c => c.status === 'accepted' || c.status === 'blocked')
+                .map(c => c.otherUid);
+                
             fastMatchUsers = [];
 
             querySnapshot.forEach((doc) => {
@@ -2129,7 +2143,7 @@ function initializeUniLoop() {
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
 
-        // Mantık Hatası Çözümü: Dizi bittiyse ve hakkı hala varsa, listeyi başa sar!
+        // Başa Sarma Mantığı: Kullanıcı listesi biterse ama günlük hakkı varsa diziyi baştan karıştırıp tekrar göster!
         if(fastMatchCurrentIndex >= fastMatchUsers.length) {
             fastMatchUsers = fastMatchUsers.sort(() => 0.5 - Math.random());
             fastMatchCurrentIndex = 0;
@@ -3322,8 +3336,7 @@ function initializeUniLoop() {
                 statusAreaHtml = `<div style="padding:15px; background:#EEF2FF; text-align:center; font-size:13px; color:#4F46E5; border-bottom:1px solid #E5E7EB; font-weight:700; flex-shrink:0;">⏳ Karşı tarafın onayı bekleniyor. ${chat.isMarketChat ? 'Onaylanana kadar manuel mesaj gönderemezsiniz.' : ''}</div>`;
             } else {
                 statusAreaHtml = `
-                    <div style="padding:20px 15px; background:#F0
-FDF4; text-align:center; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
+                    <div style="padding:20px 15px; background:#F0FDF4; text-align:center; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
                     <div style="font-size:14px; color:#166534; margin-bottom:12px; font-weight:700;">👋 ${chat.name} seninle bağlantı kurmak istiyor.</div>
                     <div style="display:flex; justify-content:center; gap:10px;">
                         <button class="btn-primary" style="padding:10px 20px; background:#10B981; border-color:#10B981; font-size:14px; box-shadow:none; border-radius:10px;" onclick="window.acceptChatRequest('${chat.id}')">✅ Kabul Et</button>
@@ -3510,7 +3523,8 @@ FDF4; text-align:center; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
         const friendsCount = chatsDB.filter(c => c.status === 'accepted' && !c.isMarketChat).length;
 
         let html = `
-            <input type="file" id="profile-avatar-upload" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
+            <input type="file" id="profile-avatar-upload" accept="
+image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
 
             <div class="id-card ${isPremium ? 'premium-card-bw' : ''}" style="width:100%; max-width:100%; box-sizing:border-box; margin-top:10px; margin-bottom:15px; position:relative; ${isPremium ? 'border-color:#111827;' : ''}">
                 <button class="edit-profile-icon" style="position:absolute; top:15px; right:15px; background:white; color:#111827; border:1px solid #111827;" onclick="window.openProfileEditModal()">✏️ Düzenle</button>
