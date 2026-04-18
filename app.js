@@ -223,8 +223,6 @@ function initializeUniLoop() {
         .feed-post-actions { display: flex; border-top: 1px solid #E5E7EB; padding-top: 12px; gap: 20px; }
         .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
         .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
-        .premium-upgrade-btn { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 15px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); display: inline-flex; align-items: center; gap: 8px; }
-        .premium-upgrade-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(245, 158, 11, 0.4); }
         
         #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
         #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
@@ -679,7 +677,7 @@ function initializeUniLoop() {
                 await setDoc(chatRef, {
                     participants: [user.uid, "system"],
                     participantNames: { [user.uid]: userName, "system": "UniLoop Team" },
-                    participantAvatars: { [user.uid]: "👨‍🎓", "system": "<img src='uniloop-logo.png' style='width:100%; height:100%; object-fit:cover; border-radius:50%; border:1px solid #E5E7EB;'>" },
+                    participantAvatars: { [user.uid]: "👨‍🎓", "system": "👤" }, // Sistem logosu yerine varsayılan atandı
                     lastUpdated: serverTimestamp(),
                     status: 'accepted',
                     initiator: 'system',
@@ -841,18 +839,18 @@ function initializeUniLoop() {
                     setTimeout(() => window.showAcademicYearUpdateModal(activeYear), 1000);
                 }
                 
-                // PREMIUM BUTON ÇAKIŞMA ÇÖZÜMÜ: SADECE JS ÇİZECEK
+                // PREMIUM BUTONU ORİJİNAL HALİNE ÇEVRİLDİ (SİYAH-BEYAZ)
                 const headerRightMenu = document.querySelector('.header-right-menu');
                 if (headerRightMenu) {
                     headerRightMenu.innerHTML = ''; 
                     
                     if (!window.userProfile.isPremium) {
-                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 4px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.4);" onclick="window.openPremiumModal()">🌟 Premium</div>`);
+                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumModal()">★ Premium</div>`);
                     } else {
-                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background: white; color: #D97706; border: 2px solid #D97706; padding: 4px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer;" onclick="window.openPremiumFeaturesModal()">👑 Ayrıcalıklar</div>`);
+                        headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">★ Premium Özellikler</div>`);
                     }
 
-                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler" style="background:white; border:1px solid #E5E7EB; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#111827" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> <span id="notif-badge-top" style="display:none; position:absolute; top:-4px; right:-4px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
+                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler" style="background:white; border:2px solid black; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="black" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> <span id="notif-badge-top" style="display:none; position:absolute; top:-4px; right:-4px; background:black; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
                 }
 
                 if (!document.getElementById('uniloop-bottom-nav')) {
@@ -882,10 +880,18 @@ function initializeUniLoop() {
             const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
             await updateDoc(doc(db, "chats", chatId), {
-                messages: arrayUnion({ senderId: "system", text: text, time: timeStr, read: false, isSystem: true }),
+                messages: arrayUnion({
+                    senderId: "system",
+                    text: text,
+                    time: timeStr,
+                    read: false,
+                    isSystem: true
+                }),
                 lastUpdated: serverTimestamp()
             });
-        } catch(e) { console.error(e); }
+        } catch(e) { 
+            console.error(e); 
+        }
     };
     
     function initRealtimeListeners(currentUid) {
@@ -955,7 +961,7 @@ function initializeUniLoop() {
                             if (lastMsg.senderId !== currentUid && lastMsg.read === false) unreadMessagesCount++;
                         }
                     }
-                } catch(err) { console.error(err); }
+                } catch(err) { console.error("Hatalı mesaj belgesi es geçildi:", err); }
             });
 
             chatsDB.sort((a, b) => b.lastUpdatedTS - a.lastUpdatedTS);
@@ -1098,7 +1104,7 @@ function initializeUniLoop() {
                 
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background: white; color: #D97706; border: 2px solid #D97706; padding: 4px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer;" onclick="window.openPremiumFeaturesModal()">👑 Ayrıcalıklar</div>`;
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumFeaturesModal()">★ Premium Özellikler</div>`;
                 }
                 
                 window.closeModal();
@@ -1120,7 +1126,7 @@ function initializeUniLoop() {
                 
                 const navBtn = document.getElementById('nav-premium-action');
                 if(navBtn) {
-                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; padding: 4px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.4);" onclick="window.openPremiumModal()">🌟 Premium</div>`;
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="background:white; color:black; border:2px solid black; padding:4px 10px; border-radius:8px; font-weight:900; cursor:pointer;" onclick="window.openPremiumModal()">★ Premium</div>`;
                 }
 
                 alert("Premium üyeliğiniz başarıyla iptal edildi.");
@@ -1370,7 +1376,7 @@ function initializeUniLoop() {
         window.openModal('🏛️ Fakülte Sohbetleri', listHtml);
     };
 
-    // YENİ EKLENEN FAKÜLTE HAFIZA SİSTEMİ
+    // FAKÜLTE HAFIZA SİSTEMİ
     window.handleFacultyClick = function(facName) {
         if (window.userProfile.joinedClassRoom && window.userProfile.joinedClassRoom.facName === facName) {
             window.closeModal();
@@ -1863,7 +1869,6 @@ function initializeUniLoop() {
         }
     };
 
-    // SABİT BOYUTLU KART DÜZENLEMESİ (UI KAYMASI ÇÖZÜLDÜ)
     window.renderEmbeddedFastMatchCard = function() {
         const container = document.getElementById('embedded-fast-match-container');
         if(!container) return;
