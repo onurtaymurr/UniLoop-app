@@ -82,7 +82,7 @@ const allFaculties = [
     "Ziraat Fakültesi", "Orman Fakültesi", "Denizcilik Fakültesi", "Havacılık ve Uzay Bilimleri", "Uygulamalı Bilimler"
 ];
 
-// DOM elementleri sayfa yüklendikten sonra güvenli bir şekilde çekilecek
+// DOM Elementleri
 let authScreen;
 let appScreen;
 let mainContent;
@@ -96,7 +96,6 @@ window.tData = {
 };
 
 function initializeUniLoop() {
-    // DOM Elementlerini dinamik çek (Hata engelleyici)
     authScreen = document.getElementById('auth-screen');
     appScreen = document.getElementById('app-screen');
     mainContent = document.getElementById('main-content');
@@ -157,7 +156,8 @@ function initializeUniLoop() {
 
         #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
         #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; transition: opacity 0.3s ease;}
-        #auth-screen { position: relative; z-index: 1000 !important; }
+        #auth-screen { position: relative; z-index: 1000 !important; display: none; }
+        #auth-screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
         #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important; }
         button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; }
         
@@ -323,7 +323,11 @@ function initializeUniLoop() {
             e.preventDefault(); 
             const emailInput = document.getElementById('login-email');
             const passInput = document.getElementById('login-password');
-            if(!emailInput || !passInput) return;
+            
+            if(!emailInput || !passInput) {
+                console.error("Giriş inputları bulunamadı!");
+                return;
+            }
 
             const email = emailInput.value.trim();
             const password = passInput.value;
@@ -727,6 +731,7 @@ function initializeUniLoop() {
             if(authScreen && appScreen) {
                 appScreen.style.display = 'none';
                 authScreen.style.display = 'flex';
+                authScreen.classList.add('active');
                 const logCard = document.getElementById('login-card');
                 const regCard = document.getElementById('register-card');
                 if (logCard) logCard.style.display = 'block';
@@ -829,7 +834,6 @@ function initializeUniLoop() {
         }
     };
 
-    // TAM ÇÖZÜMÜ SAĞLAYAN YENİ AUTH KONTROLÜ
     onAuthStateChanged(auth, async (user) => {
         if (user && user.emailVerified) { 
             try {
@@ -837,7 +841,7 @@ function initializeUniLoop() {
                 const docSnap = await getDoc(userDocRef);
                 
                 if(!docSnap.exists()) {
-                    if(authScreen) authScreen.style.display = 'flex';
+                    if(authScreen) { authScreen.style.display = 'flex'; authScreen.classList.add('active'); }
                     if(appScreen) appScreen.style.display = 'none';
                     const logCard = document.getElementById('login-card');
                     if(logCard) logCard.style.display = 'none';
@@ -846,7 +850,7 @@ function initializeUniLoop() {
                     return; 
                 }
 
-                if(authScreen) authScreen.style.display = 'none';
+                if(authScreen) { authScreen.style.display = 'none'; authScreen.classList.remove('active'); }
                 if(appScreen) appScreen.style.display = 'block';
 
                 window.userProfile = docSnap.data();
@@ -906,9 +910,8 @@ function initializeUniLoop() {
                 if(typeof window.loadPage === 'function') { window.loadPage(activeTab ? activeTab.getAttribute('data-target') : 'home'); }
             } catch(error) { console.error(error); }
         } else {
-            // Eğer kullanıcı giriş yapmamışsa, kesin olarak giriş ekranını göster
             if(appScreen) appScreen.style.display = 'none';
-            if(authScreen) authScreen.style.display = 'flex';
+            if(authScreen) { authScreen.style.display = 'flex'; authScreen.classList.add('active'); }
             const logCard = document.getElementById('login-card');
             const regCard = document.getElementById('register-card');
             if(logCard) logCard.style.display = 'block';
@@ -3845,7 +3848,8 @@ function initializeUniLoop() {
         window.openModal('⚙️ Ayarlar', `
             <div style="display:flex; flex-direction:column; gap:15px;">
                 <div class="form-group" style="margin:0;">
-                    <label style="font-size:13px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; display:block;">Dil Seçimi</label>
+                    <label style="font-size:13px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; display:block;">Dil
+ Seçimi</label>
                     <select onchange="window.setLanguage(this.value)" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; background:#F9FAFB;">
                         <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>🇹🇷 Türkçe</option>
                         <option value="en" ${currentLang === 'en' ? 'selected' : ''}>🇬🇧 English</option>
@@ -3980,18 +3984,8 @@ function initializeUniLoop() {
             default: window.renderHome();
         }
     };
-        switch(page) {
-            case 'home': window.renderHome(); break;
-            case 'confessions': window.drawConfessionsFeed(); break;
-            case 'market': window.renderListings('market', '🛒 Kampüs Market'); break;
-            case 'messages': window.renderMessages(); break;
-            case 'profile': window.renderProfile(); break;
-            default: window.renderHome();
-        }
-    };
 }
 
-// Tarayıcı hazır olmadan kodun çalışıp kilitlenmesini engelleyen güvenlik bloğu eklendi
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeUniLoop);
 } else {
