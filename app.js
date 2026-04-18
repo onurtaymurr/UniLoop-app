@@ -281,21 +281,21 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
 
-    // 🌟 UNILOOP LOGO ENJEKSİYONU
+        // 🌟 UNILOOP LOGO ENJEKSİYONU
     setTimeout(() => {
         const headerLogoCandidates = document.querySelectorAll('.logo, .logo-title, #logo-btn, #app-header > :first-child, header > :first-child');
         headerLogoCandidates.forEach(el => {
             if(el && !el.hasAttribute('data-logo-applied')) {
                 el.innerHTML = `
-                    <div style="display: flex; align-items: flex-end; gap: 6px;">
-                        <div style="width: 48px; height: 48px; min-width: 48px; min-height: 48px; border-radius: 50%; background-image: url('uniloop-logo.png'); background-size: 155%; background-position: center 12%; background-repeat: no-repeat; border: none;"></div>
-                        <span style="font-weight: 800; font-size: 15px; color: var(--text-dark); margin-bottom: 8px; letter-spacing: -0.5px;">UniLoop</span>
+                    <div style="display: flex; align-items: center; height: 100%; padding-left: 5px;">
+                        <img src="uniloop-yeni-logo.png" alt="UniLoop" style="max-height: 32px; width: auto; object-fit: contain; display: block;">
                     </div>
                 `;
                 el.setAttribute('data-logo-applied', 'true');
             }
         });
     }, 100);
+
 
     const cropperModalHtml = `
         <div id="cropper-modal" class="cropper-modal-container">
