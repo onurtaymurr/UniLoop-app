@@ -268,6 +268,12 @@ function initializeUniLoop() {
         
         #nav-premium-action { font-size: 13px !important; padding: 0 12px !important; height: 32px !important; line-height: 32px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important; flex-shrink: 0 !important; margin: 0 !important; border-radius: 8px !important; }
         
+        /* 🌟 Giriş ve Kayıt Ekranı Büyük Logo */
+        .auth-logo-big { width: 100%; max-width: 300px; margin: 0 auto 20px auto; display: block; object-fit: contain; }
+        
+        /* 🌟 Üst Menü Yatay Logo */
+        .header-logo-horizontal { height: 35px; width: auto; object-fit: contain; display: block; margin-left: 5px; }
+
         @media (max-width: 1024px) {
             .chat-sidebar { width: 100%; display: block; border-right: none; }
             .chat-active .chat-sidebar { display: none !important; }
@@ -281,8 +287,9 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
 
-                // 🌟 UNILOOP LOGO ENJEKSİYONU (Yatay Logo)
+    // 🌟 UNILOOP LOGO ENJEKSİYONU (Yatay Logo ve Auth Ekranı Büyük Logo)
     setTimeout(() => {
+        // Üst Menü (Header) İçin Yatay Logo
         const headerLogoCandidates = document.querySelectorAll('.logo, .logo-title, #logo-btn, #app-header > :first-child, header > :first-child');
         headerLogoCandidates.forEach(el => {
             if(el && !el.hasAttribute('data-logo-applied')) {
@@ -292,10 +299,26 @@ function initializeUniLoop() {
                 el.style.border = "none";
             }
         });
-    }, 100);
 
+        // Giriş/Kayıt Ekranı (Auth Screen) İçin Büyük Logo
+        const authScreenEl = document.getElementById('auth-screen') || document.querySelector('.auth-container');
+        if (authScreenEl && !authScreenEl.hasAttribute('data-logo-applied')) {
+            const oldAuthLogo = authScreenEl.querySelector('.logo, .auth-logo, h1, .logo-title');
+            if (oldAuthLogo) oldAuthLogo.style.display = 'none';
 
-
+            const logoImg = document.createElement('img');
+            logoImg.src = 'uniloop-yeni-logo.png';
+            logoImg.className = 'auth-logo-big';
+            
+            const loginCard = document.getElementById('login-card');
+            if (loginCard && loginCard.parentNode) {
+                loginCard.parentNode.insertBefore(logoImg, loginCard);
+            } else {
+                authScreenEl.prepend(logoImg);
+            }
+            authScreenEl.setAttribute('data-logo-applied', 'true');
+        }
+    }, 200);
 
     const cropperModalHtml = `
         <div id="cropper-modal" class="cropper-modal-container">
