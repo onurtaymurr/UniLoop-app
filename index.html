@@ -7,22 +7,13 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* ==========================================================================
-           🌟 ALT MENÜ (BOTTOM NAV) İÇERİK ÇAKIŞMASI KESİN ÇÖZÜMÜ 🌟
-           ========================================================================== */
-        
-        /* 1. Ana içeriğin en altına, alt menü yüksekliği kadar kalıcı bir boşluk bırakıyoruz.
-           Böylece sayfa sonuna gelindiğinde hiçbir içerik (yazı, buton vs.) menünün altında kalmaz. */
-        #main-content {
-            padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
-        }
+        /* ALT MENÜ (BOTTOM NAV) ÇAKIŞMA ÇÖZÜMÜ */
+        #main-content { padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
 
-        /* 2. Chat (Mesajlaşma) ekranı açıldığında, sayfa yapısını dondurup mesajlaşma 
-           alanının alt menünün tam üstünde bitmesini sağlıyoruz. */
         body.no-scroll-messages #main-content {
             position: fixed !important;
-            top: 50px !important; /* Üst header yüksekliği */
-            bottom: calc(65px + env(safe-area-inset-bottom)) !important; /* Alt menü yüksekliği kadar yukarı çeker */
+            top: 50px !important; 
+            bottom: calc(65px + env(safe-area-inset-bottom)) !important; 
             left: 0 !important;
             right: 0 !important;
             padding-bottom: 0 !important; 
@@ -31,26 +22,16 @@
             z-index: 40;
         }
 
-        /* Alt Navigasyon (Bottom Nav) İkonlarını ve Metinlerini Aşağı Çekme / Ortalama Düzeltmesi */
         .bottom-nav {
             align-items: flex-end !important; 
             padding-bottom: calc(env(safe-area-inset-bottom) + 8px) !important;
             padding-top: 5px !important;
-            z-index: 99999 !important; /* Menünün her zaman en üst katmanda kalmasını garantiler */
+            z-index: 99999 !important; 
         }
-        .bottom-nav-item {
-            justify-content: flex-end !important; 
-            gap: 2px !important; 
-        }
-        .bottom-nav-icon {
-            margin-bottom: 2px !important; 
-            margin-top: 4px !important; 
-        }
+        .bottom-nav-item { justify-content: flex-end !important; gap: 2px !important; }
+        .bottom-nav-icon { margin-bottom: 2px !important; margin-top: 4px !important; }
         
-        /* Üst Bar Premium Butonu Animasyonu */
-        .premium-glow {
-            animation: glowPulse 2s infinite alternate;
-        }
+        .premium-glow { animation: glowPulse 2s infinite alternate; }
         @keyframes glowPulse {
             0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.4); }
             100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); }
@@ -61,10 +42,9 @@
 
 <div id="auth-screen">
     <div class="auth-card" id="login-card">
-        <div class="auth-logo" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: bold; font-size: 36px;">
-    <div style="display: inline-block; width: 40px; height: 40px; border-radius: 50%; background-image: url('uniloop-logo.png'); background-size: 155%; background-position: center 12%; background-repeat: no-repeat; vertical-align: middle; flex-shrink: 0;"></div>
-    <span style="color: #111827; letter-spacing: -0.5px;">UniLoop</span>
-</div>
+        <div class="auth-logo" style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <img src="uniloop-yeni-logo.png" alt="UniLoop" style="width: 100%; max-width: 220px; height: auto; object-fit: contain;">
+        </div>
 
         <p class="auth-subtitle">Kampüs ağına giriş yap, döngüde kal.</p>
         
@@ -93,17 +73,11 @@
     <header id="app-header">
         <div class="logo-area">
             <div id="mobile-menu-btn" style="display: none;">☰</div>
-            <div class="logo" id="logo-btn" onclick="window.loadPage('home')" style="cursor:pointer;">🌍 UniLoop</div>
-        </div>
-        <div class="header-right-menu" style="display: flex; align-items: center; gap: 12px;">
-            <div class="menu-item premium-glow" id="nav-premium-action" style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; font-weight: bold; cursor: pointer; padding: 6px 14px; border-radius: 20px; font-size: 13px; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.4);" onclick="window.openPremiumModal()">
-                🌟 Premium
-            </div>
-            <div id="notif-btn-top" onclick="window.loadPage('notifications')" style="position: relative; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; transition: 0.2s;" title="Bildirimler">
-                🔔 
-                <span id="notif-badge-top" style="display:none; position:absolute; top:-2px; right:-2px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span>
+            <div class="logo" id="logo-btn" onclick="window.loadPage('home')" style="cursor:pointer; display:flex; align-items:center;">
+                <img src="uniloop-yeni-logo.png" alt="UniLoop" style="max-height: 35px; width: auto; object-fit: contain;">
             </div>
         </div>
+        <div class="header-right-menu" style="display: flex; align-items: center; gap: 12px;"></div>
     </header>
 
     <div class="container">
@@ -115,14 +89,11 @@
                 <div class="menu-item" data-target="market">🛒 Kampüs Market</div>
                 <div class="menu-item" data-target="confessions">🤫 Anonim Kampüs</div>
                 <div class="menu-item" data-target="qa">❓ Soru & Cevap</div>
-                
                 <br>
                 <h3>Bana Özel</h3>
                 <div class="menu-item" id="nav-messages-btn" data-target="messages">💬 Mesajlarım <span id="msg-badge" class="badge" style="display:none;">0</span></div>
-                
                 <div id="sidebar-networks-container"></div>
             </div>
-            
             <div class="sidebar-bottom">
                 <div class="menu-item" data-target="settings">⚙️ Ayarlar</div>
             </div>
@@ -157,6 +128,5 @@
 </div>
 
 <script type="module" src="app.js"></script>
-
 </body>
 </html>
