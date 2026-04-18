@@ -1,6 +1,6 @@
 // ============================================================================
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
-// 🌟 GİRİŞ HATALARI ÇÖZÜLDÜ, DARK MODE SLIDER VE KÜRSÜ EKLENDİ - BÖLÜM 1 🌟
+// 🌟 EKSİKSİZ, HATASIZ VE UYUMLU BAŞLANGIÇ - BÖLÜM 1 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -82,7 +82,6 @@ const allFaculties = [
     "Ziraat Fakültesi", "Orman Fakültesi", "Denizcilik Fakültesi", "Havacılık ve Uzay Bilimleri", "Uygulamalı Bilimler"
 ];
 
-// DOM Elementleri
 let authScreen;
 let appScreen;
 let mainContent;
@@ -282,7 +281,6 @@ function initializeUniLoop() {
         window.renderSettings(); 
     };
 
-    // Tıklamaları güvenli algılamak için güçlendirilmiş isTarget fonksiyonu
     document.addEventListener('click', async function(e) {
         const chatMenu = document.getElementById('chat-options-menu');
         if (chatMenu && e.target && e.target.closest && !e.target.closest('#chat-options-dropdown-wrapper')) {
@@ -2171,7 +2169,6 @@ function initializeUniLoop() {
                     ` : '<div style="flex:1;"></div>'}
                     ${top3[0] ? `
                     <div style="flex:1; display:flex; flex-direction:column; align-items:center;" onclick="window.viewUserProfile('${top3[0].uid}')">
-                        <div style="font-size:24px; margin-bottom:-12px; z-index:10; animation: glowPulse 2s infinite;">👑</div>
                         <img src="${top3[0].avatarUrl || ''}" style="width:55px; height:55px; border-radius:50%; border:3px solid #FBBF24; object-fit:cover; background:#1F2937; z-index:5; margin-bottom:5px;">
                         <span style="font-size:12px; font-weight:900; color:var(--text-dark); margin-bottom:5px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${top3[0].name}</span>
                         <div style="width:100%; background:linear-gradient(to top, #fef3c7, #fffbeb); height:80px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-weight:900; color:#b45309; border:1px solid #fde68a; border-bottom:none; box-shadow:0 -4px 15px rgba(251,191,36,0.3);">1.</div>
@@ -2199,7 +2196,7 @@ function initializeUniLoop() {
                             <div style="background:#374151; padding:8px 5px; border-radius:8px; font-weight:800; color:white; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Bekleniyor...</div>
                         ` : `
                             <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 5px 0; line-height:1.4;">Bugünlük hakkın doldu.</p>
-                            <button onclick="window.openPremiumModal()" style="background:linear-gradient(135deg, #F59E0B, #FBBF24); color:#111827; border:none; border-radius:8px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:8px; box-shadow:0 2px 4px rgba(245,158,11,0.3);">Premium Ol ✨</button>
+                            <button onclick="window.openPremiumModal()" style="background:white; color:#111827; border:1px solid #D1D5DB; border-radius:8px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:8px; transition:0.2s;">Premium Ol ✨</button>
                             <div style="background:#374151; padding:6px 5px; border-radius:8px; font-weight:800; color:white; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Bekleniyor...</div>
                         `}
                     </div>
@@ -2392,6 +2389,18 @@ function initializeUniLoop() {
                     window.renderEmbeddedFastMatchCard();
                 }
             }, 300);
+        }
+    };
+
+    window.toggleHomeSearch = function() {
+        const searchContainer = document.getElementById('home-search-container');
+        const defaultView = document.getElementById('home-default-view');
+        if(searchContainer.classList.contains('hidden')) {
+            searchContainer.classList.remove('hidden');
+            if(defaultView) defaultView.style.opacity = '0'; 
+        } else {
+            searchContainer.classList.add('hidden');
+            if(defaultView) defaultView.style.opacity = '1';
         }
     };
 
@@ -2665,21 +2674,6 @@ function initializeUniLoop() {
         }
     };
 
-    window.toggleHomeSearch = function() {
-        const searchContainer = document.getElementById('home-search-container');
-        const iconsContainer = document.getElementById('home-icons-container');
-        if(searchContainer.classList.contains('hidden')) {
-            searchContainer.classList.remove('hidden');
-            iconsContainer.classList.add('hidden');
-        } else {
-            searchContainer.classList.add('hidden');
-            iconsContainer.classList.remove('hidden');
-        }
-    };
-
-// ============================================================================
-// 🌟 GÜNCELLENMİŞ RENDER HOME (DARK MODE SLIDER & DUYURULAR)
-// ============================================================================
     window.renderHome = async function() {
         document.body.classList.add('no-scroll-home');
 
@@ -2692,19 +2686,40 @@ function initializeUniLoop() {
             `;
         }
 
-        // SLIDER (KAYDIRMALI EKRAN) İÇERİKLERİ
+        // İKONLAR ARTIK SLIDER'IN İLK SAYFASINDA, BÖYLECE KAYDIRINCA GİDİYOR
         const slides = [
             `
-            <h2 style="font-size:18px; margin-bottom:4px; margin-top:0;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
-            <p style="opacity:0.9; font-size:12px; margin:0;"><strong style="color:#D9FDD3;">${window.userProfile.university}</strong></p>
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; position:relative;">
+                <div id="home-default-view" style="display:flex; justify-content:space-between; align-items:center; width:100%; transition: opacity 0.2s;">
+                    <div>
+                        <h2 style="font-size:18px; margin-bottom:4px; margin-top:0;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
+                        <p style="opacity:0.9; font-size:12px; margin:0;"><strong style="color:#D9FDD3;">${window.userProfile.university}</strong></p>
+                    </div>
+                    <div id="home-icons-container" style="display:flex; gap:15px; align-items:center;">
+                        <div class="white-flame-icon" onclick="window.showLeaderboard()" title="Popülerlik Savaşı Sıralaması">🔥</div>
+                        <div style="font-size:24px; cursor:pointer;" onclick="window.openFacultiesList()" title="Fakültem">🏛️</div>
+                        <div style="font-size:24px; cursor:pointer;" onclick="window.toggleHomeSearch()" title="Arkadaşını Bul">🔍</div>
+                    </div>
+                </div>
+                <div id="home-search-container" class="hidden" style="position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:20; display:flex; align-items:center; background:white; border-radius:20px; padding:5px 12px; width:100%; box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+                        <span style="color:var(--primary); font-weight:800; font-size:14px; margin-right:5px;">#</span>
+                        <input type="text" id="home-friend-search-input" style="border:none; background:transparent; width:100%; outline:none; font-size:13px; color:black;" placeholder="Kullanıcı adı..." onkeypress="if(event.key==='Enter') window.searchAndAddFriendHome()">
+                        <button onclick="window.searchAndAddFriendHome()" style="background:transparent; border:none; font-size:16px; cursor:pointer;">➡️</button>
+                        <button onclick="window.toggleHomeSearch()" style="background:transparent; border:none; font-size:16px; cursor:pointer; color:#EF4444; margin-left:5px;">✖</button>
+                </div>
+            </div>
             `,
             `
-            <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">📢 Kampüs Duyurusu</h2>
-            <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">25 Nisan'da Manifest Konseri var! Biletlerini Kampüs Meydanı'ndan alabilirsin.</p>
+            <div>
+                <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">📢 Kampüs Duyurusu</h2>
+                <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">25 Nisan'da Manifest Konseri var! Biletlerini Kampüs Meydanı'ndan alabilirsin.</p>
+            </div>
             `,
             `
-            <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">🌟 Premium Ayrıcalıkları</h2>
-            <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">Profiline kim baktı öğrenmek için hemen Premium'a geçiş yap.</p>
+            <div>
+                <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">🌟 Premium Ayrıcalıkları</h2>
+                <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">Profiline kim baktı öğrenmek için hemen Premium'a geçiş yap.</p>
+            </div>
             `
         ];
 
@@ -2715,23 +2730,10 @@ function initializeUniLoop() {
                 <div style="position:relative; margin: 10px; border-radius:16px; flex-shrink:0; box-shadow:0 6px 15px rgba(0,0,0,0.1); background:#1F2937;">
                     <div id="home-slider-container" class="home-slider" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; width:100%; scroll-behavior:smooth;">
                         ${slides.map(slide => `
-                            <div style="flex: 0 0 100%; scroll-snap-align: center; padding: 15px; box-sizing:border-box; display:flex; justify-content:space-between; align-items:center; color:white; min-height:80px;">
-                                <div style="flex:1;">${slide}</div>
+                            <div style="flex: 0 0 100%; scroll-snap-align: center; padding: 15px; box-sizing:border-box; display:flex; justify-content:flex-start; align-items:center; color:white; min-height:80px;">
+                                ${slide}
                             </div>
                         `).join('')}
-                    </div>
-                    
-                    <div id="home-icons-container" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); display:flex; gap:15px; align-items:center; z-index:10;">
-                        <div class="white-flame-icon" onclick="window.showLeaderboard()" title="Popülerlik Savaşı Sıralaması">🔥</div>
-                        <div style="font-size:24px; cursor:pointer;" onclick="window.openFacultiesList()" title="Fakültem">🏛️</div>
-                        <div style="font-size:24px; cursor:pointer;" onclick="window.toggleHomeSearch()" title="Arkadaşını Bul">🔍</div>
-                    </div>
-
-                    <div id="home-search-container" class="hidden" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); z-index:20; display:flex; align-items:center; background:white; border-radius:20px; padding:5px 12px; width:calc(100% - 30px); box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
-                            <span style="color:var(--primary); font-weight:800; font-size:14px; margin-right:5px;">#</span>
-                            <input type="text" id="home-friend-search-input" style="border:none; background:transparent; width:100%; outline:none; font-size:13px; color:black;" placeholder="Kullanıcı adı..." onkeypress="if(event.key==='Enter') window.searchAndAddFriendHome()">
-                            <button onclick="window.searchAndAddFriendHome()" style="background:transparent; border:none; font-size:16px; cursor:pointer;">➡️</button>
-                            <button onclick="window.toggleHomeSearch()" style="background:transparent; border:none; font-size:16px; cursor:pointer; color:#EF4444; margin-left:5px;">✖</button>
                     </div>
                     
                     <div style="position:absolute; bottom:5px; left:0; right:0; display:flex; justify-content:center; gap:5px; pointer-events:none;">
@@ -2746,13 +2748,11 @@ function initializeUniLoop() {
         
         mainContent.innerHTML = html;
 
-        // Slider Otomatik Kaydırma Mantığı (15 saniyede bir)
         const sliderContainer = document.getElementById('home-slider-container');
         if (sliderContainer) {
             let currentIndex = 0;
             const totalSlides = slides.length;
             
-            // Kullanıcı el ile kaydırdığında noktaları güncellemek için Scroll Event Listener
             sliderContainer.addEventListener('scroll', () => {
                 const scrollLeft = sliderContainer.scrollLeft;
                 const clientWidth = sliderContainer.clientWidth;
@@ -3848,8 +3848,7 @@ function initializeUniLoop() {
         window.openModal('⚙️ Ayarlar', `
             <div style="display:flex; flex-direction:column; gap:15px;">
                 <div class="form-group" style="margin:0;">
-                    <label style="font-size:13px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; display:block;">Dil
- Seçimi</label>
+                    <label style="font-size:13px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; display:block;">Dil Seçimi</label>
                     <select onchange="window.setLanguage(this.value)" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; background:#F9FAFB;">
                         <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>🇹🇷 Türkçe</option>
                         <option value="en" ${currentLang === 'en' ? 'selected' : ''}>🇬🇧 English</option>
