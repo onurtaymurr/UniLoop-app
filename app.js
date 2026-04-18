@@ -2195,7 +2195,7 @@ function initializeUniLoop() {
                             <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 10px 0; line-height:1.4;">Bugünlük hakkın doldu, yarın bir daha gel!</p>
                             <div style="background:#374151; padding:8px 5px; border-radius:8px; font-weight:800; color:white; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Bekleniyor...</div>
                         ` : `
-                            <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 5px 0; line-height:1.4;">Bugünlük hakkın doldu.</p>
+                            <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 5px 0; line-height:1.4;">Daha fazla eşleşme için</p>
                             <button onclick="window.openPremiumModal()" style="background:white; color:#111827; border:1px solid #D1D5DB; border-radius:8px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:8px; transition:0.2s;">Premium Ol ☆</button>
                             <div style="background:#374151; padding:6px 5px; border-radius:8px; font-weight:800; color:white; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Bekleniyor...</div>
                         `}
