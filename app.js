@@ -111,8 +111,8 @@ function initializeUniLoop() {
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; background-color: #f3f4f6; color: #111827; }
         header, #app-header { height: 50px !important; box-sizing: border-box; }
 
-        .edit-profile-icon { font-size: 14px; background: #EEF2FF; color: var(--primary); padding: 5px 10px; border-radius: 8px; border: 1px solid #C7D2FE; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 700; transition: 0.2s; }
-        .edit-profile-icon:hover { background: #DBEAFE; }
+        .edit-profile-icon { font-size: 14px; background: #F3F4F6; color: #111827; padding: 5px 10px; border-radius: 8px; border: 1px solid #111827; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 700; transition: 0.2s; }
+        .edit-profile-icon:hover { background: #E5E7EB; }
 
         body.no-scroll-messages, body.no-scroll-home { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
         
@@ -163,7 +163,7 @@ function initializeUniLoop() {
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #ffffff; border-top: 1px solid #f1f1f1; display: flex; justify-content: space-around; align-items: center; height: calc(60px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; z-index: 99999; box-shadow: 0 -2px 10px rgba(0,0,0,0.02); }
         .bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8E8E93; font-size: 10px; text-decoration: none; cursor: pointer; transition: 0.2s; flex: 1; background: transparent !important; border: none !important; font-weight: 500; -webkit-tap-highlight-color: transparent; height: 60px; padding: 0; }
-        .bottom-nav-item.active { color: #6366f1 !important; font-weight: 600; }
+        .bottom-nav-item.active { color: #111827 !important; font-weight: 600; }
         .bottom-nav-icon { width: 22px; height: 22px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; }
         .bottom-nav-icon svg { width: 100%; height: 100%; transition: 0.2s; }
         .bottom-nav-item.active .bottom-nav-icon svg.fill-active { fill: currentColor; }
@@ -174,10 +174,10 @@ function initializeUniLoop() {
         .step-header { font-size: 14px; font-weight: bold; color: var(--primary); text-align: center; margin-bottom: 15px; }
         .step-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 20px; color: #111827; }
         .grade-btn, .interest-btn, .purpose-btn { background: #F3F4F6; border: 1px solid #E5E7EB; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; margin: 5px; display: inline-block; color: var(--text-dark); }
-        .grade-btn.active, .interest-btn.active, .purpose-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
+        .grade-btn.active, .interest-btn.active, .purpose-btn.active { background: #111827; color: white; border-color: #111827; transform: scale(1.05); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); }
         
         .id-card { background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); width: 100%; max-width: 100%; box-sizing: border-box; margin: 0 auto 20px auto; position: relative; overflow: hidden; }
-        .id-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--primary), #818cf8); }
+        .id-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: #111827; }
         .id-card-left { flex-shrink: 0; position:relative; }
         .id-card-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e5e7eb; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow:hidden; }
         .id-card-right { flex: 1; text-align: left; }
@@ -185,7 +185,7 @@ function initializeUniLoop() {
         .id-card-faculty { font-size: 13px; color: var(--primary); font-weight: 700; margin-bottom: 8px; }
         .id-card-details { font-size: 12px; color: #64748b; margin-bottom: 10px; font-weight: 500; display:flex; flex-direction:column; gap:3px;}
         .id-card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
-        .id-tag { font-size: 10px; background: #e0e7ff; color: var(--primary); padding: 4px 8px; border-radius: 8px; font-weight: 700; }
+        .id-tag { font-size: 10px; background: white; color: #111827; padding: 4px 8px; border-radius: 8px; font-weight: 700; border:1px solid #111827; }
 
         .notif-compact-panel { max-height: 400px; overflow-y: auto; padding-right: 5px; scroll-behavior: smooth; }
         .notif-compact-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 12px; border-radius: 16px; border: 1px solid #f1f5f9; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); flex-wrap: wrap; gap: 10px; transition: transform 0.2s; }
@@ -197,11 +197,11 @@ function initializeUniLoop() {
         .cropper-view-box { outline: 0; box-shadow: 0 0 0 1px #39f; }
 
         .chat-sidebar { width: 320px; overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; border-right: 1px solid #e5e7eb; }
-        .chat-contact.active { background: #EEF2FF; border-left: 4px solid var(--primary); }
+        .chat-contact.active { background: #F3F4F6; border-left: 4px solid #111827; padding-left: 16px; }
         .chat-contact:hover { background: #F9FAFB; }
         
         .bubble { position: relative; max-width: 75%; padding: 10px 14px; border-radius: 16px; margin-bottom: 8px; font-size: 15px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); width: fit-content; }
-        .bubble.sent { align-self: flex-end; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border-bottom-right-radius: 4px; }
+        .bubble.sent { align-self: flex-end; background: #111827; color: white; border-bottom-right-radius: 4px; }
         .bubble.received { align-self: flex-start; background: #ffffff; color: #111827; border: 1px solid #e5e7eb; border-bottom-left-radius: 4px; }
         .bubble.sent .msg-time { color: rgba(255,255,255,0.8) !important; }
         .bubble.received .msg-time { color: #6b7280 !important; }
@@ -221,9 +221,8 @@ function initializeUniLoop() {
         .feed-post-img { width: 100%; border-radius: 12px; margin-bottom: 12px; max-height: 450px; object-fit: cover; cursor: pointer; border: 1px solid #E5E7EB; }
         .feed-post-actions { display: flex; border-top: 1px solid #E5E7EB; padding-top: 12px; gap: 20px; }
         .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
-        .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
+        .feed-action-btn:hover { color: #111827; background: #F3F4F6; }
         
-        /* HEADER DÜZENLEMELERİ (HİZALAMA İÇİN) */
         #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
         #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
         #app-header > :last-child, .header-right-menu { display: flex !important; align-items: center !important; justify-content: flex-end !important; flex-wrap: nowrap !important; gap: 10px; height: 100% !important; }
@@ -231,7 +230,6 @@ function initializeUniLoop() {
         #notif-btn-top { position: relative; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; transition: 0.2s; }
         #notif-btn-top:hover { background: #E5E7EB; }
         
-        /* SİYAH ÇİZGİLİ PREMIUM KART FIX'I */
         .premium-card-bw::before { background: #111827 !important; }
 
         @media (max-width: 1024px) {
@@ -388,7 +386,7 @@ function initializeUniLoop() {
             html = `
                 <div class="step-header">Adım 3 / 6</div>
                 <div class="step-title">Seni Tanıyalım 🎓</div>
-                <input type="text" id="reg-username" placeholder="Kullanıcı Adı Belirle (Örn: mutlucocuk)" style="margin-bottom:10px; width:100%; padding:14px; border-radius:12px; border:1px solid var(--primary); outline:none; box-sizing:border-box; font-size:15px; background:#EEF2FF;">
+                <input type="text" id="reg-username" placeholder="Kullanıcı Adı Belirle (Örn: mutlucocuk)" style="margin-bottom:10px; width:100%; padding:14px; border-radius:12px; border:1px solid var(--primary); outline:none; box-sizing:border-box; font-size:15px; background:#F3F4F6;">
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
                     <input type="text" id="reg-name" placeholder="Adın" style="flex:1; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; font-size:15px;">
                     <input type="text" id="reg-surname" placeholder="Soyadın" style="flex:1; padding:14px; border-radius:12px; border:1px solid #ccc; outline:none; font-size:15px;">
@@ -439,12 +437,12 @@ function initializeUniLoop() {
                 <p style="text-align:center; font-size:13px; color:#6b7280; margin-bottom:20px;">Profilin için harika bir fotoğraf seç.</p>
                 <div style="display:flex; justify-content:center; margin-bottom: 30px;">
                     <div style="position:relative; cursor:pointer; display:inline-block;" onclick="document.getElementById('final-avatar-upload').click()">
-                        <div id="preview-pc-avatar-container" class="id-card-avatar" style="width:130px; height:130px; border-radius:50%; border:4px solid var(--primary); overflow:hidden;">👤</div>
-                        <div style="position:absolute; bottom:0; right:0; background:var(--primary); color:white; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:16px; border:3px solid white; z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.2);">📷</div>
+                        <div id="preview-pc-avatar-container" class="id-card-avatar" style="width:130px; height:130px; border-radius:50%; border:4px solid #111827; overflow:hidden;">👤</div>
+                        <div style="position:absolute; bottom:0; right:0; background:#111827; color:white; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:16px; border:3px solid white; z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.2);">📷</div>
                     </div>
                     <input type="file" id="final-avatar-upload" accept="image/*" style="position:absolute; width:1px; height:1px; opacity:0; z-index:-1;" onchange="window.openCropper(event, 'register')">
                 </div>
-                <button id="final-register-btn" class="btn-primary" style="width:100%; padding:16px; font-size:16px; font-weight:bold; border-radius:12px; background:linear-gradient(135deg, var(--primary), #818cf8);" onclick="window.finalizeRegistration()">Profili Tamamla ve Giriş Yap ✨</button>
+                <button id="final-register-btn" class="btn-primary" style="width:100%; padding:16px; font-size:16px; font-weight:bold; border-radius:12px; background:linear-gradient(135deg, #111827, #374151);" onclick="window.finalizeRegistration()">Profili Tamamla ve Giriş Yap ✨</button>
             `;
         }
         wrapper.innerHTML = html;
@@ -842,7 +840,7 @@ function initializeUniLoop() {
                     setTimeout(() => window.showAcademicYearUpdateModal(activeYear), 1000);
                 }
                 
-                // MİLİMETRİK HİZALANMIŞ SİYAH-BEYAZ PREMIUM VE ZİL BUTONU
+                // MİLİMETRİK HİZALANMIŞ SİYAH-BEYAZ PREMIUM VE ZİL BUTONU (Tamamı beyaz içi siyah dış hat)
                 const headerRightMenu = document.querySelector('.header-right-menu');
                 if (headerRightMenu) {
                     headerRightMenu.innerHTML = ''; 
@@ -853,7 +851,7 @@ function initializeUniLoop() {
                         headerRightMenu.insertAdjacentHTML('beforeend', `<div class="menu-item premium-glow" id="nav-premium-action" style="height:36px; display:inline-flex; align-items:center; justify-content:center; background:white; color:#111827; border:1px solid #111827; padding:0 16px; border-radius:18px; font-weight:700; font-size:13px; cursor:pointer; box-sizing:border-box; margin:0;" onclick="window.openPremiumFeaturesModal()">☆ Ayrıcalıklar</div>`);
                     }
 
-                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler" style="background:white; border:1px solid #111827; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer; box-sizing:border-box; margin:0;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#111827" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> <span id="notif-badge-top" style="display:none; position:absolute; top:-4px; right:-4px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
+                    headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler" style="background:white; border:1px solid #111827; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer; box-sizing:border-box; margin:0;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#111827" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> <span id="notif-badge-top" style="display:none; position:absolute; top:-4px; right:-4px; background:#111827; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
                 }
 
                 if (!document.getElementById('uniloop-bottom-nav')) {
@@ -864,7 +862,7 @@ function initializeUniLoop() {
                         <div class="menu-item bottom-nav-item active" data-target="home" onclick="window.loadPage('home')"><div class="bottom-nav-icon"><svg class="fill-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div><span>Ana Sayfa</span></div>
                         <div class="menu-item bottom-nav-item" data-target="confessions" onclick="window.loadPage('confessions')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg></div><span>Keşfet</span></div>
                         <div class="menu-item bottom-nav-item" data-target="market" onclick="window.loadPage('market')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></div><span>Market</span></div>
-                        <div class="menu-item bottom-nav-item" data-target="messages" onclick="window.loadPage('messages')"><div class="bottom-nav-icon" style="position:relative;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-6px; background:#EF4444; color:white; border-radius:50%; width:14px; height:14px; font-size:9px; align-items:center; justify-content:center; font-weight:bold; border: 2px solid white;">0</span></div><span>Mesajlar</span></div>
+                        <div class="menu-item bottom-nav-item" data-target="messages" onclick="window.loadPage('messages')"><div class="bottom-nav-icon" style="position:relative;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-6px; background:#111827; color:white; border-radius:50%; width:14px; height:14px; font-size:9px; align-items:center; justify-content:center; font-weight:bold; border: 2px solid white;">0</span></div><span>Mesajlar</span></div>
                         <div class="menu-item bottom-nav-item" data-target="profile" onclick="window.loadPage('profile')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><span>Profil</span></div>
                     `;
                     if (appScreen) appScreen.appendChild(bottomNav);
@@ -883,10 +881,18 @@ function initializeUniLoop() {
             const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
             await updateDoc(doc(db, "chats", chatId), {
-                messages: arrayUnion({ senderId: "system", text: text, time: timeStr, read: false, isSystem: true }),
+                messages: arrayUnion({
+                    senderId: "system",
+                    text: text,
+                    time: timeStr,
+                    read: false,
+                    isSystem: true
+                }),
                 lastUpdated: serverTimestamp()
             });
-        } catch(e) { console.error(e); }
+        } catch(e) { 
+            console.error(e); 
+        }
     };
     
     function initRealtimeListeners(currentUid) {
@@ -956,7 +962,7 @@ function initializeUniLoop() {
                             if (lastMsg.senderId !== currentUid && lastMsg.read === false) unreadMessagesCount++;
                         }
                     }
-                } catch(err) { console.error(err); }
+                } catch(err) { console.error("Hatalı mesaj belgesi es geçildi:", err); }
             });
 
             chatsDB.sort((a, b) => b.lastUpdatedTS - a.lastUpdatedTS);
@@ -1046,9 +1052,9 @@ function initializeUniLoop() {
         const fac = window.userProfile.faculty || "Fakültenizin";
         const grade = window.userProfile.grade ? window.userProfile.grade + ". Sınıf" : "";
         
-        window.openModal('🌟 UniLoop Premium', `
+        window.openModal('☆ UniLoop Premium', `
             <div style="text-align:center; padding: 10px;">
-                <div style="font-size: 48px; margin-bottom: 10px;">👑</div>
+                <div style="font-size: 48px; margin-bottom: 10px;">☆</div>
                 <h3 style="color:#111827; margin-bottom: 10px; font-size: 22px;">Kampüsün Zirvesine Çık!</h3>
                 <p style="margin-bottom:20px; font-size:15px; color:var(--text-gray);">
                     UniLoop Premium ile sınırları kaldır ve kampüsün en donanımlı ağına dahil ol.
@@ -1062,7 +1068,7 @@ function initializeUniLoop() {
                     <li>🔥 <b>Günlük 30 Adet</b> Hızlı Eşleşme hakkı. (Daha Fazla Eşleşme)</li>
                     <li>🕵️ <b>Kimler Profilime Baktı?</b> Seni görüntüleyen gizli hayranlarını gör.</li>
                 </ul>
-                <button id="buy-premium-btn" onclick="window.upgradeToPremium()" style="width:100%; justify-content:center; padding: 16px; font-size: 16px; background:linear-gradient(135deg, #111827, #374151); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; box-shadow:0 4px 6px rgba(0,0,0,0.3); transition:0.2s;" class="premium-glow">
+                <button id="buy-premium-btn" onclick="window.upgradeToPremium()" style="width:100%; justify-content:center; padding: 16px; font-size: 16px; background:#111827; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; box-shadow:0 4px 6px rgba(0,0,0,0.3); transition:0.2s;" class="premium-glow">
                     💳 Güvenli Ödeme İle Satın Al
                 </button>
                 <p style="font-size:11px; color:#9CA3AF; margin-top:10px;">*İstediğin zaman iptal edebilirsin.</p>
@@ -1300,8 +1306,8 @@ function initializeUniLoop() {
                 let gradeOptions = [1, 2, 3, 4, 5, 6].map(g => `<option value="${g}. Sınıf">${g}. Sınıf</option>`).join('');
                 
                 archiveSectionHtml = `
-                    <div class="card" style="background:linear-gradient(135deg, #F3F4F6, #E5E7EB); border:1px solid #111827; padding:20px; border-radius:12px;">
-                        <div style="font-size:30px; margin-bottom:10px; text-align:center;">👑</div>
+                    <div class="card" style="background:#F9FAFB; border:1px solid #111827; padding:20px; border-radius:12px;">
+                        <div style="font-size:30px; margin-bottom:10px; text-align:center;">☆</div>
                         <h4 style="color:#111827; margin-bottom:8px; font-size:16px; text-align:center;">Admin Paneli: Arşive Dosya Ekle</h4>
                         <p style="font-size:12px; color:#374151; text-align:center; margin-bottom:15px; font-weight:bold;">Fakülte ve sınıf seçip PDF yükleyin.</p>
                         
@@ -1313,25 +1319,25 @@ function initializeUniLoop() {
                         </select>
                         <input type="file" id="admin-archive-file" accept="application/pdf" style="margin-bottom:15px; width:100%; font-size:12px;">
                         
-                        <button id="upload-archive-btn" class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#111827; border:none;" onclick="window.uploadArchiveFile()">
+                        <button id="upload-archive-btn" class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#111827; color:white; border:none;" onclick="window.uploadArchiveFile()">
                             PDF'i Arşive Ekle ➡️
                         </button>
                     </div>
                 `;
             } else {
                 archiveSectionHtml = `
-                    <div class="card" style="background:linear-gradient(135deg, #F9FAFB, #F3F4F6); border:1px solid #111827; padding:20px; border-radius:12px;">
+                    <div class="card" style="background:#F9FAFB; border:1px solid #111827; padding:20px; border-radius:12px;">
                         <div style="font-size:30px; margin-bottom:10px; text-align:center;">📚</div>
                         <h4 style="color:#111827; margin-bottom:8px; font-size:16px; text-align:center;">Çıkmış Sorular Arşivi</h4>
                         <p style="font-size:13px; color:#374151; text-align:center; margin-bottom:15px; font-weight:bold;">Tüm Yıl Boyunca Sabit Erişim</p>
-                        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#111827; border:none;" onclick="window.viewArchive()">
+                        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#111827; color:white; border:none;" onclick="window.viewArchive()">
                             Arşive Git ➡️
                         </button>
                     </div>
                 `;
             }
 
-            window.openModal('🌟 Premium Özellikler Merkezi', `
+            window.openModal('☆ Ayrıcalıklar Merkezi', `
                 <div style="display:flex; flex-direction:column; gap:15px;">
                     ${archiveSectionHtml}
                     
@@ -1356,7 +1362,7 @@ function initializeUniLoop() {
         if(msgTab) { msgTab.classList.add('active'); window.loadPage('messages'); }
     };
 
-    // FAKÜLTE İKONUNA TIKLANDIĞINDA DİREKT GİRİŞ YAPTIRAN KISIM
+    // DİREKT FAKÜLTEYE GİRİŞ MANTIĞI
     window.openFacultiesList = function() {
         if (window.userProfile && window.userProfile.joinedClassRoom && window.userProfile.joinedClassRoom.roomId) {
             window.openGroupRoom(window.userProfile.joinedClassRoom.roomId, window.userProfile.joinedClassRoom.roomTitle, 'faculty');
@@ -1367,7 +1373,7 @@ function initializeUniLoop() {
         
         allFaculties.forEach(fac => {
             listHtml += `
-                <button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px 8px; font-size:13px; font-weight:600; border-radius:12px;" onclick="window.handleFacultyClick('${fac}')">
+                <button class="btn-primary" style="background:#F3F4F6; color:#111827; border:1px solid #E5E7EB; box-shadow:none; padding:12px 8px; font-size:13px; font-weight:600; border-radius:12px;" onclick="window.handleFacultyClick('${fac}')">
                     ${fac}
                 </button>
             `;
@@ -1408,7 +1414,7 @@ function initializeUniLoop() {
             }
 
             if (inputCode === expectedCode) {
-                alert(isAdminJoin ? "👑 Yönetici şifresi doğru! Gruba yönetici olarak katılıyorsunuz." : "✅ Şifre doğru! Fakülte grubunuza katılıyorsunuz.");
+                alert(isAdminJoin ? "☆ Yönetici şifresi doğru! Gruba yönetici olarak katılıyorsunuz." : "✅ Şifre doğru! Fakülte grubunuza katılıyorsunuz.");
                 
                 const roomId = 'faculty_' + firstWord;
                 const roomTitle = facName + ' Ortak Grup';
@@ -1502,6 +1508,7 @@ function initializeUniLoop() {
         }
     };
 
+    // FAKÜLTE SOHBET ODASI SİYAH-BEYAZ TEMA DÜZENLEMESİ
     window.openGroupRoom = function(roomId, roomTitle, roomType) {
         if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
 
@@ -1513,8 +1520,8 @@ function initializeUniLoop() {
                 
                 <div class="chat-header" style="padding:10px 15px; border-bottom:1px solid #d1d5db; background:#fff; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index:10; flex-shrink:0; height:65px; box-sizing:border-box;">
                     <div style="display:flex; align-items:center; gap:10px; flex:1;">
-                        <button class="back-btn" onclick="event.stopPropagation(); if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:transparent; font-size:24px; font-weight:bold; cursor:pointer; color:var(--text-dark); display:flex; align-items:center; justify-content:center; z-index:9999; pointer-events:auto; padding:0; width:30px;">←</button>
-                        <div style="width:44px; height:44px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:22px; flex-shrink:0; box-shadow:0 2px 4px rgba(0,0,0,0.1);">🏛️</div>
+                        <button class="back-btn" onclick="event.stopPropagation(); if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:transparent; font-size:24px; font-weight:bold; cursor:pointer; color:#111827; display:flex; align-items:center; justify-content:center; z-index:9999; pointer-events:auto; padding:0; width:30px;">←</button>
+                        <div style="width:44px; height:44px; background:#111827; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:22px; flex-shrink:0; box-shadow:0 2px 4px rgba(0,0,0,0.1);">🏛️</div>
                         <div class="chat-header-info" style="display:flex; flex-direction:column; flex:1; min-width:0; padding-right:10px; cursor:pointer;" onclick="window.showGroupMembers('${roomTitle}', '${roomType}')">
                             <div class="chat-header-name" style="font-weight:800; font-size:16px; color:#111827; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${roomTitle}</div>
                             <div class="chat-header-status" style="font-size:12px; color:#10B981; font-weight:600;">Fakülte Odası - Çevrimiçi</div>
@@ -1530,8 +1537,8 @@ function initializeUniLoop() {
                 <div class="chat-input-area" style="padding:10px 15px; background:#f0f2f5; display:flex; gap:10px; align-items:center; flex-shrink:0; border-top:none;">
                     <input type="file" id="group-chat-media" accept="image/*, application/pdf" style="display:none;" onchange="window.uploadChatMedia(event, '${roomId}', 'group')">
                     <button onclick="document.getElementById('group-chat-media').click()" style="background:transparent; color:#6B7280; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
-                    <input type="text" id="group-chat-input" placeholder="Fakülteye mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:24px; border:none; background:#fff; outline:none; font-size:15px; color:var(--text-dark); box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                    <button class="chat-send-btn" onclick="window.sendGroupMsg('${roomId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(79,70,229,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">➤</button>
+                    <input type="text" id="group-chat-input" placeholder="Fakülteye mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:24px; border:none; background:#fff; outline:none; font-size:15px; color:#111827; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                    <button class="chat-send-btn" onclick="window.sendGroupMsg('${roomId}')" style="background:#111827; color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(17,24,39,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">➤</button>
                 </div>
             </div>
         `;
@@ -1579,7 +1586,7 @@ function initializeUniLoop() {
                 if (msg.isSystem) {
                     chatHTML += `
                         <div style="text-align:center; margin: 12px 0; align-self:center;">
-                            <span style="background:rgba(0,0,0,0.08); color:#4B5563; font-size:11px; padding:6px 14px; border-radius:16px; font-weight:600; display:inline-block; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
+                            <span style="background:rgba(0,0,0,0.08); color:#111827; font-size:11px; padding:6px 14px; border-radius:16px; font-weight:600; display:inline-block; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
                                 ${msg.text}
                             </span>
                         </div>
@@ -1594,7 +1601,7 @@ function initializeUniLoop() {
                 if(!isMe) {
                     const adminBadge = admins.includes(msg.senderId) ? '<span style="font-size:9px; background:#111827; color:white; padding:2px 4px; border-radius:4px; margin-left:4px;">Yönetici</span>' : '';
                     senderNameHtml = `
-                        <div style="font-size:12px; font-weight:800; color:var(--primary); margin-bottom:4px; display:flex; align-items:center; gap:5px;">
+                        <div style="font-size:12px; font-weight:800; color:#111827; margin-bottom:4px; display:flex; align-items:center; gap:5px;">
                             <span style="width:20px; height:20px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; overflow:hidden;">
                                 ${msg.senderAvatar && msg.senderAvatar.startsWith('http') ? `<img src="${msg.senderAvatar}" style="width:100%;height:100%;object-fit:cover;">` : (msg.senderAvatar || '👤')}
                             </span>
@@ -1727,16 +1734,16 @@ function initializeUniLoop() {
                                 actionBtn = `<button onclick="event.stopPropagation(); window.leaveGroup('${currentRoomId}', '${roomType}', '${u.name}')" style="background:transparent; border:none; font-size:22px; color:#DC2626; cursor:pointer;" title="Gruptan Çık">⏏</button>`;
                                 
                                 meHtml = `
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#EEF2FF; border:1px solid #C7D2FE; border-radius:12px; transition:0.2s; margin-bottom:10px;">
+                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:12px; transition:0.2s; margin-bottom:10px;">
                                         <div style="display:flex; align-items:center; gap:12px; flex:1;">
                                             ${avatarHtml}
                                             <div style="display:flex; flex-direction:column;">
-                                                <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} <span style="color:#10B981; font-size:11px;">(Sen)</span> ${adminBadge}</span>
+                                                <span style="font-weight:800; font-size:15px; color:#111827;">${u.name} ${initial} <span style="color:#10B981; font-size:11px;">(Sen)</span> ${adminBadge}</span>
                                                 <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade + '. Sınıf' : 'Öğrenci'}</span>
                                             </div>
                                         </div>
                                         <div style="display:flex; align-items:center; gap:10px;">
-                                            ${u.isPremium ? '<span style="font-size:18px;" title="Premium Üye">👑</span>' : ''}
+                                            ${u.isPremium ? '<span style="font-size:18px;" title="Premium Üye">☆</span>' : ''}
                                             ${actionBtn}
                                         </div>
                                     </div>
@@ -1747,16 +1754,16 @@ function initializeUniLoop() {
                                 }
 
                                 othersHtml += `
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#fff; border:1px solid #E5E7EB; border-radius:12px; transition:0.2s; margin-bottom:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--primary)';" onmouseout="this.style.borderColor='#E5E7EB';" onclick="window.closeModal(); window.viewUserProfile('${u.uid}')">
+                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#fff; border:1px solid #E5E7EB; border-radius:12px; transition:0.2s; margin-bottom:10px; cursor:pointer;" onmouseover="this.style.borderColor='#111827';" onmouseout="this.style.borderColor='#E5E7EB';" onclick="window.closeModal(); window.viewUserProfile('${u.uid}')">
                                         <div style="display:flex; align-items:center; gap:12px; flex:1;">
                                             ${avatarHtml}
                                             <div style="display:flex; flex-direction:column;">
-                                                <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} ${adminBadge}</span>
+                                                <span style="font-weight:800; font-size:15px; color:#111827;">${u.name} ${initial} ${adminBadge}</span>
                                                 <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade + '. Sınıf' : 'Öğrenci'}</span>
                                             </div>
                                         </div>
                                         <div style="display:flex; align-items:center; gap:10px;">
-                                            ${u.isPremium ? '<span style="font-size:18px;" title="Premium Üye">👑</span>' : ''}
+                                            ${u.isPremium ? '<span style="font-size:18px;" title="Premium Üye">☆</span>' : ''}
                                             ${actionBtn}
                                         </div>
                                     </div>
@@ -1836,13 +1843,13 @@ function initializeUniLoop() {
                 : "Ücretsiz kullanımda günlük 10 kişiyle eşleşme hakkın var. Daha fazla eşleşme için Premium'a geç!";
                 
             let actionButton = window.userProfile.isPremium 
-                ? `<button class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#111827; border:1px solid #111827; border-radius:12px;" onclick="window.loadPage('home')">Anasayfaya Dön</button>`
-                : `<button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center; background:linear-gradient(135deg, #111827, #374151); color:white; border:none; padding:12px; border-radius:12px;" onclick="window.openPremiumModal()">🌟 Premium'a Yükselt</button>`;
+                ? `<button class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#111827; border:1px solid #111827; border-radius:12px; color:white;" onclick="window.loadPage('home')">Anasayfaya Dön</button>`
+                : `<button class="premium-upgrade-btn premium-glow" style="width:100%; justify-content:center; background:white; color:#111827; border:1px solid #111827; padding:12px; border-radius:12px;" onclick="window.openPremiumModal()">☆ Premium'a Yükselt</button>`;
 
             container.innerHTML = `
                 <div style="text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 6px rgba(0,0,0,0.05); width:100%; max-width:320px;">
                     <div style="font-size:50px; margin-bottom:15px;">🛑</div>
-                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Günlük Hakkın Doldu!</h3>
+                    <h3 style="color:#111827; margin-bottom:10px;">Günlük Hakkın Doldu!</h3>
                     <p style="color:var(--text-gray); font-size:13px; margin-bottom:20px;">${limitMessage}</p>
                     ${actionButton}
                 </div>
@@ -1886,8 +1893,8 @@ function initializeUniLoop() {
         if(fastMatchCurrentIndex >= fastMatchUsers.length) {
             container.innerHTML = `
                 <div style="padding:40px 10px; text-align:center; background:white; border-radius:16px; width:100%; max-width:320px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
-                    <div style="font-size:50px; margin-bottom:15px;">🌟</div>
-                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Bugünlük bu kadar!</h3>
+                    <div style="font-size:50px; margin-bottom:15px;">☆</div>
+                    <h3 style="color:#111827; margin-bottom:10px;">Bugünlük bu kadar!</h3>
                     <p style="color:var(--text-gray); font-size:13px;">Şu an için yeni biri kalmadı. Daha sonra tekrar uğra.</p>
                 </div>
             `;
@@ -1896,15 +1903,15 @@ function initializeUniLoop() {
 
         const u = fastMatchUsers[fastMatchCurrentIndex];
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
-        const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:6px; text-shadow:0 1px 2px rgba(0,0,0,0.5);" title="Premium Üye">👑</span>' : '';
+        const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:6px; text-shadow:0 1px 2px rgba(0,0,0,0.5);" title="Premium Üye">☆</span>' : '';
         
         let avatarHtml = u.avatarUrl 
             ? `<img src="${u.avatarUrl}" style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;">` 
-            : `<div style="width:100%; height:100%; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:80px; pointer-events:none;">${u.avatar || '👤'}</div>`;
+            : `<div style="width:100%; height:100%; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:80px; pointer-events:none; color:#111827;">${u.avatar || '👤'}</div>`;
 
         let tagsHtml = '';
         if(u.interests && Array.isArray(u.interests)) {
-            tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:11px; background:rgba(255,255,255,0.25); color:white; padding:4px 10px; border-radius:12px; font-weight:700; margin-right:4px; margin-bottom:4px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join('');
+            tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:11px; background:rgba(255,255,255,0.8); color:#111827; padding:4px 10px; border-radius:12px; font-weight:700; margin-right:4px; margin-bottom:4px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(17,24,39,0.3);">${tag}</span>`).join('');
         }
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
@@ -1912,7 +1919,7 @@ function initializeUniLoop() {
         
         let headerText = window.userProfile.isPremium ? 
             `<span style="color:#111827; font-size:12px; font-weight:bold; background:white; padding:4px 12px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #111827; box-shadow:0 2px 4px rgba(0,0,0,0.05);">Kalan Hakkın: ${remaining} / 30 (Premium)</span>` : 
-            `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:4px 12px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #FCA5A5;">Kalan Hakkın: ${remaining} / 10</span>`;
+            `<span style="color:#111827; font-size:12px; font-weight:bold; background:white; padding:4px 12px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #111827;">Kalan Hakkın: ${remaining} / 10</span>`;
 
         container.innerHTML = `
             ${headerText}
@@ -1928,8 +1935,8 @@ function initializeUniLoop() {
                 </div>
                 
                 <div style="position:absolute; bottom:-28px; left:0; right:0; display:flex; justify-content:center; gap:25px; z-index:10;">
-                    <button onclick="window.handleSwipe('left')" style="width:60px; height:60px; border-radius:50%; background:white; border:none; color:#EF4444; font-size:26px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(239,68,68,0.3); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 12px 25px rgba(239,68,68,0.5)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px rgba(239,68,68,0.3)';">✖</button>
-                    <button onclick="window.handleSwipe('right')" style="width:60px; height:60px; border-radius:50%; background:white; border:none; color:#10B981; font-size:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(16,185,129,0.3); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 12px 25px rgba(16,185,129,0.5)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px rgba(16,185,129,0.3)';">❤</button>
+                    <button onclick="window.handleSwipe('left')" style="width:60px; height:60px; border-radius:50%; background:white; border:1px solid #111827; color:#111827; font-size:26px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,0.1); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)';" onmouseout="this.style.transform='scale(1)';">✖</button>
+                    <button onclick="window.handleSwipe('right')" style="width:60px; height:60px; border-radius:50%; background:#111827; border:1px solid #111827; color:white; font-size:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,0.2); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)';" onmouseout="this.style.transform='scale(1)';">❤</button>
                 </div>
             </div>
             <div style="height:35px;"></div>
@@ -2015,7 +2022,7 @@ function initializeUniLoop() {
             } else {
                 const targetUser = snapshot.docs[0].data();
                 
-                const premiumIcon = targetUser.isPremium ? '<span style="font-size:18px; margin-left:5px;" title="Premium Üye">👑</span>' : '';
+                const premiumIcon = targetUser.isPremium ? '<span style="font-size:18px; margin-left:5px;" title="Premium Üye">☆</span>' : '';
                 window.openModal('🔍 Kullanıcı Bulundu', `
                     <div style="text-align:center; padding:10px;">
                         <div style="width:80px; height:80px; border-radius:50%; margin:0 auto 10px auto; overflow:hidden; border:2px solid ${targetUser.isPremium ? '#111827' : '#E5E7EB'}; display:flex; align-items:center; justify-content:center; background:#F3F4F6; font-size:32px;">
@@ -2023,7 +2030,7 @@ function initializeUniLoop() {
                         </div>
                         <h3 style="margin-bottom:5px; color:var(--text-dark); display:flex; align-items:center; justify-content:center;">${targetUser.name} ${targetUser.surname.charAt(0)}. ${premiumIcon}</h3>
                         <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px;">${targetUser.faculty || 'Kampüs Öğrencisi'}</p>
-                        <button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px;" onclick="window.sendFriendRequest('${targetUser.uid}', '${targetUser.name} ${targetUser.surname}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>
+                        <button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:#111827; color:white; border:none;" onclick="window.sendFriendRequest('${targetUser.uid}', '${targetUser.name} ${targetUser.surname}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>
                     </div>
                 `);
             }
@@ -2130,24 +2137,24 @@ function initializeUniLoop() {
                 const ageText = u.age ? u.age + " yaşında" : "Yaş belirtilmemiş";
                 const facText = u.faculty ? u.faculty : "Fakülte belirtilmemiş";
                 const gradeText = u.grade ? u.grade + ". Sınıf" : "";
-                const premiumBadge = isPremium ? `<div style="margin-top:8px; display:inline-block; background:#111827; color:white; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:12px; border:1px solid #111827; box-shadow:0 2px 4px rgba(0,0,0,0.1);">☆ Premium Üye</div>` : '';
+                const premiumBadge = isPremium ? `<div style="margin-top:8px; display:inline-block; background:#111827; color:white; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:12px; box-shadow:0 2px 4px rgba(0,0,0,0.3);">☆ Premium Üye</div>` : '';
 
                 const existingChat = chatsDB.find(c => c.otherUid === u.uid && !c.isMarketChat);
                 let actionBtnHtml = '';
                 
                 if (existingChat && existingChat.status === 'accepted') {
-                    actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">💬 Mesaj Gönder</button>`;
+                    actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:white; color:#111827; border:1px solid #111827;" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">💬 Mesaj Gönder</button>`;
                 } else if (existingChat && existingChat.status === 'pending') {
-                    actionBtnHtml = `<button class="btn-primary" disabled style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:#9CA3AF; box-shadow:none;">⏳ İstek Bekleniyor</button>`;
+                    actionBtnHtml = `<button class="btn-primary" disabled style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:#F3F4F6; color:#6B7280; border:1px solid #E5E7EB; box-shadow:none;">⏳ İstek Bekleniyor</button>`;
                 } else {
-                    actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendFriendRequest('${u.uid}', '${u.name} ${initial}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>`;
+                    actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:#111827; color:white; border:none;" onclick="window.sendFriendRequest('${u.uid}', '${u.name} ${initial}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>`;
                 }
 
                 window.openModal('Kullanıcı Profili', `
                     <div style="text-align:center;">
                         ${avatarHtml}
                         <h3 style="margin: 10px 0 5px 0; font-size:18px; color:var(--text-dark); display:flex; align-items:center; justify-content:center; gap:5px;">
-                            ${u.name} ${initial} ${isPremium ? '<span style="font-size:18px;">👑</span>' : ''}
+                            ${u.name} ${initial} ${isPremium ? '<span style="font-size:18px;">☆</span>' : ''}
                         </h3>
                         <p style="color:#111827; font-size:14px; margin-bottom: 5px; font-weight:bold;">${facText} ${gradeText ? ' - ' + gradeText : ''}</p>
                         <p style="color:var(--text-gray); font-size:13px; margin-bottom: 5px;">${ageText}</p>
@@ -2173,7 +2180,7 @@ function initializeUniLoop() {
                 <div>
                     <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Kullanıcı Adı</label>
                     <div style="display:flex; align-items:center; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px; padding:0 10px;">
-                        <span style="color:var(--primary); font-weight:bold; font-size:14px;">#</span>
+                        <span style="color:#111827; font-weight:bold; font-size:14px;">#</span>
                         <input type="text" id="edit-username" value="${uNameStr}" style="border:none; background:transparent; width:100%; padding:12px 5px; outline:none; font-size:14px;">
                     </div>
                 </div>
@@ -2199,7 +2206,7 @@ function initializeUniLoop() {
                         <option value="6" ${u.grade == '6' ? 'selected' : ''}>6. Sınıf</option>
                     </select>
                 </div>
-                <button class="btn-primary" style="width:100%; padding:14px; border-radius:10px; font-size:15px; font-weight:bold; margin-top:10px;" onclick="window.saveProfileEdits()">Değişiklikleri Kaydet</button>
+                <button class="btn-primary" style="width:100%; padding:14px; border-radius:10px; font-size:15px; font-weight:bold; margin-top:10px; background:#111827; color:white; border:none;" onclick="window.saveProfileEdits()">Değişiklikleri Kaydet</button>
             </div>
         `);
     };
@@ -2274,10 +2281,10 @@ function initializeUniLoop() {
             <div style="display:flex; flex-direction:column; height:100%; overflow:hidden;">
                 ${usernameWarning}
                 
-                <div class="card" style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; border:none; margin: 10px; padding: 15px; display:flex; justify-content:space-between; align-items:center; border-radius:16px; flex-shrink:0; box-shadow:0 4px 10px rgba(30, 58, 138, 0.2);">
+                <div class="card" style="background: #111827; color: white; border:none; margin: 10px; padding: 15px; display:flex; justify-content:space-between; align-items:center; border-radius:16px; flex-shrink:0; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
                     <div>
                         <h2 style="font-size:18px; margin-bottom:4px; margin-top:0;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
-                        <p style="opacity:0.9; font-size:12px; margin:0;"><strong style="color:#D9FDD3;">${window.userProfile.university}</strong></p>
+                        <p style="opacity:0.9; font-size:12px; margin:0;"><strong>${window.userProfile.university}</strong></p>
                     </div>
                     
                     <div id="home-icons-container" style="display:flex; gap:15px; align-items:center;">
@@ -2286,7 +2293,7 @@ function initializeUniLoop() {
                     </div>
 
                     <div id="home-search-container" class="hidden" style="display:flex; align-items:center; background:white; border-radius:20px; padding:5px 12px; width:55%;">
-                            <span style="color:var(--primary); font-weight:800; font-size:14px; margin-right:5px;">#</span>
+                            <span style="color:#111827; font-weight:800; font-size:14px; margin-right:5px;">#</span>
                             <input type="text" id="home-friend-search-input" style="border:none; background:transparent; width:100%; outline:none; font-size:13px; color:black;" placeholder="Kullanıcı adı..." onkeypress="if(event.key==='Enter') window.searchAndAddFriendHome()">
                             <button onclick="window.searchAndAddFriendHome()" style="background:transparent; border:none; font-size:16px; cursor:pointer;">➡️</button>
                             <button onclick="window.toggleHomeSearch()" style="background:transparent; border:none; font-size:16px; cursor:pointer; color:#EF4444; margin-left:5px;">✖</button>
@@ -2397,7 +2404,7 @@ function initializeUniLoop() {
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
                     <h2 style="margin:0;">${title}</h2>
-                    <button class="btn-primary" style="width:auto; padding: 10px 24px;" onclick="window.openListingForm('${type}')">+ Yeni İlan Ekle</button>
+                    <button class="btn-primary" style="width:auto; padding: 10px 24px; background:#111827; border:none; color:white;" onclick="window.openListingForm('${type}')">+ Yeni İlan Ekle</button>
                 </div>
                 <input type="text" id="local-search-input" class="local-search-bar" placeholder="${title} içinde hızlıca ara...">
                 <div class="market-grid" id="listings-grid-container"></div>
@@ -2493,13 +2500,13 @@ function initializeUniLoop() {
 
             if(hasMessagedThisListing) {
                  actionButtonsHtml = `
-                    <button class="btn-primary" style="margin-top: 20px; width:100%; padding:12px; font-size:15px; background:#10B981; border-color:#10B981; box-shadow:0 4px 6px rgba(16,185,129,0.3);" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">
+                    <button class="btn-primary" style="margin-top: 20px; width:100%; padding:12px; font-size:15px; background:white; color:#111827; border:1px solid #111827; box-shadow:none;" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">
                         💬 Mevcut Sohbete Git
                     </button>
                  `;
             } else {
                  actionButtonsHtml = `
-                    <button class="btn-primary" style="margin-top: 20px; width:100%; padding:12px; font-size:15px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendMarketMessage('${item.sellerId}', '${item.sellerName}', '${safeTitle}', '${item.id}'); window.closeModal();">
+                    <button class="btn-primary" style="margin-top: 20px; width:100%; padding:12px; font-size:15px; background:#111827; color:white; border:none; box-shadow:0 4px 6px rgba(0,0,0,0.1);" onclick="window.sendMarketMessage('${item.sellerId}', '${item.sellerName}', '${safeTitle}', '${item.id}'); window.closeModal();">
                         💬 Satıcıya Mesaj Gönder
                     </button>
                  `;
@@ -2568,14 +2575,14 @@ function initializeUniLoop() {
             <div class="form-group"><textarea id="new-item-desc" rows="3" placeholder="${descPlaceholder}"></textarea></div>
             
             <div class="upload-btn-wrapper" style="margin-bottom: 15px;">
-                <button class="action-btn" onclick="document.getElementById('new-item-photo').click()" style="width:100%; justify-content:center; padding: 12px; font-weight:bold; background: #EEF2FF; color: var(--primary); border:none; border-radius:12px;">📷 Fotoğraf veya 📄 PDF Seç</button>
+                <button class="action-btn" onclick="document.getElementById('new-item-photo').click()" style="width:100%; justify-content:center; padding: 12px; font-weight:bold; background: #F3F4F6; color: #111827; border:1px solid #111827; border-radius:12px;">📷 Fotoğraf veya 📄 PDF Seç</button>
                 <input type="file" id="new-item-photo" accept="image/*, application/pdf" multiple style="display:none;" onchange="window.previewMarketImages(event)" />
             </div>
             
             <div id="preview-container" class="preview-container" style="display:flex; flex-wrap:wrap; margin-bottom:15px; min-height:0px;"></div>
             
-            <button class="btn-primary" id="publish-listing-btn" onclick="window.submitListing('${type}')">İlanı Yayınla</button>
-            <p id="upload-status" style="font-size:12px; color:var(--primary); text-align:center; margin-top:10px; display:none; font-weight:bold;">Dosyalar Yükleniyor, lütfen bekleyin...</p>
+            <button class="btn-primary" id="publish-listing-btn" onclick="window.submitListing('${type}')" style="background:#111827; color:white; border:none;">İlanı Yayınla</button>
+            <p id="upload-status" style="font-size:12px; color:#111827; text-align:center; margin-top:10px; display:none; font-weight:bold;">Dosyalar Yükleniyor, lütfen bekleyin...</p>
         `);
     };
 
@@ -2642,7 +2649,7 @@ function initializeUniLoop() {
                     <div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; border:1px solid #E5E7EB; flex-shrink:0;">
                         ${window.userProfile.avatarUrl ? `<img src="${window.userProfile.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : window.userProfile.avatar}
                     </div>
-                    <button onclick="window.openConfessionForm()" style="background:var(--primary); color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(79,70,229,0.3); flex-shrink:0; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Yeni Paylaşım Ekle">+</button>
+                    <button onclick="window.openConfessionForm()" style="background:#111827; color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,0.2); flex-shrink:0; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Yeni Paylaşım Ekle">+</button>
                     <button class="btn-primary" style="flex:1; text-align:left; background:#F9FAFB; color:var(--text-gray); border:1px solid #E5E7EB; box-shadow:none; padding:12px 15px; font-weight:normal; border-radius:20px;" onclick="window.openConfessionForm()">Kampüste neler oluyor?</button>
                 </div>
                 <div id="conf-feed"></div>
@@ -2696,10 +2703,10 @@ function initializeUniLoop() {
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; background:#fff; padding:10px; border-radius:12px; border:1px solid #E5E7EB;">
                 <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; cursor:pointer; color:var(--text-dark);">
-                    <input type="checkbox" id="new-post-anon" style="width:18px; height:18px; accent-color:var(--primary);"> 🕵️ Gizli Paylaş
+                    <input type="checkbox" id="new-post-anon" style="width:18px; height:18px; accent-color:#111827;"> 🕵️ Gizli Paylaş
                 </label>
                 <div style="position:relative;">
-                    <button class="action-btn" onclick="document.getElementById('post-img-upload').click()" style="padding:8px 16px; font-size:13px; background:#EEF2FF; color:var(--primary); border:none;">📷 Fotoğraf Ekle</button>
+                    <button class="action-btn" onclick="document.getElementById('post-img-upload').click()" style="padding:8px 16px; font-size:13px; background:#F3F4F6; color:#111827; border:1px solid #111827;">📷 Fotoğraf Ekle</button>
                     <input type="file" id="post-img-upload" accept="image/*" style="display:none;" onchange="window.previewPostImage(event)">
                 </div>
             </div>
@@ -2709,7 +2716,7 @@ function initializeUniLoop() {
                 <button onclick="document.getElementById('post-img-upload').value=''; document.getElementById('post-img-preview').style.display='none';" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:30px; height:30px; font-size:16px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center;">×</button>
             </div>
             
-            <button id="publish-post-btn" class="btn-primary" style="width:100%; padding:16px; font-size:16px; font-weight:bold; border-radius:12px; box-shadow:0 4px 10px rgba(79,70,229,0.3);" onclick="window.submitPost()">Paylaş 🚀</button>
+            <button id="publish-post-btn" class="btn-primary" style="width:100%; padding:16px; font-size:16px; font-weight:bold; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.2); background:#111827; color:white; border:none;" onclick="window.submitPost()">Paylaş 🚀</button>
         `);
     };
 
@@ -2864,7 +2871,7 @@ function initializeUniLoop() {
             <div class="answers-container" id="comments-container" style="margin-bottom:15px; max-height: 300px; overflow-y:auto;">${commentsHtml}</div>
             <div style="display:flex; gap:10px; background:white; padding-top:10px;">
                 <input type="text" id="comment-input" placeholder="Bir yanıt yaz..." style="flex:1; padding:14px 15px; border-radius:25px; border:1px solid #E5E7EB; outline:none; background:#F9FAFB; font-size:14px;" onkeypress="if(event.key==='Enter') window.addComment('${post.id}')">
-                <button class="chat-send-btn" onclick="window.addComment('${post.id}')" style="width:46px; height:46px; border-radius:50%; background:var(--primary); color:white; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(79,70,229,0.3); font-size:18px;">➤</button>
+                <button class="chat-send-btn" onclick="window.addComment('${post.id}')" style="width:46px; height:46px; border-radius:50%; background:#111827; color:white; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,0.2); font-size:18px;">➤</button>
             </div>
         `;
         
@@ -2928,7 +2935,7 @@ function initializeUniLoop() {
 
             const activeClass = (chat.id === currentChatId) ? 'active' : '';
             const unreadStyle = isUnread ? 'font-weight:800; color:var(--text-dark);' : 'color:var(--text-gray);';
-            const badgeHtml = isUnread ? `<div style="width:12px; height:12px; background:var(--primary); border-radius:50%; border:2px solid white; box-shadow:0 0 0 1px var(--primary); margin-left:auto;"></div>` : '';
+            const badgeHtml = isUnread ? `<div style="width:12px; height:12px; background:#111827; border-radius:50%; border:2px solid white; margin-left:auto;"></div>` : '';
 
             let avatarHtml = chat.avatar && chat.avatar.startsWith('http') 
                 ? `<img src="${chat.avatar}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">`
@@ -2978,7 +2985,7 @@ function initializeUniLoop() {
             }
         });
 
-        const unreadHtml = unreadCount > 0 ? `<span style="background:var(--primary); color:white; font-size:12px; padding:2px 8px; border-radius:12px; margin-left:5px; vertical-align:middle;">${unreadCount} Yeni</span>` : '';
+        const unreadHtml = unreadCount > 0 ? `<span style="background:#111827; color:white; font-size:12px; padding:2px 8px; border-radius:12px; margin-left:5px; vertical-align:middle;">${unreadCount} Yeni</span>` : '';
 
         let html = `
             <div id="chat-layout-container" style="display:flex; width:100%; height:100%; flex-direction:row;">
@@ -3078,13 +3085,13 @@ function initializeUniLoop() {
         let statusAreaHtml = '';
         if (chat.status === 'pending') {
             if (chat.initiator === window.userProfile.uid) {
-                statusAreaHtml = `<div style="padding:15px; background:#EEF2FF; text-align:center; font-size:13px; color:#4F46E5; border-bottom:1px solid #E5E7EB; font-weight:700; flex-shrink:0;">⏳ Karşı tarafın onayı bekleniyor. ${chat.isMarketChat ? 'Onaylanana kadar manuel mesaj gönderemezsiniz.' : ''}</div>`;
+                statusAreaHtml = `<div style="padding:15px; background:#F3F4F6; text-align:center; font-size:13px; color:#111827; border-bottom:1px solid #E5E7EB; font-weight:700; flex-shrink:0;">⏳ Karşı tarafın onayı bekleniyor. ${chat.isMarketChat ? 'Onaylanana kadar manuel mesaj gönderemezsiniz.' : ''}</div>`;
             } else {
                 statusAreaHtml = `
                     <div style="padding:20px 15px; background:#F0FDF4; text-align:center; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
                     <div style="font-size:14px; color:#166534; margin-bottom:12px; font-weight:700;">👋 ${chat.name} seninle bağlantı kurmak istiyor.</div>
                     <div style="display:flex; justify-content:center; gap:10px;">
-                        <button class="btn-primary" style="padding:10px 20px; background:#10B981; border-color:#10B981; font-size:14px; box-shadow:none; border-radius:10px;" onclick="window.acceptChatRequest('${chat.id}')">✅ Kabul Et</button>
+                        <button class="btn-primary" style="padding:10px 20px; background:#111827; border-color:#111827; font-size:14px; box-shadow:none; border-radius:10px; color:white;" onclick="window.acceptChatRequest('${chat.id}')">✅ Kabul Et</button>
                         <button class="btn-danger" style="padding:10px 20px; font-size:14px; box-shadow:none; border-radius:10px;" onclick="window.rejectChatRequest('${chat.id}')">❌ Reddet</button>
                     </div>
                 </div>`;
@@ -3105,7 +3112,7 @@ function initializeUniLoop() {
                     <input type="file" id="dm-chat-media" accept="image/*, application/pdf" style="display:none;" onchange="window.uploadChatMedia(event, '${chat.id}', 'dm')">
                     <button onclick="document.getElementById('dm-chat-media').click()" style="background:transparent; color:#6B7280; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
                     <input type="text" id="chat-input-field" placeholder="Mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:25px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:15px; color:var(--text-dark);">
-                    <button onclick="window.sendDirectMessage('${chat.id}', '${chat.otherUid}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(79,70,229,0.3); flex-shrink:0; transition: transform 0.2s;">➤</button>
+                    <button onclick="window.sendDirectMessage('${chat.id}', '${chat.otherUid}')" style="background:#111827; color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.2); flex-shrink:0; transition: transform 0.2s;">➤</button>
                 </div>
             `;
         }
@@ -3312,10 +3319,10 @@ function initializeUniLoop() {
             <div class="card premium-glow" style="margin-bottom:15px; background:white; border:1px solid #111827; cursor:pointer;" onclick="window.openPremiumModal()">
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div>
-                        <div style="font-weight:800; color:#111827; font-size:16px; margin-bottom:4px;">🌟 UniLoop Premium'a Geç</div>
+                        <div style="font-weight:800; color:#111827; font-size:16px; margin-bottom:4px;">☆ UniLoop Premium'a Geç</div>
                         <div style="font-size:12px; color:#111827; font-weight:bold;">Kampüsün en popüler kişisi ol, sınırları kaldır!</div>
                     </div>
-                    <div style="font-size:24px;">👑</div>
+                    <div style="font-size:24px;">☆</div>
                 </div>
             </div>
             ` : ''}
@@ -3341,7 +3348,7 @@ function initializeUniLoop() {
             return;
         }
 
-        let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px;">`;
+        let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
         friends.forEach(f => {
             let avatarHtml = f.avatar && f.avatar.startsWith('http') 
                 ? `<img src="${f.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid #111827;">`
@@ -3417,7 +3424,7 @@ function initializeUniLoop() {
                     Sisteme kayıt olan her kullanıcı, bu şartları okumuş ve kabul etmiş sayılır.
                 </div>
             </div>
-            <button class="btn-primary" style="width:100%; margin-top:15px; padding:12px; border-radius:10px;" onclick="window.closeModal(); window.renderSettings();">Geri Dön</button>
+            <button class="btn-primary" style="width:100%; margin-top:15px; padding:12px; border-radius:10px; background:#111827; color:white; border:none;" onclick="window.closeModal(); window.renderSettings();">Geri Dön</button>
         `);
     };
 
@@ -3432,7 +3439,7 @@ function initializeUniLoop() {
             if (chat.status === 'pending' && chat.initiator !== window.userProfile.uid && !chat.isMarketChat) {
                 hasNotif = true;
                 html += `
-                    <div class="notif-compact-item" style="border-left: 4px solid var(--primary);">
+                    <div class="notif-compact-item" style="border-left: 4px solid #111827;">
                         <div style="display:flex; align-items:center; gap:10px; flex:1;">
                             <div style="font-size:24px;">👋</div>
                             <div>
@@ -3441,8 +3448,8 @@ function initializeUniLoop() {
                             </div>
                         </div>
                         <div style="display:flex; gap:5px;">
-                            <button class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:8px; background:#10B981; border-color:#10B981; box-shadow:none;" onclick="window.acceptChatRequest('${chat.id}')">Kabul</button>
-                            <button class="btn-danger" style="padding:6px 12px; font-size:12px; border-radius:8px; box-shadow:none;" onclick="window.rejectChatRequest('${chat.id}')">Red</button>
+                            <button class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:8px; background:#111827; color:white; border:none;" onclick="window.acceptChatRequest('${chat.id}')">Kabul</button>
+                            <button class="btn-danger" style="padding:6px 12px; font-size:12px; border-radius:8px; background:white; color:#111827; border:1px solid #111827;" onclick="window.rejectChatRequest('${chat.id}')">Red</button>
                         </div>
                     </div>
                 `;
@@ -3465,7 +3472,7 @@ function initializeUniLoop() {
                                     <div style="font-size:24px;">${lastMsg.isSystem ? '🔔' : '💬'}</div>
                                     <div style="flex:1; min-width:0;">
                                         <div style="font-weight:800; font-size:14px; color:var(--text-dark);">${chat.name}</div>
-                                        <div style="font-size:12px; color:var(--primary); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Yeni: ${msgPreview}</div>
+                                        <div style="font-size:12px; color:#111827; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Yeni: ${msgPreview}</div>
                                     </div>
                                 </div>
                             </div>
@@ -3478,14 +3485,14 @@ function initializeUniLoop() {
         if (!hasNotif) {
             html += `
                 <div style="text-align:center; padding:30px 10px; color:var(--text-gray);">
-                    <div style="font-size:40px; margin-bottom:10px;">🔔</div>
-                    <div style="font-size:14px;">Şu an için yeni bir bildiriminiz yok.</div>
+                    <div style="font-size:40px; margin-bottom:10px;">☆</div>
+                    <div style="font-size:14px; color:#111827; font-weight:bold;">Şu an için yeni bir bildiriminiz yok.</div>
                 </div>
             `;
         }
         
         html += '</div>';
-        window.openModal('🔔 Bildirimler', html);
+        window.openModal('☆ Bildirimler', html);
     };
 
     window.loadPage = function(page) {
