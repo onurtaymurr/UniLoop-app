@@ -1,6 +1,6 @@
 // ============================================================================
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
-// 🌟 POPÜLERLİK SAVAŞI (BEYAZ ALEV) GÜNCELLEMESİ - BÖLÜM 1 🌟
+// 🌟 DARK MODE, SLIDER VE KÜRSÜ GÜNCELLEMESİ - BÖLÜM 1 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -68,6 +68,7 @@ let chatsDB = [];
 let currentChatId = null;
 let currentGroupUnsubscribe = null; 
 window.tournamentInterval = null;
+window.homeSliderInterval = null; // SLIDER İÇİN GLOBAL DEĞİŞKEN
 
 window.registrationData = { interests: [] };
 
@@ -250,6 +251,10 @@ function initializeUniLoop() {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(107, 114, 128, 0.8); }
+
+        /* SLIDER İÇİN ÖZEL CSS GİZLİ SCROLLBAR */
+        .home-slider::-webkit-scrollbar { display: none; }
+        .home-slider { -ms-overflow-style: none; scrollbar-width: none; }
     `;
     document.head.appendChild(styleFix);
 
@@ -718,6 +723,7 @@ function initializeUniLoop() {
                 if(bottomNav) bottomNav.remove();
                 const topNotifBtn = document.getElementById('notif-btn-top');
                 if(topNotifBtn) topNotifBtn.remove();
+                if(window.homeSliderInterval) clearInterval(window.homeSliderInterval);
             }
         } catch(error) { console.error(error); }
     };
@@ -851,44 +857,6 @@ function initializeUniLoop() {
                 if (window.userProfile.lastArchiveResetYear < activeYear) {
                     setTimeout(() => window.showAcademicYearUpdateModal(activeYear), 1000);
                 }
-                
-                // CANLI GERİ SAYIM INTERVAL (HER SANİYE ÇALIŞIR)
-                if(window.tournamentInterval) clearInterval(window.tournamentInterval);
-                window.tournamentInterval = setInterval(() => {
-                    if (!window.userProfile || !window.userProfile.lastTournamentDate) return;
-                    let timeDiff = Date.now() - window.userProfile.lastTournamentDate;
-                    let cooldown = 24 * 60 * 60 * 1000; // 24 Saat
-                    
-                    let btn1 = document.getElementById('join-tour-btn-embedded');
-                    let btn2 = document.getElementById('join-tour-btn-modal');
-                    let btn3 = document.getElementById('join-tour-btn-empty'); 
-                    
-                    if (timeDiff < cooldown) {
-                        let remaining = cooldown - timeDiff;
-                        let h = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        let m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-                        let s = Math.floor((remaining % (1000 * 60)) / 1000);
-                        
-                        let hStr = h.toString().padStart(2, '0');
-                        let mStr = m.toString().padStart(2, '0');
-                        let sStr = s.toString().padStart(2, '0');
-                        let timeStr = `${hStr}:${mStr}:${sStr}`;
-                        
-                        [btn1, btn2, btn3].forEach(btn => {
-                            if(btn) {
-                                btn.innerText = `⏳ ${timeStr} Sonra Katıl`;
-                                btn.disabled = true;
-                                btn.style.background = '#9CA3AF';
-                                btn.style.cursor = 'not-allowed';
-                                btn.style.opacity = '0.7';
-                            }
-                        });
-                    } else {
-                        if(btn1 && btn1.disabled) { btn1.innerText = "🤍🔥 Popülerlik Savaşına Katıl"; btn1.disabled = false; btn1.style.background = "linear-gradient(135deg, #111827, #374151)"; btn1.style.cursor = "pointer"; btn1.style.opacity = '1'; }
-                        if(btn2 && btn2.disabled) { btn2.innerText = "Savaşa Katıl ⚔️"; btn2.disabled = false; btn2.style.background = "#111827"; btn2.style.cursor = "pointer"; btn2.style.opacity = '1'; }
-                        if(btn3 && btn3.disabled) { btn3.innerText = "Savaşa Katıl ⚔️"; btn3.disabled = false; btn3.style.background = "#111827"; btn3.style.cursor = "pointer"; btn3.style.opacity = '1'; }
-                    }
-                }, 1000);
                 
                 const headerRightMenu = document.querySelector('.header-right-menu');
                 if (headerRightMenu) {
@@ -1888,9 +1856,15 @@ function initializeUniLoop() {
                 }
             });
             if(rank === 1) html += '<p style="text-align:center; color:var(--text-gray); padding:20px;">Henüz popülerlik puanı kazanan kimse yok. İlk sen ol!</p>';
-            html += `</div>
-            <button id="join-tour-btn-modal" class="btn-primary" style="width:100%; padding:14px; border-radius:12px; background:#111827; border:none; font-weight:bold;" onclick="window.closeModal(); window.startPopularityTournament();">Savaşa Katıl ⚔️</button>`;
             
+            // Eğer sayaç aktifse liderlik tablosu altından "Savaşa Katıl" butonunu saklayıp sayaç gösterebiliriz (opsiyonel koruma)
+            let btnHtml = `<button id="join-tour-btn-modal" class="btn-primary" style="width:100%; padding:14px; border-radius:12px; background:#111827; border:none; font-weight:bold;" onclick="window.closeModal(); window.startPopularityTournament();">Savaşa Katıl ⚔️</button>`;
+            if (window.userProfile && window.userProfile.lastTournamentDate) {
+                let timeDiff = Date.now() - window.userProfile.lastTournamentDate;
+                if (timeDiff < (24 * 60 * 60 * 1000)) btnHtml = `<button id="join-tour-btn-modal" disabled class="btn-primary" style="width:100%; padding:14px; border-radius:12px; background:#9CA3AF; border:none; font-weight:bold; cursor:not-allowed;">⏳ Bekleniyor...</button>`;
+            }
+
+            html += `</div>${btnHtml}`;
             document.getElementById('modal-body').innerHTML = html;
         } catch(e) {
             document.getElementById('modal-body').innerHTML = '<p style="color:red; text-align:center;">Sıralama yüklenirken hata oluştu.</p>';
@@ -2057,6 +2031,7 @@ function initializeUniLoop() {
         container.innerHTML = `<div style="text-align:center; padding:30px;"><div style="font-size:40px; animation: glowPulse 1s infinite alternate;">⏳</div><h3 style="color:var(--text-dark);">Sonuçlar Kaydediliyor...</h3></div>`;
 
         try {
+            // TURNUVA BİTİŞ ZAMANI (COOLDOWN) KAYDEDİLİYOR
             const nowTs = Date.now();
             await updateDoc(doc(db, "users", window.userProfile.uid), { lastTournamentDate: nowTs });
             window.userProfile.lastTournamentDate = nowTs;
@@ -2108,7 +2083,7 @@ function initializeUniLoop() {
     };
 
 // ============================================================================
-// 🌟 GÜNCELLENMİŞ HIZLI EŞLEŞME FONKSİYONU (İkili Şablon Modeli)
+// 🌟 GÜNCELLENMİŞ HIZLI EŞLEŞME FONKSİYONU (LİDERLİK KÜRSÜSÜ VE DARK MODE)
 // ============================================================================
     window.initEmbeddedFastMatch = async function() {
         let count = window.userProfile.fastMatchCount || 0;
@@ -2126,44 +2101,103 @@ function initializeUniLoop() {
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
         
-        // ---------------------------------------------------------
-        // HAK BİTTİĞİNDE GÖSTERİLECEK YENİ İKİLİ ŞABLON EKRANI
-        // ---------------------------------------------------------
+        // HAK BİTTİĞİNDE GÖSTERİLECEK YENİ İKİLİ ŞABLON EKRANI (DARK MODE)
         if (count >= maxSwipes) {
             const isPremium = window.userProfile.isPremium;
             
+            // Popülerlik Savaşı için Güvenli Cooldown Kontrolü (Hemen çalışır)
+            let canJoinTournament = true;
+            let tCooldownStr = "";
+            let remainingSecs = 0;
+
+            if (window.userProfile && window.userProfile.lastTournamentDate) {
+                let timeDiff = Date.now() - window.userProfile.lastTournamentDate;
+                let cooldown = 24 * 60 * 60 * 1000;
+                if (timeDiff < cooldown) {
+                    canJoinTournament = false;
+                    let remaining = cooldown - timeDiff;
+                    remainingSecs = Math.floor(remaining / 1000);
+                    let h = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                    let m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                    let s = Math.floor((remaining % (1000 * 60)) / 1000).toString().padStart(2, '0');
+                    tCooldownStr = `⏳ ${h}:${m}:${s}`;
+                }
+            }
+
+            // Kürsü (Podium) için Top 3 çekiliyor
+            let top3 = [];
+            try {
+                const q = query(collection(db, "users"), orderBy("popularity", "desc"), limit(3));
+                const snap = await getDocs(q);
+                snap.forEach(doc => top3.push(doc.data()));
+            } catch(e) { console.error("Kürsü yüklenemedi", e); }
+
+            let podiumHtml = `
+                <div style="margin-top:20px; width:100%; display:flex; justify-content:center; align-items:flex-end; gap:10px; height:150px; padding:0 15px; box-sizing:border-box;">
+                    ${top3[1] ? `
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center;" onclick="window.viewUserProfile('${top3[1].uid}')">
+                        <img src="${top3[1].avatarUrl || ''}" style="width:45px; height:45px; border-radius:50%; border:3px solid #C0C0C0; object-fit:cover; background:#1F2937; margin-bottom:5px;">
+                        <span style="font-size:11px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${top3[1].name}</span>
+                        <div style="width:100%; background:linear-gradient(to top, #e2e8f0, #f8fafc); height:50px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-weight:900; color:#64748b; border:1px solid #cbd5e1; border-bottom:none; box-shadow:0 -2px 10px rgba(0,0,0,0.05);">2.</div>
+                    </div>
+                    ` : '<div style="flex:1;"></div>'}
+                    ${top3[0] ? `
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center;" onclick="window.viewUserProfile('${top3[0].uid}')">
+                        <div style="font-size:24px; margin-bottom:-12px; z-index:10; animation: glowPulse 2s infinite;">👑</div>
+                        <img src="${top3[0].avatarUrl || ''}" style="width:55px; height:55px; border-radius:50%; border:3px solid #FBBF24; object-fit:cover; background:#1F2937; z-index:5; margin-bottom:5px;">
+                        <span style="font-size:12px; font-weight:900; color:var(--text-dark); margin-bottom:5px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${top3[0].name}</span>
+                        <div style="width:100%; background:linear-gradient(to top, #fef3c7, #fffbeb); height:80px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-weight:900; color:#b45309; border:1px solid #fde68a; border-bottom:none; box-shadow:0 -4px 15px rgba(251,191,36,0.3);">1.</div>
+                    </div>
+                    ` : '<div style="flex:1;"></div>'}
+                    ${top3[2] ? `
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center;" onclick="window.viewUserProfile('${top3[2].uid}')">
+                        <img src="${top3[2].avatarUrl || ''}" style="width:45px; height:45px; border-radius:50%; border:3px solid #CD7F32; object-fit:cover; background:#1F2937; margin-bottom:5px;">
+                        <span style="font-size:11px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${top3[2].name}</span>
+                        <div style="width:100%; background:linear-gradient(to top, #ffedd5, #fffbeb); height:40px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-weight:900; color:#b45309; border:1px solid #fde047; border-bottom:none; box-shadow:0 -2px 10px rgba(0,0,0,0.05);">3.</div>
+                    </div>
+                    ` : '<div style="flex:1;"></div>'}
+                </div>
+            `;
+
             container.innerHTML = `
                 <div style="width:100%; max-width:380px; display:flex; flex-direction:row; gap:12px; padding:10px;">
                     
-                    <div style="flex:1; background:white; border-radius:16px; padding:15px 10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; box-shadow:0 4px 6px rgba(0,0,0,0.05); aspect-ratio:1/1.15; border:1px solid #E5E7EB;">
+                    <div style="flex:1; background:#1F2937; border-radius:16px; padding:15px 10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; box-shadow:0 4px 10px rgba(0,0,0,0.15); aspect-ratio:1/1.15; border:1px solid #374151;">
                         <div style="font-size:24px; margin-bottom:5px;">⚡</div>
-                        <h4 style="margin:0 0 5px 0; color:#111827; font-size:13px; text-align:center;">Hızlı Eşleşme</h4>
+                        <h4 style="margin:0 0 5px 0; color:white; font-size:13px; text-align:center;">Hızlı Eşleşme</h4>
                         
                         ${isPremium ? `
-                            <p style="font-size:11px; color:var(--text-gray); text-align:center; margin:0 0 10px 0; line-height:1.4;">Bugünlük hakkın doldu, yarın bir daha gel!</p>
-                            <div style="background:#F3F4F6; padding:8px 5px; border-radius:8px; font-weight:800; color:#111827; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Hesaplanıyor...</div>
+                            <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 10px 0; line-height:1.4;">Bugünlük hakkın doldu, yarın bir daha gel!</p>
+                            <div style="background:#374151; padding:8px 5px; border-radius:8px; font-weight:800; color:white; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Bekleniyor...</div>
                         ` : `
-                            <p style="font-size:11px; color:var(--text-gray); text-align:center; margin:0 0 5px 0; line-height:1.4;">Bugünlük hakkın doldu.</p>
-                            <button onclick="window.openPremiumModal()" style="background:linear-gradient(135deg, #F59E0B, #FBBF24); color:#fff; border:none; border-radius:8px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:8px; box-shadow:0 2px 4px rgba(245,158,11,0.3);">Premium Ol ✨</button>
-                            <div style="background:#F3F4F6; padding:6px 5px; border-radius:8px; font-weight:800; color:#111827; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Hesaplanıyor...</div>
+                            <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 5px 0; line-height:1.4;">Bugünlük hakkın doldu.</p>
+                            <button onclick="window.openPremiumModal()" style="background:linear-gradient(135deg, #F59E0B, #FBBF24); color:#111827; border:none; border-radius:8px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:8px; box-shadow:0 2px 4px rgba(245,158,11,0.3);">Premium Ol ✨</button>
+                            <div style="background:#374151; padding:6px 5px; border-radius:8px; font-weight:800; color:white; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Bekleniyor...</div>
                         `}
                     </div>
 
-                    <div style="flex:1; background:white; border-radius:16px; padding:15px 10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; box-shadow:0 4px 6px rgba(0,0,0,0.05); aspect-ratio:1/1.15; border:1px solid #E5E7EB;">
+                    <div style="flex:1; background:#1F2937; border-radius:16px; padding:15px 10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; box-shadow:0 4px 10px rgba(0,0,0,0.15); aspect-ratio:1/1.15; border:1px solid #374151;">
                         <div style="font-size:24px; margin-bottom:5px;" class="white-flame-icon">🔥</div>
-                        <h4 style="margin:0 0 5px 0; color:#111827; font-size:13px; text-align:center;">Popülerlik Savaşı</h4>
-                        <p style="font-size:11px; color:var(--text-gray); text-align:center; margin:0 0 10px 0; line-height:1.4;">Kampüsün en popülerlerini seç veya seçil! 👑</p>
+                        <h4 style="margin:0 0 5px 0; color:white; font-size:13px; text-align:center;">Popülerlik Savaşı</h4>
+                        <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 10px 0; line-height:1.4;">Kampüsün en popülerlerini seç veya seçil! 👑</p>
                         
-                        <button id="join-tour-btn-embedded" onclick="window.startPopularityTournament()" style="background:#111827; color:white; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%; transition:0.2s;">Savaşa Katıl ⚔️</button>
+                        ${canJoinTournament ? `
+                            <button onclick="window.startPopularityTournament()" style="background:white; color:#111827; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%; transition:0.2s;">Savaşa Katıl ⚔️</button>
+                        ` : `
+                            <div style="background:#374151; padding:8px 5px; border-radius:8px; font-weight:800; color:white; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" data-remaining="${remainingSecs}" id="pop-battle-timer">${tCooldownStr}</div>
+                        `}
                     </div>
-                    
                 </div>
                 
-                <div style="flex:1; width:100%; min-height:60px;"></div>
+                <div style="flex:1; width:100%; min-height:50px; display:flex; flex-direction:column; justify-content:flex-end;">
+                    ${top3.length > 0 ? podiumHtml : '<p style="text-align:center; color:#9CA3AF; font-size:12px;">Henüz kürsüye çıkan kimse yok!</p>'}
+                </div>
             `;
 
+            // Sayaçları çalıştıran interval (Hem sol hem sağ için)
             if (window.fastMatchTimerInterval) clearInterval(window.fastMatchTimerInterval);
             window.fastMatchTimerInterval = setInterval(() => {
+                // Sol Sayaç (Hızlı Eşleşme - Gece Yarısı)
                 const timerEl = document.getElementById('fast-match-timer');
                 if(timerEl) {
                     const now = new Date();
@@ -2173,14 +2207,30 @@ function initializeUniLoop() {
                     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
                     const s = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
                     timerEl.innerText = `⏳ ${h}:${m}:${s}`;
-                } else {
-                    clearInterval(window.fastMatchTimerInterval);
+                }
+                
+                // Sağ Sayaç (Popülerlik Savaşı - Turnuva Bekleme Süresi)
+                const popTimerEl = document.getElementById('pop-battle-timer');
+                if(popTimerEl) {
+                    let rem = parseInt(popTimerEl.getAttribute('data-remaining'));
+                    if (rem > 0) {
+                        rem -= 1;
+                        popTimerEl.setAttribute('data-remaining', rem);
+                        let h = Math.floor(rem / 3600).toString().padStart(2, '0');
+                        let m = Math.floor((rem % 3600) / 60).toString().padStart(2, '0');
+                        let s = (rem % 60).toString().padStart(2, '0');
+                        popTimerEl.innerText = `⏳ ${h}:${m}:${s}`;
+                    } else {
+                        // Süre bittiyse butona çevir
+                        popTimerEl.outerHTML = `<button onclick="window.startPopularityTournament()" style="background:white; color:#111827; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%; transition:0.2s; animation: fadeIn 0.3s ease;">Savaşa Katıl ⚔️</button>`;
+                    }
                 }
             }, 1000);
 
             return; 
         }
 
+        // HAKKI VARSA KULLANICI ARAMA VE SWIPE EKRANI (Orjinal Kod)
         container.innerHTML = `
             <div style="text-align:center; padding:10px; display:flex; flex-direction:column; align-items:center;">
                 <div style="font-size:40px; animation: glowPulse 1.5s infinite alternate; margin-bottom:15px;">🔍</div>
@@ -2599,6 +2649,9 @@ function initializeUniLoop() {
         }
     };
 
+// ============================================================================
+// 🌟 GÜNCELLENMİŞ RENDER HOME (DARK MODE SLIDER & DUYURULAR)
+// ============================================================================
     window.renderHome = async function() {
         document.body.classList.add('no-scroll-home');
 
@@ -2611,36 +2664,88 @@ function initializeUniLoop() {
             `;
         }
 
+        // SLIDER (KAYDIRMALI EKRAN) İÇERİKLERİ
+        const slides = [
+            `
+            <h2 style="font-size:18px; margin-bottom:4px; margin-top:0;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
+            <p style="opacity:0.9; font-size:12px; margin:0;"><strong style="color:#D9FDD3;">${window.userProfile.university}</strong></p>
+            `,
+            `
+            <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">📢 Kampüs Duyurusu</h2>
+            <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">25 Nisan'da Manifest Konseri var! Biletlerini Kampüs Meydanı'ndan alabilirsin.</p>
+            `,
+            `
+            <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">🌟 Premium Ayrıcalıkları</h2>
+            <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">Profiline kim baktı öğrenmek için hemen Premium'a geçiş yap.</p>
+            `
+        ];
+
         let html = `
             <div style="display:flex; flex-direction:column; height:100%; overflow:hidden;">
                 ${usernameWarning}
                 
-                <div class="card" style="background: linear-gradient(135deg, #1E3A8A, #4F46E5); color: white; border:none; margin: 10px; padding: 15px; display:flex; justify-content:space-between; align-items:center; border-radius:16px; flex-shrink:0; box-shadow:0 4px 10px rgba(30, 58, 138, 0.2);">
-                    <div>
-                        <h2 style="font-size:18px; margin-bottom:4px; margin-top:0;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
-                        <p style="opacity:0.9; font-size:12px; margin:0;"><strong style="color:#D9FDD3;">${window.userProfile.university}</strong></p>
+                <div style="position:relative; margin: 10px; border-radius:16px; flex-shrink:0; box-shadow:0 6px 15px rgba(0,0,0,0.1); background:#1F2937;">
+                    <div id="home-slider-container" class="home-slider" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; width:100%; scroll-behavior:smooth;">
+                        ${slides.map(slide => `
+                            <div style="flex: 0 0 100%; scroll-snap-align: center; padding: 15px; box-sizing:border-box; display:flex; justify-content:space-between; align-items:center; color:white; min-height:80px;">
+                                <div style="flex:1;">${slide}</div>
+                            </div>
+                        `).join('')}
                     </div>
                     
-                    <div id="home-icons-container" style="display:flex; gap:15px; align-items:center;">
+                    <div id="home-icons-container" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); display:flex; gap:15px; align-items:center; z-index:10;">
                         <div class="white-flame-icon" onclick="window.showLeaderboard()" title="Popülerlik Savaşı Sıralaması">🔥</div>
                         <div style="font-size:24px; cursor:pointer;" onclick="window.openFacultiesList()" title="Fakültem">🏛️</div>
                         <div style="font-size:24px; cursor:pointer;" onclick="window.toggleHomeSearch()" title="Arkadaşını Bul">🔍</div>
                     </div>
 
-                    <div id="home-search-container" class="hidden" style="display:flex; align-items:center; background:white; border-radius:20px; padding:5px 12px; width:55%;">
+                    <div id="home-search-container" class="hidden" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); z-index:20; display:flex; align-items:center; background:white; border-radius:20px; padding:5px 12px; width:calc(100% - 30px); box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
                             <span style="color:var(--primary); font-weight:800; font-size:14px; margin-right:5px;">#</span>
                             <input type="text" id="home-friend-search-input" style="border:none; background:transparent; width:100%; outline:none; font-size:13px; color:black;" placeholder="Kullanıcı adı..." onkeypress="if(event.key==='Enter') window.searchAndAddFriendHome()">
                             <button onclick="window.searchAndAddFriendHome()" style="background:transparent; border:none; font-size:16px; cursor:pointer;">➡️</button>
                             <button onclick="window.toggleHomeSearch()" style="background:transparent; border:none; font-size:16px; cursor:pointer; color:#EF4444; margin-left:5px;">✖</button>
                     </div>
+                    
+                    <div style="position:absolute; bottom:5px; left:0; right:0; display:flex; justify-content:center; gap:5px; pointer-events:none;">
+                        ${slides.map((_, i) => `<div class="slider-dot" id="slider-dot-${i}" style="width:6px; height:6px; border-radius:50%; background:${i===0 ? 'white' : 'rgba(255,255,255,0.3)'};"></div>`).join('')}
+                    </div>
                 </div>
 
                 <div id="embedded-fast-match-container" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:5px 10px 10px 10px; overflow:hidden;">
-                    </div>
+                </div>
             </div>
         `;
         
         mainContent.innerHTML = html;
+
+        // Slider Otomatik Kaydırma Mantığı (15 saniyede bir)
+        const sliderContainer = document.getElementById('home-slider-container');
+        if (sliderContainer) {
+            let currentIndex = 0;
+            const totalSlides = slides.length;
+            
+            // Kullanıcı el ile kaydırdığında noktaları güncellemek için Scroll Event Listener
+            sliderContainer.addEventListener('scroll', () => {
+                const scrollLeft = sliderContainer.scrollLeft;
+                const clientWidth = sliderContainer.clientWidth;
+                currentIndex = Math.round(scrollLeft / clientWidth);
+                for(let i=0; i<totalSlides; i++){
+                    const dot = document.getElementById(`slider-dot-${i}`);
+                    if(dot) dot.style.background = (i === currentIndex) ? 'white' : 'rgba(255,255,255,0.3)';
+                }
+            });
+
+            if(window.homeSliderInterval) clearInterval(window.homeSliderInterval);
+            window.homeSliderInterval = setInterval(() => {
+                currentIndex++;
+                if(currentIndex >= totalSlides) currentIndex = 0;
+                sliderContainer.scrollTo({
+                    left: currentIndex * sliderContainer.clientWidth,
+                    behavior: 'smooth'
+                });
+            }, 15000);
+        }
+
         window.initEmbeddedFastMatch();
     };
 
@@ -3555,7 +3660,8 @@ function initializeUniLoop() {
                 });
             } catch(error) {
                 console.error("Mesaj gönderilemedi:", error);
-                alert("Mesaj gönderilirken bir hata oluştu.");
+                alert("Mesaj gönderilirken bir hata
+ oluştu.");
             }
         }
     };
