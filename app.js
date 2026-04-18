@@ -281,20 +281,20 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
 
-        // 🌟 UNILOOP LOGO ENJEKSİYONU
+                // 🌟 UNILOOP LOGO ENJEKSİYONU (Yatay Logo)
     setTimeout(() => {
         const headerLogoCandidates = document.querySelectorAll('.logo, .logo-title, #logo-btn, #app-header > :first-child, header > :first-child');
         headerLogoCandidates.forEach(el => {
             if(el && !el.hasAttribute('data-logo-applied')) {
-                el.innerHTML = `
-                    <div style="display: flex; align-items: center; height: 100%; padding-left: 5px;">
-                        <img src="uniloop-yeni-logo.png" alt="UniLoop" style="max-height: 32px; width: auto; object-fit: contain; display: block;">
-                    </div>
-                `;
+                el.innerHTML = `<img src="uniloop-yeni-logo.png" class="header-logo-horizontal" alt="UniLoop">`;
                 el.setAttribute('data-logo-applied', 'true');
+                el.style.background = "none";
+                el.style.border = "none";
             }
         });
     }, 100);
+
+
 
 
     const cropperModalHtml = `
