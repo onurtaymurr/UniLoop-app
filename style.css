@@ -9,6 +9,7 @@
 --success: #10B981;
 --danger: #EF4444;
 }
+
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
 body { background-color: var(--bg-color); color: var(--text-dark); overflow-x: hidden; overscroll-behavior-y: none; }
 
@@ -135,14 +136,15 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     border: 4px solid #374151; /* Şık çerçeve */
 }
 
-/* Buton Tonları */
+/* YENİ BUTON TONLARI (Geç, Maske İndir, Kapat) */
 .btn-gec { background: #4b5563; color: white; transition: 0.2s; }
-.btn-gec:hover { background: #6b7280; }
+.btn-gec:hover { background: #6b7280; transform: translateY(-2px); }
 .btn-maske { background: #8b5cf6; color: white; transition: 0.2s; }
-.btn-maske:hover { background: #a78bfa; }
+.btn-maske:hover { background: #a78bfa; transform: translateY(-2px); }
 .btn-kapat { background: #ef4444; color: white; transition: 0.2s; }
-.btn-kapat:hover { background: #f87171; }
+.btn-kapat:hover { background: #f87171; transform: translateY(-2px); }
 
+/* Ekranların aktiflik durumları */
 .screen {
     display: none;
     flex-direction: column;
@@ -214,7 +216,7 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid #8b5cf6;
-    margin: -60px auto 15px auto;
+    margin: -20px auto 15px auto;
     background: white;
 }
 
