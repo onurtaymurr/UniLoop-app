@@ -99,36 +99,6 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 
 .premium-card-bw::before { background: #111827 !important; }
 
-/* 🌟 KAYAN PANEL ACTION BUTONLARI (ALEV - SES - ARAMA) 🌟 */
-.slider-panel-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end; /* En sağa yaslar */
-    gap: 12px; 
-    margin-bottom: 15px;
-    width: 100%;
-}
-.slider-action-btn {
-    background: #F3F4F6;
-    border: none;
-    border-radius: 50%;
-    width: 45px;
-    height: 45px;
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transition: transform 0.2s, background 0.2s;
-}
-.slider-action-btn:hover {
-    transform: scale(1.1);
-}
-.btn-alev:hover { background: #FEF2F2; }
-.btn-ses:hover { background: #EEF2FF; box-shadow: 0 0 10px rgba(79, 70, 229, 0.4); }
-.btn-arama:hover { background: #E5E7EB; }
-
 .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 20px;}
 @media (max-width: 600px) { .market-grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
 
@@ -180,12 +150,12 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .frequency-overlay {
     display: none;
     position: fixed;
-    z-index: 10005; /* Lightbox'tan önde, diğerlerinden arkada kalmayacak */
+    z-index: 10005; 
     left: 0;
     top: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(3, 7, 18, 0.9); /* Yarı saydam derin karanlık */
+    background-color: rgba(3, 7, 18, 0.9);
     backdrop-filter: blur(8px);
     align-items: center;
     justify-content: center;
