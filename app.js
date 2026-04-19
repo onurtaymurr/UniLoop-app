@@ -3990,3 +3990,132 @@ if (document.readyState === 'loading') {
 } else {
     initializeUniLoop();
 }
+
+
+
+
+
+
+
+// ==========================================
+// KAMPÜS FREKANSI MODÜLÜ (SESLİ SOHBET)
+// ==========================================
+
+const isFreqPremium = false; 
+const freqMaxMinutes = isFreqPremium ? 30 : 10; 
+
+let freqTimerInterval;
+let freqAudioContext;
+let freqMicStream;
+let freqFakeAnimInterval;
+
+// Menüden Frekans'a tıklandığında çalışır
+window.openFrekans = function() {
+    document.getElementById('main-content').style.display = 'none'; 
+    document.getElementById('frequency-module').style.display = 'flex'; 
+    window.switchFreqState('freq-state-home');
+    
+    // Mobildeyse sol menüyü kapat
+    if(window.innerWidth <= 768) {
+        const sidebar = document.getElementById('sidebar');
+        if(sidebar) sidebar.classList.remove('active');
+    }
+};
+
+// Frekans ekranını kapatıp standart ana sayfana döner
+window.closeFrekans = function() {
+    window.stopFreqMicrophone();
+    clearInterval(freqTimerInterval);
+    document.getElementById('frequency-module').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block'; 
+};
+
+window.switchFreqState = function(stateId) {
+    document.querySelectorAll('.freq-screen').forEach(el => el.style.display = 'none');
+    document.getElementById(stateId).style.display = 'flex';
+};
+
+window.startFreqSearch = function() {
+    window.switchFreqState('freq-state-search');
+    setTimeout(() => { window.connectFreqChat(); }, 2500);
+};
+
+window.connectFreqChat = function() {
+    window.switchFreqState('freq-state-chat');
+    window.startFreqTimer();
+    document.getElementById('freq-reveal-btn').style.display = 'block';
+    document.getElementById('freq-reveal-status').style.display = 'none';
+    window.initFreqMicrophone();
+};
+
+window.startFreqTimer = function() {
+    let seconds = 0;
+    document.getElementById('freq-timer').innerText = "00:00";
+    document.getElementById('freq-quota').innerText = `Kota: ${freqMaxMinutes} DK`;
+    
+    clearInterval(freqTimerInterval);
+    freqTimerInterval = setInterval(() => {
+        seconds++;
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        document.getElementById('freq-timer').innerText = `${m}:${s}`;
+
+        let billedMinutes = Math.floor(seconds / 60);
+        if (seconds % 60 > 30) billedMinutes += 1;
+        else if (billedMinutes === 0 && seconds > 0) billedMinutes = 1;
+
+        if (billedMinutes >= freqMaxMinutes && seconds % 60 > 30) {
+            clearInterval(freqTimerInterval);
+            alert("Süre sınırınıza ulaştınız.");
+            window.closeFrekans();
+        }
+    }, 1000);
+};
+
+window.initFreqMicrophone = async function() {
+    const bars = Array.from({length: 7}, (_, i) => document.getElementById(`fbar-${i+1}`));
+    try {
+        freqMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        freqAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = freqAudioContext.createMediaStreamSource(freqMicStream);
+        const analyser = freqAudioContext.createAnalyser();
+        analyser.fftSize = 32;
+        source.connect(analyser);
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        
+        function animateBars() {
+            if(!freqMicStream) return;
+            requestAnimationFrame(animateBars);
+            analyser.getByteFrequencyData(dataArray);
+            for(let i = 0; i < 7; i++) {
+                let height = Math.max(10, ((dataArray[i + 2] || 0) / 255) * 50); 
+                if(bars[i]) {
+                    bars[i].style.height = `${height}px`;
+                    bars[i].style.background = height > 20 ? '#34d399' : '#059669';
+                }
+            }
+        }
+        animateBars();
+    } catch (err) {
+        // Kullanıcı mikrofona izin vermezse sahte animasyon oynatır
+        freqFakeAnimInterval = setInterval(() => {
+            bars.forEach(bar => { if(bar) bar.style.height = `${Math.floor(Math.random() * 40) + 10}px`; });
+        }, 200);
+    }
+};
+
+window.stopFreqMicrophone = function() {
+    if(freqMicStream) { freqMicStream.getTracks().forEach(t => t.stop()); freqMicStream = null; }
+    if(freqAudioContext) { freqAudioContext.close(); freqAudioContext = null; }
+    if(freqFakeAnimInterval) { clearInterval(freqFakeAnimInterval); freqFakeAnimInterval = null; }
+};
+
+window.requestFreqReveal = function() {
+    document.getElementById('freq-reveal-btn').style.display = 'none';
+    document.getElementById('freq-reveal-status').style.display = 'block';
+    setTimeout(() => {
+        window.stopFreqMicrophone();
+        clearInterval(freqTimerInterval);
+        window.switchFreqState('freq-state-revealed');
+    }, 2000);
+};
