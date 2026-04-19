@@ -1423,7 +1423,7 @@ function initializeUniLoop() {
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <div style="font-size:18px; font-weight:800; width:25px; text-align:center;">${medal}</div>
                                 <div style="width:40px; height:40px; border-radius:50%; overflow:hidden; background:#E5E7EB; border:1px solid #111827;">
-                                    ${u.avatarUrl ? `<img src="${u.avatarUrl}" stylewidth:100%;height:100%;object-fit:cover;">` : `<div style="font-size:20px; text-align:center; line-height:40px;">${u.avatar || '👤'}</div>`}
+                                    ${u.avatarUrl ? `<img src="${u.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="font-size:20px; text-align:center; line-height:40px;">${u.avatar || '👤'}</div>`}
                                 </div>
                                 <span style="font-weight:700; font-size:14px;">${u.name} ${u.surname ? u.surname.charAt(0)+'.' : ''}</span>
                             </div>
@@ -1933,17 +1933,12 @@ function initializeUniLoop() {
 
 
     /* ========================================================================= */
-    /* 🎙️ GERÇEK ZAMANLI 1v1 EŞLEŞME MOTORU (KAMPÜS FREKANSI & WEBRTC)         */
+    /* 🎙️ GERÇEK ZAMANLI 1v1 EŞLEŞME & MASKE (RIZA) MOTORU                     */
     /* ========================================================================= */
     let voiceSearchTimeout = null;
     let voiceQueueUnsubscribe = null;
+    window.callRole = null; // 'caller' veya 'callee'
 
-    window.peerConnection = null;
-    window.localStream = null;
-    window.callDocId = null;
-    window.callUnsubscribe = null;
-    window.iceUnsubscribe = null;
-    
     const rtcConfig = {
         iceServers: [
             { urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302', 'stun:stun3.l.google.com:19302', 'stun:stun4.l.google.com:19302'] }
@@ -2083,7 +2078,8 @@ function initializeUniLoop() {
         await window.peerConnection.setLocalDescription(offerDescription);
 
         const offer = { sdp: offerDescription.sdp, type: offerDescription.type };
-        await setDoc(callDoc, { offer });
+        // Maske inme durumu için iki alanı da false olarak başlatıyoruz
+        await setDoc(callDoc, { offer, reveal_caller: false, reveal_callee: false });
 
         let remoteCandidatesBuffer = [];
 
@@ -2093,11 +2089,29 @@ function initializeUniLoop() {
                 return;
             }
             const data = snapshot.data();
+            
             if (!window.peerConnection.currentRemoteDescription && data?.answer) {
                 const answerDescription = new RTCSessionDescription(data.answer);
                 await window.peerConnection.setRemoteDescription(answerDescription);
                 remoteCandidatesBuffer.forEach(c => window.peerConnection.addIceCandidate(c));
                 remoteCandidatesBuffer = [];
+            }
+            
+            // RIZAYA DAYALI MASKE İNDİRME MANTIĞI
+            let myReveal = data.reveal_caller;
+            let otherReveal = data.reveal_callee;
+            
+            if (otherReveal && !myReveal) {
+                const statusEl = document.getElementById('reveal-status');
+                const revealBtn = document.getElementById('reveal-btn');
+                if(statusEl && revealBtn && revealBtn.style.display !== 'none') {
+                    statusEl.style.display = 'block';
+                    statusEl.style.color = '#10b981';
+                    statusEl.innerText = 'Karşı taraf maskesini indirdi! Görmek için sen de indirmelisin.';
+                }
+            }
+            if (myReveal && otherReveal) {
+                window.executeMutualReveal();
             }
         });
 
@@ -2150,6 +2164,7 @@ function initializeUniLoop() {
                 return;
             }
             const data = snapshot.data();
+            
             if (data?.offer && !window.peerConnection.currentRemoteDescription) {
                 const offerDescription = new RTCSessionDescription(data.offer);
                 await window.peerConnection.setRemoteDescription(offerDescription);
@@ -2162,6 +2177,23 @@ function initializeUniLoop() {
                 
                 remoteCandidatesBuffer.forEach(c => window.peerConnection.addIceCandidate(c));
                 remoteCandidatesBuffer = [];
+            }
+
+            // RIZAYA DAYALI MASKE İNDİRME MANTIĞI
+            let myReveal = data.reveal_callee;
+            let otherReveal = data.reveal_caller;
+            
+            if (otherReveal && !myReveal) {
+                const statusEl = document.getElementById('reveal-status');
+                const revealBtn = document.getElementById('reveal-btn');
+                if(statusEl && revealBtn && revealBtn.style.display !== 'none') {
+                    statusEl.style.display = 'block';
+                    statusEl.style.color = '#10b981';
+                    statusEl.innerText = 'Karşı taraf maskesini indirdi! Görmek için sen de indirmelisin.';
+                }
+            }
+            if (myReveal && otherReveal) {
+                window.executeMutualReveal();
             }
         });
 
@@ -2216,6 +2248,7 @@ function initializeUniLoop() {
                 const micReady = await window.setupLocalAudio();
                 if(!micReady) { window.closeFrequency(); return; }
 
+                window.callRole = 'caller'; // Rolü belirle
                 await window.createWebRTCCall(partnerFound.uid);
 
                 const pDoc = await getDoc(doc(db, "users", partnerFound.uid));
@@ -2243,6 +2276,7 @@ function initializeUniLoop() {
                         const micReady = await window.setupLocalAudio();
                         if(!micReady) { window.closeFrequency(); return; }
 
+                        window.callRole = 'callee'; // Rolü belirle
                         await window.answerWebRTCCall(matchedUid);
 
                         const pDoc = await getDoc(doc(db, "users", matchedUid));
@@ -2269,6 +2303,8 @@ function initializeUniLoop() {
         document.getElementById('reveal-btn').style.display = 'block';
         document.getElementById('skip-btn').style.display = 'block';
         document.getElementById('reveal-status').style.display = 'none';
+        document.getElementById('reveal-status').innerText = 'Karşı tarafın onayı bekleniyor ⏳';
+        document.getElementById('reveal-status').style.color = '#f59e0b';
     };
 
     window.startFrequencyTimer = function() {
@@ -2296,25 +2332,43 @@ function initializeUniLoop() {
         }, 1000);
     };
 
-    window.requestReveal = function() {
+    // RIZAYA DAYALI MASKE İNDİRME İSTEĞİ (Sesi asla kesmez)
+    window.requestReveal = async function() {
         document.getElementById('reveal-btn').style.display = 'none';
-        document.getElementById('reveal-status').style.display = 'block';
         
-        setTimeout(() => {
-            const matchUser = window.currentVoiceMatch;
-            if(matchUser) {
-                const avImg = document.getElementById('reveal-avatar');
-                if(avImg) avImg.src = matchUser.avatarUrl || "https://i.pravatar.cc/150?img=" + Math.floor(Math.random() * 70);
-                
-                const nameEl = document.getElementById('reveal-name');
-                if(nameEl) nameEl.innerText = matchUser.name + (matchUser.age ? ", " + matchUser.age : "");
-                
-                const facEl = document.getElementById('reveal-faculty');
-                if(facEl) facEl.innerText = matchUser.faculty || "Kampüs Öğrencisi";
-            }
+        const statusEl = document.getElementById('reveal-status');
+        if (statusEl.innerText.includes('Karşı taraf maskesini indirdi')) {
+            statusEl.innerText = 'Eşleşme onaylanıyor...';
+        } else {
+            statusEl.style.display = 'block';
+            statusEl.style.color = '#f59e0b';
+            statusEl.innerText = 'Karşı tarafın onayı bekleniyor ⏳';
+        }
+        
+        if (window.callDocId && window.callRole) {
+            try {
+                await updateDoc(doc(db, "calls", window.callDocId), {
+                    ['reveal_' + window.callRole]: true
+                });
+            } catch(e) { console.error(e); }
+        }
+    };
+
+    // İKİ TARAF DA ONAYLADIĞINDA ÇALIŞIR (Ses kesilmez, sadece UI değişir)
+    window.executeMutualReveal = function() {
+        const matchUser = window.currentVoiceMatch;
+        if(matchUser) {
+            const avImg = document.getElementById('reveal-avatar');
+            if(avImg) avImg.src = matchUser.avatarUrl || "https://i.pravatar.cc/150?img=" + Math.floor(Math.random() * 70);
             
-            window.switchFrequencyState('state-revealed');
-        }, 2000); 
+            const nameEl = document.getElementById('reveal-name');
+            if(nameEl) nameEl.innerText = matchUser.name + (matchUser.age ? ", " + matchUser.age : "");
+            
+            const facEl = document.getElementById('reveal-faculty');
+            if(facEl) facEl.innerText = matchUser.faculty || "Kampüs Öğrencisi";
+        }
+        
+        window.switchFrequencyState('state-revealed');
     };
 
     window.addRevealedFriend = function() {
@@ -2389,8 +2443,8 @@ function initializeUniLoop() {
             `,
             `
             <div>
-                <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">📢 Kampüs Duyurusu</h2>
-                <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">25 Nisan'da Manifest Konseri var! Biletlerini Kampüs Meydanı'ndan alabilirsin.</p>
+                <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">🎙️ Anonim Sesli Sohbet</h2>
+                <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">Üniversiteden insanlarla anonim bir şekilde konuş, yeni bağlantılar kur ve frekansı yakala!</p>
             </div>
             `,
             `
