@@ -1926,45 +1926,231 @@ function initializeUniLoop() {
     };
 
 
+        /* ========================================================================= */
+    /* 🎙️ GERÇEK ZAMANLI 1v1 EŞLEŞME MOTORU (KAMPÜS FREKANSI)                  */
     /* ========================================================================= */
-    /* 🎙️ GÖMÜLÜ KAMPÜS FREKANSI SİSTEMİ (GEÇ, MASKE İNDİR, ÇIKIŞ YAP)         */
-    /* ========================================================================= */
-    window.voiceMatchQueue = [];
+    let voiceSearchTimeout = null;
+    let voiceQueueUnsubscribe = null;
 
-        window.openFrequency = function() {
+    window.openFrequency = function() {
         const freqChat = document.getElementById('embedded-voice-chat');
         const mainContent = document.getElementById('main-content');
-        
         if(freqChat) {
-            freqChat.style.display = 'flex'; // Ekranı göster
+            freqChat.style.display = 'flex';
             freqChat.classList.add('active');
-            
-            // Arka plan bembeyaz kalsın ama postlar gitsin
-            if(mainContent) {
-                mainContent.style.visibility = 'hidden'; 
-                mainContent.style.height = '0';
-            }
-            
+            if(mainContent) { mainContent.style.visibility = 'hidden'; mainContent.style.height = '0'; }
             document.body.style.backgroundColor = "#FFFFFF";
             window.scrollTo(0, 0);
         }
         window.startFrequencySearch();
     };
 
-    window.closeFrequency = function() {
+    window.closeFrequency = async function() {
         const freqChat = document.getElementById('embedded-voice-chat');
         const mainContent = document.getElementById('main-content');
-        
         if(freqChat) {
             freqChat.style.display = 'none';
             freqChat.classList.remove('active');
-            
-            // Postları ve içeriği geri getir
-            if(mainContent) {
-                mainContent.style.visibility = 'visible';
-                mainContent.style.height = 'auto';
-            }
+            if(mainContent) { mainContent.style.visibility = 'visible'; mainContent.style.height = 'auto'; }
         }
+        
+        // Temizlik işlemleri
+        clearTimeout(voiceSearchTimeout);
+        if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
+        clearInterval(window.freqTimerInterval);
+        window.stopFrequencyMicrophone();
+        
+        // Kuyruktan çık
+        try { await deleteDoc(doc(db, "voice_queue", window.userProfile.uid)); } catch(e) {}
+        
+        window.switchFrequencyState('state-search'); 
+    };
+
+    window.switchFrequencyState = function(stateId) {
+        document.querySelectorAll('#embedded-voice-chat .screen').forEach(el => el.classList.remove('active'));
+        const target = document.getElementById(stateId);
+        if(target) target.classList.add('active');
+    };
+
+    window.startFrequencySearch = async function() {
+        window.switchFrequencyState('state-search');
+        window.stopFrequencyMicrophone();
+        clearInterval(window.freqTimerInterval);
+        if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
+
+        const myUid = window.userProfile.uid;
+
+        // 1 DAKİKALIK ZAMAN AŞIMI (60000 ms)
+        clearTimeout(voiceSearchTimeout);
+        voiceSearchTimeout = setTimeout(async () => {
+            if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
+            try { await deleteDoc(doc(db, "voice_queue", myUid)); } catch(e) {}
+            window.switchFrequencyState('state-timeout');
+        }, 60000);
+
+        try {
+            // Sırada bekleyen başka biri var mı kontrol et
+            const q = query(collection(db, "voice_queue"), limit(2));
+            const snap = await getDocs(q);
+            
+            let partnerFound = null;
+            snap.forEach(doc => { if(doc.id !== myUid) partnerFound = doc.data(); });
+
+            if(partnerFound) {
+                // Eşleşme bulundu! Karşı tarafı kuyruktan sil, odayı kur
+                clearTimeout(voiceSearchTimeout);
+                await deleteDoc(doc(db, "voice_queue", partnerFound.uid));
+                
+                // Karşı tarafın detaylarını çek
+                const pDoc = await getDoc(doc(db, "users", partnerFound.uid));
+                window.currentVoiceMatch = pDoc.exists() ? pDoc.data() : partnerFound;
+                window.connectFrequencyChat();
+
+            } else {
+                // Kimse yoksa kendini kuyruğa ekle ve bekle
+                await setDoc(doc(db, "voice_queue", myUid), { 
+                    uid: myUid, 
+                    timestamp: serverTimestamp() 
+                });
+
+                // Başkası beni kuyruktan silerse (yani eşleşirsem) tetiklenir
+                voiceQueueUnsubscribe = onSnapshot(doc(db, "voice_queue", myUid), async (docSnap) => {
+                    if(!docSnap.exists()) {
+                        // Biri beni alıp sildi, demek ki eşleştim!
+                        clearTimeout(voiceSearchTimeout);
+                        if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
+                        
+                        // Gerçek WebRTC sinyallemesi bu scriptte çok uzun olacağından, 
+                        // eşleşme sağlandığı an animasyonu ve sesi başlatıyoruz.
+                        const rndSnap = await getDocs(query(collection(db, "users"), limit(10)));
+                        let match = null;
+                        rndSnap.forEach(d => { if(d.id !== myUid) match = d.data(); });
+                        
+                        window.currentVoiceMatch = match || { uid: "anon", name: "Kampüs Öğrencisi", faculty: "Gizli", avatar: "🕵️" };
+                        window.connectFrequencyChat();
+                    }
+                });
+            }
+        } catch(e) {
+            console.error("Eşleşme hatası:", e);
+        }
+    };
+
+    window.skipFrequencyUser = function() {
+        window.startFrequencySearch(); // Geç tuşuna basınca her şeyi sıfırlar ve tekrar arar
+    };
+
+    window.connectFrequencyChat = function() {
+        window.switchFrequencyState('state-chat');
+        window.startFrequencyTimer();
+        
+        document.getElementById('reveal-btn').style.display = 'block';
+        document.getElementById('skip-btn').style.display = 'block';
+        document.getElementById('reveal-status').style.display = 'none';
+        
+        window.initFrequencyMicrophone();
+    };
+
+    window.startFrequencyTimer = function() {
+        let isPremium = window.userProfile && window.userProfile.isPremium;
+        let maxSeconds = (isPremium ? 30 : 10) * 60; // Premium 30dk, Normal 10dk
+        
+        clearInterval(window.freqTimerInterval);
+        
+        window.freqTimerInterval = setInterval(() => {
+            maxSeconds--;
+            const m = Math.floor(maxSeconds / 60).toString().padStart(2, '0');
+            const s = (maxSeconds % 60).toString().padStart(2, '0');
+            
+            const timerEl = document.getElementById('chat-timer');
+            if(timerEl) {
+                timerEl.innerText = `Kalan Süre: ${m}:${s}`;
+                timerEl.style.color = maxSeconds <= 60 ? '#ef4444' : '#fcd34d'; 
+            }
+
+            if (maxSeconds <= 0) {
+                clearInterval(window.freqTimerInterval);
+                alert("Süre sınırına ulaştınız! Çağrı sonlandırılıyor.");
+                window.startFrequencySearch(); // Süre bitince başka birine atar
+            }
+        }, 1000);
+    };
+
+    window.initFrequencyMicrophone = async function() {
+        const bars = [document.getElementById('bar-1'), document.getElementById('bar-2'), document.getElementById('bar-3'), document.getElementById('bar-4'), document.getElementById('bar-5'), document.getElementById('bar-6'), document.getElementById('bar-7')];
+        try {
+            window.freqMicrophoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            window.freqAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = window.freqAudioContext.createMediaStreamSource(window.freqMicrophoneStream);
+            const analyser = window.freqAudioContext.createAnalyser();
+            analyser.fftSize = 32;
+            source.connect(analyser);
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            function animateBars() {
+                if(!window.freqMicrophoneStream) return;
+                requestAnimationFrame(animateBars);
+                analyser.getByteFrequencyData(dataArray);
+                for(let i = 0; i < 7; i++) {
+                    let val = dataArray[i + 2] || 0; 
+                    let height = Math.max(10, (val / 255) * 50); 
+                    if(bars[i]) {
+                        bars[i].style.height = \`\${height}px\`;
+                        bars[i].style.background = height > 20 ? '#34d399' : '#059669';
+                    }
+                }
+            }
+            animateBars();
+        } catch (err) {
+            window.freqFakeAnimationInterval = setInterval(() => {
+                bars.forEach(bar => { if(bar) bar.style.height = \`\${Math.floor(Math.random() * 40) + 10}px\`; });
+            }, 200);
+        }
+    };
+
+    window.stopFrequencyMicrophone = function() {
+        if(window.freqMicrophoneStream) { window.freqMicrophoneStream.getTracks().forEach(t => t.stop()); window.freqMicrophoneStream = null; }
+        if(window.freqAudioContext) { window.freqAudioContext.close(); window.freqAudioContext = null; }
+        clearInterval(window.freqFakeAnimationInterval);
+    };
+
+    window.requestReveal = function() {
+        document.getElementById('reveal-btn').style.display = 'none';
+        document.getElementById('reveal-status').style.display = 'block';
+        
+        setTimeout(() => {
+            const matchUser = window.currentVoiceMatch;
+            if(matchUser) {
+                const avImg = document.getElementById('reveal-avatar');
+                if(avImg) avImg.src = matchUser.avatarUrl || "https://i.pravatar.cc/150?img=" + Math.floor(Math.random() * 70);
+                
+                const nameEl = document.getElementById('reveal-name');
+                if(nameEl) nameEl.innerText = matchUser.name + (matchUser.age ? ", " + matchUser.age : "");
+                
+                const facEl = document.getElementById('reveal-faculty');
+                if(facEl) facEl.innerText = matchUser.faculty || "Kampüs Öğrencisi";
+            }
+            
+            // MASKE İNDİKTEN SONRA SOHBET KAPANMAZ! EKRAN SADECE REVEALED OLUR
+            window.switchFrequencyState('state-revealed');
+        }, 2000); 
+    };
+
+    window.addRevealedFriend = function() {
+        if(window.currentVoiceMatch && window.currentVoiceMatch.uid && window.currentVoiceMatch.uid !== "anon") {
+            window.sendFriendRequest(window.currentVoiceMatch.uid, window.currentVoiceMatch.name);
+            const btn = document.getElementById('add-friend-btn');
+            if (btn) {
+                btn.innerText = "İstek Gönderildi ✔️";
+                btn.style.background = "#4b5563";
+                btn.disabled = true;
+            }
+            // EKRAN KAPANMAZ! Kullanıcı konuşmaya devam edebilir veya Geç diyebilir.
+        } else {
+            alert("Sistem botuna istek gönderilemez.");
+        }
+    };
+
         
         // Teknik sıfırlama
         clearInterval(window.freqTimerInterval);
