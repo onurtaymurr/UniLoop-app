@@ -98,15 +98,60 @@
 
     <div id="embedded-voice-chat" style="display: none;">
     <div class="voice-chat-card">
+        
         <div id="state-search" class="screen active">
-            <div class="radar-container">
-                <div class="radar-sweep"></div>
-                <div style="font-size: 30px; z-index: 10;">📡</div>
-            </div>
-            <h3 style="color: #c4b5fd;">Kampüs taranıyor...</h3>
-            <p style="color: #94a3b8; font-size: 13px;">Seninle aynı frekansta biri aranıyor.</p>
-            <button class="end-btn" style="margin-top: 30px; width: 80%; background: #ef4444; color: white;" onclick="window.closeFrequency()">Çıkış Yap ✖</button>
+            <div class="radar-container"><div class="radar-sweep"></div><div style="font-size: 30px; z-index: 10;">📡</div></div>
+            <h3 style="color: #c4b5fd;">Kampüs Taranıyor...</h3>
+            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 20px;">Sıradaki kişiyle eşleştiriliyorsun.</p>
+            <button class="btn-kapat" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer;" onclick="window.closeFrequency()">İptal Et ✖</button>
         </div>
+
+        <div id="state-timeout" class="screen">
+            <div style="font-size: 50px; margin-bottom: 15px;">🏜️</div>
+            <h3 style="color: #fca5a5;">Şu an kimse yok!</h3>
+            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 25px;">Ağda eşleşecek kimse bulunamadı. Lütfen daha sonra tekrar dene.</p>
+            <button class="btn-maske" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; margin-bottom:10px;" onclick="window.startFrequencySearch()">Tekrar Ara 🔄</button>
+            <button class="btn-kapat" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer;" onclick="window.closeFrequency()">Kapat ✖</button>
+        </div>
+
+        <div id="state-chat" class="screen">
+            <h4 style="color: #10b981; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">Bağlantı Kuruldu</h4>
+            <p id="chat-timer" style="color: #fcd34d; font-family: monospace; font-size: 16px; margin-top: 0; margin-bottom: 20px; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px;">Kalan Süre: 10:00</p>
+            
+            <div class="blurred-avatar" id="anon-avatar"></div>
+
+            <div class="visualizer">
+                <div class="bar" id="bar-1"></div><div class="bar" id="bar-2"></div><div class="bar" id="bar-3"></div><div class="bar" id="bar-4"></div><div class="bar" id="bar-5"></div><div class="bar" id="bar-6"></div><div class="bar" id="bar-7"></div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-gec" id="skip-btn" onclick="window.skipFrequencyUser()" style="flex:1; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer;">Geç ⏭</button>
+                    <button class="btn-maske" id="reveal-btn" onclick="window.requestReveal()" style="flex:2; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer;">Maskeyi İndir 🎭</button>
+                </div>
+                <button class="btn-kapat" onclick="window.closeFrequency()" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer;">Aramayı Kapat ✖</button>
+            </div>
+            <p id="reveal-status" style="color: #f59e0b; font-size: 13px; margin-top: 15px; display: none;">Onay bekleniyor ⏳</p>
+        </div>
+
+        <div id="state-revealed" class="screen">
+            <h3 style="color: #10b981; margin-bottom: 20px;">Eşleşme Başarılı! ✨</h3>
+            <img id="reveal-avatar" src="" class="real-avatar" alt="Avatar">
+            <h2 id="reveal-name" style="margin: 0 0 5px 0; color:white;">İsim, Yaş</h2>
+            <p id="reveal-faculty" style="color: #8b5cf6; font-size: 14px; font-weight: bold; margin: 0 0 20px 0;">Fakülte</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                <button id="add-friend-btn" style="background: #10b981; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer;" onclick="window.addRevealedFriend()">Arkadaş Ekle ➕</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-gec" onclick="window.skipFrequencyUser()" style="flex:1; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer;">Geç ⏭</button>
+                    <button class="btn-kapat" onclick="window.closeFrequency()" style="flex:1; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer;">Aramayı Kapat ✖</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 
         <div id="state-chat" class="screen">
             <h4 style="color: #10b981; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">Bağlantı Kuruldu</h4>
