@@ -1,6 +1,6 @@
 // ============================================================================
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
-// 🌟 KAMPÜS FREKANSI (SESLİ SOHBET) GÜNCELLEMESİ - BÖLÜM 1 🌟
+// 🌟 KAMPÜS FREKANSI VE GÜÇLÜ GİRİŞ GÜNCELLEMESİ - BÖLÜM 1 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -65,7 +65,6 @@ let marketDB = [];
 let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
-
 window.tournamentInterval = null;
 window.homeSliderInterval = null; 
 
@@ -159,8 +158,7 @@ function initializeUniLoop() {
 
         #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
         #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; transition: opacity 0.3s ease;}
-        #auth-screen { position: relative; z-index: 1000 !important; display: none; }
-        #auth-screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        
         #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important; }
         button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; }
         
@@ -294,6 +292,7 @@ function initializeUniLoop() {
         window.renderSettings(); 
     };
 
+    // GÜÇLÜ TIKLAMA ALGISI
     document.addEventListener('click', async function(e) {
         const chatMenu = document.getElementById('chat-options-menu');
         if (chatMenu && e.target && e.target.closest && !e.target.closest('#chat-options-dropdown-wrapper')) {
@@ -1049,7 +1048,7 @@ function initializeUniLoop() {
 // 🌟 BÖLÜM 1 SONU 🌟
 // ============================================================================
 // ============================================================================
-// 🌟 MEDYA YÜKLEME SİSTEMİ, KAMPÜS FREKANSI VE EŞLEŞME (BÖLÜM 2) 🌟
+// 🌟 MEDYA YÜKLEME, KAMPÜS FREKANSI, MARKET VE PROFİL (BÖLÜM 2) 🌟
 // ============================================================================
 
     window.uploadChatMedia = async function(event, targetId, chatType) {
@@ -1181,7 +1180,7 @@ function initializeUniLoop() {
     };
 
     // ============================================================================
-    // 🎙️ KAMPÜS FREKANSI (VOICE CHAT) SİSTEMİ
+    // 🎙️ KAMPÜS FREKANSI (SESLİ SOHBET) SİSTEMİ - MERKEZİ EKRAN
     // ============================================================================
 
     window.openVoiceChat = async function() {
@@ -1189,7 +1188,6 @@ function initializeUniLoop() {
         let usedMins = window.userProfile.voiceChatUsedMinutes || 0;
         let today = new Date().toLocaleDateString();
 
-        // Gün sıfırlama kontrolü
         if (window.userProfile.voiceChatDate !== today) {
             usedMins = 0;
             window.userProfile.voiceChatUsedMinutes = 0;
@@ -1207,11 +1205,10 @@ function initializeUniLoop() {
             return;
         }
 
-        // Alt navigasyonu pasif göster
+        // Barları gizleyip tam ekran hissiyatı veriyoruz ama Ana Navbar sabit kalacak
         document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
         document.body.classList.add('no-scroll-messages'); 
 
-        // SADECE ORTA ALANI (MAIN CONTENT) DEĞİŞTİRİYORUZ (Header ve Nav sabit kalır)
         let html = `
             <div id="voice-chat-container" style="display:flex; flex-direction:column; height:100%; background:#030712; color:white; overflow:hidden; position:relative;">
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 20px; border-bottom:1px solid #1f2937; background:#111827;">
@@ -1244,7 +1241,6 @@ function initializeUniLoop() {
             <button onclick="window.openVoiceChat()" style="background:#374151; color:white; border:none; padding:12px 25px; border-radius:12px; font-weight:bold; cursor:pointer;">Aramayı İptal Et</button>
         `;
 
-        // 3 saniye arama simülasyonu
         setTimeout(() => { 
             if(document.getElementById('voice-dynamic-area')) window.connectVoiceChat(); 
         }, 3000);
@@ -1261,9 +1257,13 @@ function initializeUniLoop() {
             <div style="width:120px; height:120px; border-radius:50%; background:radial-gradient(circle, #4c1d95, #111827); filter:blur(8px); margin-bottom:40px; animation:breathe 3s infinite alternate;"></div>
 
             <div style="display:flex; align-items:center; justify-content:center; gap:8px; height:60px; margin-bottom:40px;">
-                <div class="voice-bar" id="bar-1"></div><div class="voice-bar" id="bar-2"></div>
-                <div class="voice-bar" id="bar-3"></div><div class="voice-bar" id="bar-4"></div>
-                <div class="voice-bar" id="bar-5"></div><div class="voice-bar" id="bar-6"></div><div class="voice-bar" id="bar-7"></div>
+                <div class="voice-bar" id="bar-1" style="width:6px; height:10px; background:#10b981; border-radius:4px; transition:height 0.1s;"></div>
+                <div class="voice-bar" id="bar-2" style="width:6px; height:10px; background:#10b981; border-radius:4px; transition:height 0.1s;"></div>
+                <div class="voice-bar" id="bar-3" style="width:6px; height:10px; background:#10b981; border-radius:4px; transition:height 0.1s;"></div>
+                <div class="voice-bar" id="bar-4" style="width:6px; height:10px; background:#10b981; border-radius:4px; transition:height 0.1s;"></div>
+                <div class="voice-bar" id="bar-5" style="width:6px; height:10px; background:#10b981; border-radius:4px; transition:height 0.1s;"></div>
+                <div class="voice-bar" id="bar-6" style="width:6px; height:10px; background:#10b981; border-radius:4px; transition:height 0.1s;"></div>
+                <div class="voice-bar" id="bar-7" style="width:6px; height:10px; background:#10b981; border-radius:4px; transition:height 0.1s;"></div>
             </div>
             
             <p style="color:#6b7280; font-size:13px; margin-bottom:30px;">Mikrofon erişimi sağlandı, konuşabilirsin...</p>
@@ -1291,7 +1291,6 @@ function initializeUniLoop() {
         }, 1000);
     };
 
-    // SES DALGALARI İÇİN MİKROFON İZNİ
     window.initMicrophone = async function() {
         const bars = [1,2,3,4,5,6,7].map(i => document.getElementById(`bar-${i}`));
         try {
@@ -1310,7 +1309,7 @@ function initializeUniLoop() {
                 for(let i=0; i<7; i++) {
                     if(!bars[i]) continue;
                     let val = dataArray[i+2] || 0;
-                    let height = Math.max(10, (val/255)*60); // Max 60px boyunda olsun
+                    let height = Math.max(10, (val/255)*60);
                     bars[i].style.height = height + 'px';
                     if(height > 25) {
                         bars[i].style.background = '#34d399';
@@ -1351,20 +1350,18 @@ function initializeUniLoop() {
                 <h3 style="color:#10b981; margin-bottom:30px;">Eşleşme Başarılı! ✨</h3>
                 <div style="background:#1f2937; border:2px solid #374151; border-radius:20px; padding:30px; width:100%; max-width:300px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
                     <div style="font-size:50px; margin:-60px auto 15px auto; background:white; width:80px; height:80px; border-radius:50%; border:3px solid #8b5cf6; display:flex; align-items:center; justify-content:center;">👩‍🎓</div>
-                    <h2 style="margin:0 0 5px 0; color:white;">Buse, 21</h2>
-                    <p style="color:#8b5cf6; font-size:14px; font-weight:bold; margin:0 0 15px 0;">Mimarlık Fakültesi</p>
+                    <h2 style="margin:0 0 5px 0; color:white;">Kullanıcı Bulundu</h2>
+                    <p style="color:#8b5cf6; font-size:14px; font-weight:bold; margin:0 0 15px 0;">Bağlantı Kuruldu</p>
                     <button style="background:#8b5cf6; color:white; border:none; padding:12px; width:100%; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:10px;" onclick="window.endVoiceChat(); window.loadPage('messages');">Sohbete Başla 💬</button>
                 </div>
             `;
         }, 2000);
     };
 
-    // MATEMATİKSEL AKILLI YUVARLAMA MANTIĞI (30 sn = 1 Dk)
     window.processVoiceTime = async function() {
         if (window.voiceCallSeconds > 0) {
+            // 30 saniye üstünü 1 dakikaya yuvarlayan mantık
             let addMins = Math.round(window.voiceCallSeconds / 60);
-            // Sadece 1 saniye bile konuşsa ve yuvarlama 0 çıkarsa, ama kural "30 sn'den fazla" diyordu. Math.round(30/60) = 1 eder. 
-            // Yani 30 saniye ve üstü zaten otomatik 1'e yuvarlanır. Sorun yok.
             if(addMins > 0) {
                 window.userProfile.voiceChatUsedMinutes += addMins;
                 try { await updateDoc(doc(db, "users", window.userProfile.uid), { voiceChatUsedMinutes: window.userProfile.voiceChatUsedMinutes }); } catch(e) {}
@@ -1377,19 +1374,19 @@ function initializeUniLoop() {
         window.processVoiceTime();
         window.stopMicrophone();
         clearInterval(window.voiceTimerInterval);
-        window.startVoiceSearch(); // Doğrudan yeniden arama ekranına atar
+        window.startVoiceSearch(); 
     };
 
     window.endVoiceChat = function() {
         window.processVoiceTime();
         window.stopMicrophone();
         clearInterval(window.voiceTimerInterval);
-        window.loadPage('home'); // Ana sayfaya döner, nav bar vs görünür olur
+        window.loadPage('home'); 
     };
 
-// ============================================================================
-// DİĞER FONKSİYONLAR (ARŞİV, PREMIUM, MARKET VS.)
-// ============================================================================
+    // ============================================================================
+    // DİĞER GÜNCEL FONKSİYONLAR (SLIDER, KÜRSÜ, ARŞİV VS.)
+    // ============================================================================
 
     window.uploadArchiveFile = async function() {
         const facBtn = document.getElementById('admin-archive-faculty');
@@ -1646,7 +1643,6 @@ function initializeUniLoop() {
             });
             if(rank === 1) html += '<p style="text-align:center; color:var(--text-gray); padding:20px;">Henüz popülerlik puanı kazanan kimse yok. İlk sen ol!</p>';
             
-            // Liderlik tablosu altından "Savaşa Katıl" butonu
             let btnHtml = `<button id="join-tour-btn-modal" class="btn-primary" style="width:100%; padding:14px; border-radius:12px; background:#111827; border:none; font-weight:bold;" onclick="window.closeModal(); window.startPopularityTournament();">Savaşa Katıl ⚔️</button>`;
             if (window.userProfile && window.userProfile.lastTournamentDate) {
                 let timeDiff = Date.now() - window.userProfile.lastTournamentDate;
@@ -1915,6 +1911,7 @@ function initializeUniLoop() {
                 snap.forEach(doc => top3.push(doc.data()));
             } catch(e) { console.error("Kürsü yüklenemedi", e); }
 
+            // LİDERLİK KÜRSÜSÜ (TAÇ SİLİNDİ, ESTETİK KORUNDU)
             let podiumHtml = `
                 <div style="margin-top:20px; width:100%; display:flex; justify-content:center; align-items:flex-end; gap:10px; height:150px; padding:0 15px; box-sizing:border-box;">
                     ${top3[1] ? `
@@ -2423,199 +2420,6 @@ function initializeUniLoop() {
         } catch(e) {
             console.error(e);
             alert("Güncellenirken hata oluştu.");
-        }
-    };
-
-    window.renderHome = async function() {
-        document.body.classList.add('no-scroll-home');
-
-        let usernameWarning = '';
-        if (!window.userProfile.username) {
-            usernameWarning = `
-                <div style="background: #FEF2F2; color: #DC2626; padding: 12px; border-radius: 12px; border: 1px solid #FCA5A5; margin-bottom: 6px; font-weight: bold; text-align: center; cursor:pointer; flex-shrink:0;" onclick="window.loadPage('profile')">
-                    ⚠️ Lütfen profilinden bir kullanıcı adı belirle!
-                </div>
-            `;
-        }
-
-        // İKONLAR ARTIK SLIDER'IN İLK SAYFASINDA, BÖYLECE KAYDIRINCA GİDİYOR
-        const slides = [
-            `
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; position:relative;">
-                <div id="home-default-view" style="display:flex; justify-content:space-between; align-items:center; width:100%; transition: opacity 0.2s;">
-                    <div>
-                        <h2 style="font-size:18px; margin-bottom:4px; margin-top:0;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
-                        <p style="opacity:0.9; font-size:12px; margin:0;"><strong style="color:#D9FDD3;">${window.userProfile.university}</strong></p>
-                    </div>
-                    <div id="home-icons-container" style="display:flex; gap:15px; align-items:center;">
-                        <div class="white-flame-icon" onclick="window.showLeaderboard()" title="Popülerlik Savaşı Sıralaması">🔥</div>
-                        <div style="font-size:24px; cursor:pointer;" onclick="window.openVoiceChat()" title="Kampüs Frekansı">🎙️</div>
-                        <div style="font-size:24px; cursor:pointer;" onclick="window.toggleHomeSearch()" title="Arkadaşını Bul">🔍</div>
-                    </div>
-                </div>
-                <div id="home-search-container" class="hidden" style="position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:20; display:flex; align-items:center; background:white; border-radius:20px; padding:5px 12px; width:100%; box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
-                        <span style="color:var(--primary); font-weight:800; font-size:14px; margin-right:5px;">#</span>
-                        <input type="text" id="home-friend-search-input" style="border:none; background:transparent; width:100%; outline:none; font-size:13px; color:black;" placeholder="Kullanıcı adı..." onkeypress="if(event.key==='Enter') window.searchAndAddFriendHome()">
-                        <button onclick="window.searchAndAddFriendHome()" style="background:transparent; border:none; font-size:16px; cursor:pointer;">➡️</button>
-                        <button onclick="window.toggleHomeSearch()" style="background:transparent; border:none; font-size:16px; cursor:pointer; color:#EF4444; margin-left:5px;">✖</button>
-                </div>
-            </div>
-            `,
-            `
-            <div>
-                <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">📢 Kampüs Duyurusu</h2>
-                <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">25 Nisan'da Manifest Konseri var! Biletlerini Kampüs Meydanı'ndan alabilirsin.</p>
-            </div>
-            `,
-            `
-            <div>
-                <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">🌟 Premium Ayrıcalıkları</h2>
-                <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">Profiline kim baktı öğrenmek için hemen Premium'a geçiş yap.</p>
-            </div>
-            `
-        ];
-
-        let html = `
-            <div style="display:flex; flex-direction:column; height:100%; overflow:hidden;">
-                ${usernameWarning}
-                
-                <div style="position:relative; margin: 10px; border-radius:16px; flex-shrink:0; box-shadow:0 6px 15px rgba(0,0,0,0.1); background:#1F2937;">
-                    <div id="home-slider-container" class="home-slider" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; width:100%; scroll-behavior:smooth;">
-                        ${slides.map(slide => `
-                            <div style="flex: 0 0 100%; scroll-snap-align: center; padding: 15px; box-sizing:border-box; display:flex; justify-content:flex-start; align-items:center; color:white; min-height:80px;">
-                                ${slide}
-                            </div>
-                        `).join('')}
-                    </div>
-                    
-                    <div style="position:absolute; bottom:5px; left:0; right:0; display:flex; justify-content:center; gap:5px; pointer-events:none;">
-                        ${slides.map((_, i) => `<div class="slider-dot" id="slider-dot-${i}" style="width:6px; height:6px; border-radius:50%; background:${i===0 ? 'white' : 'rgba(255,255,255,0.3)'};"></div>`).join('')}
-                    </div>
-                </div>
-
-                <div id="embedded-fast-match-container" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:5px 10px 10px 10px; overflow:hidden;">
-                </div>
-            </div>
-        `;
-        
-        mainContent.innerHTML = html;
-
-        const sliderContainer = document.getElementById('home-slider-container');
-        if (sliderContainer) {
-            let currentIndex = 0;
-            const totalSlides = slides.length;
-            
-            sliderContainer.addEventListener('scroll', () => {
-                const scrollLeft = sliderContainer.scrollLeft;
-                const clientWidth = sliderContainer.clientWidth;
-                currentIndex = Math.round(scrollLeft / clientWidth);
-                for(let i=0; i<totalSlides; i++){
-                    const dot = document.getElementById(`slider-dot-${i}`);
-                    if(dot) dot.style.background = (i === currentIndex) ? 'white' : 'rgba(255,255,255,0.3)';
-                }
-            });
-
-            if(window.homeSliderInterval) clearInterval(window.homeSliderInterval);
-            window.homeSliderInterval = setInterval(() => {
-                currentIndex++;
-                if(currentIndex >= totalSlides) currentIndex = 0;
-                sliderContainer.scrollTo({
-                    left: currentIndex * sliderContainer.clientWidth,
-                    behavior: 'smooth'
-                });
-            }, 15000);
-        }
-
-        window.initEmbeddedFastMatch();
-    };
-
-    window.currentLightboxImages = [];
-    window.currentLightboxIndex = 0;
-
-    window.openLightbox = function(imagesJsonStr, index) {
-        window.currentLightboxImages = JSON.parse(decodeURIComponent(imagesJsonStr));
-        window.currentLightboxIndex = index;
-        window.updateLightboxView();
-        document.getElementById('lightbox').classList.add('active');
-        document.body.style.overflow = 'hidden';
-    };
-
-    window.closeLightbox = function() {
-        document.getElementById('lightbox').classList.remove('active');
-        if(!document.getElementById('app-modal').classList.contains('active') && !document.body.classList.contains('no-scroll-messages') && !document.body.classList.contains('no-scroll-home')) document.body.style.overflow = 'auto';
-    };
-
-    window.changeLightboxImage = function(step) {
-        window.currentLightboxIndex += step;
-        if(window.currentLightboxIndex < 0) window.currentLightboxIndex = window.currentLightboxImages.length - 1;
-        if(window.currentLightboxIndex >= window.currentLightboxImages.length) window.currentLightboxIndex = 0;
-        window.updateLightboxView();
-    };
-
-    window.updateLightboxView = function() {
-        const imgEl = document.getElementById('lightbox-img');
-        const counterEl = document.getElementById('lightbox-counter');
-        if(imgEl && counterEl) {
-            imgEl.src = window.currentLightboxImages[window.currentLightboxIndex];
-            counterEl.innerText = (window.currentLightboxIndex + 1) + " / " + window.currentLightboxImages.length;
-        }
-    };
-
-    window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listingId) {
-        try {
-            const myUid = window.userProfile.uid;
-            const msgText = `Merhaba, "${itemTitle}" başlıklı ilanınızla ilgileniyorum. Durumu nedir?`;
-            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            const existingChat = chatsDB.find(c => c.otherUid === sellerId && c.isMarketChat);
-
-            if (existingChat) {
-                if (existingChat.listingIds && existingChat.listingIds.includes(listingId)) {
-                    alert("Bu ilan için satıcıya zaten mesaj gönderdiniz!");
-                    window.openChatViewDirect(existingChat.id);
-                    return;
-                }
-
-                await updateDoc(doc(db, "chats", existingChat.id), {
-                    messages: arrayUnion({ senderId: myUid, text: msgText, time: timeStr, read: false }),
-                    listingIds: arrayUnion(listingId),
-                    lastUpdated: serverTimestamp()
-                });
-                alert("Yeni ilan için mesajınız satıcıyla olan sohbetinize eklendi!");
-                window.loadPage('messages');
-                setTimeout(() => window.openChatView(existingChat.id), 300);
-            } else {
-                const newChatRef = await addDoc(collection(db, "chats"), {
-                    participants: [myUid, sellerId],
-                    participantNames: { [myUid]: window.userProfile.name, [sellerId]: sellerName },
-                    participantAvatars: { [myUid]: window.userProfile.avatarUrl || window.userProfile.avatar || "👨‍🎓", [sellerId]: "👤" },
-                    lastUpdated: serverTimestamp(), 
-                    status: 'pending', 
-                    initiator: myUid,
-                    isMarketChat: true,
-                    listingIds: [listingId], 
-                    messages: [{ senderId: myUid, text: msgText, time: timeStr, read: false }]
-                });
-                
-                const newLocalChat = {
-                    id: newChatRef.id,
-                    otherUid: sellerId,
-                    name: sellerName,
-                    avatar: "👤",
-                    messages: [{ senderId: myUid, text: msgText, time: timeStr, read: false }],
-                    status: 'pending',
-                    initiator: myUid,
-                    isMarketChat: true,
-                    listingIds: [listingId]
-                };
-                chatsDB.unshift(newLocalChat);
-                
-                alert("Satıcıya mesaj isteği başarıyla gönderildi!");
-                window.loadPage('messages');
-                setTimeout(() => window.openChatView(newChatRef.id), 100);
-            }
-        } catch (error) {
-            alert("Hata oluştu: " + error.message);
         }
     };
 
@@ -3563,8 +3367,7 @@ function initializeUniLoop() {
                 <div style="text-align:center; padding:30px 10px; color:var(--text-gray);">
                     <div style="font-size:40px; margin-bottom:10px;">🤷‍♂️</div>
                     <div style="font-size:14px;">Henüz bağlantı kurduğunuz bir arkadaşınız yok.</div>
-                    <button class="btn-primary" style="margin-top:15px; padding:10px 20px; border-radius:10px; font-size:13px; background:white; color:#111827; border:1px solid #1
-1827;" onclick="window.closeModal(); window.loadPage('home')">Keşfetmeye Başla</button>
+                    <button class="btn-primary" style="margin-top:15px; padding:10px 20px; border-radius:10px; font-size:13px; background:white; color:#111827; border:1px solid #111827;" onclick="window.closeModal(); window.loadPage('home')">Keşfetmeye Başla</button>
                 </div>
             `);
             return;
