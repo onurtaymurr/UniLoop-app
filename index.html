@@ -139,7 +139,7 @@
             <button class="end-btn" style="margin-top: 30px; width: 80%;" onclick="window.closeFrequency()">İptal Et ✖</button>
         </div>
 
-        <div id="state-chat" class="screen" style="display: none;">
+        <div id="state-chat" class="screen">
             <h4 style="color: #10b981; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">Bağlantı Kuruldu</h4>
             <p id="chat-timer" style="color: #9ca3af; font-family: monospace; font-size: 18px; margin-top: 0; margin-bottom: 30px;">00:00</p>
             
@@ -164,15 +164,13 @@
             <p id="reveal-status" style="color: #f59e0b; font-size: 13px; margin-top: 15px; display: none;">Karşı tarafın onayı bekleniyor ⏳</p>
         </div>
 
-        <div id="state-revealed" class="screen" style="display: none;">
+        <div id="state-revealed" class="screen">
             <h3 style="color: #10b981; margin-bottom: 40px;">Eşleşme Başarılı! ✨</h3>
             <div class="profile-card">
-                <img src="https://i.pravatar.cc/150?img=47" class="real-avatar" alt="Avatar">
-                <h2 style="margin: 0 0 5px 0;">Zeynep, 21</h2>
-                <p style="color: #8b5cf6; font-size: 14px; font-weight: bold; margin: 0 0 15px 0;">Mimarlık Fakültesi</p>
-                <div style="display: flex; gap: 5px; justify-content: center; margin-bottom: 20px;">
-                    <span style="background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 8px; font-size: 11px;">☕ Kahve</span>
-                    <span style="background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 8px; font-size: 11px;">🎬 Sinema</span>
+                <img id="reveal-avatar" src="https://i.pravatar.cc/150?img=47" class="real-avatar" alt="Avatar">
+                <h2 id="reveal-name" style="margin: 0 0 5px 0;">İsim, Yaş</h2>
+                <p id="reveal-faculty" style="color: #8b5cf6; font-size: 14px; font-weight: bold; margin: 0 0 15px 0;">Fakülte</p>
+                <div id="reveal-tags" style="display: flex; gap: 5px; justify-content: center; margin-bottom: 20px;">
                 </div>
                 <button style="background: #8b5cf6; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer;" onclick="window.closeFrequency()">Kapat ✖</button>
             </div>
