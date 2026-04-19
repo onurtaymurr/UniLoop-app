@@ -110,22 +110,49 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     z-index: 50;
     border-bottom: 1px solid #374151;
 }
-/* 🌟 YENİ GÖMÜLÜ KAMPÜS FREKANSI (OVAL KART TASARIMI) 🌟 */
+/* 🌟 TAM KAPSAMLI GÖMÜLÜ FREKANS EKRANI 🌟 */
 #embedded-voice-chat {
-    display: none; /* Varsayılan olarak kapalı */
-    width: 92%; /* Sağdan soldan boşluk bırakır */
-    max-width: 360px; /* Hızlı eşleşme kartı ile aynı genişlik */
-    margin: 15px auto; /* Yukarıdaki menüden ayırır ve tam ortalar */
+    display: none;
+    position: fixed; /* Header ve Bottom Nav arasında sabit kalması için */
+    top: 50px; /* Header yüksekliği */
+    bottom: 60px; /* Bottom Nav yüksekliği */
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: #FFFFFF; /* ARKA PLAN BEMBEYAZ KALACAK */
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+#embedded-voice-chat.active {
+    display: flex;
+}
+
+/* Siyah Sesli Sohbet Kartı (Oval Köşeli) */
+.voice-chat-card {
+    width: 100%;
+    max-width: 400px;
+    height: 90%; /* Menüler arasındaki alanı dikeyde büyük oranda kaplar */
+    max-height: 600px;
     background: linear-gradient(180deg, #111827 0%, #030712 100%);
-    padding: 25px 15px;
-    position: relative;
-    z-index: 50;
-    border-radius: 28px; /* Köşeleri hızlı eşleşme kartı gibi oval yapar */
-    border: 1px solid #374151; /* Kartın sınırlarını belirleyen şık çizgi */
-    box-shadow: 0 15px 30px rgba(0,0,0,0.3); /* Kart efekti veren derin gölge */
+    border-radius: 30px; /* Oval köşeler */
+    padding: 30px 20px;
+    display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    box-sizing: border-box;
 }
+
+/* Frekans ekranı açıkken ana sayfa akışının kaymamasını sağlar */
+body.frequency-active {
+    overflow: hidden !important;
+}
+
 
 #embedded-voice-chat.active {
     display: flex; /* Mikrofon butonuna basınca kart görünür olur */
