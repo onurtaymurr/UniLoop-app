@@ -1,6 +1,6 @@
 // ============================================================================
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
-// 🌟 HATALAR GİDERİLDİ, EKSİKSİZ BÖLÜM 1 🌟
+// 🌟 EKSİKSİZ, HATASIZ VE UYUMLU BAŞLANGIÇ - BÖLÜM 1 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -61,24 +61,24 @@ window.userProfile = {
     uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: "", lockedArchiveFaculty: "", lockedArchiveGrade: "", lastArchiveResetYear: 0, blockedUsers: [], popularity: 0, lastTournamentDate: 0
 };
 
-// Global Veritabanı ve Arayüz Değişkenleri
+window.joinedFaculties = [];
 let marketDB = [];
 let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
-
-// BEYAZ EKRAN ÇÖZÜMÜ: Eşleşme değişkenleri tamamen Global Scope'a alındı
-let fastMatchUsers = [];
-let fastMatchCurrentIndex = 0;
-
-// Kampüs Frekansı Global Değişkenleri
-let freqTimerInterval = null;
-let freqAudioContext = null;
-let freqMicrophoneStream = null;
-let freqFakeAnimationInterval = null;
-
+let currentGroupUnsubscribe = null; 
 window.tournamentInterval = null;
 window.homeSliderInterval = null; 
+
+// KAMPÜS FREKANSI İÇİN GEREKLİ DEĞİŞKENLER
+window.freqTimerInterval = null;
+window.freqAudioContext = null;
+window.freqMicrophoneStream = null;
+window.freqFakeAnimationInterval = null;
+
+// BEYAZ EKRAN HATASINI ÇÖZMEK İÇİN GLOBAL TANIMLAMALAR
+let fastMatchUsers = [];
+let fastMatchCurrentIndex = 0;
 
 window.registrationData = { interests: [] };
 
@@ -161,6 +161,7 @@ function initializeUniLoop() {
         .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
         #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; display:flex; flex-direction:column; }
         .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 50; position: relative; }
+        #group-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; padding: 15px; display:flex; flex-direction:column; }
 
         #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
         #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; transition: opacity 0.3s ease;}
@@ -265,6 +266,7 @@ function initializeUniLoop() {
         ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(107, 114, 128, 0.8); }
 
+        /* SLIDER İÇİN ÖZEL CSS GİZLİ SCROLLBAR */
         .home-slider::-webkit-scrollbar { display: none; }
         .home-slider { -ms-overflow-style: none; scrollbar-width: none; }
     `;
@@ -1042,7 +1044,7 @@ function initializeUniLoop() {
 // 🌟 BÖLÜM 1 SONU 🌟
 // ============================================================================
 // ============================================================================
-// 🌟 MEDYA YÜKLEME, POPÜLERLİK SAVAŞI, KAMPÜS FREKANSI VE DİĞER MODÜLLER (BÖLÜM 2) 🌟
+// 🌟 MEDYA YÜKLEME, KAMPÜS FREKANSI VE DİĞER MODÜLLER (BÖLÜM 2) 🌟
 // ============================================================================
 
     window.uploadChatMedia = async function(event, targetId, chatType) {
