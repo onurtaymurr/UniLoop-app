@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
+        /* MEVCUT STİLLERİN */
         #main-content { padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
 
         body.no-scroll-messages #main-content {
@@ -35,6 +36,104 @@
             0% { box-shadow: 0 0 5px rgba(17, 24, 39, 0.2); }
             100% { box-shadow: 0 0 15px rgba(17, 24, 39, 0.4); }
         }
+
+        /* ----- KAMPÜS FREKANSI ÖZEL STİLLERİ ----- */
+        #frequency-module {
+            display: none; /* Varsayılan olarak gizli, butona basınca açılacak */
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #111827 0%, #030712 100%);
+            border-radius: 20px;
+            position: relative;
+            box-shadow: inset 0 0 50px rgba(139, 92, 246, 0.05);
+            min-height: 60vh;
+        }
+
+        .freq-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .freq-screen.active { display: flex; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+
+        .neon-btn {
+            background: transparent;
+            color: #c4b5fd;
+            border: 2px solid #8b5cf6;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 800;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), inset 0 0 15px rgba(139, 92, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+        .neon-btn:hover { background: #8b5cf6; color: white; box-shadow: 0 0 40px rgba(139, 92, 246, 0.8); transform: scale(1.05); }
+
+        .radar-container {
+            width: 150px; height: 150px; border-radius: 50%;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+        }
+        .radar-sweep {
+            position: absolute; width: 75px; height: 150px;
+            background: linear-gradient(90deg, rgba(139,92,246,0.5) 0%, transparent 100%);
+            border-radius: 75px 0 0 75px; transform-origin: center right; left: 0;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .blurred-avatar {
+            width: 100px; height: 100px; border-radius: 50%;
+            background: radial-gradient(circle, #4c1d95, #111827); filter: blur(8px);
+            margin-bottom: 20px; animation: breathe 3s infinite alternate;
+        }
+        @keyframes breathe { 0% { transform: scale(0.95); opacity: 0.8;} 100% { transform: scale(1.05); opacity: 1;} }
+        
+        .visualizer { display: flex; align-items: center; justify-content: center; gap: 6px; height: 50px; margin-bottom: 20px; }
+        .bar { width: 6px; height: 10px; background: #10b981; border-radius: 3px; box-shadow: 0 0 10px #10b981; transition: height 0.1s ease; }
+
+        .action-buttons { display: flex; gap: 10px; width: 100%; justify-content: center; }
+        .reveal-btn, .end-btn { padding: 12px 20px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.2s; border: none; }
+        .reveal-btn { background: white; color: #111827; }
+        .end-btn { background: #ef4444; color: white; }
+
+        .profile-card { background: #1f2937; border: 2px solid #374151; border-radius: 20px; padding: 20px; width: 90%; text-align: center; }
+        .real-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #8b5cf6; margin: -50px auto 10px auto; background: white; }
+
+        /* ÖZEL KAYAN ALT PANEL (SLIDER) */
+        .freq-bottom-bar {
+            position: fixed;
+            bottom: calc(env(safe-area-inset-bottom) + 15px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            background: #1f2937;
+            border-radius: 30px;
+            padding: 8px 12px;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.5);
+            z-index: 100000;
+        }
+
+        .freq-nav-btn {
+            background: transparent; border: none; color: #9ca3af;
+            font-size: 22px; padding: 10px 18px; border-radius: 20px;
+            cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center;
+        }
+        .freq-nav-btn.active { background: #374151; color: #c4b5fd; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transform: scale(1.05); }
     </style>
 </head>
 <body>
@@ -72,7 +171,7 @@
     <header id="app-header">
         <div class="logo-area">
             <div id="mobile-menu-btn" style="display: none;">☰</div>
-            <div class="logo" id="logo-btn" onclick="window.loadPage('home')" style="cursor:pointer; display:flex; align-items:center;">
+            <div class="logo" id="logo-btn" onclick="toggleAppView('main')" style="cursor:pointer; display:flex; align-items:center;">
                 <img src="uniloop-logo.png" alt="UniLoop" style="height: 36px; width: auto; object-fit: contain;">
             </div>
         </div>
@@ -83,22 +182,72 @@
         <aside class="sidebar" id="sidebar" style="display: none;">
             <div class="sidebar-top">
                 <h3>Navigasyon</h3>
-                <div class="menu-item active" data-target="home">🏠 Ana Sayfa</div>
-                <div class="menu-item" data-target="loopmap">📍 LoopMap</div>
-                <div class="menu-item" data-target="market">🛒 Kampüs Market</div>
-                <div class="menu-item" data-target="confessions">🤫 Anonim Kampüs</div>
-                <div class="menu-item" data-target="qa">❓ Soru & Cevap</div>
+                <div class="menu-item active" data-target="home" onclick="toggleAppView('main')">🏠 Ana Sayfa</div>
+                <div class="menu-item" data-target="loopmap" onclick="toggleAppView('main')">📍 LoopMap</div>
+                <div class="menu-item" data-target="market" onclick="toggleAppView('main')">🛒 Kampüs Market</div>
+                <div class="menu-item" data-target="confessions" onclick="toggleAppView('main')">🤫 Anonim Kampüs</div>
+                <div class="menu-item" data-target="qa" onclick="toggleAppView('main')">❓ Soru & Cevap</div>
                 <br>
                 <h3>Bana Özel</h3>
-                <div class="menu-item" id="nav-messages-btn" data-target="messages">💬 Mesajlarım <span id="msg-badge" class="badge" style="display:none;">0</span></div>
+                <div class="menu-item" id="nav-messages-btn" data-target="messages" onclick="toggleAppView('main')">💬 Mesajlarım <span id="msg-badge" class="badge" style="display:none;">0</span></div>
                 <div id="sidebar-networks-container"></div>
             </div>
             <div class="sidebar-bottom">
-                <div class="menu-item" data-target="settings">⚙️ Ayarlar</div>
+                <div class="menu-item" data-target="settings" onclick="toggleAppView('main')">⚙️ Ayarlar</div>
             </div>
         </aside>
 
         <main class="main-feed" id="main-content"></main>
+
+        <div id="frequency-module">
+            <div id="freq-state-home" class="freq-screen active">
+                <div style="font-size: 50px; margin-bottom: 10px;">📻</div>
+                <h2 style="margin: 0 0 10px 0; color: white;">Kampüs Frekansı</h2>
+                <p style="color: #9ca3af; font-size: 13px; margin-bottom: 30px;">Görünüm yok, önyargı yok.<br>Sadece ses ve muhabbet.</p>
+                <button class="neon-btn" onclick="startFreqSearch()">Frekans Ara 🎙️</button>
+            </div>
+
+            <div id="freq-state-search" class="freq-screen">
+                <div class="radar-container">
+                    <div class="radar-sweep"></div>
+                    <div style="font-size: 24px; z-index: 10;">📡</div>
+                </div>
+                <h3 style="color: #c4b5fd;">Kampüs taranıyor...</h3>
+                <p style="color: #6b7280; font-size: 12px;">Aynı frekansta biri aranıyor.</p>
+                <button class="end-btn" style="margin-top: 20px; width: 80%;" onclick="resetFreqHome()">İptal Et ✖</button>
+            </div>
+
+            <div id="freq-state-chat" class="freq-screen">
+                <h4 style="color: #10b981; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">Bağlantı Kuruldu</h4>
+                <p id="freq-timer" style="color: #ffffff; font-family: monospace; font-size: 28px; margin: 10px 0 0 0; font-weight: 800;">00:00</p>
+                <p id="freq-quota" style="color: #9ca3af; font-size: 11px; margin-bottom: 20px; font-weight: 600;">Kota Hesaplanıyor...</p>
+                
+                <div class="blurred-avatar"></div>
+
+                <div class="visualizer">
+                    <div class="bar" id="fbar-1"></div><div class="bar" id="fbar-2"></div>
+                    <div class="bar" id="fbar-3"></div><div class="bar" id="fbar-4"></div>
+                    <div class="bar" id="fbar-5"></div><div class="bar" id="fbar-6"></div>
+                    <div class="bar" id="fbar-7"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="reveal-btn" id="freq-reveal-btn" onclick="requestFreqReveal()">Kimliği Aç 🎭</button>
+                    <button class="end-btn" onclick="resetFreqHome()">Kapat 📞</button>
+                </div>
+                <p id="freq-reveal-status" style="color: #f59e0b; font-size: 12px; margin-top: 15px; display: none;">Onay bekleniyor ⏳</p>
+            </div>
+
+            <div id="freq-state-revealed" class="freq-screen">
+                <h3 style="color: #10b981; margin-bottom: 30px;">Eşleşme Başarılı! ✨</h3>
+                <div class="profile-card">
+                    <img src="https://i.pravatar.cc/150?img=47" class="real-avatar" alt="Avatar">
+                    <h2 style="margin: 0 0 5px 0; color: white;">Zeynep, 21</h2>
+                    <p style="color: #8b5cf6; font-size: 13px; font-weight: bold; margin: 0 0 15px 0;">İletişim Fakültesi</p>
+                    <button style="background: #8b5cf6; color: white; border: none; padding: 10px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer;" onclick="resetFreqHome()">Mesaja Git 💬</button>
+                </div>
+            </div>
+        </div>
 
         <aside class="right-panel" style="display:none;">
             <div class="card sticky-card" style="padding: 15px;">
@@ -106,6 +255,13 @@
             </div>
         </aside>
     </div>
+
+    <div class="freq-bottom-bar" id="custom-bottom-nav">
+        <button class="freq-nav-btn" onclick="toggleAppView('main', this)">🔥</button>
+        <button class="freq-nav-btn" onclick="toggleAppView('frekans', this)">🎙️</button>
+        <button class="freq-nav-btn" onclick="toggleAppView('main', this)">🔍</button>
+    </div>
+
 </div>
 
 <div id="app-modal" class="modal">
@@ -127,5 +283,171 @@
 </div>
 
 <script type="module" src="app.js"></script>
+
+<script>
+    // --- GÖRÜNÜM KONTROLÜ (Standart Akış vs Kampüs Frekansı) ---
+    function toggleAppView(viewType, clickedBtn = null) {
+        const mainContent = document.getElementById('main-content');
+        const freqModule = document.getElementById('frequency-module');
+        
+        // Buton aktiflik durumu
+        if (clickedBtn) {
+            document.querySelectorAll('.freq-nav-btn').forEach(btn => btn.classList.remove('active'));
+            clickedBtn.classList.add('active');
+        }
+
+        if (viewType === 'frekans') {
+            mainContent.style.display = 'none';
+            freqModule.style.display = 'flex';
+            resetFreqHome(); // Frekansı açarken ana ekrandan başlat
+        } else {
+            freqModule.style.display = 'none';
+            mainContent.style.display = 'block'; // app.js'in yüklediği sayfa görünür olur
+            // Mikrofon açıksa kapat
+            stopFreqMicrophone();
+            clearInterval(freqTimerInterval);
+        }
+    }
+
+    // Başlangıçta Ses İkonunu aktif yapmamak için, kullanıcı uygulamaya girdiğinde "Alev" veya ana sayfada başlar.
+    document.addEventListener('DOMContentLoaded', () => {
+        // İlk açılışta butonları sıfırla, sol menü aktif kalır
+        document.querySelectorAll('.freq-nav-btn')[0].classList.add('active'); // 🔥 aktif başlasın
+    });
+
+
+    // --- KAMPÜS FREKANSI SİSTEMİ (Akıllı Sayaç ve Ses) ---
+    const isFreqPremium = false; // Premium durumunu buradan alırsın
+    const freqMaxMinutes = isFreqPremium ? 30 : 10; 
+
+    let freqTimerInterval;
+    let freqAudioContext;
+    let freqMicStream;
+    let freqFakeAnimInterval;
+
+    function switchFreqState(stateId) {
+        document.querySelectorAll('.freq-screen').forEach(el => el.classList.remove('active'));
+        document.getElementById(stateId).classList.add('active');
+    }
+
+    function startFreqSearch() {
+        switchFreqState('freq-state-search');
+        setTimeout(() => { connectFreqChat(); }, 2500);
+    }
+
+    function connectFreqChat() {
+        switchFreqState('freq-state-chat');
+        startFreqTimer();
+        document.getElementById('freq-reveal-btn').style.display = 'block';
+        document.getElementById('freq-reveal-status').style.display = 'none';
+        initFreqMicrophone();
+    }
+
+    function startFreqTimer() {
+        let seconds = 0;
+        document.getElementById('freq-timer').innerText = "00:00";
+        document.getElementById('freq-quota').innerText = `Kullanılabilir Süre: ${freqMaxMinutes} DK`;
+        
+        clearInterval(freqTimerInterval);
+        freqTimerInterval = setInterval(() => {
+            seconds++;
+            
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            document.getElementById('freq-timer').innerText = `${m}:${s}`;
+
+            let currentMin = Math.floor(seconds / 60);
+            let currentSec = seconds % 60;
+            let billedMinutes = currentMin;
+
+            if (currentSec > 30) billedMinutes += 1;
+            else if (billedMinutes === 0 && seconds > 0) billedMinutes = 1;
+
+            if (billedMinutes >= freqMaxMinutes && currentSec > 30) {
+                clearInterval(freqTimerInterval);
+                alert(`Süre sınırınıza ulaştınız (${freqMaxMinutes} Dakika). Eşleşme sonlandırılıyor...`);
+                resetFreqHome();
+            }
+        }, 1000);
+    }
+
+    async function initFreqMicrophone() {
+        const bars = Array.from({length: 7}, (_, i) => document.getElementById(`fbar-${i+1}`));
+
+        try {
+            freqMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            freqAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = freqAudioContext.createMediaStreamSource(freqMicStream);
+            const analyser = freqAudioContext.createAnalyser();
+            
+            analyser.fftSize = 32;
+            source.connect(analyser);
+            
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            function animateBars() {
+                if(!freqMicStream) return;
+                requestAnimationFrame(animateBars);
+                analyser.getByteFrequencyData(dataArray);
+                
+                for(let i = 0; i < 7; i++) {
+                    let value = dataArray[i + 2] || 0; 
+                    let height = Math.max(10, (value / 255) * 50); 
+                    if(bars[i]) {
+                        bars[i].style.height = `${height}px`;
+                        if(height > 20) {
+                            bars[i].style.background = '#34d399';
+                            bars[i].style.boxShadow = '0 0 10px #34d399';
+                        } else {
+                            bars[i].style.background = '#059669';
+                            bars[i].style.boxShadow = '0 0 5px #059669';
+                        }
+                    }
+                }
+            }
+            animateBars();
+        } catch (err) {
+            console.warn("Mikrofon izni alınamadı, animasyon simüle ediliyor.");
+            freqFakeAnimInterval = setInterval(() => {
+                bars.forEach(bar => {
+                    if(bar) bar.style.height = `${Math.floor(Math.random() * 40) + 10}px`;
+                });
+            }, 200);
+        }
+    }
+
+    function stopFreqMicrophone() {
+        if(freqMicStream) {
+            freqMicStream.getTracks().forEach(track => track.stop());
+            freqMicStream = null;
+        }
+        if(freqAudioContext) {
+            freqAudioContext.close();
+            freqAudioContext = null;
+        }
+        if(freqFakeAnimInterval) {
+            clearInterval(freqFakeAnimInterval);
+            freqFakeAnimInterval = null;
+        }
+    }
+
+    function requestFreqReveal() {
+        document.getElementById('freq-reveal-btn').style.display = 'none';
+        document.getElementById('freq-reveal-status').style.display = 'block';
+        
+        setTimeout(() => {
+            stopFreqMicrophone();
+            clearInterval(freqTimerInterval);
+            switchFreqState('freq-state-revealed');
+        }, 2000);
+    }
+
+    function resetFreqHome() {
+        clearInterval(freqTimerInterval);
+        stopFreqMicrophone();
+        switchFreqState('freq-state-home');
+    }
+</script>
+
 </body>
 </html>
