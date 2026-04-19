@@ -78,6 +78,7 @@ window.freqMicrophoneStream = null;
 window.freqFakeAnimationInterval = null;
 window.currentVoiceMatch = null; 
 window.voiceMatchQueueInterval = null;
+window.lastMatchedUid = null;
 
 window.tournamentInterval = null;
 window.homeSliderInterval = null; 
@@ -86,7 +87,7 @@ window.registrationData = { interests: [] };
 
 window.resetCurrentChatId = function() { currentChatId = null; };
 
-// KULLANICI KAYDI İÇİN FAKÜLTE LİSTESİ (Sadece kayıt ve profil için)
+// KULLANICI KAYDI İÇİN FAKÜLTE LİSTESİ
 const allFaculties = [
     "Tıp Fakültesi", "Diş Hekimliği Fakültesi", "Eczacılık Fakültesi", "Hukuk Fakültesi", "Mühendislik Fakültesi", 
     "Bilgisayar ve Bilişim Bilimleri", "Mimarlık Fakültesi", "Eğitim Fakültesi", "İletişim Fakültesi", 
@@ -131,7 +132,6 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
-    // BEYAZ EKRAN ÇÖZÜMÜ: Sadece temel CSS düzeltmeleri (Frekans Modal'ı HTML'de olduğu için kaldırıldı)
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; background-color: #f3f4f6; color: #111827; }
@@ -1932,6 +1932,7 @@ function initializeUniLoop() {
     /* ========================================================================= */
     let voiceSearchTimeout = null;
     let voiceQueueUnsubscribe = null;
+    window.lastMatchedUid = null;
 
     window.openFrequency = function() {
         const freqChat = document.getElementById('embedded-voice-chat');
@@ -1943,6 +1944,7 @@ function initializeUniLoop() {
             document.body.style.backgroundColor = "#FFFFFF";
             window.scrollTo(0, 0);
         }
+        window.lastMatchedUid = null; 
         window.startFrequencySearch();
     };
 
@@ -1987,36 +1989,50 @@ function initializeUniLoop() {
         }, 60000);
 
         try {
-            const q = query(collection(db, "voice_queue"), limit(2));
+            const q = query(collection(db, "voice_queue"), where("status", "==", "waiting"), limit(5));
             const snap = await getDocs(q);
             
             let partnerFound = null;
-            snap.forEach(doc => { if(doc.id !== myUid) partnerFound = doc.data(); });
+            snap.forEach(docSnap => { 
+                const d = docSnap.data();
+                if(docSnap.id !== myUid && docSnap.id !== window.lastMatchedUid) {
+                    partnerFound = { uid: docSnap.id, ...d };
+                }
+            });
 
             if(partnerFound) {
                 clearTimeout(voiceSearchTimeout);
-                await deleteDoc(doc(db, "voice_queue", partnerFound.uid));
+                await updateDoc(doc(db, "voice_queue", partnerFound.uid), {
+                    status: "matched",
+                    matchedWith: myUid
+                });
                 
                 const pDoc = await getDoc(doc(db, "users", partnerFound.uid));
-                window.currentVoiceMatch = pDoc.exists() ? pDoc.data() : partnerFound;
+                window.currentVoiceMatch = pDoc.exists() ? pDoc.data() : { uid: partnerFound.uid, name: "Kampüs Öğrencisi", faculty: "Gizli", avatar: "🕵️" };
+                window.lastMatchedUid = partnerFound.uid; 
                 window.connectFrequencyChat();
 
             } else {
                 await setDoc(doc(db, "voice_queue", myUid), { 
                     uid: myUid, 
+                    status: "waiting",
+                    matchedWith: null,
                     timestamp: serverTimestamp() 
                 });
 
                 voiceQueueUnsubscribe = onSnapshot(doc(db, "voice_queue", myUid), async (docSnap) => {
-                    if(!docSnap.exists()) {
+                    if(docSnap.exists() && docSnap.data().status === "matched") {
                         clearTimeout(voiceSearchTimeout);
                         if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
                         
-                        const rndSnap = await getDocs(query(collection(db, "users"), limit(10)));
-                        let match = null;
-                        rndSnap.forEach(d => { if(d.id !== myUid) match = d.data(); });
+                        const matchedUid = docSnap.data().matchedWith;
                         
-                        window.currentVoiceMatch = match || { uid: "anon", name: "Kampüs Öğrencisi", faculty: "Gizli", avatar: "🕵️" };
+                        try { await deleteDoc(doc(db, "voice_queue", myUid)); } catch(e) {}
+
+                        const pDoc = await getDoc(doc(db, "users", matchedUid));
+                        window.currentVoiceMatch = pDoc.exists() ? pDoc.data() : { uid: matchedUid, name: "Kampüs Öğrencisi", faculty: "Gizli", avatar: "🕵️" };
+                        window.lastMatchedUid = matchedUid; 
+                        
                         window.connectFrequencyChat();
                     }
                 });
