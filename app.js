@@ -1,6 +1,6 @@
 // ============================================================================
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
-// 🌟 EKSİKSİZ, HATASIZ VE UYUMLU BAŞLANGIÇ - BÖLÜM 1 🌟
+// 🌟 HATALAR GİDERİLDİ, EKSİKSİZ BÖLÜM 1 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -61,24 +61,24 @@ window.userProfile = {
     uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: "", lockedArchiveFaculty: "", lockedArchiveGrade: "", lastArchiveResetYear: 0, blockedUsers: [], popularity: 0, lastTournamentDate: 0
 };
 
-window.joinedFaculties = [];
+// Global Veritabanı ve Arayüz Değişkenleri
 let marketDB = [];
 let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
-let currentGroupUnsubscribe = null; 
-window.tournamentInterval = null;
-window.homeSliderInterval = null; 
 
-// KAMPÜS FREKANSI İÇİN GEREKLİ DEĞİŞKENLER
+// BEYAZ EKRAN ÇÖZÜMÜ: Eşleşme değişkenleri tamamen Global Scope'a alındı
+window.fastMatchUsers = [];
+window.fastMatchCurrentIndex = 0;
+
+// Kampüs Frekansı Global Değişkenleri
 window.freqTimerInterval = null;
 window.freqAudioContext = null;
 window.freqMicrophoneStream = null;
 window.freqFakeAnimationInterval = null;
 
-// BEYAZ EKRAN HATASINI ÇÖZMEK İÇİN GLOBAL TANIMLAMALAR
-let fastMatchUsers = [];
-let fastMatchCurrentIndex = 0;
+window.tournamentInterval = null;
+window.homeSliderInterval = null; 
 
 window.registrationData = { interests: [] };
 
@@ -128,10 +128,32 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
+    // KAMPÜS FREKANSI MODAL ORTALAMA ÇÖZÜMÜ
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; background-color: #f3f4f6; color: #111827; }
         header, #app-header { height: 50px !important; box-sizing: border-box; }
+
+        .frequency-overlay {
+            position: fixed !important;
+            inset: 0 !important;
+            height: 100dvh !important;
+            width: 100vw !important;
+            background: rgba(3, 7, 18, 0.95) !important;
+            backdrop-filter: blur(10px);
+            z-index: 999999 !important;
+            display: none;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .frequency-overlay.active { display: flex !important; }
+        .phone-container {
+            width: 90% !important;
+            max-width: 400px !important;
+            height: 80dvh !important;
+            max-height: 700px !important;
+            margin: auto !important;
+        }
 
         .edit-profile-icon { font-size: 14px; background: #EEF2FF; color: var(--primary); padding: 5px 10px; border-radius: 8px; border: 1px solid #C7D2FE; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 700; transition: 0.2s; }
         .edit-profile-icon:hover { background: #DBEAFE; }
@@ -161,7 +183,6 @@ function initializeUniLoop() {
         .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
         #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; display:flex; flex-direction:column; }
         .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 50; position: relative; }
-        #group-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; padding: 15px; display:flex; flex-direction:column; }
 
         #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
         #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; transition: opacity 0.3s ease;}
@@ -1044,7 +1065,7 @@ function initializeUniLoop() {
 // 🌟 BÖLÜM 1 SONU 🌟
 // ============================================================================
 // ============================================================================
-// 🌟 MEDYA YÜKLEME, KAMPÜS FREKANSI VE DİĞER MODÜLLER (BÖLÜM 2) 🌟
+// 🌟 MEDYA YÜKLEME, POPÜLERLİK SAVAŞI, KAMPÜS FREKANSI VE DİĞER MODÜLLER (BÖLÜM 2) 🌟
 // ============================================================================
 
     window.uploadChatMedia = async function(event, targetId, chatType) {
@@ -1819,6 +1840,28 @@ function initializeUniLoop() {
 
     /* ========================================================================= */
 
+    // ARAMA ÇUBUĞU KLAVYE ODAKLANMA (FOCUS) DÜZELTMESİ
+    window.toggleHomeSearch = function() {
+        const searchContainer = document.getElementById('home-search-container');
+        const defaultView = document.getElementById('home-default-view');
+        const inputField = document.getElementById('home-friend-search-input');
+
+        if(searchContainer.classList.contains('hidden')) {
+            searchContainer.classList.remove('hidden');
+            if(defaultView) defaultView.style.opacity = '0'; 
+            
+            // Mobil klavyenin anında açılması için odaklanma işlemi
+            if(inputField) {
+                inputField.style.display = 'block';
+                setTimeout(() => inputField.focus(), 100); 
+            }
+        } else {
+            searchContainer.classList.add('hidden');
+            if(defaultView) defaultView.style.opacity = '1';
+            if(inputField) inputField.blur();
+        }
+    };
+
     window.renderHome = async function() {
         document.body.classList.add('no-scroll-home');
 
@@ -1919,6 +1962,276 @@ function initializeUniLoop() {
         }
 
         window.initEmbeddedFastMatch();
+    };
+
+    window.searchAndAddFriendHome = async function() {
+        const input = document.getElementById('home-friend-search-input');
+        if(input) {
+            const val = input.value;
+            const fakeInput = document.createElement('input');
+            fakeInput.id = 'friend-search-input';
+            fakeInput.value = val;
+            document.body.appendChild(fakeInput);
+            
+            await window.searchAndAddFriend();
+            
+            fakeInput.remove();
+            input.value = '';
+            window.toggleHomeSearch();
+        }
+    };
+
+    window.searchAndAddFriend = async function() {
+        try {
+            const searchInput = document.getElementById('friend-search-input');
+            if(!searchInput) return;
+            
+            let rawSearch = searchInput.value.trim().toLowerCase();
+            if(!rawSearch) { alert("Lütfen bir kullanıcı adı yazın."); return; }
+            if (!window.userProfile.username) { alert("Bağlantı kurmadan önce lütfen profilinizden bir kullanıcı adı belirleyin!"); return; }
+
+            rawSearch = rawSearch.replace(/^#/, '');
+            const searchVal = '#' + rawSearch;
+            
+            if(searchVal === window.userProfile.username) { alert("Kendinize istek gönderemezsiniz :)"); return; }
+
+            const q = query(collection(db, "users"), where("username", "==", searchVal));
+            const snapshot = await getDocs(q);
+            
+            if(snapshot.empty) {
+                alert("Bu kullanıcı adına sahip kimse bulunamadı!");
+            } else {
+                const targetUser = snapshot.docs[0].data();
+                
+                const premiumIcon = targetUser.isPremium ? '<span style="font-size:18px; margin-left:5px;" title="Premium Üye">👑</span>' : '';
+                window.openModal('🔍 Kullanıcı Bulundu', `
+                    <div style="text-align:center; padding:10px;">
+                        <div style="width:80px; height:80px; border-radius:50%; margin:0 auto 10px auto; overflow:hidden; border:2px solid ${targetUser.isPremium ? '#111827' : '#E5E7EB'}; display:flex; align-items:center; justify-content:center; background:#F3F4F6; font-size:32px;">
+                            ${targetUser.avatarUrl ? `<img src="${targetUser.avatarUrl}" stylewidth:100%;height:100%;object-fit:cover;">` : (targetUser.avatar || '👤')}
+                        </div>
+                        <h3 style="margin-bottom:5px; color:var(--text-dark); display:flex; align-items:center; justify-content:center;">${targetUser.name} ${targetUser.surname.charAt(0)}. ${premiumIcon}</h3>
+                        <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px;">${targetUser.faculty || 'Kampüs Öğrencisi'}</p>
+                        <button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px;" onclick="window.sendFriendRequest('${targetUser.uid}', '${targetUser.name} ${targetUser.surname}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>
+                    </div>
+                `);
+            }
+            searchInput.value = ''; 
+        } catch (error) {
+            console.error(error);
+            alert("Arama sırasında hata oluştu: " + error.message);
+        }
+    };
+
+    window.sendFriendRequest = async function(targetUserId, targetUserName, isFastMatch = false) {
+        try {
+            const myUid = window.userProfile.uid;
+            const q = query(collection(db, "chats"), where("participants", "array-contains", myUid));
+            const snap = await getDocs(q);
+            
+            let existingChat = null;
+            snap.forEach(doc => {
+                if (doc.data().participants && doc.data().participants.includes(targetUserId) && !doc.data().isMarketChat) {
+                    existingChat = { id: doc.id, ...doc.data() };
+                }
+            });
+
+            if(!existingChat) {
+                await addDoc(collection(db, "chats"), {
+                    participants: [myUid, targetUserId],
+                    participantNames: { [myUid]: window.userProfile.name, [targetUserId]: targetUserName },
+                    participantAvatars: { [myUid]: window.userProfile.avatarUrl || window.userProfile.avatar || "👨‍🎓", [targetUserId]: "👤" },
+                    lastUpdated: serverTimestamp(), 
+                    status: 'pending', 
+                    initiator: myUid, 
+                    isMarketChat: false, 
+                    messages: [] 
+                });
+                if(!isFastMatch) alert("✅ Arkadaşlık isteği başarıyla gönderildi! Karşı taraf onayladığında arkadaş listenizde görünecektir.");
+            } else {
+                if(!isFastMatch) {
+                    if(existingChat.status === 'pending') {
+                        alert("Bu kişiye zaten bir arkadaşlık isteği gönderilmiş veya ondan size istek gelmiş.");
+                    } else {
+                        alert("Bu kişiyle zaten arkadaşsınız.");
+                    }
+                }
+            }
+        } catch (error) {
+            if(!isFastMatch) alert("İstek gönderilirken hata oluştu: " + error.message);
+        }
+    };
+
+    window.viewUserProfile = async function(targetUid) {
+        if (!targetUid) {
+            alert("Kullanıcı verisi eksik!");
+            return;
+        }
+
+        if(targetUid === window.userProfile.uid) { 
+            window.loadPage('profile'); 
+            return; 
+        }
+
+        const isFriend = chatsDB.some(c => c.otherUid === targetUid && c.status === 'accepted' && !c.isMarketChat);
+
+        if (!window.userProfile.isPremium && !isFriend) {
+            window.openModal('🔒 Detaylı Profil Kilitli', `
+                <div style="text-align:center; padding:20px;">
+                    <div style="font-size:50px; margin-bottom:15px; filter: blur(2px);">👀</div>
+                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Gizli Profil!</h3>
+                    <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px; line-height:1.5;">Detaylı profile bakabilmek için Premium üye ol. Tüm blurları kaldır ve kampüstekileri yakından tanı!</p>
+                    <button style="width:100%; justify-content:center; padding: 16px; font-size: 16px; background:white; color:#111827; border:1px solid #111827; border-radius:12px; cursor:pointer; font-weight:bold;" onclick="window.openPremiumModal()">☆ Premium'a Yükselt</button>
+                </div>
+            `);
+            return;
+        }
+        
+        try {
+            const docSnap = await getDoc(doc(db, "users", targetUid));
+            if (docSnap.exists()) {
+                const u = docSnap.data();
+                
+                try {
+                    const viewRecord = {
+                        uid: window.userProfile.uid,
+                        name: window.userProfile.name,
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + " - " + new Date().toLocaleDateString()
+                    };
+                    await updateDoc(doc(db, "users", targetUid), {
+                        profileViewers: arrayUnion(viewRecord)
+                    });
+
+                    if (u.isPremium) {
+                        window.sendSystemNotification(targetUid, `👀 <strong>${window.userProfile.name}</strong> profilini inceledi! (Premium Özelliği)`);
+                    }
+                } catch(err) {
+                    console.warn("Görüntülenme kaydedilemedi, ancak profil açılıyor.");
+                }
+
+                const initial = u.surname ? u.surname.charAt(0) + '.' : '';
+                const isPremium = u.isPremium;
+
+                let avatarHtml = u.avatarUrl 
+                    ? `<img src="${u.avatarUrl}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid ${isPremium ? '#111827' : '#E5E7EB'};">` 
+                    : `<div style="width:100px; height:100px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:40px; border:3px solid ${isPremium ? '#111827' : '#E5E7EB'}; margin:0 auto;">${u.avatar || '👤'}</div>`;
+                
+                const ageText = u.age ? u.age + " yaşında" : "Yaş belirtilmemiş";
+                const facText = u.faculty ? u.faculty : "Fakülte belirtilmemiş";
+                const gradeText = u.grade ? u.grade + ". Sınıf" : "";
+                const premiumBadge = isPremium ? `<div style="margin-top:8px; display:inline-block; background:#111827; color:white; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:12px; border:1px solid #111827; box-shadow:0 2px 4px rgba(0,0,0,0.1);">☆ Premium Üye</div>` : '';
+
+                const existingChat = chatsDB.find(c => c.otherUid === u.uid && !c.isMarketChat);
+                let actionBtnHtml = '';
+                
+                if (existingChat && existingChat.status === 'accepted') {
+                    actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">💬 Mesaj Gönder</button>`;
+                } else if (existingChat && existingChat.status === 'pending') {
+                    actionBtnHtml = `<button class="btn-primary" disabled style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:#9CA3AF; box-shadow:none;">⏳ İstek Bekleniyor</button>`;
+                } else {
+                    actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendFriendRequest('${u.uid}', '${u.name} ${initial}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>`;
+                }
+
+                window.openModal('Kullanıcı Profili', `
+                    <div style="text-align:center;">
+                        ${avatarHtml}
+                        <h3 style="margin: 10px 0 5px 0; font-size:18px; color:var(--text-dark); display:flex; align-items:center; justify-content:center; gap:5px;">
+                            ${u.name} ${initial} ${isPremium ? '<span style="font-size:18px;">👑</span>' : ''}
+                        </h3>
+                        <p style="color:#111827; font-size:14px; margin-bottom: 5px; font-weight:bold;">${facText} ${gradeText ? ' - ' + gradeText : ''}</p>
+                        <p style="color:var(--text-gray); font-size:13px; margin-bottom: 5px;">${ageText}</p>
+                        ${premiumBadge}
+                        <div style="margin-top:20px;">${actionBtnHtml}</div>
+                    </div>
+                `);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Profil yüklenirken hata oluştu.");
+        }
+    };
+
+    window.openProfileEditModal = function() {
+        const u = window.userProfile;
+        const uNameStr = u.username ? u.username.replace('#', '') : '';
+        
+        let facOptions = allFaculties.map(f => `<option value="${f}" ${u.faculty === f ? 'selected' : ''}>${f}</option>`).join('');
+        
+        window.openModal('✏️ Profilini Düzenle', `
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Kullanıcı Adı</label>
+                    <div style="display:flex; align-items:center; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px; padding:0 10px;">
+                        <span style="color:var(--primary); font-weight:bold; font-size:14px;">#</span>
+                        <input type="text" id="edit-username" value="${uNameStr}" style="border:none; background:transparent; width:100%; padding:12px 5px; outline:none; font-size:14px;">
+                    </div>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Yaş</label>
+                    <input type="number" id="edit-age" value="${u.age || ''}" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white;">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Fakülte</label>
+                    <select id="edit-faculty" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white;">
+                        <option value="">Fakülte Seçiniz</option>
+                        ${facOptions}
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Kaçıncı Sınıf</label>
+                    <select id="edit-grade" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white;">
+                        <option value="1" ${u.grade == '1' ? 'selected' : ''}>1. Sınıf</option>
+                        <option value="2" ${u.grade == '2' ? 'selected' : ''}>2. Sınıf</option>
+                        <option value="3" ${u.grade == '3' ? 'selected' : ''}>3. Sınıf</option>
+                        <option value="4" ${u.grade == '4' ? 'selected' : ''}>4. Sınıf</option>
+                        <option value="5" ${u.grade == '5' ? 'selected' : ''}>5. Sınıf</option>
+                        <option value="6" ${u.grade == '6' ? 'selected' : ''}>6. Sınıf</option>
+                    </select>
+                </div>
+                <button class="btn-primary" style="width:100%; padding:14px; border-radius:10px; font-size:15px; font-weight:bold; margin-top:10px;" onclick="window.saveProfileEdits()">Değişiklikleri Kaydet</button>
+            </div>
+        `);
+    };
+
+    window.saveProfileEdits = async function() {
+        const usernameInput = document.getElementById('edit-username').value.trim().toLowerCase().replace(/\s+/g, '');
+        const newAge = document.getElementById('edit-age').value.trim();
+        const newFaculty = document.getElementById('edit-faculty').value;
+        const newGrade = document.getElementById('edit-grade').value;
+
+        if(!usernameInput || !newAge || !newFaculty) return alert("Lütfen tüm alanları eksiksiz doldurun.");
+
+        const finalUsername = '#' + usernameInput;
+        
+        try {
+            if (finalUsername !== window.userProfile.username) {
+                const qU = query(collection(db, "users"), where("username", "==", finalUsername));
+                const snap = await getDocs(qU);
+                if(!snap.empty) {
+                    alert("Bu kullanıcı adı alınmış. Lütfen başka bir tane seçin.");
+                    return;
+                }
+            }
+
+            await updateDoc(doc(db, "users", window.userProfile.uid), {
+                username: finalUsername,
+                age: newAge,
+                faculty: newFaculty,
+                grade: newGrade
+            });
+
+            window.userProfile.username = finalUsername;
+            window.userProfile.age = newAge;
+            window.userProfile.faculty = newFaculty;
+            window.userProfile.grade = newGrade;
+
+            alert("Profil bilgileriniz başarıyla güncellendi!");
+            window.closeModal();
+            window.renderProfile();
+
+        } catch(e) {
+            console.error(e);
+            alert("Güncellenirken hata oluştu.");
+        }
     };
 
     window.currentLightboxImages = [];
