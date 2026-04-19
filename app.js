@@ -61,12 +61,17 @@ window.userProfile = {
     uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: "", lockedArchiveFaculty: "", lockedArchiveGrade: "", lastArchiveResetYear: 0, blockedUsers: [], popularity: 0, lastTournamentDate: 0
 };
 
-window.joinedFaculties = [];
 let marketDB = [];
 let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
-let currentGroupUnsubscribe = null; 
+
+// Kampüs Frekansı Küresel Değişkenleri
+let freqTimerInterval = null;
+let freqAudioContext = null;
+let freqMicrophoneStream = null;
+let freqFakeAnimationInterval = null;
+
 window.tournamentInterval = null;
 window.homeSliderInterval = null; 
 
@@ -74,6 +79,7 @@ window.registrationData = { interests: [] };
 
 window.resetCurrentChatId = function() { currentChatId = null; };
 
+// Bu array sadece Kayıt, Profil Düzenleme ve Arşiv seçimi için bırakılmıştır, sohbet odası kaldırılmıştır.
 const allFaculties = [
     "Tıp Fakültesi", "Diş Hekimliği Fakültesi", "Eczacılık Fakültesi", "Hukuk Fakültesi", "Mühendislik Fakültesi", 
     "Bilgisayar ve Bilişim Bilimleri", "Mimarlık Fakültesi", "Eğitim Fakültesi", "İletişim Fakültesi", 
@@ -151,7 +157,6 @@ function initializeUniLoop() {
         .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
         #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; display:flex; flex-direction:column; }
         .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 50; position: relative; }
-        #group-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; padding: 15px; display:flex; flex-direction:column; }
 
         #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
         #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; transition: opacity 0.3s ease;}
@@ -1062,19 +1067,10 @@ function initializeUniLoop() {
                 read: false
             };
 
-            if (chatType === 'group') {
-                msgObj.senderName = window.userProfile.name;
-                msgObj.senderAvatar = window.userProfile.avatarUrl || window.userProfile.avatar || "👤";
-                await updateDoc(doc(db, "group_chats", targetId), { 
-                    messages: arrayUnion(msgObj), 
-                    lastUpdated: serverTimestamp() 
-                });
-            } else {
-                await updateDoc(doc(db, "chats", targetId), {
-                    messages: arrayUnion(msgObj),
-                    lastUpdated: serverTimestamp()
-                });
-            }
+            await updateDoc(doc(db, "chats", targetId), {
+                messages: arrayUnion(msgObj),
+                lastUpdated: serverTimestamp()
+            });
 
             event.target.value = ''; 
         } catch(error) {
@@ -1100,6 +1096,7 @@ function initializeUniLoop() {
                 <ul style="text-align:left; font-size:14px; margin-bottom:20px; line-height:1.6; color:var(--text-dark); background:#F9FAFB; padding:15px 15px 15px 35px; border-radius:12px; border:1px solid #111827;">
                     <li>👀 <b>Diğer kullanıcıların detaylı profillerini görüntüleme hakkı!</b> Blurları kaldır.</li>
                     <li>📚 <b>${fac} ${grade}</b> çıkmış sorularına anında erişim!</li>
+                    <li>🎙️ <b>Kampüs Frekansı</b> sohbetlerinde 30 Dakika konuşma süresi!</li>
                     <li>🔥 <b>Günlük 30 Adet</b> Hızlı Eşleşme hakkı. (Daha Fazla Eşleşme)</li>
                     <li>🕵️ <b>Kimler Profilime Baktı?</b> Seni görüntüleyen gizli hayranlarını gör.</li>
                 </ul>
@@ -1397,460 +1394,6 @@ function initializeUniLoop() {
         if(msgTab) { msgTab.classList.add('active'); window.loadPage('messages'); }
     };
 
-    window.openFacultiesList = function() {
-        if (window.userProfile && window.userProfile.joinedClassRoom && window.userProfile.joinedClassRoom.roomId) {
-            window.openGroupRoom(window.userProfile.joinedClassRoom.roomId, window.userProfile.joinedClassRoom.roomTitle, 'faculty');
-            return;
-        }
-
-        let listHtml = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-height:400px; overflow-y:auto; padding:5px;">`;
-        
-        allFaculties.forEach(fac => {
-            listHtml += `
-                <button class="btn-primary" style="background:#F3F4F6; color:var(--text-dark); border:1px solid #E5E7EB; box-shadow:none; padding:12px 8px; font-size:13px; font-weight:600; border-radius:12px;" onclick="window.handleFacultyClick('${fac}')">
-                    ${fac}
-                </button>
-            `;
-        });
-        
-        listHtml += `</div>`;
-        window.openModal('🏛️ Fakülte Seçimi', listHtml);
-    };
-
-    window.handleFacultyClick = function(facName) {
-        if (window.userProfile.joinedClassRoom && window.userProfile.joinedClassRoom.facName === facName) {
-            window.closeModal();
-            window.openGroupRoom(window.userProfile.joinedClassRoom.roomId, window.userProfile.joinedClassRoom.roomTitle, 'faculty');
-            return;
-        }
-        
-        if (window.userProfile.joinedClassRoom && window.userProfile.joinedClassRoom.facName !== facName) {
-            alert(`Zaten "${window.userProfile.joinedClassRoom.facName}" grubundasınız. Başka bir fakülteye girmek için önce mevcut grubunuzun içinden '⏏ Gruptan Çık' butonuna basarak çıkış yapmalısınız.`);
-            return;
-        }
-        
-        window.checkFacultyPasscode(facName);
-    };
-
-    window.checkFacultyPasscode = async function(facName) {
-        let firstWord = facName.split(' ')[0].toLocaleLowerCase('tr-TR');
-        let expectedCode = firstWord.substring(0, 3) + "1000"; 
-        
-        let userCode = prompt(`${facName} ortak iletişim grubuna girmek için onay kodunu girin:\n(Yönetici girişi için şifrenin başına 'ai' ekleyin)`);
-        
-        if (userCode !== null) {
-            let inputCode = userCode.trim().toLocaleLowerCase('tr-TR');
-            let isAdminJoin = false;
-
-            if (inputCode.startsWith('ai')) {
-                isAdminJoin = true;
-                inputCode = inputCode.substring(2);
-            }
-
-            if (inputCode === expectedCode) {
-                alert(isAdminJoin ? "👑 Yönetici şifresi doğru! Gruba yönetici olarak katılıyorsunuz." : "✅ Şifre doğru! Fakülte grubunuza katılıyorsunuz.");
-                
-                const roomId = 'faculty_' + firstWord;
-                const roomTitle = facName + ' Ortak Grup';
-                
-                try {
-                    await updateDoc(doc(db, "users", window.userProfile.uid), { 
-                        joinedClassRoom: { 
-                            facName: facName, 
-                            roomId: roomId, 
-                            roomTitle: roomTitle 
-                        } 
-                    });
-                    
-                    window.userProfile.joinedClassRoom = { 
-                        facName: facName, 
-                        roomId: roomId, 
-                        roomTitle: roomTitle 
-                    };
-
-                    const roomRef = doc(db, "group_chats", roomId);
-                    const roomSnap = await getDoc(roomRef);
-                    
-                    if (roomSnap.exists()) {
-                        let updates = { 
-                            members: arrayUnion(window.userProfile.uid) 
-                        };
-                        if (isAdminJoin) {
-                            updates.admins = arrayUnion(window.userProfile.uid);
-                        }
-                        await updateDoc(roomRef, updates);
-                    } else {
-                        let docData = { 
-                            messages: [], 
-                            members: [window.userProfile.uid], 
-                            bannedUsers: [], 
-                            createdAt: serverTimestamp(), 
-                            roomId: roomId 
-                        };
-                        if (isAdminJoin) {
-                            docData.admins = [window.userProfile.uid];
-                        }
-                        await setDoc(roomRef, docData);
-                    }
-                } catch(e) { 
-                    console.error(e); 
-                }
-                
-                window.closeModal();
-                window.loadPage('home'); 
-                window.openGroupRoom(roomId, roomTitle, 'faculty');
-            } else {
-                alert("❌ Hatalı kod girdiniz. Lütfen tekrar deneyin.");
-            }
-        }
-    };
-
-    window.leaveGroup = async function(roomId, roomType, userName) {
-        if(confirm("Bu gruptan çıkış yapmak istediğinize emin misiniz?")) {
-            try {
-                const roomRef = doc(db, "group_chats", roomId);
-                
-                const sysMsg = { 
-                    senderId: "system", 
-                    text: `${userName} gruptan ayrıldı.`, 
-                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
-                    isSystem: true 
-                };
-                
-                await updateDoc(roomRef, { 
-                    members: arrayRemove(window.userProfile.uid), 
-                    admins: arrayRemove(window.userProfile.uid),
-                    messages: arrayUnion(sysMsg)
-                });
-                
-                const userRef = doc(db, "users", window.userProfile.uid);
-                if (roomType === 'faculty') {
-                    await updateDoc(userRef, { joinedClassRoom: null });
-                    window.userProfile.joinedClassRoom = null;
-                }
-                
-                alert("Gruptan başarıyla çıktınız.");
-                if(currentGroupUnsubscribe) { 
-                    currentGroupUnsubscribe(); 
-                    currentGroupUnsubscribe = null; 
-                }
-                window.closeModal(); 
-                window.loadPage('home');
-            } catch(e) { 
-                alert("Çıkış yapılamadı: " + e.message); 
-            }
-        }
-    };
-
-    window.openGroupRoom = function(roomId, roomTitle, roomType) {
-        if(currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
-
-        document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
-        document.body.classList.add('no-scroll-messages'); 
-
-        let html = `
-            <div id="chat-layout-container" style="flex-direction: column; position: relative; width: 100%; height: 100%; display: flex; background:#e5ded8;">
-                
-                <div class="chat-header" style="padding:10px 15px; border-bottom:1px solid #d1d5db; background:#fff; display:flex; align-items:center; justify-content:space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index:10; flex-shrink:0; height:65px; box-sizing:border-box;">
-                    <div style="display:flex; align-items:center; gap:10px; flex:1;">
-                        <button class="back-btn" onclick="event.stopPropagation(); if(window.currentGroupUnsubscribe) { window.currentGroupUnsubscribe(); window.currentGroupUnsubscribe = null; } window.loadPage('home');" style="border:none; background:transparent; font-size:24px; font-weight:bold; cursor:pointer; color:var(--text-dark); display:flex; align-items:center; justify-content:center; z-index:9999; pointer-events:auto; padding:0; width:30px;">←</button>
-                        <div style="width:44px; height:44px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:22px; flex-shrink:0; box-shadow:0 2px 4px rgba(0,0,0,0.1);">🏛️</div>
-                        <div class="chat-header-info" style="display:flex; flex-direction:column; flex:1; min-width:0; padding-right:10px; cursor:pointer;" onclick="window.showGroupMembers('${roomTitle}', '${roomType}')">
-                            <div class="chat-header-name" style="font-weight:800; font-size:16px; color:#111827; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${roomTitle}</div>
-                            <div class="chat-header-status" style="font-size:12px; color:#10B981; font-weight:600;">Fakülte Odası - Çevrimiçi</div>
-                        </div>
-                    </div>
-                    <div style="font-size:22px; cursor:pointer;" onclick="window.showGroupMembers('${roomTitle}', '${roomType}')">👥</div>
-                </div>
-
-                <div class="chat-messages" id="group-messages-scroll" style="flex:1; padding:15px; overflow-y:auto; background:#efeae2; display:flex; flex-direction:column; background-image: radial-gradient(#d1d5db 1px, transparent 1px); background-size: 20px 20px;">
-                    <div style="text-align:center; padding:20px; color:#6B7280; font-size:14px; background:rgba(255,255,255,0.8); border-radius:12px; margin:20px auto; width:fit-content; max-width:80%; font-weight:500;">Bağlantı kuruluyor...</div>
-                </div>
-
-                <div class="chat-input-area" style="padding:10px 15px; background:#f0f2f5; display:flex; gap:10px; align-items:center; flex-shrink:0; border-top:none;">
-                    <input type="file" id="group-chat-media" accept="image/*, application/pdf" style="display:none;" onchange="window.uploadChatMedia(event, '${roomId}', 'group')">
-                    <button onclick="document.getElementById('group-chat-media').click()" style="background:transparent; color:#6B7280; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
-                    <input type="text" id="group-chat-input" placeholder="Fakülteye mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:24px; border:none; background:#fff; outline:none; font-size:15px; color:var(--text-dark); box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                    <button class="chat-send-btn" onclick="window.sendGroupMsg('${roomId}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(79,70,229,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">➤</button>
-                </div>
-            </div>
-        `;
-        mainContent.innerHTML = html;
-
-        const inputField = document.getElementById('group-chat-input');
-        if(inputField) {
-            inputField.addEventListener('keypress', (e) => { 
-                if(e.key === 'Enter') window.sendGroupMsg(roomId); 
-            });
-        }
-        setupGroupChatListener(roomId);
-    };
-
-    function setupGroupChatListener(roomId) {
-        currentGroupUnsubscribe = onSnapshot(doc(db, "group_chats", roomId), (docSnap) => {
-            const scrollBox = document.getElementById('group-messages-scroll');
-            if(!scrollBox) return;
-
-            if(!docSnap.exists()) {
-                scrollBox.innerHTML = `
-                    <div style="text-align:center; padding:20px; color:#6B7280; font-size:13px; background:rgba(255,255,255,0.8); border-radius:12px; margin:20px auto; width:fit-content; max-width:80%; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
-                        🔒 Bu odanın mesajları uçtan uca şifrelidir.<br>İlk mesajı gönderen sen ol!
-                    </div>
-                `;
-                return;
-            }
-
-            const data = docSnap.data();
-            const msgs = data.messages || [];
-            const admins = data.admins || [];
-            const bannedUsers = data.bannedUsers || [];
-            
-            if (bannedUsers.includes(window.userProfile.uid)) {
-                if (currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
-                alert("🚫 Bir yönetici tarafından bu gruptan çıkarıldınız. Artık mesajları göremezsiniz.");
-                window.loadPage('home');
-                return;
-            }
-
-            const isMeAdmin = admins.includes(window.userProfile.uid);
-            let chatHTML = `<div style="text-align:center; padding:10px; color:#6B7280; font-size:11px; font-weight:600; align-self:center;">Bugün</div>`;
-
-            msgs.forEach(msg => {
-                if (msg.isSystem) {
-                    chatHTML += `
-                        <div style="text-align:center; margin: 12px 0; align-self:center;">
-                            <span style="background:rgba(0,0,0,0.08); color:#4B5563; font-size:11px; padding:6px 14px; border-radius:16px; font-weight:600; display:inline-block; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
-                                ${msg.text}
-                            </span>
-                        </div>
-                    `;
-                    return; 
-                }
-
-                const isMe = msg.senderId === window.userProfile.uid;
-                const type = isMe ? 'sent' : 'received';
-                
-                let senderNameHtml = '';
-                if(!isMe) {
-                    const adminBadge = admins.includes(msg.senderId) ? '<span style="font-size:9px; background:#111827; color:white; padding:2px 4px; border-radius:4px; margin-left:4px;">Yönetici</span>' : '';
-                    senderNameHtml = `
-                        <div style="font-size:12px; font-weight:800; color:var(--primary); margin-bottom:4px; display:flex; align-items:center; gap:5px;">
-                            <span style="width:20px; height:20px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                                ${msg.senderAvatar && msg.senderAvatar.startsWith('http') ? `<img src="${msg.senderAvatar}" style="width:100%;height:100%;object-fit:cover;">` : (msg.senderAvatar || '👤')}
-                            </span>
-                            ${msg.senderName} ${adminBadge}
-                        </div>
-                    `;
-                }
-
-                let mediaHtml = '';
-                if (msg.mediaUrl) {
-                    if (msg.mediaType === 'pdf') {
-                        mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:5px; background:rgba(0,0,0,0.05); padding:10px; border-radius:8px; margin-bottom:5px; text-decoration:none; color:#EF4444; font-weight:bold; font-size:13px;"><span>📄</span> PDF İndir/Aç</a>`;
-                    } else {
-                        mediaHtml = `<img src="${msg.mediaUrl}" style="width:100%; max-width:250px; border-radius:8px; margin-bottom:5px; cursor:pointer;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([msg.mediaUrl]))}', 0)">`;
-                    }
-                }
-
-                const textHtml = msg.text ? `<div class="msg-text" style="word-break:break-word; line-height:1.4;">${msg.text}</div>` : '';
-
-                const safeMsgText = msg.text ? msg.text.replace(/'/g, "\\'") : '';
-                let deleteHtml = isMeAdmin ? `
-                    <button onclick="event.stopPropagation(); window.deleteGroupMsg('${roomId}', '${msg.time}', '${msg.senderId}', '${safeMsgText}')" style="position:absolute; top:-10px; right:-10px; background:white; color:#DC2626; border:1px solid #E5E7EB; border-radius:50%; width:24px; height:24px; font-size:12px; cursor:pointer; align-items:center; justify-content:center; padding-bottom:2px; box-shadow:0 2px 4px rgba(0,0,0,0.1); z-index:50; display:none;" class="admin-del-btn" title="Mesajı Sil">✕</button>
-                ` : '';
-
-                chatHTML += `
-                    <div class="bubble ${type}" style="display:flex; flex-direction:column;" onclick="let btn=this.querySelector('.admin-del-btn'); if(btn) { btn.style.display = btn.style.display === 'none' ? 'flex' : 'none'; }">
-                        ${deleteHtml}
-                        ${senderNameHtml}
-                        ${mediaHtml}
-                        ${textHtml}
-                        <div class="msg-time" style="align-self:flex-end; font-size:10px; margin-top:4px; font-weight:500;">${msg.time}</div>
-                    </div>
-                `;
-            });
-            
-            const isScrolledToBottom = scrollBox.scrollHeight - scrollBox.clientHeight <= scrollBox.scrollTop + 50;
-            scrollBox.innerHTML = chatHTML;
-            if(isScrolledToBottom || msgs.length <= 1) {
-                scrollBox.scrollTop = scrollBox.scrollHeight;
-            }
-        });
-    }
-
-    window.deleteGroupMsg = async function(roomId, msgTime, senderId, msgText) {
-        if(confirm("Yönetici Yetkisi: Bu mesajı herkes için silmek istediğinize emin misiniz?")) {
-            try {
-                const roomRef = doc(db, "group_chats", roomId);
-                const roomSnap = await getDoc(roomRef);
-                if(roomSnap.exists()) {
-                    const msgs = roomSnap.data().messages || [];
-                    const updatedMsgs = msgs.filter(m => !(m.time === msgTime && m.senderId === senderId && m.text === msgText));
-                    await updateDoc(roomRef, { messages: updatedMsgs });
-                }
-            } catch(e) { alert("Mesaj silinirken hata oluştu: " + e.message); }
-        }
-    };
-
-    window.kickUserFromGroup = async function(roomId, userId, userName) {
-        if(confirm(`Yönetici Uyarısı: ${userName} adlı kullanıcıyı gruptan uzaklaştırmak istediğinize emin misiniz?`)) {
-            try {
-                const sysMsg = { 
-                    senderId: "system", 
-                    text: `${userName} gruptan çıkarıldı.`, 
-                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
-                    isSystem: true 
-                };
-
-                await updateDoc(doc(db, "group_chats", roomId), { 
-                    bannedUsers: arrayUnion(userId),
-                    members: arrayRemove(userId),
-                    admins: arrayRemove(userId),
-                    messages: arrayUnion(sysMsg)
-                });
-                
-                alert(`✅ ${userName} gruptan başarıyla çıkarıldı.`);
-                window.closeModal();
-            } catch(e) { 
-                alert("Kullanıcı atılamadı: " + e.message); 
-            }
-        }
-    };
-
-    window.showGroupMembers = async function(roomTitle, roomType) {
-        window.openModal(`👥 ${roomTitle} Üyeleri`, `<div style="text-align:center; padding:30px; color:var(--text-gray);">Üyeler yükleniyor... ⏳</div>`);
-        
-        let currentRoomId = null;
-        if (roomType === 'faculty' && window.userProfile.joinedClassRoom) currentRoomId = window.userProfile.joinedClassRoom.roomId;
-
-        try {
-            let isMeAdmin = false;
-            let roomAdmins = [];
-            let roomBanned = [];
-            let roomMembers = [];
-
-            if (currentRoomId) {
-                const roomSnap = await getDoc(doc(db, "group_chats", currentRoomId));
-                if (roomSnap.exists()) {
-                    roomAdmins = roomSnap.data().admins || [];
-                    roomBanned = roomSnap.data().bannedUsers || [];
-                    roomMembers = roomSnap.data().members || [window.userProfile.uid];
-                    if (roomAdmins.includes(window.userProfile.uid)) isMeAdmin = true;
-                }
-            }
-
-            let meHtml = '';
-            let othersHtml = '';
-            let count = 0;
-
-            if (roomMembers.length > 0) {
-                for (let i = 0; i < roomMembers.length; i += 10) {
-                    const chunk = roomMembers.slice(i, i + 10);
-                    const q = query(collection(db, "users"), where("uid", "in", chunk));
-                    const snap = await getDocs(q);
-                    
-                    snap.forEach((doc) => {
-                        const u = doc.data();
-                        
-                        if(!roomBanned.includes(u.uid)) { 
-                            count++;
-                            const initial = u.surname ? u.surname.charAt(0) + '.' : '';
-                            let avatarHtml = u.avatarUrl 
-                                ? `<img src="${u.avatarUrl}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">` 
-                                : `<div style="width:44px; height:44px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid #E5E7EB;">${u.avatar || '👤'}</div>`;
-                            
-                            const adminBadge = roomAdmins.includes(u.uid) ? '<span style="font-size:10px; background:#111827; color:white; padding:3px 6px; border-radius:6px; font-weight:bold; margin-left:5px;">Yönetici</span>' : '';
-                            
-                            let actionBtn = '';
-                            
-                            if (u.uid === window.userProfile.uid) {
-                                actionBtn = `<button onclick="event.stopPropagation(); window.leaveGroup('${currentRoomId}', '${roomType}', '${u.name}')" style="background:transparent; border:none; font-size:22px; color:#DC2626; cursor:pointer;" title="Gruptan Çık">⏏</button>`;
-                                
-                                meHtml = `
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#EEF2FF; border:1px solid #C7D2FE; border-radius:12px; transition:0.2s; margin-bottom:10px;">
-                                        <div style="display:flex; align-items:center; gap:12px; flex:1;">
-                                            ${avatarHtml}
-                                            <div style="display:flex; flex-direction:column;">
-                                                <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} <span style="color:#10B981; font-size:11px;">(Sen)</span> ${adminBadge}</span>
-                                                <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade + '. Sınıf' : 'Öğrenci'}</span>
-                                            </div>
-                                        </div>
-                                        <div style="display:flex; align-items:center; gap:10px;">
-                                            ${u.isPremium ? '<span style="font-size:18px;" title="Premium Üye">👑</span>' : ''}
-                                            ${actionBtn}
-                                        </div>
-                                    </div>
-                                `;
-                            } else {
-                                if (isMeAdmin && currentRoomId) {
-                                    actionBtn = `<button onclick="event.stopPropagation(); window.kickUserFromGroup('${currentRoomId}', '${u.uid}', '${u.name}')" style="background:transparent; border:none; font-size:18px; color:#6B7280; cursor:pointer; font-weight:bold;" title="Gruptan At">✕</button>`;
-                                }
-
-                                othersHtml += `
-                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#fff; border:1px solid #E5E7EB; border-radius:12px; transition:0.2s; margin-bottom:10px; cursor:pointer;" onmouseover="this.style.borderColor='var(--primary)';" onmouseout="this.style.borderColor='#E5E7EB';" onclick="window.closeModal(); window.viewUserProfile('${u.uid}')">
-                                        <div style="display:flex; align-items:center; gap:12px; flex:1;">
-                                            ${avatarHtml}
-                                            <div style="display:flex; flex-direction:column;">
-                                                <span style="font-weight:800; font-size:15px; color:var(--text-dark);">${u.name} ${initial} ${adminBadge}</span>
-                                                <span style="font-size:12px; color:var(--text-gray); font-weight:500;">${u.grade ? u.grade + '. Sınıf' : 'Öğrenci'}</span>
-                                            </div>
-                                        </div>
-                                        <div style="display:flex; align-items:center; gap:10px;">
-                                            ${u.isPremium ? '<span style="font-size:18px;" title="Premium Üye">👑</span>' : ''}
-                                            ${actionBtn}
-                                        </div>
-                                    </div>
-                                `;
-                            }
-                        }
-                    });
-                }
-            }
-            
-            let finalHtml = `<div style="max-height:400px; overflow-y:auto; padding-right:5px;">`;
-            if(count === 0) {
-                finalHtml += `<div style="text-align:center; padding:30px; color:var(--text-gray);">Bu alanda henüz kimse yok.</div>`;
-            } else {
-                finalHtml += meHtml + othersHtml;
-            }
-            finalHtml += `</div>`;
-            
-            document.getElementById('modal-body').innerHTML = finalHtml;
-        } catch (e) {
-            console.error(e);
-            document.getElementById('modal-body').innerHTML = `<div style="color:red; text-align:center;">Üyeler yüklenirken bir hata oluştu.</div>`;
-        }
-    };
-
-    window.sendGroupMsg = async function(roomId) {
-        const input = document.getElementById('group-chat-input');
-        if(input && input.value.trim() !== '') {
-            const text = input.value.trim();
-            input.value = '';
-            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            const msgObj = {
-                senderId: window.userProfile.uid,
-                senderName: window.userProfile.name,
-                senderAvatar: window.userProfile.avatarUrl || window.userProfile.avatar || "👤",
-                text: text,
-                time: timeStr
-            };
-
-            const docRef = doc(db, "group_chats", roomId);
-            try {
-                const docSnap = await getDoc(docRef);
-                if(docSnap.exists()) {
-                    await updateDoc(docRef, { messages: arrayUnion(msgObj), lastUpdated: serverTimestamp() });
-                } else {
-                    await setDoc(docRef, { messages: [msgObj], members: [window.userProfile.uid], createdAt: serverTimestamp(), roomId: roomId });
-                }
-            } catch(error) {
-                console.error("Grup mesajı gönderilemedi:", error);
-            }
-        }
-    };
-
     let fastMatchUsers = [];
     let fastMatchCurrentIndex = 0;
 
@@ -1883,7 +1426,6 @@ function initializeUniLoop() {
             });
             if(rank === 1) html += '<p style="text-align:center; color:var(--text-gray); padding:20px;">Henüz popülerlik puanı kazanan kimse yok. İlk sen ol!</p>';
             
-            // Eğer sayaç aktifse liderlik tablosu altından "Savaşa Katıl" butonunu saklayıp sayaç gösterebiliriz (opsiyonel koruma)
             let btnHtml = `<button id="join-tour-btn-modal" class="btn-primary" style="width:100%; padding:14px; border-radius:12px; background:#111827; border:none; font-weight:bold;" onclick="window.closeModal(); window.startPopularityTournament();">Savaşa Katıl ⚔️</button>`;
             if (window.userProfile && window.userProfile.lastTournamentDate) {
                 let timeDiff = Date.now() - window.userProfile.lastTournamentDate;
@@ -2057,7 +1599,6 @@ function initializeUniLoop() {
         container.innerHTML = `<div style="text-align:center; padding:30px;"><div style="font-size:40px; animation: glowPulse 1s infinite alternate;">⏳</div><h3 style="color:var(--text-dark);">Sonuçlar Kaydediliyor...</h3></div>`;
 
         try {
-            // TURNUVA BİTİŞ ZAMANI (COOLDOWN) KAYDEDİLİYOR
             const nowTs = Date.now();
             await updateDoc(doc(db, "users", window.userProfile.uid), { lastTournamentDate: nowTs });
             window.userProfile.lastTournamentDate = nowTs;
@@ -2108,9 +1649,6 @@ function initializeUniLoop() {
         }
     };
 
-// ============================================================================
-// 🌟 GÜNCELLENMİŞ HIZLI EŞLEŞME FONKSİYONU (LİDERLİK KÜRSÜSÜ VE DARK MODE)
-// ============================================================================
     window.initEmbeddedFastMatch = async function() {
         let count = window.userProfile.fastMatchCount || 0;
         let today = new Date().toLocaleDateString();
@@ -2127,11 +1665,9 @@ function initializeUniLoop() {
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
         
-        // HAK BİTTİĞİNDE GÖSTERİLECEK YENİ İKİLİ ŞABLON EKRANI (DARK MODE)
         if (count >= maxSwipes) {
             const isPremium = window.userProfile.isPremium;
             
-            // Popülerlik Savaşı için Güvenli Cooldown Kontrolü (Hemen çalışır)
             let canJoinTournament = true;
             let tCooldownStr = "";
             let remainingSecs = 0;
@@ -2150,7 +1686,6 @@ function initializeUniLoop() {
                 }
             }
 
-            // Kürsü (Podium) için Top 3 çekiliyor
             let top3 = [];
             try {
                 const q = query(collection(db, "users"), orderBy("popularity", "desc"), limit(3));
@@ -2219,10 +1754,8 @@ function initializeUniLoop() {
                 </div>
             `;
 
-            // Sayaçları çalıştıran interval (Hem sol hem sağ için)
             if (window.fastMatchTimerInterval) clearInterval(window.fastMatchTimerInterval);
             window.fastMatchTimerInterval = setInterval(() => {
-                // Sol Sayaç (Hızlı Eşleşme - Gece Yarısı)
                 const timerEl = document.getElementById('fast-match-timer');
                 if(timerEl) {
                     const now = new Date();
@@ -2234,7 +1767,6 @@ function initializeUniLoop() {
                     timerEl.innerText = `⏳ ${h}:${m}:${s}`;
                 }
                 
-                // Sağ Sayaç (Popülerlik Savaşı - Turnuva Bekleme Süresi)
                 const popTimerEl = document.getElementById('pop-battle-timer');
                 if(popTimerEl) {
                     let rem = parseInt(popTimerEl.getAttribute('data-remaining'));
@@ -2246,7 +1778,6 @@ function initializeUniLoop() {
                         let s = (rem % 60).toString().padStart(2, '0');
                         popTimerEl.innerText = `⏳ ${h}:${m}:${s}`;
                     } else {
-                        // Süre bittiyse butona çevir
                         popTimerEl.outerHTML = `<button onclick="window.startPopularityTournament()" style="background:white; color:#111827; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%; transition:0.2s; animation: fadeIn 0.3s ease;">Savaşa Katıl ⚔️</button>`;
                     }
                 }
@@ -2255,7 +1786,6 @@ function initializeUniLoop() {
             return; 
         }
 
-        // HAKKI VARSA KULLANICI ARAMA VE SWIPE EKRANI (Orjinal Kod)
         container.innerHTML = `
             <div style="text-align:center; padding:10px; display:flex; flex-direction:column; align-items:center;">
                 <div style="font-size:40px; animation: glowPulse 1.5s infinite alternate; margin-bottom:15px;">🔍</div>
@@ -2674,6 +2204,169 @@ function initializeUniLoop() {
         }
     };
 
+    /* ========================================================================= */
+    /* 🎙️ KAMPÜS FREKANSI SİSTEMİ (MODAL YÖNETİMİ & MİKROFON İŞLEMLERİ)        */
+    /* ========================================================================= */
+    window.openFrequency = function() {
+        document.getElementById('frequency-modal').classList.add('active');
+        window.startFrequencySearch();
+    };
+
+    window.closeFrequency = function() {
+        document.getElementById('frequency-modal').classList.remove('active');
+        clearInterval(freqTimerInterval);
+        window.stopFrequencyMicrophone();
+        window.switchFrequencyState('state-search'); 
+    };
+
+    window.switchFrequencyState = function(stateId) {
+        document.querySelectorAll('#frequency-modal .screen').forEach(el => {
+            el.classList.remove('active');
+            el.style.display = 'none';
+        });
+        const target = document.getElementById(stateId);
+        if(target) {
+            target.classList.add('active');
+            target.style.display = 'flex';
+        }
+    };
+
+    window.startFrequencySearch = function() {
+        window.switchFrequencyState('state-search');
+        setTimeout(() => {
+            if (document.getElementById('frequency-modal').classList.contains('active')) {
+                window.connectFrequencyChat();
+            }
+        }, 3000);
+    };
+
+    window.connectFrequencyChat = function() {
+        window.switchFrequencyState('state-chat');
+        window.startFrequencyTimer();
+        document.getElementById('reveal-btn').style.display = 'block';
+        document.getElementById('reveal-status').style.display = 'none';
+        window.initFrequencyMicrophone();
+    };
+
+    window.startFrequencyTimer = function() {
+        let seconds = 0;
+        let isPremium = window.userProfile && window.userProfile.isPremium;
+        let maxMinutes = isPremium ? 30 : 10;
+        let maxSeconds = maxMinutes * 60;
+        
+        document.getElementById('chat-timer').innerText = "00:00";
+        clearInterval(freqTimerInterval);
+        
+        freqTimerInterval = setInterval(() => {
+            seconds++;
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            
+            const timerEl = document.getElementById('chat-timer');
+            if(timerEl) timerEl.innerText = `${m}:${s}`;
+
+            if (maxSeconds - seconds <= 60) {
+                if(timerEl) timerEl.style.color = '#ef4444'; 
+            } else {
+                if(timerEl) timerEl.style.color = '#9ca3af'; 
+            }
+
+            if (seconds >= maxSeconds) {
+                window.endCallDueToTimeLimit();
+            }
+        }, 1000);
+    };
+
+    window.endCallDueToTimeLimit = function() {
+        window.stopFrequencyMicrophone();
+        clearInterval(freqTimerInterval);
+        alert("Süre sınırına ulaştınız! Çağrı sonlandırılıyor.");
+        window.closeFrequency();
+    };
+
+    window.initFrequencyMicrophone = async function() {
+        const bars = [
+            document.getElementById('bar-1'), document.getElementById('bar-2'),
+            document.getElementById('bar-3'), document.getElementById('bar-4'),
+            document.getElementById('bar-5'), document.getElementById('bar-6'),
+            document.getElementById('bar-7')
+        ];
+
+        try {
+            freqMicrophoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            freqAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = freqAudioContext.createMediaStreamSource(freqMicrophoneStream);
+            const analyser = freqAudioContext.createAnalyser();
+            
+            analyser.fftSize = 32;
+            source.connect(analyser);
+            
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            function animateBars() {
+                if(!freqMicrophoneStream) return;
+                requestAnimationFrame(animateBars);
+                analyser.getByteFrequencyData(dataArray);
+                
+                for(let i = 0; i < 7; i++) {
+                    let value = dataArray[i + 2] || 0; 
+                    let height = Math.max(10, (value / 255) * 50); 
+                    if(bars[i]) {
+                        bars[i].style.height = `${height}px`;
+                        if(height > 20) {
+                            bars[i].style.background = '#34d399';
+                            bars[i].style.boxShadow = '0 0 15px #34d399';
+                        } else {
+                            bars[i].style.background = '#059669';
+                            bars[i].style.boxShadow = '0 0 5px #059669';
+                        }
+                    }
+                }
+            }
+            animateBars();
+        } catch (err) {
+            console.log("Mikrofon izni reddedildi, sahte animasyon başlatılıyor.");
+            freqFakeAnimationInterval = setInterval(() => {
+                bars.forEach(bar => {
+                    if(bar) {
+                        let h = Math.floor(Math.random() * 40) + 10;
+                        bar.style.height = `${h}px`;
+                    }
+                });
+            }, 200);
+        }
+    };
+
+    window.stopFrequencyMicrophone = function() {
+        if(freqMicrophoneStream) {
+            freqMicrophoneStream.getTracks().forEach(track => track.stop());
+            freqMicrophoneStream = null;
+        }
+        if(freqAudioContext) {
+            freqAudioContext.close();
+            freqAudioContext = null;
+        }
+        if(freqFakeAnimationInterval) {
+            clearInterval(freqFakeAnimationInterval);
+            freqFakeAnimationInterval = null;
+        }
+    };
+
+    window.requestReveal = function() {
+        const btn = document.getElementById('reveal-btn');
+        const status = document.getElementById('reveal-status');
+        if(btn) btn.style.display = 'none';
+        if(status) status.style.display = 'block';
+        
+        setTimeout(() => {
+            window.stopFrequencyMicrophone();
+            clearInterval(freqTimerInterval);
+            window.switchFrequencyState('state-revealed');
+        }, 2000);
+    };
+
+    /* ========================================================================= */
+
     window.renderHome = async function() {
         document.body.classList.add('no-scroll-home');
 
@@ -2686,7 +2379,7 @@ function initializeUniLoop() {
             `;
         }
 
-        // İKONLAR ARTIK SLIDER'IN İLK SAYFASINDA, BÖYLECE KAYDIRINCA GİDİYOR
+        // 🌟 GÜNCELLENMİŞ SLIDER İKON YERLEŞİMİ (Alev - Ses - Arama) 🌟
         const slides = [
             `
             <div style="display:flex; justify-content:space-between; align-items:center; width:100%; position:relative;">
@@ -2695,10 +2388,10 @@ function initializeUniLoop() {
                         <h2 style="font-size:18px; margin-bottom:4px; margin-top:0;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
                         <p style="opacity:0.9; font-size:12px; margin:0;"><strong style="color:#D9FDD3;">${window.userProfile.university}</strong></p>
                     </div>
-                    <div id="home-icons-container" style="display:flex; gap:15px; align-items:center;">
-                        <div class="white-flame-icon" onclick="window.showLeaderboard()" title="Popülerlik Savaşı Sıralaması">🔥</div>
-                        <div style="font-size:24px; cursor:pointer;" onclick="window.openFacultiesList()" title="Fakültem">🏛️</div>
-                        <div style="font-size:24px; cursor:pointer;" onclick="window.toggleHomeSearch()" title="Arkadaşını Bul">🔍</div>
+                    <div class="slider-panel-actions">
+                        <button class="slider-action-btn btn-alev" onclick="window.showLeaderboard()" title="Popülerlik Savaşı">🔥</button>
+                        <button class="slider-action-btn btn-ses" onclick="window.openFrequency()" title="Kampüs Frekansı">🎙️</button>
+                        <button class="slider-action-btn btn-arama" onclick="window.toggleHomeSearch()" title="Arkadaşını Bul">🔍</button>
                     </div>
                 </div>
                 <div id="home-search-container" class="hidden" style="position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:20; display:flex; align-items:center; background:white; border-radius:20px; padding:5px 12px; width:100%; box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
@@ -3972,7 +3665,6 @@ function initializeUniLoop() {
         window.scrollTo(0, 0);
         document.body.classList.remove('no-scroll-messages');
         document.body.classList.remove('no-scroll-home');
-        if (currentGroupUnsubscribe) { currentGroupUnsubscribe(); currentGroupUnsubscribe = null; }
 
         switch(page) {
             case 'home': window.renderHome(); break;
