@@ -99,36 +99,31 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 
 .premium-card-bw::before { background: #111827 !important; }
 
-/* 🌟 KAMPÜS FREKANSI SİSTEMİ (MODAL VE DARK MODE - EKRANA SIĞDIRMA DÜZELTİLDİ) 🌟 */
-.frequency-overlay {
-    display: none; /* JS ile active eklendiğinde flex olacak */
-    position: fixed;
-    inset: 0; /* Tam ekranı zorlar */
-    width: 100vw;
-    height: 100dvh; /* Dinamik viewport height */
-    background-color: rgba(3, 7, 18, 0.95);
-    backdrop-filter: blur(8px);
-    z-index: 10005;
-    align-items: center;
-    justify-content: center;
+/* 🌟 GÖMÜLÜ (EMBEDDED) KAMPÜS FREKANSI SİSTEMİ 🌟 */
+/* Modal özellikleri kaldırıldı, akışa dahil edildi */
+#embedded-voice-chat {
+    display: none;
+    width: 100%;
+    background: linear-gradient(180deg, #111827 0%, #030712 100%);
+    padding: 30px 15px;
+    position: relative;
+    z-index: 50;
+    border-bottom: 1px solid #374151;
 }
-.frequency-overlay.active {
+#embedded-voice-chat.active {
     display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: slideDown 0.4s ease;
 }
 
 .phone-container {
-    width: 90%;
-    max-width: 400px;
-    height: 80dvh;
-    max-height: 700px;
-    background: linear-gradient(180deg, #111827 0%, #030712 100%);
+    width: 100%;
+    max-width: 500px;
+    background: transparent;
     position: relative;
-    box-shadow: 0 0 50px rgba(139, 92, 246, 0.2);
     display: flex;
     flex-direction: column;
-    border-radius: 20px;
-    overflow: hidden;
-    animation: slideDown 0.4s ease;
 }
 
 .screen {
@@ -136,34 +131,32 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
     width: 100%;
-    padding: 20px;
-    box-sizing: border-box;
     text-align: center;
     animation: fadeIn 0.5s ease;
 }
 .screen.active { display: flex; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideDown { from { transform: translateY(-20px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
 
 .radar-container {
-    width: 200px;
-    height: 200px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     border: 2px solid rgba(139, 92, 246, 0.3);
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 .radar-sweep {
     position: absolute;
-    width: 100px;
-    height: 200px;
+    width: 75px;
+    height: 150px;
     background: linear-gradient(90deg, rgba(139,92,246,0.5) 0%, transparent 100%);
-    border-radius: 100px 0 0 100px;
+    border-radius: 75px 0 0 75px;
     transform-origin: center right;
     left: 0;
     animation: spin 2s linear infinite;
@@ -171,12 +164,12 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
 .blurred-avatar {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     background: radial-gradient(circle, #4c1d95, #111827);
     filter: blur(8px);
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     animation: breathe 3s infinite alternate;
 }
 @keyframes breathe { 0% { transform: scale(0.95); opacity: 0.8;} 100% { transform: scale(1.05); opacity: 1;} }
@@ -186,14 +179,14 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     align-items: center;
     justify-content: center;
     gap: 8px;
-    height: 60px;
-    margin-bottom: 40px;
+    height: 50px;
+    margin-bottom: 30px;
 }
 .bar {
-    width: 8px;
+    width: 6px;
     height: 10px;
     background: #10b981; 
-    border-radius: 4px;
+    border-radius: 3px;
     box-shadow: 0 0 10px #10b981;
     transition: height 0.1s ease;
 }
@@ -208,7 +201,7 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     background: white;
     color: #111827;
     border: none;
-    padding: 15px 25px;
+    padding: 12px 20px;
     border-radius: 12px;
     font-weight: 800;
     cursor: pointer;
@@ -221,7 +214,7 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     background: #ef4444;
     color: white;
     border: none;
-    padding: 15px;
+    padding: 12px 20px;
     border-radius: 12px;
     font-weight: 800;
     cursor: pointer;
@@ -234,14 +227,15 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     border: 2px solid #374151;
     border-radius: 20px;
     padding: 30px;
-    width: 80%;
+    width: 100%;
     text-align: center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     position: relative;
+    margin-top: 40px;
 }
 .real-avatar {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid #8b5cf6;
@@ -283,7 +277,6 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .modal-content { margin: auto; background-color: #fff; padding: 30px; border-radius: 20px; width: 100%; max-width: 500px; animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; max-height: 90vh; overflow-y: auto; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F3F4F6; padding-bottom: 16px; margin-bottom: 24px; }
 .close-btn { font-size: 28px; font-weight: bold; cursor: pointer; color: #9CA3AF; line-height: 1; transition: 0.2s; position: relative !important; z-index: 99999 !important; pointer-events: auto !important; }
-@keyframes slideDown { from { transform: translateY(-20px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
 
 .lightbox { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.95); align-items: center; justify-content: center; touch-action: none; }
 .lightbox.active { display: flex; }
