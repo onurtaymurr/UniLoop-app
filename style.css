@@ -110,12 +110,36 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     z-index: 50;
     border-bottom: 1px solid #374151;
 }
-#embedded-voice-chat.active {
-    display: flex;
-    justify-content: center;
+/* 🌟 YENİ GÖMÜLÜ KAMPÜS FREKANSI (OVAL KART TASARIMI) 🌟 */
+#embedded-voice-chat {
+    display: none; /* Varsayılan olarak kapalı */
+    width: 92%; /* Sağdan soldan boşluk bırakır */
+    max-width: 360px; /* Hızlı eşleşme kartı ile aynı genişlik */
+    margin: 15px auto; /* Yukarıdaki menüden ayırır ve tam ortalar */
+    background: linear-gradient(180deg, #111827 0%, #030712 100%);
+    padding: 25px 15px;
+    position: relative;
+    z-index: 50;
+    border-radius: 28px; /* Köşeleri hızlı eşleşme kartı gibi oval yapar */
+    border: 1px solid #374151; /* Kartın sınırlarını belirleyen şık çizgi */
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3); /* Kart efekti veren derin gölge */
+    flex-direction: column;
     align-items: center;
-    animation: slideDown 0.4s ease;
 }
+
+#embedded-voice-chat.active {
+    display: flex; /* Mikrofon butonuna basınca kart görünür olur */
+    animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Şık bir düşüş efekti */
+}
+
+/* Kartın içindeki ekranların (taranıyor, sohbet vb.) tam genişlikte durması için */
+#embedded-voice-chat .phone-container {
+    width: 100%;
+    background: transparent;
+    box-shadow: none;
+    height: auto;
+}
+
 
 .phone-container {
     width: 100%;
