@@ -1931,25 +1931,48 @@ function initializeUniLoop() {
     /* ========================================================================= */
     window.voiceMatchQueue = [];
 
-    window.openFrequency = function() {
+        window.openFrequency = function() {
         const freqChat = document.getElementById('embedded-voice-chat');
+        const mainContent = document.getElementById('main-content');
+        
         if(freqChat) {
+            freqChat.style.display = 'flex'; // Ekranı göster
             freqChat.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Arka plan bembeyaz kalsın ama postlar gitsin
+            if(mainContent) {
+                mainContent.style.visibility = 'hidden'; 
+                mainContent.style.height = '0';
+            }
+            
+            document.body.style.backgroundColor = "#FFFFFF";
+            window.scrollTo(0, 0);
         }
         window.startFrequencySearch();
     };
 
     window.closeFrequency = function() {
         const freqChat = document.getElementById('embedded-voice-chat');
+        const mainContent = document.getElementById('main-content');
+        
         if(freqChat) {
+            freqChat.style.display = 'none';
             freqChat.classList.remove('active');
+            
+            // Postları ve içeriği geri getir
+            if(mainContent) {
+                mainContent.style.visibility = 'visible';
+                mainContent.style.height = 'auto';
+            }
         }
+        
+        // Teknik sıfırlama
         clearInterval(window.freqTimerInterval);
         clearTimeout(window.voiceMatchQueueInterval);
         window.stopFrequencyMicrophone();
         window.switchFrequencyState('state-search'); 
     };
+
 
     window.switchFrequencyState = function(stateId) {
         document.querySelectorAll('#embedded-voice-chat .screen').forEach(el => {
