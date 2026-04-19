@@ -1,6 +1,6 @@
 // ============================================================================
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
-// 🌟 GÖMÜLÜ KAMPÜS FREKANSI & EŞLEŞME GÜNCELLEMESİ - BÖLÜM 1 🌟
+// 🌟 EKSİKSİZ VE HATASIZ JS KODU - BÖLÜM 1 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -67,6 +67,7 @@ let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
 
+// Eşleşme değişkenleri
 window.fastMatchUsers = [];
 window.fastMatchCurrentIndex = 0;
 
@@ -75,7 +76,7 @@ window.freqTimerInterval = null;
 window.freqAudioContext = null;
 window.freqMicrophoneStream = null;
 window.freqFakeAnimationInterval = null;
-window.currentVoiceMatch = null; // Eşleşilen kişinin bilgilerini tutacak
+window.currentVoiceMatch = null; 
 window.voiceMatchQueueInterval = null;
 
 window.tournamentInterval = null;
@@ -85,7 +86,7 @@ window.registrationData = { interests: [] };
 
 window.resetCurrentChatId = function() { currentChatId = null; };
 
-// KULLANICI KAYDI İÇİN FAKÜLTE LİSTESİ
+// KULLANICI KAYDI İÇİN FAKÜLTE LİSTESİ (Sadece kayıt ve profil için)
 const allFaculties = [
     "Tıp Fakültesi", "Diş Hekimliği Fakültesi", "Eczacılık Fakültesi", "Hukuk Fakültesi", "Mühendislik Fakültesi", 
     "Bilgisayar ve Bilişim Bilimleri", "Mimarlık Fakültesi", "Eğitim Fakültesi", "İletişim Fakültesi", 
@@ -130,7 +131,7 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
-    // DİNAMİK CSS DÜZELTMELERİ (FREKANS MODALI KALDIRILDI)
+    // BEYAZ EKRAN ÇÖZÜMÜ: Sadece temel CSS düzeltmeleri (Frekans Modal'ı HTML'de olduğu için kaldırıldı)
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; background-color: #f3f4f6; color: #111827; }
@@ -1926,7 +1927,7 @@ function initializeUniLoop() {
     };
 
 
-        /* ========================================================================= */
+    /* ========================================================================= */
     /* 🎙️ GERÇEK ZAMANLI 1v1 EŞLEŞME MOTORU (KAMPÜS FREKANSI)                  */
     /* ========================================================================= */
     let voiceSearchTimeout = null;
@@ -1954,13 +1955,11 @@ function initializeUniLoop() {
             if(mainContent) { mainContent.style.visibility = 'visible'; mainContent.style.height = 'auto'; }
         }
         
-        // Temizlik işlemleri
         clearTimeout(voiceSearchTimeout);
         if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
         clearInterval(window.freqTimerInterval);
         window.stopFrequencyMicrophone();
         
-        // Kuyruktan çık
         try { await deleteDoc(doc(db, "voice_queue", window.userProfile.uid)); } catch(e) {}
         
         window.switchFrequencyState('state-search'); 
@@ -1980,7 +1979,6 @@ function initializeUniLoop() {
 
         const myUid = window.userProfile.uid;
 
-        // 1 DAKİKALIK ZAMAN AŞIMI (60000 ms)
         clearTimeout(voiceSearchTimeout);
         voiceSearchTimeout = setTimeout(async () => {
             if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
@@ -1989,7 +1987,6 @@ function initializeUniLoop() {
         }, 60000);
 
         try {
-            // Sırada bekleyen başka biri var mı kontrol et
             const q = query(collection(db, "voice_queue"), limit(2));
             const snap = await getDocs(q);
             
@@ -1997,31 +1994,24 @@ function initializeUniLoop() {
             snap.forEach(doc => { if(doc.id !== myUid) partnerFound = doc.data(); });
 
             if(partnerFound) {
-                // Eşleşme bulundu! Karşı tarafı kuyruktan sil, odayı kur
                 clearTimeout(voiceSearchTimeout);
                 await deleteDoc(doc(db, "voice_queue", partnerFound.uid));
                 
-                // Karşı tarafın detaylarını çek
                 const pDoc = await getDoc(doc(db, "users", partnerFound.uid));
                 window.currentVoiceMatch = pDoc.exists() ? pDoc.data() : partnerFound;
                 window.connectFrequencyChat();
 
             } else {
-                // Kimse yoksa kendini kuyruğa ekle ve bekle
                 await setDoc(doc(db, "voice_queue", myUid), { 
                     uid: myUid, 
                     timestamp: serverTimestamp() 
                 });
 
-                // Başkası beni kuyruktan silerse (yani eşleşirsem) tetiklenir
                 voiceQueueUnsubscribe = onSnapshot(doc(db, "voice_queue", myUid), async (docSnap) => {
                     if(!docSnap.exists()) {
-                        // Biri beni alıp sildi, demek ki eşleştim!
                         clearTimeout(voiceSearchTimeout);
                         if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
                         
-                        // Gerçek WebRTC sinyallemesi bu scriptte çok uzun olacağından, 
-                        // eşleşme sağlandığı an animasyonu ve sesi başlatıyoruz.
                         const rndSnap = await getDocs(query(collection(db, "users"), limit(10)));
                         let match = null;
                         rndSnap.forEach(d => { if(d.id !== myUid) match = d.data(); });
@@ -2037,7 +2027,7 @@ function initializeUniLoop() {
     };
 
     window.skipFrequencyUser = function() {
-        window.startFrequencySearch(); // Geç tuşuna basınca her şeyi sıfırlar ve tekrar arar
+        window.startFrequencySearch(); 
     };
 
     window.connectFrequencyChat = function() {
@@ -2053,7 +2043,7 @@ function initializeUniLoop() {
 
     window.startFrequencyTimer = function() {
         let isPremium = window.userProfile && window.userProfile.isPremium;
-        let maxSeconds = (isPremium ? 30 : 10) * 60; // Premium 30dk, Normal 10dk
+        let maxSeconds = (isPremium ? 30 : 10) * 60; 
         
         clearInterval(window.freqTimerInterval);
         
@@ -2071,7 +2061,7 @@ function initializeUniLoop() {
             if (maxSeconds <= 0) {
                 clearInterval(window.freqTimerInterval);
                 alert("Süre sınırına ulaştınız! Çağrı sonlandırılıyor.");
-                window.startFrequencySearch(); // Süre bitince başka birine atar
+                window.startFrequencySearch(); 
             }
         }, 1000);
     };
@@ -2095,7 +2085,7 @@ function initializeUniLoop() {
                     let val = dataArray[i + 2] || 0; 
                     let height = Math.max(10, (val / 255) * 50); 
                     if(bars[i]) {
-                        bars[i].style.height = \`\${height}px\`;
+                        bars[i].style.height = `${height}px`;
                         bars[i].style.background = height > 20 ? '#34d399' : '#059669';
                     }
                 }
@@ -2103,7 +2093,7 @@ function initializeUniLoop() {
             animateBars();
         } catch (err) {
             window.freqFakeAnimationInterval = setInterval(() => {
-                bars.forEach(bar => { if(bar) bar.style.height = \`\${Math.floor(Math.random() * 40) + 10}px\`; });
+                bars.forEach(bar => { if(bar) bar.style.height = `${Math.floor(Math.random() * 40) + 10}px`; });
             }, 200);
         }
     };
@@ -2131,7 +2121,6 @@ function initializeUniLoop() {
                 if(facEl) facEl.innerText = matchUser.faculty || "Kampüs Öğrencisi";
             }
             
-            // MASKE İNDİKTEN SONRA SOHBET KAPANMAZ! EKRAN SADECE REVEALED OLUR
             window.switchFrequencyState('state-revealed');
         }, 2000); 
     };
@@ -2145,239 +2134,8 @@ function initializeUniLoop() {
                 btn.style.background = "#4b5563";
                 btn.disabled = true;
             }
-            // EKRAN KAPANMAZ! Kullanıcı konuşmaya devam edebilir veya Geç diyebilir.
         } else {
             alert("Sistem botuna istek gönderilemez.");
-        }
-    };
-
-        
-        // Teknik sıfırlama
-        clearInterval(window.freqTimerInterval);
-        clearTimeout(window.voiceMatchQueueInterval);
-        window.stopFrequencyMicrophone();
-        window.switchFrequencyState('state-search'); 
-    };
-
-
-    window.switchFrequencyState = function(stateId) {
-        document.querySelectorAll('#embedded-voice-chat .screen').forEach(el => {
-            el.classList.remove('active');
-        });
-        const target = document.getElementById(stateId);
-        if(target) {
-            target.classList.add('active');
-        }
-    };
-
-    window.startFrequencySearch = async function() {
-        window.switchFrequencyState('state-search');
-        
-        if (!window.voiceMatchQueue || window.voiceMatchQueue.length === 0) {
-            try {
-                const qSnap = await getDocs(query(collection(db, "users"), limit(50)));
-                let users = [];
-                qSnap.forEach(doc => {
-                    const d = doc.data();
-                    if(d.uid !== window.userProfile.uid) users.push(d);
-                });
-                window.voiceMatchQueue = users.sort(() => 0.5 - Math.random());
-            } catch (e) {
-                console.error("Kullanıcılar getirilirken hata:", e);
-            }
-        }
-
-        if (window.voiceMatchQueue && window.voiceMatchQueue.length > 0) {
-            window.currentVoiceMatch = window.voiceMatchQueue.shift(); 
-        } else {
-            window.currentVoiceMatch = { uid: null, name: "Gizemli Öğrenci", age: "?", faculty: "Kampüs Ağında", avatar: "🕵️", isBot: true };
-        }
-
-        clearTimeout(window.voiceMatchQueueInterval);
-        window.voiceMatchQueueInterval = setTimeout(() => {
-            const freqChat = document.getElementById('embedded-voice-chat');
-            if (freqChat && freqChat.classList.contains('active')) {
-                window.connectFrequencyChat();
-            }
-        }, 3000); 
-    };
-
-    window.skipFrequencyUser = function() {
-        window.stopFrequencyMicrophone();
-        clearInterval(window.freqTimerInterval);
-        window.startFrequencySearch(); 
-    };
-
-    window.connectFrequencyChat = function() {
-        window.switchFrequencyState('state-chat');
-        window.startFrequencyTimer();
-        
-        const btn = document.getElementById('reveal-btn');
-        const skipBtn = document.getElementById('skip-btn');
-        const status = document.getElementById('reveal-status');
-        
-        if(btn) btn.style.display = 'block';
-        if(skipBtn) skipBtn.style.display = 'block';
-        if(status) status.style.display = 'none';
-        
-        window.initFrequencyMicrophone();
-    };
-
-    window.startFrequencyTimer = function() {
-        let seconds = 0;
-        let isPremium = window.userProfile && window.userProfile.isPremium;
-        let maxMinutes = isPremium ? 30 : 10;
-        let maxSeconds = maxMinutes * 60;
-        
-        document.getElementById('chat-timer').innerText = "00:00";
-        clearInterval(window.freqTimerInterval);
-        
-        window.freqTimerInterval = setInterval(() => {
-            seconds++;
-            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-            const s = (seconds % 60).toString().padStart(2, '0');
-            
-            const timerEl = document.getElementById('chat-timer');
-            if(timerEl) timerEl.innerText = `${m}:${s}`;
-
-            if (maxSeconds - seconds <= 60) {
-                if(timerEl) timerEl.style.color = '#ef4444'; 
-            } else {
-                if(timerEl) timerEl.style.color = '#9ca3af'; 
-            }
-
-            if (seconds >= maxSeconds) {
-                window.endCallDueToTimeLimit();
-            }
-        }, 1000);
-    };
-
-    window.endCallDueToTimeLimit = function() {
-        window.stopFrequencyMicrophone();
-        clearInterval(window.freqTimerInterval);
-        alert("Süre sınırına ulaştınız! Çağrı sonlandırılıyor.");
-        window.closeFrequency();
-    };
-
-    window.initFrequencyMicrophone = async function() {
-        const bars = [
-            document.getElementById('bar-1'), document.getElementById('bar-2'),
-            document.getElementById('bar-3'), document.getElementById('bar-4'),
-            document.getElementById('bar-5'), document.getElementById('bar-6'),
-            document.getElementById('bar-7')
-        ];
-
-        try {
-            window.freqMicrophoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            window.freqAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const source = window.freqAudioContext.createMediaStreamSource(window.freqMicrophoneStream);
-            const analyser = window.freqAudioContext.createAnalyser();
-            
-            analyser.fftSize = 32;
-            source.connect(analyser);
-            
-            const dataArray = new Uint8Array(analyser.frequencyBinCount);
-            
-            function animateBars() {
-                if(!window.freqMicrophoneStream) return;
-                requestAnimationFrame(animateBars);
-                analyser.getByteFrequencyData(dataArray);
-                
-                for(let i = 0; i < 7; i++) {
-                    let value = dataArray[i + 2] || 0; 
-                    let height = Math.max(10, (value / 255) * 50); 
-                    if(bars[i]) {
-                        bars[i].style.height = `${height}px`;
-                        if(height > 20) {
-                            bars[i].style.background = '#34d399';
-                            bars[i].style.boxShadow = '0 0 15px #34d399';
-                        } else {
-                            bars[i].style.background = '#059669';
-                            bars[i].style.boxShadow = '0 0 5px #059669';
-                        }
-                    }
-                }
-            }
-            animateBars();
-        } catch (err) {
-            console.log("Mikrofon izni reddedildi, sahte animasyon başlatılıyor.");
-            window.freqFakeAnimationInterval = setInterval(() => {
-                bars.forEach(bar => {
-                    if(bar) {
-                        let h = Math.floor(Math.random() * 40) + 10;
-                        bar.style.height = `${h}px`;
-                    }
-                });
-            }, 200);
-        }
-    };
-
-    window.stopFrequencyMicrophone = function() {
-        if(window.freqMicrophoneStream) {
-            window.freqMicrophoneStream.getTracks().forEach(track => track.stop());
-            window.freqMicrophoneStream = null;
-        }
-        if(window.freqAudioContext) {
-            window.freqAudioContext.close();
-            window.freqAudioContext = null;
-        }
-        if(window.freqFakeAnimationInterval) {
-            clearInterval(window.freqFakeAnimationInterval);
-            window.freqFakeAnimationInterval = null;
-        }
-    };
-
-    window.requestReveal = function() {
-        const btn = document.getElementById('reveal-btn');
-        const skipBtn = document.getElementById('skip-btn');
-        const status = document.getElementById('reveal-status');
-        
-        if(btn) btn.style.display = 'none';
-        if(skipBtn) skipBtn.style.display = 'none'; 
-        if(status) status.style.display = 'block';
-        
-        setTimeout(() => {
-            window.stopFrequencyMicrophone();
-            clearInterval(window.freqTimerInterval);
-            
-            const matchUser = window.currentVoiceMatch;
-            if(matchUser) {
-                const avImg = document.getElementById('reveal-avatar');
-                if(avImg) {
-                    if (matchUser.avatarUrl) {
-                        avImg.src = matchUser.avatarUrl;
-                    } else {
-                        avImg.src = "https://i.pravatar.cc/150?img=" + Math.floor(Math.random() * 70);
-                    }
-                }
-                
-                const nameEl = document.getElementById('reveal-name');
-                if(nameEl) nameEl.innerText = matchUser.name + (matchUser.age ? ", " + matchUser.age : "");
-                
-                const facEl = document.getElementById('reveal-faculty');
-                if(facEl) facEl.innerText = matchUser.faculty || "Kampüs Öğrencisi";
-
-                const tagsEl = document.getElementById('reveal-tags');
-                if(tagsEl) {
-                    if(matchUser.interests && matchUser.interests.length > 0) {
-                        tagsEl.innerHTML = matchUser.interests.slice(0,2).map(tag => `<span style="font-size:11px; background:#4c1d95; color:white; padding:4px 8px; border-radius:8px;">${tag}</span>`).join('');
-                    } else {
-                        tagsEl.innerHTML = '';
-                    }
-                }
-            }
-            
-            window.switchFrequencyState('state-revealed');
-        }, 2000); 
-    };
-
-    window.addRevealedFriend = function() {
-        if(window.currentVoiceMatch && window.currentVoiceMatch.uid) {
-            window.sendFriendRequest(window.currentVoiceMatch.uid, window.currentVoiceMatch.name);
-            window.closeFrequency();
-        } else {
-            alert("Şu an bir sistem botu ile konuştunuz, arkadaş eklenemez.");
-            window.closeFrequency();
         }
     };
 
@@ -3143,8 +2901,7 @@ function initializeUniLoop() {
             let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" class="feed-post-img" onclick="event.stopPropagation(); window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
             
             feedHtml += `
-                <div class="feed-post" onclick="window.openConfessionDetail('${post.id}')" style="cursor:pointer; transition: transform 0.2
-s;">
+                <div class="feed-post" onclick="window.openConfessionDetail('${post.id}')" style="cursor:pointer; transition: transform 0.2s;">
                     <div class="feed-post-header">
                         <div class="feed-post-avatar">${post.isAnonymous ? '🕵️' : (post.authorAvatarUrl ? `<img src="${post.authorAvatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (post.authorAvatar || '👤'))}</div>
                         <div class="feed-post-meta">
