@@ -61,12 +61,17 @@ window.userProfile = {
     uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: "", lockedArchiveFaculty: "", lockedArchiveGrade: "", lastArchiveResetYear: 0, blockedUsers: [], popularity: 0, lastTournamentDate: 0
 };
 
+// Global Veritabanı ve Arayüz Değişkenleri
 let marketDB = [];
 let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
 
-// Kampüs Frekansı Küresel Değişkenleri
+// Bembeyaz ekran hatasını çözen (TDZ) Global Tanımlamalar
+let fastMatchUsers = [];
+let fastMatchCurrentIndex = 0;
+
+// Kampüs Frekansı Global Değişkenleri
 let freqTimerInterval = null;
 let freqAudioContext = null;
 let freqMicrophoneStream = null;
@@ -79,7 +84,6 @@ window.registrationData = { interests: [] };
 
 window.resetCurrentChatId = function() { currentChatId = null; };
 
-// Sadece Kayıt, Profil Düzenleme ve Arşiv seçimi için bırakılmıştır, sohbet odası kaldırılmıştır.
 const allFaculties = [
     "Tıp Fakültesi", "Diş Hekimliği Fakültesi", "Eczacılık Fakültesi", "Hukuk Fakültesi", "Mühendislik Fakültesi", 
     "Bilgisayar ve Bilişim Bilimleri", "Mimarlık Fakültesi", "Eğitim Fakültesi", "İletişim Fakültesi", 
@@ -1394,9 +1398,6 @@ function initializeUniLoop() {
         if(msgTab) { msgTab.classList.add('active'); window.loadPage('messages'); }
     };
 
-    let fastMatchUsers = [];
-    let fastMatchCurrentIndex = 0;
-
     window.showLeaderboard = async function() {
         window.openModal('🔥 Popülerlik Sıralaması', `<div style="text-align:center; padding:30px;"><div style="font-size:30px; animation: glowPulse 1.5s infinite alternate;">🔥</div><p style="color:var(--text-gray); margin-top:10px;">Sıralama yükleniyor...</p></div>`);
         try {
@@ -1653,14 +1654,20 @@ function initializeUniLoop() {
     /* 🎙️ KAMPÜS FREKANSI SİSTEMİ (MODAL YÖNETİMİ & MİKROFON İŞLEMLERİ)        */
     /* ========================================================================= */
     window.openFrequency = function() {
-        document.getElementById('frequency-modal').classList.add('active');
-        document.getElementById('frequency-modal').style.display = 'flex';
+        const freqModal = document.getElementById('frequency-modal');
+        if(freqModal) {
+            freqModal.classList.add('active');
+            freqModal.style.display = 'flex';
+        }
         window.startFrequencySearch();
     };
 
     window.closeFrequency = function() {
-        document.getElementById('frequency-modal').classList.remove('active');
-        document.getElementById('frequency-modal').style.display = 'none';
+        const freqModal = document.getElementById('frequency-modal');
+        if(freqModal) {
+            freqModal.classList.remove('active');
+            freqModal.style.display = 'none';
+        }
         clearInterval(freqTimerInterval);
         window.stopFrequencyMicrophone();
         window.switchFrequencyState('state-search'); 
@@ -1681,7 +1688,8 @@ function initializeUniLoop() {
     window.startFrequencySearch = function() {
         window.switchFrequencyState('state-search');
         setTimeout(() => {
-            if (document.getElementById('frequency-modal').classList.contains('active')) {
+            const freqModal = document.getElementById('frequency-modal');
+            if (freqModal && freqModal.classList.contains('active')) {
                 window.connectFrequencyChat();
             }
         }, 3000);
