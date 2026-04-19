@@ -1,6 +1,6 @@
 // ============================================================================
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
-// 🌟 ÇÖKMELER VE BEYAZ EKRAN GİDERİLDİ - EKSİKSİZ BÖLÜM 1 🌟
+// 🌟 GÖMÜLÜ KAMPÜS FREKANSI & EŞLEŞME GÜNCELLEMESİ - BÖLÜM 1 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -67,15 +67,16 @@ let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
 
-// BEYAZ EKRAN ÇÖZÜMÜ: Eşleşme değişkenleri en tepeye global olarak eklendi
 window.fastMatchUsers = [];
 window.fastMatchCurrentIndex = 0;
 
-// KAMPÜS FREKANSI GLOBAL DEĞİŞKENLERİ
+// GÖMÜLÜ KAMPÜS FREKANSI GLOBAL DEĞİŞKENLERİ
 window.freqTimerInterval = null;
 window.freqAudioContext = null;
 window.freqMicrophoneStream = null;
 window.freqFakeAnimationInterval = null;
+window.currentVoiceMatch = null; // Eşleşilen kişinin bilgilerini tutacak
+window.voiceMatchQueueInterval = null;
 
 window.tournamentInterval = null;
 window.homeSliderInterval = null; 
@@ -84,7 +85,7 @@ window.registrationData = { interests: [] };
 
 window.resetCurrentChatId = function() { currentChatId = null; };
 
-// KULLANICI KAYDI İÇİN FAKÜLTE LİSTESİ (Sadece kayıt ve profil için)
+// KULLANICI KAYDI İÇİN FAKÜLTE LİSTESİ
 const allFaculties = [
     "Tıp Fakültesi", "Diş Hekimliği Fakültesi", "Eczacılık Fakültesi", "Hukuk Fakültesi", "Mühendislik Fakültesi", 
     "Bilgisayar ve Bilişim Bilimleri", "Mimarlık Fakültesi", "Eğitim Fakültesi", "İletişim Fakültesi", 
@@ -129,50 +130,11 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
-    // KESİN ÇÖZÜM: Kampüs Frekansı CSS ve Ekran Ortalaması doğrudan JS'e gömüldü
+    // DİNAMİK CSS DÜZELTMELERİ (FREKANS MODALI KALDIRILDI)
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; background-color: #f3f4f6; color: #111827; }
         header, #app-header { height: 50px !important; box-sizing: border-box; }
-
-        /* KAMPÜS FREKANSI MODAL SİSTEMİ (SIĞMAMA SORUNU ÇÖZÜMÜ) */
-        .frequency-overlay {
-            position: fixed !important;
-            inset: 0 !important;
-            width: 100vw !important;
-            height: 100dvh !important; /* Dinamik Viewport */
-            background-color: rgba(3, 7, 18, 0.95) !important;
-            backdrop-filter: blur(10px);
-            z-index: 9999999 !important;
-            display: none; /* JS ile active olunca flex yapılacak */
-            align-items: center !important;
-            justify-content: center !important;
-            flex-direction: column;
-        }
-        .frequency-overlay.active { display: flex !important; }
-        .freq-phone-container {
-            width: 90% !important;
-            max-width: 400px !important;
-            height: 80dvh !important;
-            max-height: 700px !important;
-            background: linear-gradient(180deg, #111827 0%, #030712 100%);
-            box-shadow: 0 0 50px rgba(139, 92, 246, 0.2);
-            border-radius: 20px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            animation: slideDown 0.4s ease;
-        }
-        .freq-screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%; width: 100%; padding: 20px; box-sizing: border-box; text-align: center;
-            animation: fadeIn 0.5s ease;
-        }
-        .freq-screen.active { display: flex; }
-        .freq-bar { width: 8px; height: 10px; background: #10b981; border-radius: 4px; box-shadow: 0 0 10px #10b981; transition: height 0.1s ease; }
 
         .edit-profile-icon { font-size: 14px; background: #EEF2FF; color: var(--primary); padding: 5px 10px; border-radius: 8px; border: 1px solid #C7D2FE; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 700; transition: 0.2s; }
         .edit-profile-icon:hover { background: #DBEAFE; }
@@ -310,45 +272,6 @@ function initializeUniLoop() {
         .home-slider { -ms-overflow-style: none; scrollbar-width: none; }
     `;
     document.head.appendChild(styleFix);
-
-    // KAMPÜS FREKANSI HTML SİSTEMİNİN DOĞRUDAN JS İÇİNE GÖMÜLMESİ (HATA ALMAMAK İÇİN KESİN ÇÖZÜM)
-    if (!document.getElementById('frequency-modal')) {
-        const freqHtml = `
-        <div id="frequency-modal" class="frequency-overlay">
-            <div class="freq-phone-container">
-                <div id="state-search" class="freq-screen active">
-                    <div style="font-size:50px; animation: glowPulse 1.5s infinite alternate; text-shadow:0 0 20px #8b5cf6;">📡</div>
-                    <h3 style="color: #c4b5fd; margin-top:20px;">Kampüs taranıyor...</h3>
-                    <p style="color: #6b7280; font-size: 13px;">Seninle aynı frekansta biri aranıyor.</p>
-                    <button style="margin-top: 30px; width: 80%; background: #ef4444; color: white; padding: 15px; border-radius: 12px; border:none; font-weight:bold; cursor:pointer; z-index:999;" onclick="window.closeFrequency()">İptal Et ✖</button>
-                </div>
-                <div id="state-chat" class="freq-screen">
-                    <h4 style="color: #10b981; margin-bottom: 5px; letter-spacing:1px;">BAĞLANTI KURULDU</h4>
-                    <p id="chat-timer" style="color: #9ca3af; font-size: 22px; font-family:monospace; margin-bottom: 30px; margin-top:0;">00:00</p>
-                    <div style="width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, #4c1d95, #111827); filter: blur(8px); margin-bottom: 30px; animation: breathe 3s infinite alternate;"></div>
-                    <div style="display:flex; gap:8px; height:60px; margin-bottom:40px; align-items:center;">
-                        <div class="freq-bar" id="bar-1"></div><div class="freq-bar" id="bar-2"></div><div class="freq-bar" id="bar-3"></div><div class="freq-bar" id="bar-4"></div><div class="freq-bar" id="bar-5"></div><div class="freq-bar" id="bar-6"></div><div class="freq-bar" id="bar-7"></div>
-                    </div>
-                    <div style="display:flex; gap:15px; width:100%; justify-content:center;">
-                        <button id="reveal-btn" onclick="window.requestReveal()" style="background:white; color:#111827; padding:15px 20px; border-radius:12px; border:none; font-weight:bold; cursor:pointer; z-index:999;">Kimliği Açıkla 🎭</button>
-                        <button onclick="window.closeFrequency()" style="background:#ef4444; color:white; padding:15px 25px; border-radius:12px; border:none; font-weight:bold; cursor:pointer; z-index:999;">Kapat 📞</button>
-                    </div>
-                    <p id="reveal-status" style="color: #f59e0b; display:none; margin-top:15px; font-size:13px;">Karşı tarafın onayı bekleniyor ⏳</p>
-                </div>
-                <div id="state-revealed" class="freq-screen">
-                    <h3 style="color: #10b981; margin-bottom:30px;">Eşleşme Başarılı! ✨</h3>
-                    <div style="background:#1f2937; padding:30px; border-radius:20px; width:85%; box-sizing:border-box; border:1px solid #374151;">
-                        <div style="font-size:60px; margin-bottom:15px; background:white; width:80px; height:80px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px auto; border:3px solid #8b5cf6;">👤</div>
-                        <h2 style="margin:0 0 5px 0; color:white; font-size:20px;">Gizli Kullanıcı</h2>
-                        <p style="color:#8b5cf6; font-size:14px; font-weight:bold; margin-bottom:20px;">Kampüs Öğrencisi</p>
-                        <button onclick="window.closeFrequency()" style="background:#8b5cf6; color:white; padding:12px; width:100%; border-radius:10px; border:none; font-weight:bold; margin-top:15px; cursor:pointer; z-index:999;">Görüşmeyi Bitir ✖</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', freqHtml);
-    }
 
     const cropperModalHtml = `
         <div id="cropper-modal" class="cropper-modal-container">
@@ -1729,9 +1652,6 @@ function initializeUniLoop() {
         }
     };
 
-    /* ========================================================================= */
-    /* ⚡ HIZLI EŞLEŞME SİSTEMİ (EKSİK OLAN KISIM BURASIYDI EKLENDİ)           */
-    /* ========================================================================= */
     window.initEmbeddedFastMatch = async function() {
         let count = window.userProfile.fastMatchCount || 0;
         let today = new Date().toLocaleDateString();
@@ -1748,11 +1668,9 @@ function initializeUniLoop() {
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
         
-        // HAK BİTTİĞİNDE GÖSTERİLECEK YENİ İKİLİ ŞABLON EKRANI (DARK MODE)
         if (count >= maxSwipes) {
             const isPremium = window.userProfile.isPremium;
             
-            // Popülerlik Savaşı için Güvenli Cooldown Kontrolü
             let canJoinTournament = true;
             let tCooldownStr = "";
             let remainingSecs = 0;
@@ -1771,7 +1689,6 @@ function initializeUniLoop() {
                 }
             }
 
-            // Kürsü (Podium) için Top 3 çekiliyor
             let top3 = [];
             try {
                 const q = query(collection(db, "users"), orderBy("popularity", "desc"), limit(3));
@@ -2008,29 +1925,34 @@ function initializeUniLoop() {
         }
     };
 
+
     /* ========================================================================= */
-    /* 🎙️ KAMPÜS FREKANSI SİSTEMİ (MODAL YÖNETİMİ & MİKROFON İŞLEMLERİ)        */
+    /* 🎙️ GÖMÜLÜ KAMPÜS FREKANSI SİSTEMİ (GEÇ, MASKE İNDİR, ÇIKIŞ YAP)         */
     /* ========================================================================= */
+    window.voiceMatchQueue = [];
+
     window.openFrequency = function() {
-        const freqModal = document.getElementById('frequency-modal');
-        if(freqModal) {
-            freqModal.classList.add('active');
+        const freqChat = document.getElementById('embedded-voice-chat');
+        if(freqChat) {
+            freqChat.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         window.startFrequencySearch();
     };
 
     window.closeFrequency = function() {
-        const freqModal = document.getElementById('frequency-modal');
-        if(freqModal) {
-            freqModal.classList.remove('active');
+        const freqChat = document.getElementById('embedded-voice-chat');
+        if(freqChat) {
+            freqChat.classList.remove('active');
         }
         clearInterval(window.freqTimerInterval);
+        clearTimeout(window.voiceMatchQueueInterval);
         window.stopFrequencyMicrophone();
         window.switchFrequencyState('state-search'); 
     };
 
     window.switchFrequencyState = function(stateId) {
-        document.querySelectorAll('#frequency-modal .freq-screen').forEach(el => {
+        document.querySelectorAll('#embedded-voice-chat .screen').forEach(el => {
             el.classList.remove('active');
         });
         const target = document.getElementById(stateId);
@@ -2039,21 +1961,56 @@ function initializeUniLoop() {
         }
     };
 
-    window.startFrequencySearch = function() {
+    window.startFrequencySearch = async function() {
         window.switchFrequencyState('state-search');
-        setTimeout(() => {
-            const freqModal = document.getElementById('frequency-modal');
-            if (freqModal && freqModal.classList.contains('active')) {
+        
+        if (!window.voiceMatchQueue || window.voiceMatchQueue.length === 0) {
+            try {
+                const qSnap = await getDocs(query(collection(db, "users"), limit(50)));
+                let users = [];
+                qSnap.forEach(doc => {
+                    const d = doc.data();
+                    if(d.uid !== window.userProfile.uid) users.push(d);
+                });
+                window.voiceMatchQueue = users.sort(() => 0.5 - Math.random());
+            } catch (e) {
+                console.error("Kullanıcılar getirilirken hata:", e);
+            }
+        }
+
+        if (window.voiceMatchQueue && window.voiceMatchQueue.length > 0) {
+            window.currentVoiceMatch = window.voiceMatchQueue.shift(); 
+        } else {
+            window.currentVoiceMatch = { uid: null, name: "Gizemli Öğrenci", age: "?", faculty: "Kampüs Ağında", avatar: "🕵️", isBot: true };
+        }
+
+        clearTimeout(window.voiceMatchQueueInterval);
+        window.voiceMatchQueueInterval = setTimeout(() => {
+            const freqChat = document.getElementById('embedded-voice-chat');
+            if (freqChat && freqChat.classList.contains('active')) {
                 window.connectFrequencyChat();
             }
-        }, 3000);
+        }, 3000); 
+    };
+
+    window.skipFrequencyUser = function() {
+        window.stopFrequencyMicrophone();
+        clearInterval(window.freqTimerInterval);
+        window.startFrequencySearch(); 
     };
 
     window.connectFrequencyChat = function() {
         window.switchFrequencyState('state-chat');
         window.startFrequencyTimer();
-        document.getElementById('reveal-btn').style.display = 'block';
-        document.getElementById('reveal-status').style.display = 'none';
+        
+        const btn = document.getElementById('reveal-btn');
+        const skipBtn = document.getElementById('skip-btn');
+        const status = document.getElementById('reveal-status');
+        
+        if(btn) btn.style.display = 'block';
+        if(skipBtn) skipBtn.style.display = 'block';
+        if(status) status.style.display = 'none';
+        
         window.initFrequencyMicrophone();
     };
 
@@ -2163,20 +2120,60 @@ function initializeUniLoop() {
 
     window.requestReveal = function() {
         const btn = document.getElementById('reveal-btn');
+        const skipBtn = document.getElementById('skip-btn');
         const status = document.getElementById('reveal-status');
+        
         if(btn) btn.style.display = 'none';
+        if(skipBtn) skipBtn.style.display = 'none'; 
         if(status) status.style.display = 'block';
         
         setTimeout(() => {
             window.stopFrequencyMicrophone();
             clearInterval(window.freqTimerInterval);
+            
+            const matchUser = window.currentVoiceMatch;
+            if(matchUser) {
+                const avImg = document.getElementById('reveal-avatar');
+                if(avImg) {
+                    if (matchUser.avatarUrl) {
+                        avImg.src = matchUser.avatarUrl;
+                    } else {
+                        avImg.src = "https://i.pravatar.cc/150?img=" + Math.floor(Math.random() * 70);
+                    }
+                }
+                
+                const nameEl = document.getElementById('reveal-name');
+                if(nameEl) nameEl.innerText = matchUser.name + (matchUser.age ? ", " + matchUser.age : "");
+                
+                const facEl = document.getElementById('reveal-faculty');
+                if(facEl) facEl.innerText = matchUser.faculty || "Kampüs Öğrencisi";
+
+                const tagsEl = document.getElementById('reveal-tags');
+                if(tagsEl) {
+                    if(matchUser.interests && matchUser.interests.length > 0) {
+                        tagsEl.innerHTML = matchUser.interests.slice(0,2).map(tag => `<span style="font-size:11px; background:#4c1d95; color:white; padding:4px 8px; border-radius:8px;">${tag}</span>`).join('');
+                    } else {
+                        tagsEl.innerHTML = '';
+                    }
+                }
+            }
+            
             window.switchFrequencyState('state-revealed');
-        }, 2000);
+        }, 2000); 
+    };
+
+    window.addRevealedFriend = function() {
+        if(window.currentVoiceMatch && window.currentVoiceMatch.uid) {
+            window.sendFriendRequest(window.currentVoiceMatch.uid, window.currentVoiceMatch.name);
+            window.closeFrequency();
+        } else {
+            alert("Şu an bir sistem botu ile konuştunuz, arkadaş eklenemez.");
+            window.closeFrequency();
+        }
     };
 
     /* ========================================================================= */
 
-    // KLAVYE ODAKLANMA DÜZELTMESİ EKLENDİ
     window.toggleHomeSearch = function() {
         const searchContainer = document.getElementById('home-search-container');
         const defaultView = document.getElementById('home-default-view');
@@ -2937,7 +2934,8 @@ function initializeUniLoop() {
             let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" class="feed-post-img" onclick="event.stopPropagation(); window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
             
             feedHtml += `
-                <div class="feed-post" onclick="window.openConfessionDetail('${post.id}')" style="cursor:pointer; transition: transform 0.2s;">
+                <div class="feed-post" onclick="window.openConfessionDetail('${post.id}')" style="cursor:pointer; transition: transform 0.2
+s;">
                     <div class="feed-post-header">
                         <div class="feed-post-avatar">${post.isAnonymous ? '🕵️' : (post.authorAvatarUrl ? `<img src="${post.authorAvatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (post.authorAvatar || '👤'))}</div>
                         <div class="feed-post-meta">
@@ -3764,6 +3762,9 @@ function initializeUniLoop() {
         window.scrollTo(0, 0);
         document.body.classList.remove('no-scroll-messages');
         document.body.classList.remove('no-scroll-home');
+        
+        // EĞER BAŞKA BİR SEKMEYE GEÇİLİRSE FREKANSI KAPAT
+        window.closeFrequency(); 
 
         switch(page) {
             case 'home': window.renderHome(); break;
