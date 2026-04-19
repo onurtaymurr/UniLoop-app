@@ -1,6 +1,6 @@
 // ============================================================================
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
-// 🌟 EKSİKSİZ, HATASIZ VE UYUMLU BAŞLANGIÇ - BÖLÜM 1 🌟
+// 🌟 HATALAR GİDERİLDİ, EKSİKSİZ BÖLÜM 1 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -67,15 +67,15 @@ let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
 
-// Bembeyaz ekran hatasını çözen (TDZ) Global Tanımlamalar
-let fastMatchUsers = [];
-let fastMatchCurrentIndex = 0;
+// BEYAZ EKRAN ÇÖZÜMÜ: Eşleşme değişkenleri tamamen Global Scope'a alındı
+window.fastMatchUsers = [];
+window.fastMatchCurrentIndex = 0;
 
 // Kampüs Frekansı Global Değişkenleri
-let freqTimerInterval = null;
-let freqAudioContext = null;
-let freqMicrophoneStream = null;
-let freqFakeAnimationInterval = null;
+window.freqTimerInterval = null;
+window.freqAudioContext = null;
+window.freqMicrophoneStream = null;
+window.freqFakeAnimationInterval = null;
 
 window.tournamentInterval = null;
 window.homeSliderInterval = null; 
@@ -128,10 +128,32 @@ function initializeUniLoop() {
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
 
+    // DÜZELTME: Ses Ekranı (Kampüs Frekansı) Modalının ortalanması için zorunlu CSS ayarları
     const styleFix = document.createElement('style');
     styleFix.innerHTML = `
         html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; background-color: #f3f4f6; color: #111827; }
         header, #app-header { height: 50px !important; box-sizing: border-box; }
+
+        .frequency-overlay {
+            position: fixed !important;
+            inset: 0 !important;
+            height: 100dvh !important;
+            width: 100vw !important;
+            background: rgba(3, 7, 18, 0.95) !important;
+            backdrop-filter: blur(10px);
+            z-index: 999999 !important;
+            display: none;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .frequency-overlay.active { display: flex !important; }
+        .phone-container {
+            width: 90% !important;
+            max-width: 400px !important;
+            height: 80dvh !important;
+            max-height: 700px !important;
+            margin: auto !important;
+        }
 
         .edit-profile-icon { font-size: 14px; background: #EEF2FF; color: var(--primary); padding: 5px 10px; border-radius: 8px; border: 1px solid #C7D2FE; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 700; transition: 0.2s; }
         .edit-profile-icon:hover { background: #DBEAFE; }
@@ -265,7 +287,6 @@ function initializeUniLoop() {
         ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(107, 114, 128, 0.8); }
 
-        /* SLIDER İÇİN ÖZEL CSS GİZLİ SCROLLBAR */
         .home-slider::-webkit-scrollbar { display: none; }
         .home-slider { -ms-overflow-style: none; scrollbar-width: none; }
     `;
@@ -1668,7 +1689,7 @@ function initializeUniLoop() {
             freqModal.classList.remove('active');
             freqModal.style.display = 'none';
         }
-        clearInterval(freqTimerInterval);
+        clearInterval(window.freqTimerInterval);
         window.stopFrequencyMicrophone();
         window.switchFrequencyState('state-search'); 
     };
@@ -1710,9 +1731,9 @@ function initializeUniLoop() {
         let maxSeconds = maxMinutes * 60;
         
         document.getElementById('chat-timer').innerText = "00:00";
-        clearInterval(freqTimerInterval);
+        clearInterval(window.freqTimerInterval);
         
-        freqTimerInterval = setInterval(() => {
+        window.freqTimerInterval = setInterval(() => {
             seconds++;
             const m = Math.floor(seconds / 60).toString().padStart(2, '0');
             const s = (seconds % 60).toString().padStart(2, '0');
@@ -1734,7 +1755,7 @@ function initializeUniLoop() {
 
     window.endCallDueToTimeLimit = function() {
         window.stopFrequencyMicrophone();
-        clearInterval(freqTimerInterval);
+        clearInterval(window.freqTimerInterval);
         alert("Süre sınırına ulaştınız! Çağrı sonlandırılıyor.");
         window.closeFrequency();
     };
@@ -1748,10 +1769,10 @@ function initializeUniLoop() {
         ];
 
         try {
-            freqMicrophoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            freqAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const source = freqAudioContext.createMediaStreamSource(freqMicrophoneStream);
-            const analyser = freqAudioContext.createAnalyser();
+            window.freqMicrophoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            window.freqAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = window.freqAudioContext.createMediaStreamSource(window.freqMicrophoneStream);
+            const analyser = window.freqAudioContext.createAnalyser();
             
             analyser.fftSize = 32;
             source.connect(analyser);
@@ -1759,7 +1780,7 @@ function initializeUniLoop() {
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
             
             function animateBars() {
-                if(!freqMicrophoneStream) return;
+                if(!window.freqMicrophoneStream) return;
                 requestAnimationFrame(animateBars);
                 analyser.getByteFrequencyData(dataArray);
                 
@@ -1781,7 +1802,7 @@ function initializeUniLoop() {
             animateBars();
         } catch (err) {
             console.log("Mikrofon izni reddedildi, sahte animasyon başlatılıyor.");
-            freqFakeAnimationInterval = setInterval(() => {
+            window.freqFakeAnimationInterval = setInterval(() => {
                 bars.forEach(bar => {
                     if(bar) {
                         let h = Math.floor(Math.random() * 40) + 10;
@@ -1793,17 +1814,17 @@ function initializeUniLoop() {
     };
 
     window.stopFrequencyMicrophone = function() {
-        if(freqMicrophoneStream) {
-            freqMicrophoneStream.getTracks().forEach(track => track.stop());
-            freqMicrophoneStream = null;
+        if(window.freqMicrophoneStream) {
+            window.freqMicrophoneStream.getTracks().forEach(track => track.stop());
+            window.freqMicrophoneStream = null;
         }
-        if(freqAudioContext) {
-            freqAudioContext.close();
-            freqAudioContext = null;
+        if(window.freqAudioContext) {
+            window.freqAudioContext.close();
+            window.freqAudioContext = null;
         }
-        if(freqFakeAnimationInterval) {
-            clearInterval(freqFakeAnimationInterval);
-            freqFakeAnimationInterval = null;
+        if(window.freqFakeAnimationInterval) {
+            clearInterval(window.freqFakeAnimationInterval);
+            window.freqFakeAnimationInterval = null;
         }
     };
 
@@ -1815,7 +1836,7 @@ function initializeUniLoop() {
         
         setTimeout(() => {
             window.stopFrequencyMicrophone();
-            clearInterval(freqTimerInterval);
+            clearInterval(window.freqTimerInterval);
             window.switchFrequencyState('state-revealed');
         }, 2000);
     };
