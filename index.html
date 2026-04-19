@@ -4,18 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>UniLoop - Global Campus Network</title>
+    <link rel="stylesheet" href="style.css">
     
     <style>
-        /* TEMEL BEYAZ EKRAN ÇÖZÜMÜ VE CSS DÜZELTMELERİ */
-        body { margin: 0; padding: 0; font-family: sans-serif; background-color: #f3f4f6; color: #111827; }
-        
-        #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
-        .auth-card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; }
-        
-        .form-group input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #ccc; outline: none; box-sizing: border-box; font-size: 15px; }
-        .btn-primary { width: 100%; padding: 14px; border-radius: 12px; border: none; background: #4F46E5; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .action-btn { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #4F46E5; background: #EEF2FF; color: #4F46E5; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        
         #main-content { padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
 
         body.no-scroll-messages #main-content {
@@ -54,26 +45,27 @@
             <img src="uniloop-logo.png" alt="UniLoop" style="width: 100%; max-width: 240px; height: auto; object-fit: contain; display: block;">
         </div>
 
-        <p class="auth-subtitle" style="color:#6b7280; margin-bottom:20px;">Kampüs ağına giriş yap, döngüde kal.</p>
+        <p class="auth-subtitle">Kampüs ağına giriş yap, döngüde kal.</p>
         
         <div class="form-group">
             <input type="email" id="login-email" placeholder="E-posta Adresiniz">
         </div>
         <div class="form-group" style="margin-bottom: 8px;">
-            <input type="password" id="login-password" placeholder="Şifreniz">
+            <input type="password" id="login-password" placeholder="Şifren">
         </div>
         
         <div style="text-align: right; margin-bottom: 20px;">
-            <span id="forgot-password-btn" style="font-size: 13px; color: #4F46E5; cursor: pointer; font-weight: 600;">Şifremi Unuttum</span>
+            <span id="forgot-password-btn" style="font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 600;">Şifremi Unuttum</span>
         </div>
         
-        <button class="btn-primary" id="login-btn">Giriş Yap</button>
-        <button class="action-btn" id="show-register-btn">Yeni Hesap Oluştur</button>
+        <button class="btn-primary" id="login-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Giriş Yap</button>
+        <button class="action-btn" id="show-register-btn" style="padding: 12px; font-size: 16px;">Yeni Hesap Oluştur</button>
         
-        <p style="font-size: 12px; color: #9ca3af; margin-top: 20px;">Sisteme giriş için e-posta onayı gereklidir.</p>
+        <p style="font-size: 12px; color: var(--text-gray); margin-top: 20px;">Sisteme giriş için e-posta onayı gereklidir.</p>
     </div>
 
     <div id="register-card" style="display: none;"></div>
+    <div id="verify-card" style="display: none;"></div>
 </div>
 
 <div id="app-screen" style="display: none;">
@@ -88,7 +80,31 @@
     </header>
 
     <div class="container">
+        <aside class="sidebar" id="sidebar" style="display: none;">
+            <div class="sidebar-top">
+                <h3>Navigasyon</h3>
+                <div class="menu-item active" data-target="home">🏠 Ana Sayfa</div>
+                <div class="menu-item" data-target="loopmap">📍 LoopMap</div>
+                <div class="menu-item" data-target="market">🛒 Kampüs Market</div>
+                <div class="menu-item" data-target="confessions">🤫 Anonim Kampüs</div>
+                <div class="menu-item" data-target="qa">❓ Soru & Cevap</div>
+                <br>
+                <h3>Bana Özel</h3>
+                <div class="menu-item" id="nav-messages-btn" data-target="messages">💬 Mesajlarım <span id="msg-badge" class="badge" style="display:none;">0</span></div>
+                <div id="sidebar-networks-container"></div>
+            </div>
+            <div class="sidebar-bottom">
+                <div class="menu-item" data-target="settings">⚙️ Ayarlar</div>
+            </div>
+        </aside>
+
         <main class="main-feed" id="main-content"></main>
+
+        <aside class="right-panel" style="display:none;">
+            <div class="card sticky-card" style="padding: 15px;">
+                <div id="right-networks-container"></div>
+            </div>
+        </aside>
     </div>
 </div>
 
