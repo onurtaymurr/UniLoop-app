@@ -67,11 +67,11 @@ let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
 
-// Eşleşme değişkenleri
+// Eşleşme değişkenleri (Hızlı Eşleşme)
 window.fastMatchUsers = [];
 window.fastMatchCurrentIndex = 0;
 
-// GÖMÜLÜ KAMPÜS FREKANSI GLOBAL DEĞİŞKENLERİ
+// GÖMÜLÜ KAMPÜS FREKANSI & WEBRTC GLOBAL DEĞİŞKENLERİ
 window.freqTimerInterval = null;
 window.freqAudioContext = null;
 window.freqMicrophoneStream = null;
@@ -79,6 +79,11 @@ window.freqFakeAnimationInterval = null;
 window.currentVoiceMatch = null; 
 window.voiceMatchQueueInterval = null;
 window.lastMatchedUid = null;
+window.peerConnection = null;
+window.localStream = null;
+window.callDocId = null;
+window.callUnsubscribe = null;
+window.iceUnsubscribe = null;
 
 window.tournamentInterval = null;
 window.homeSliderInterval = null; 
@@ -1418,7 +1423,7 @@ function initializeUniLoop() {
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <div style="font-size:18px; font-weight:800; width:25px; text-align:center;">${medal}</div>
                                 <div style="width:40px; height:40px; border-radius:50%; overflow:hidden; background:#E5E7EB; border:1px solid #111827;">
-                                    ${u.avatarUrl ? `<img src="${u.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="font-size:20px; text-align:center; line-height:40px;">${u.avatar || '👤'}</div>`}
+                                    ${u.avatarUrl ? `<img src="${u.avatarUrl}" stylewidth:100%;height:100%;object-fit:cover;">` : `<div style="font-size:20px; text-align:center; line-height:40px;">${u.avatar || '👤'}</div>`}
                                 </div>
                                 <span style="font-weight:700; font-size:14px;">${u.name} ${u.surname ? u.surname.charAt(0)+'.' : ''}</span>
                             </div>
@@ -1928,11 +1933,22 @@ function initializeUniLoop() {
 
 
     /* ========================================================================= */
-    /* 🎙️ GERÇEK ZAMANLI 1v1 EŞLEŞME MOTORU (KAMPÜS FREKANSI)                  */
+    /* 🎙️ GERÇEK ZAMANLI 1v1 EŞLEŞME MOTORU (KAMPÜS FREKANSI & WEBRTC)         */
     /* ========================================================================= */
     let voiceSearchTimeout = null;
     let voiceQueueUnsubscribe = null;
-    window.lastMatchedUid = null;
+
+    window.peerConnection = null;
+    window.localStream = null;
+    window.callDocId = null;
+    window.callUnsubscribe = null;
+    window.iceUnsubscribe = null;
+    
+    const rtcConfig = {
+        iceServers: [
+            { urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302', 'stun:stun3.l.google.com:19302', 'stun:stun4.l.google.com:19302'] }
+        ]
+    };
 
     window.openFrequency = function() {
         const freqChat = document.getElementById('embedded-voice-chat');
@@ -1945,6 +1961,14 @@ function initializeUniLoop() {
             window.scrollTo(0, 0);
         }
         window.lastMatchedUid = null; 
+        
+        if(!document.getElementById('remote-audio-node')) {
+            const audioNode = document.createElement('audio');
+            audioNode.id = 'remote-audio-node';
+            audioNode.autoplay = true;
+            document.body.appendChild(audioNode);
+        }
+        
         window.startFrequencySearch();
     };
 
@@ -1960,7 +1984,8 @@ function initializeUniLoop() {
         clearTimeout(voiceSearchTimeout);
         if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
         clearInterval(window.freqTimerInterval);
-        window.stopFrequencyMicrophone();
+        
+        window.endWebRTCCall(); 
         
         try { await deleteDoc(doc(db, "voice_queue", window.userProfile.uid)); } catch(e) {}
         
@@ -1973,9 +1998,190 @@ function initializeUniLoop() {
         if(target) target.classList.add('active');
     };
 
+    window.setupLocalAudio = async function() {
+        try {
+            window.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            
+            window.freqAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = window.freqAudioContext.createMediaStreamSource(window.localStream);
+            const analyser = window.freqAudioContext.createAnalyser();
+            analyser.fftSize = 32;
+            source.connect(analyser);
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            const bars = [document.getElementById('bar-1'), document.getElementById('bar-2'), document.getElementById('bar-3'), document.getElementById('bar-4'), document.getElementById('bar-5'), document.getElementById('bar-6'), document.getElementById('bar-7')];
+            
+            function animateBars() {
+                if(!window.localStream) return;
+                requestAnimationFrame(animateBars);
+                analyser.getByteFrequencyData(dataArray);
+                for(let i = 0; i < 7; i++) {
+                    let val = dataArray[i + 2] || 0; 
+                    let height = Math.max(10, (val / 255) * 50); 
+                    if(bars[i]) {
+                        bars[i].style.height = `${height}px`;
+                        bars[i].style.background = height > 20 ? '#34d399' : '#059669';
+                    }
+                }
+            }
+            animateBars();
+            return true;
+        } catch(err) {
+            alert("Mikrofon izni alınamadı! Konuşabilmek için cihaz ayarlarından izin verin.");
+            return false;
+        }
+    };
+
+    window.endWebRTCCall = function() {
+        if(window.callUnsubscribe) { window.callUnsubscribe(); window.callUnsubscribe = null; }
+        if(window.iceUnsubscribe) { window.iceUnsubscribe(); window.iceUnsubscribe = null; }
+        
+        if(window.peerConnection) { window.peerConnection.close(); window.peerConnection = null; }
+        if(window.localStream) { window.localStream.getTracks().forEach(t => t.stop()); window.localStream = null; }
+        if(window.freqAudioContext) { window.freqAudioContext.close(); window.freqAudioContext = null; }
+        
+        const remoteAudio = document.getElementById('remote-audio-node');
+        if(remoteAudio) {
+            remoteAudio.pause();
+            remoteAudio.srcObject = null;
+        }
+
+        if(window.callDocId) {
+             deleteDoc(doc(db, "calls", window.callDocId)).catch(e=>{});
+             window.callDocId = null;
+        }
+    };
+
+    window.createWebRTCCall = async function(calleeUid) {
+        window.callDocId = window.userProfile.uid + "_" + calleeUid;
+        const callDoc = doc(db, "calls", window.callDocId);
+        const offerCandidates = collection(callDoc, "offerCandidates");
+        const answerCandidates = collection(callDoc, "answerCandidates");
+
+        window.peerConnection = new RTCPeerConnection(rtcConfig);
+        window.localStream.getTracks().forEach(track => window.peerConnection.addTrack(track, window.localStream));
+
+        window.peerConnection.ontrack = (event) => {
+            const remoteAudio = document.getElementById('remote-audio-node');
+            if(remoteAudio) {
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.play().catch(e => console.log("Ses oynatma engellendi: ", e));
+            }
+        };
+
+        window.peerConnection.onicecandidate = event => {
+            if (event.candidate) { addDoc(offerCandidates, event.candidate.toJSON()); }
+        };
+
+        window.peerConnection.onconnectionstatechange = () => {
+            if (window.peerConnection.connectionState === 'disconnected' || window.peerConnection.connectionState === 'failed') {
+                window.startFrequencySearch();
+            }
+        };
+
+        const offerDescription = await window.peerConnection.createOffer();
+        await window.peerConnection.setLocalDescription(offerDescription);
+
+        const offer = { sdp: offerDescription.sdp, type: offerDescription.type };
+        await setDoc(callDoc, { offer });
+
+        let remoteCandidatesBuffer = [];
+
+        window.callUnsubscribe = onSnapshot(callDoc, async (snapshot) => {
+            if (!snapshot.exists()) {
+                if(window.peerConnection) window.startFrequencySearch();
+                return;
+            }
+            const data = snapshot.data();
+            if (!window.peerConnection.currentRemoteDescription && data?.answer) {
+                const answerDescription = new RTCSessionDescription(data.answer);
+                await window.peerConnection.setRemoteDescription(answerDescription);
+                remoteCandidatesBuffer.forEach(c => window.peerConnection.addIceCandidate(c));
+                remoteCandidatesBuffer = [];
+            }
+        });
+
+        window.iceUnsubscribe = onSnapshot(answerCandidates, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const candidate = new RTCIceCandidate(change.doc.data());
+                    if (window.peerConnection.remoteDescription) {
+                        window.peerConnection.addIceCandidate(candidate);
+                    } else {
+                        remoteCandidatesBuffer.push(candidate);
+                    }
+                }
+            });
+        });
+    };
+
+    window.answerWebRTCCall = async function(callerUid) {
+        window.callDocId = callerUid + "_" + window.userProfile.uid;
+        const callDoc = doc(db, "calls", window.callDocId);
+        const offerCandidates = collection(callDoc, "offerCandidates");
+        const answerCandidates = collection(callDoc, "answerCandidates");
+
+        window.peerConnection = new RTCPeerConnection(rtcConfig);
+        window.localStream.getTracks().forEach(track => window.peerConnection.addTrack(track, window.localStream));
+
+        window.peerConnection.ontrack = (event) => {
+            const remoteAudio = document.getElementById('remote-audio-node');
+            if(remoteAudio) {
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.play().catch(e => console.log("Ses oynatma engellendi: ", e));
+            }
+        };
+
+        window.peerConnection.onicecandidate = event => {
+            if (event.candidate) { addDoc(answerCandidates, event.candidate.toJSON()); }
+        };
+
+        window.peerConnection.onconnectionstatechange = () => {
+            if (window.peerConnection.connectionState === 'disconnected' || window.peerConnection.connectionState === 'failed') {
+                window.startFrequencySearch();
+            }
+        };
+
+        let remoteCandidatesBuffer = [];
+
+        window.callUnsubscribe = onSnapshot(callDoc, async (snapshot) => {
+            if (!snapshot.exists()) {
+                if(window.peerConnection) window.startFrequencySearch();
+                return;
+            }
+            const data = snapshot.data();
+            if (data?.offer && !window.peerConnection.currentRemoteDescription) {
+                const offerDescription = new RTCSessionDescription(data.offer);
+                await window.peerConnection.setRemoteDescription(offerDescription);
+
+                const answerDescription = await window.peerConnection.createAnswer();
+                await window.peerConnection.setLocalDescription(answerDescription);
+
+                const answer = { type: answerDescription.type, sdp: answerDescription.sdp };
+                await updateDoc(callDoc, { answer });
+                
+                remoteCandidatesBuffer.forEach(c => window.peerConnection.addIceCandidate(c));
+                remoteCandidatesBuffer = [];
+            }
+        });
+
+        window.iceUnsubscribe = onSnapshot(offerCandidates, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const candidate = new RTCIceCandidate(change.doc.data());
+                    if (window.peerConnection.remoteDescription) {
+                        window.peerConnection.addIceCandidate(candidate);
+                    } else {
+                        remoteCandidatesBuffer.push(candidate);
+                    }
+                }
+            });
+        });
+    };
+
     window.startFrequencySearch = async function() {
         window.switchFrequencyState('state-search');
-        window.stopFrequencyMicrophone();
+        window.endWebRTCCall(); 
         clearInterval(window.freqTimerInterval);
         if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
 
@@ -2007,9 +2213,15 @@ function initializeUniLoop() {
                     matchedWith: myUid
                 });
                 
+                const micReady = await window.setupLocalAudio();
+                if(!micReady) { window.closeFrequency(); return; }
+
+                await window.createWebRTCCall(partnerFound.uid);
+
                 const pDoc = await getDoc(doc(db, "users", partnerFound.uid));
                 window.currentVoiceMatch = pDoc.exists() ? pDoc.data() : { uid: partnerFound.uid, name: "Kampüs Öğrencisi", faculty: "Gizli", avatar: "🕵️" };
                 window.lastMatchedUid = partnerFound.uid; 
+                
                 window.connectFrequencyChat();
 
             } else {
@@ -2026,8 +2238,12 @@ function initializeUniLoop() {
                         if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
                         
                         const matchedUid = docSnap.data().matchedWith;
-                        
                         try { await deleteDoc(doc(db, "voice_queue", myUid)); } catch(e) {}
+
+                        const micReady = await window.setupLocalAudio();
+                        if(!micReady) { window.closeFrequency(); return; }
+
+                        await window.answerWebRTCCall(matchedUid);
 
                         const pDoc = await getDoc(doc(db, "users", matchedUid));
                         window.currentVoiceMatch = pDoc.exists() ? pDoc.data() : { uid: matchedUid, name: "Kampüs Öğrencisi", faculty: "Gizli", avatar: "🕵️" };
@@ -2053,8 +2269,6 @@ function initializeUniLoop() {
         document.getElementById('reveal-btn').style.display = 'block';
         document.getElementById('skip-btn').style.display = 'block';
         document.getElementById('reveal-status').style.display = 'none';
-        
-        window.initFrequencyMicrophone();
     };
 
     window.startFrequencyTimer = function() {
@@ -2076,48 +2290,10 @@ function initializeUniLoop() {
 
             if (maxSeconds <= 0) {
                 clearInterval(window.freqTimerInterval);
-                alert("Süre sınırına ulaştınız! Çağrı sonlandırılıyor.");
+                alert("Süre sınırına ulaştınız! Başka birine bağlanıyorsunuz.");
                 window.startFrequencySearch(); 
             }
         }, 1000);
-    };
-
-    window.initFrequencyMicrophone = async function() {
-        const bars = [document.getElementById('bar-1'), document.getElementById('bar-2'), document.getElementById('bar-3'), document.getElementById('bar-4'), document.getElementById('bar-5'), document.getElementById('bar-6'), document.getElementById('bar-7')];
-        try {
-            window.freqMicrophoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            window.freqAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const source = window.freqAudioContext.createMediaStreamSource(window.freqMicrophoneStream);
-            const analyser = window.freqAudioContext.createAnalyser();
-            analyser.fftSize = 32;
-            source.connect(analyser);
-            const dataArray = new Uint8Array(analyser.frequencyBinCount);
-            
-            function animateBars() {
-                if(!window.freqMicrophoneStream) return;
-                requestAnimationFrame(animateBars);
-                analyser.getByteFrequencyData(dataArray);
-                for(let i = 0; i < 7; i++) {
-                    let val = dataArray[i + 2] || 0; 
-                    let height = Math.max(10, (val / 255) * 50); 
-                    if(bars[i]) {
-                        bars[i].style.height = `${height}px`;
-                        bars[i].style.background = height > 20 ? '#34d399' : '#059669';
-                    }
-                }
-            }
-            animateBars();
-        } catch (err) {
-            window.freqFakeAnimationInterval = setInterval(() => {
-                bars.forEach(bar => { if(bar) bar.style.height = `${Math.floor(Math.random() * 40) + 10}px`; });
-            }, 200);
-        }
-    };
-
-    window.stopFrequencyMicrophone = function() {
-        if(window.freqMicrophoneStream) { window.freqMicrophoneStream.getTracks().forEach(t => t.stop()); window.freqMicrophoneStream = null; }
-        if(window.freqAudioContext) { window.freqAudioContext.close(); window.freqAudioContext = null; }
-        clearInterval(window.freqFakeAnimationInterval);
     };
 
     window.requestReveal = function() {
@@ -2151,7 +2327,7 @@ function initializeUniLoop() {
                 btn.disabled = true;
             }
         } else {
-            alert("Sistem botuna istek gönderilemez.");
+            alert("Bilinmeyen bir kullanıcıya istek gönderilemez.");
         }
     };
 
@@ -3745,7 +3921,7 @@ function initializeUniLoop() {
         document.body.classList.remove('no-scroll-messages');
         document.body.classList.remove('no-scroll-home');
         
-        // EĞER BAŞKA BİR SEKMEYE GEÇİLİRSE FREKANSI KAPAT
+        // EĞER BAŞKA BİR SEKMEYE GEÇİLİRSE FREKANSI KAPAT VE ARAMAYI İPTAL ET
         window.closeFrequency(); 
 
         switch(page) {
