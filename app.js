@@ -31,8 +31,7 @@ import {
     where,
     getDocs,
     deleteDoc,
-    limit,
-    startAfter
+    limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
     getStorage,
@@ -67,17 +66,6 @@ let marketDB = [];
 let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
-
-// SAYFALAMA (PAGINATION) İÇİN GLOBAL DEĞİŞKENLER
-window.confLastDoc = null;
-window.confHasMore = true;
-window.isConfLoading = false;
-
-window.marketLastDoc = null;
-window.marketHasMore = true;
-window.isMarketLoading = false;
-
-window.chatMessageLimits = {}; // Her sohbet için mesaj yükleme limiti (başlangıç 15)
 
 // Eşleşme değişkenleri (Hızlı Eşleşme)
 window.fastMatchUsers = [];
@@ -961,20 +949,16 @@ function initializeUniLoop() {
     function initRealtimeListeners(currentUid) {
         const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
 
-        // MARKET İÇİN İLK 8 İLANI ÇEK (Daha az Firebase Okuması)
-        onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc"), limit(8)), (snapshot) => {
+        onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
             marketDB = [];
-            if(!snapshot.empty) { window.marketLastDoc = snapshot.docs[snapshot.docs.length - 1]; }
             snapshot.forEach(doc => { marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
             marketDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
             const activeTab = document.querySelector('.bottom-nav-item.active');
             if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
         });
 
-        // ANONİM KAMPÜS (KEŞFET) İÇİN İLK 5 GÖNDERİYİ ÇEK
-        onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc"), limit(5)), (snapshot) => {
+        onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
             confessionsDB = [];
-            if(!snapshot.empty) { window.confLastDoc = snapshot.docs[snapshot.docs.length - 1]; }
             snapshot.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
             confessionsDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
             const activeTab = document.querySelector('.bottom-nav-item.active');
@@ -1013,11 +997,6 @@ function initializeUniLoop() {
                     const otherAvatar = (data.participantAvatars && data.participantAvatars[otherUid]) ? data.participantAvatars[otherUid] : "👤";
                     let safeTimestamp = data.lastUpdated && typeof data.lastUpdated.toMillis === 'function' ? data.lastUpdated.toMillis() : Date.now();
                     
-                    // Her sohbet için limit dizisini başlangıçta 15 tut (Eğer daha önce oluşturulmadıysa)
-                    if (!window.chatMessageLimits[doc.id]) {
-                        window.chatMessageLimits[doc.id] = 15;
-                    }
-
                     const chatItem = { 
                         id: doc.id, otherUid: otherUid, name: otherName, avatar: otherAvatar, 
                         messages: data.messages || [], status: data.status || 'accepted', 
@@ -1067,6 +1046,10 @@ function initializeUniLoop() {
             if (document.getElementById('app-modal').classList.contains('active') && document.getElementById('modal-title').innerText.includes('Bildirimler')) { window.renderNotifications(); }
         });
     }
+
+// ============================================================================
+// 🌟 BÖLÜM 1 SONU 🌟
+// ============================================================================
 // ============================================================================
 // 🌟 MEDYA YÜKLEME, POPÜLERLİK SAVAŞI, HIZLI EŞLEŞME VE KAMPÜS FREKANSI (BÖLÜM 2) 🌟
 // ============================================================================
@@ -1675,31 +1658,6 @@ function initializeUniLoop() {
         }
     };
 
-    /* 🌟 MALİYET KURTARICI: SADECE 1 KİŞİ ÇEKME FONKSİYONU 🌟 */
-    window.fetchSingleFastMatchUser = async function() {
-        try {
-            const interactedUids = chatsDB.filter(c => c.status === 'accepted' || c.status === 'blocked').map(c => c.otherUid);
-            interactedUids.push(window.userProfile.uid);
-            
-            const q = query(collection(db, "users"), limit(10));
-            const snap = await getDocs(q);
-            
-            let validUsers = [];
-            snap.forEach(doc => {
-                if(!interactedUids.includes(doc.id)) validUsers.push(doc.data());
-            });
-            
-            if(validUsers.length > 0) {
-                validUsers.sort(() => 0.5 - Math.random());
-                return validUsers[0]; 
-            }
-            return null;
-        } catch (e) {
-            console.error("1 Kişi çekilirken hata:", e);
-            return null;
-        }
-    };
-
     window.initEmbeddedFastMatch = async function() {
         let count = window.userProfile.fastMatchCount || 0;
         let today = new Date().toLocaleDateString();
@@ -1844,25 +1802,41 @@ function initializeUniLoop() {
             </div>
         `;
 
-        window.fastMatchUsers = [];
-        window.fastMatchCurrentIndex = 0;
-        
-        const firstUser = await window.fetchSingleFastMatchUser();
+        try {
+            const querySnapshot = await getDocs(query(collection(db, "users"), limit(50)));
+            const interactedUids = chatsDB
+                .filter(c => c.status === 'accepted' || c.status === 'blocked')
+                .map(c => c.otherUid);
+                
+            window.fastMatchUsers = [];
 
-        if(!firstUser) {
-             container.innerHTML = `
-                <div style="padding:40px 10px; text-align:center; background:white; border-radius:16px; width:100%; max-width:320px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
-                    <div style="font-size:50px; margin-bottom:15px;">🌟</div>
-                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Şu an kimse yok!</h3>
-                    <p style="color:var(--text-gray); font-size:13px; margin-bottom:15px;">Ağda karşılaşacak kimse kalmadı. Lütfen daha sonra tekrar kontrol et.</p>
-                    <button id="join-tour-btn-empty" class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#111827; border:none; border-radius:12px;" onclick="window.startPopularityTournament()">Savaşa Katıl ⚔️</button>
-                </div>
-            `;
-            return;
+            querySnapshot.forEach((doc) => {
+                const u = doc.data();
+                if(u.uid !== window.userProfile.uid && !interactedUids.includes(u.uid)) {
+                    window.fastMatchUsers.push(u);
+                }
+            });
+
+            if(window.fastMatchUsers.length === 0) {
+                 container.innerHTML = `
+                    <div style="padding:40px 10px; text-align:center; background:white; border-radius:16px; width:100%; max-width:320px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+                        <div style="font-size:50px; margin-bottom:15px;">🌟</div>
+                        <h3 style="color:var(--text-dark); margin-bottom:10px;">Şu an kimse yok!</h3>
+                        <p style="color:var(--text-gray); font-size:13px; margin-bottom:15px;">Ağda karşılaşacak kimse kalmadı. Lütfen daha sonra tekrar kontrol et.</p>
+                        <button id="join-tour-btn-empty" class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#111827; border:none; border-radius:12px;" onclick="window.startPopularityTournament()">Savaşa Katıl ⚔️</button>
+                    </div>
+                `;
+                return;
+            }
+
+            window.fastMatchUsers = window.fastMatchUsers.sort(() => 0.5 - Math.random());
+            window.fastMatchCurrentIndex = 0;
+            
+            window.renderEmbeddedFastMatchCard();
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = '<p style="color:red;">Kullanıcılar yüklenirken hata oluştu.</p>';
         }
-
-        window.fastMatchUsers.push(firstUser);
-        window.renderEmbeddedFastMatchCard();
     };
 
     window.renderEmbeddedFastMatchCard = function() {
@@ -1871,12 +1845,12 @@ function initializeUniLoop() {
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
 
-        if(window.fastMatchUsers.length === 0) {
-            container.innerHTML = `<div style="text-align:center; padding:40px 10px;"><h3 style="color:var(--text-dark);">Şu an kimse yok!</h3></div>`;
-            return;
+        if(window.fastMatchCurrentIndex >= window.fastMatchUsers.length) {
+            window.fastMatchUsers = window.fastMatchUsers.sort(() => 0.5 - Math.random());
+            window.fastMatchCurrentIndex = 0;
         }
 
-        const u = window.fastMatchUsers[0];
+        const u = window.fastMatchUsers[window.fastMatchCurrentIndex];
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
         const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:6px; text-shadow:0 1px 2px rgba(0,0,0,0.5);" title="Premium Üye">👑</span>' : '';
         
@@ -1928,37 +1902,42 @@ function initializeUniLoop() {
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
 
-        if (direction === 'right') {
-            const u = window.fastMatchUsers[0];
-            window.sendFriendRequest(u.uid, `${u.name} ${u.surname ? u.surname : ''}`, true);
-        }
-
-        card.style.transform = direction === 'left' ? 'translateX(-200px) rotate(-20deg)' : 'translateX(200px) rotate(20deg)';
-        card.style.opacity = '0';
-        
-        setTimeout(async () => {
-            if (window.userProfile.fastMatchCount >= maxSwipes) {
-                window.initEmbeddedFastMatch(); 
-            } else {
-                // Arkadan 1 Kişi Daha Çek! (Maliyet Optimizasyonu)
-                const nextUser = await window.fetchSingleFastMatchUser();
-                if(nextUser) {
-                    window.fastMatchUsers = [nextUser];
-                    window.renderEmbeddedFastMatchCard();
+        if(direction === 'left') {
+            card.style.transform = 'translateX(-200px) rotate(-20deg)';
+            card.style.opacity = '0';
+            setTimeout(() => {
+                window.fastMatchCurrentIndex++;
+                if (window.userProfile.fastMatchCount >= maxSwipes) {
+                    window.initEmbeddedFastMatch(); 
                 } else {
-                    window.fastMatchUsers = [];
-                    window.renderEmbeddedFastMatchCard(); // Kimse yok ekranına atacak.
+                    window.renderEmbeddedFastMatchCard();
                 }
-            }
-        }, 300);
+            }, 300);
+        } else if (direction === 'right') {
+            card.style.transform = 'translateX(200px) rotate(20deg)';
+            card.style.opacity = '0';
+            
+            const u = window.fastMatchUsers[window.fastMatchCurrentIndex];
+            window.sendFriendRequest(u.uid, `${u.name} ${u.surname ? u.surname : ''}`, true);
+            
+            setTimeout(() => {
+                window.fastMatchCurrentIndex++;
+                if (window.userProfile.fastMatchCount >= maxSwipes) {
+                    window.initEmbeddedFastMatch(); 
+                } else {
+                    window.renderEmbeddedFastMatchCard();
+                }
+            }, 300);
+        }
     };
+
 
     /* ========================================================================= */
     /* 🎙️ GERÇEK ZAMANLI 1v1 EŞLEŞME & MASKE (RIZA) MOTORU                     */
     /* ========================================================================= */
     let voiceSearchTimeout = null;
     let voiceQueueUnsubscribe = null;
-    window.callRole = null; 
+    window.callRole = null; // 'caller' veya 'callee'
 
     const rtcConfig = {
         iceServers: [
@@ -2099,6 +2078,7 @@ function initializeUniLoop() {
         await window.peerConnection.setLocalDescription(offerDescription);
 
         const offer = { sdp: offerDescription.sdp, type: offerDescription.type };
+        // Maske inme durumu için iki alanı da false olarak başlatıyoruz
         await setDoc(callDoc, { offer, reveal_caller: false, reveal_callee: false });
 
         let remoteCandidatesBuffer = [];
@@ -2117,6 +2097,7 @@ function initializeUniLoop() {
                 remoteCandidatesBuffer = [];
             }
             
+            // RIZAYA DAYALI MASKE İNDİRME MANTIĞI
             let myReveal = data.reveal_caller;
             let otherReveal = data.reveal_callee;
             
@@ -2198,6 +2179,7 @@ function initializeUniLoop() {
                 remoteCandidatesBuffer = [];
             }
 
+            // RIZAYA DAYALI MASKE İNDİRME MANTIĞI
             let myReveal = data.reveal_callee;
             let otherReveal = data.reveal_caller;
             
@@ -2266,7 +2248,7 @@ function initializeUniLoop() {
                 const micReady = await window.setupLocalAudio();
                 if(!micReady) { window.closeFrequency(); return; }
 
-                window.callRole = 'caller'; 
+                window.callRole = 'caller'; // Rolü belirle
                 await window.createWebRTCCall(partnerFound.uid);
 
                 const pDoc = await getDoc(doc(db, "users", partnerFound.uid));
@@ -2294,7 +2276,7 @@ function initializeUniLoop() {
                         const micReady = await window.setupLocalAudio();
                         if(!micReady) { window.closeFrequency(); return; }
 
-                        window.callRole = 'callee'; 
+                        window.callRole = 'callee'; // Rolü belirle
                         await window.answerWebRTCCall(matchedUid);
 
                         const pDoc = await getDoc(doc(db, "users", matchedUid));
@@ -2350,6 +2332,7 @@ function initializeUniLoop() {
         }, 1000);
     };
 
+    // RIZAYA DAYALI MASKE İNDİRME İSTEĞİ (Sesi asla kesmez)
     window.requestReveal = async function() {
         document.getElementById('reveal-btn').style.display = 'none';
         
@@ -2371,6 +2354,7 @@ function initializeUniLoop() {
         }
     };
 
+    // İKİ TARAF DA ONAYLADIĞINDA ÇALIŞIR (Ses kesilmez, sadece UI değişir)
     window.executeMutualReveal = function() {
         const matchUser = window.currentVoiceMatch;
         if(matchUser) {
@@ -2898,16 +2882,15 @@ function initializeUniLoop() {
         `;
         
         mainContent.innerHTML = html;
-        window.drawListingsGrid(type, '', false);
+        window.drawListingsGrid(type, '');
         
         const searchInput = document.getElementById('local-search-input');
         if(searchInput) {
-            searchInput.addEventListener('input', (e) => { window.drawListingsGrid(type, e.target.value.toLowerCase(), false); }); 
+            searchInput.addEventListener('input', (e) => { window.drawListingsGrid(type, e.target.value.toLowerCase()); }); 
         }
     };
 
-    /* 🌟 MARKET SAYFALAMA (8 İlan) 🌟 */
-    window.drawListingsGrid = function(type, filterText, append = false) {
+    window.drawListingsGrid = function(type, filterText) {
         const container = document.getElementById('listings-grid-container');
         if(!container) return;
 
@@ -2915,7 +2898,7 @@ function initializeUniLoop() {
             item.type === type && (item.title.toLowerCase().includes(filterText) || item.desc.toLowerCase().includes(filterText))
         );
         
-        if(filteredData.length === 0 && !append) {
+        if(filteredData.length === 0) {
             container.innerHTML = `<p style="grid-column: 1 / -1; color: var(--text-gray); text-align:center; padding: 40px 0;">Henüz ilan yok veya bulunamadı.</p>`; 
             return;
         }
@@ -2928,7 +2911,7 @@ function initializeUniLoop() {
             if (item.isPdf) {
                 imgHtml = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; background:#F9FAFB;"><span style="font-size:40px;">📄</span><span style="font-size:12px; font-weight:bold; color:#EF4444; margin-top:5px;">PDF Dosyası</span></div>`;
             } else if (item.imgUrl) { 
-                imgHtml = `<img src="${item.imgUrl}" alt="İlan" loading="lazy" style="width:100%; height:100%; object-fit:cover;">`; 
+                imgHtml = `<img src="${item.imgUrl}" alt="İlan" style="width:100%; height:100%; object-fit:cover;">`; 
             } else { 
                 imgHtml = `<div style="font-size:48px; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">📦</div>`; 
             }
@@ -2943,40 +2926,7 @@ function initializeUniLoop() {
                 </div>
             `;
         });
-        
-        if(!append) {
-            container.innerHTML = gridHtml;
-
-            container.addEventListener('scroll', async () => {
-                if(container.scrollTop + container.clientHeight >= container.scrollHeight - 50) {
-                    if(window.isMarketLoading || !window.marketHasMore || filterText !== '') return;
-                    window.isMarketLoading = true;
-                    
-                    const spinnerTpl = document.getElementById('loading-spinner-template');
-                    if(spinnerTpl) container.appendChild(spinnerTpl.content.cloneNode(true));
-                    
-                    try {
-                        const q = query(collection(db, "listings"), orderBy("createdAt", "desc"), startAfter(window.marketLastDoc), limit(8));
-                        const snap = await getDocs(q);
-                        
-                        const spinnerEl = container.querySelector('.pagination-spinner-container');
-                        if(spinnerEl) spinnerEl.remove();
-
-                        if(snap.empty) { window.marketHasMore = false; } 
-                        else {
-                            window.marketLastDoc = snap.docs[snap.docs.length - 1];
-                            snap.forEach(doc => { marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
-                            window.drawListingsGrid(type, filterText, true);
-                        }
-                    } catch(e) { console.error(e); }
-                    window.isMarketLoading = false;
-                }
-            });
-        } else {
-            const spinnerEl = container.querySelector('.pagination-spinner-container');
-            if(spinnerEl) spinnerEl.remove();
-            container.innerHTML = gridHtml;
-        }
+        container.innerHTML = gridHtml;
     };
 
     window.openListingDetail = function(docId) {
@@ -2993,14 +2943,14 @@ function initializeUniLoop() {
             imgHtml += '<div class="image-gallery" style="height:250px; border-radius:12px; margin-bottom:16px;">';
             const imgArrayStr = encodeURIComponent(JSON.stringify(item.imgUrls));
             item.imgUrls.forEach((url, i) => {
-                imgHtml += `<div class="gallery-item" onclick="window.openLightbox('${imgArrayStr}', ${i})" style="cursor:pointer;"><img src="${url}" loading="lazy" alt="İlan" style="border-radius:12px;"></div>`;
+                imgHtml += `<div class="gallery-item" onclick="window.openLightbox('${imgArrayStr}', ${i})" style="cursor:pointer;"><img src="${url}" alt="İlan" style="border-radius:12px;"></div>`;
                 indicatorsHtml += `<div class="gallery-dot ${i === 0 ? 'active' : ''}"></div>`;
             });
             imgHtml += '</div>';
             if(item.imgUrls.length > 1) { imgHtml += `<div class="gallery-indicators" style="bottom: 25px;">${indicatorsHtml}</div>`; }
         } else if (item.imgUrl) { 
             const singleImgStr = encodeURIComponent(JSON.stringify([item.imgUrl]));
-            imgHtml = `<img src="${item.imgUrl}" loading="lazy" onclick="window.openLightbox('${singleImgStr}', 0)" style="width:100%; height:250px; object-fit:cover; border-radius:12px; margin-bottom:16px; cursor:pointer;">`;
+            imgHtml = `<img src="${item.imgUrl}" onclick="window.openLightbox('${singleImgStr}', 0)" style="width:100%; height:250px; object-fit:cover; border-radius:12px; margin-bottom:16px; cursor:pointer;">`;
         }
 
         let actionButtonsHtml = '';
@@ -3162,28 +3112,23 @@ function initializeUniLoop() {
         }
     };
 
-    /* 🌟 KEŞFET SAYFALAMA (5 Gönderi) 🌟 */
-    window.drawConfessionsFeed = function(append = false) {
-        if(!append) {
-            let html = `
-                <div class="feed-layout-container">
-                    <div style="background: white; padding: 15px; border-bottom: 1px solid #E5E7EB; z-index: 10; display:flex; gap:10px; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                        <div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; border:1px solid #E5E7EB; flex-shrink:0;">
-                            ${window.userProfile.avatarUrl ? `<img src="${window.userProfile.avatarUrl}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">` : window.userProfile.avatar}
-                        </div>
-                        <button onclick="window.openConfessionForm()" style="background:var(--primary); color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(79,70,229,0.3); flex-shrink:0; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Yeni Paylaşım Ekle">+</button>
-                        <button class="btn-primary" style="flex:1; text-align:left; background:#F9FAFB; color:var(--text-gray); border:1px solid #E5E7EB; box-shadow:none; padding:12px 15px; font-weight:normal; border-radius:20px;" onclick="window.openConfessionForm()">Kampüste neler oluyor?</button>
+    window.drawConfessionsFeed = function() {
+        let html = `
+            <div class="feed-layout-container">
+                <div style="background: white; padding: 15px; border-bottom: 1px solid #E5E7EB; z-index: 10; display:flex; gap:10px; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; border:1px solid #E5E7EB; flex-shrink:0;">
+                        ${window.userProfile.avatarUrl ? `<img src="${window.userProfile.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : window.userProfile.avatar}
                     </div>
-                    <div id="conf-feed"></div>
+                    <button onclick="window.openConfessionForm()" style="background:var(--primary); color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(79,70,229,0.3); flex-shrink:0; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Yeni Paylaşım Ekle">+</button>
+                    <button class="btn-primary" style="flex:1; text-align:left; background:#F9FAFB; color:var(--text-gray); border:1px solid #E5E7EB; box-shadow:none; padding:12px 15px; font-weight:normal; border-radius:20px;" onclick="window.openConfessionForm()">Kampüste neler oluyor?</button>
                 </div>
-            `;
-            mainContent.innerHTML = html;
-        }
-
+                <div id="conf-feed"></div>
+            </div>
+        `;
+        mainContent.innerHTML = html;
         const feedContainer = document.getElementById('conf-feed');
-        if(!feedContainer) return;
         
-        if (confessionsDB.length === 0 && !append) {
+        if (confessionsDB.length === 0) {
             feedContainer.innerHTML = `
                 <div style="text-align:center; padding:40px 20px; color:var(--text-gray);">
                     <div style="font-size:48px; margin-bottom:10px;">📭</div>
@@ -3199,12 +3144,12 @@ function initializeUniLoop() {
             const likeCount = post.likes ? post.likes.length : 0;
             const commentCount = post.comments ? post.comments.length : 0;
             
-            let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" loading="lazy" class="feed-post-img" onclick="event.stopPropagation(); window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
+            let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" class="feed-post-img" onclick="event.stopPropagation(); window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
             
             feedHtml += `
                 <div class="feed-post" onclick="window.openConfessionDetail('${post.id}')" style="cursor:pointer; transition: transform 0.2s;">
                     <div class="feed-post-header">
-                        <div class="feed-post-avatar">${post.isAnonymous ? '🕵️' : (post.authorAvatarUrl ? `<img src="${post.authorAvatarUrl}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">` : (post.authorAvatar || '👤'))}</div>
+                        <div class="feed-post-avatar">${post.isAnonymous ? '🕵️' : (post.authorAvatarUrl ? `<img src="${post.authorAvatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (post.authorAvatar || '👤'))}</div>
                         <div class="feed-post-meta">
                             <span class="feed-post-author">${post.isAnonymous ? 'Gizli Kullanıcı' : post.authorName}</span>
                             <span class="feed-post-time">${post.time || 'Yeni'}</span>
@@ -3219,40 +3164,7 @@ function initializeUniLoop() {
                 </div>
             `;
         });
-        
-        if(!append) {
-            feedContainer.innerHTML = feedHtml;
-
-            feedContainer.addEventListener('scroll', async () => {
-                if(feedContainer.scrollTop + feedContainer.clientHeight >= feedContainer.scrollHeight - 50) {
-                    if(window.isConfLoading || !window.confHasMore) return;
-                    window.isConfLoading = true;
-                    
-                    const spinnerTpl = document.getElementById('loading-spinner-template');
-                    if(spinnerTpl) feedContainer.appendChild(spinnerTpl.content.cloneNode(true));
-                    
-                    try {
-                        const q = query(collection(db, "confessions"), orderBy("createdAt", "desc"), startAfter(window.confLastDoc), limit(5));
-                        const snap = await getDocs(q);
-                        
-                        const spinnerEl = feedContainer.querySelector('.pagination-spinner-container');
-                        if(spinnerEl) spinnerEl.remove();
-
-                        if(snap.empty) { window.confHasMore = false; } 
-                        else {
-                            window.confLastDoc = snap.docs[snap.docs.length - 1];
-                            snap.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
-                            window.drawConfessionsFeed(true);
-                        }
-                    } catch(e) { console.error(e); }
-                    window.isConfLoading = false;
-                }
-            });
-        } else {
-            const spinnerEl = feedContainer.querySelector('.pagination-spinner-container');
-            if(spinnerEl) spinnerEl.remove();
-            feedContainer.innerHTML = feedHtml;
-        }
+        feedContainer.innerHTML = feedHtml;
     };
 
     window.openConfessionForm = function() {
@@ -3385,14 +3297,14 @@ function initializeUniLoop() {
         const isLiked = post.likes && post.likes.includes(window.userProfile.uid);
         const likeIcon = isLiked ? '❤️' : '🤍';
         const likeCount = post.likes ? post.likes.length : 0;
-        let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" loading="lazy" style="width:100%; border-radius:12px; margin-bottom:15px; cursor:pointer; max-height:400px; object-fit:cover; border:1px solid #E5E7EB;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
+        let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" style="width:100%; border-radius:12px; margin-bottom:15px; cursor:pointer; max-height:400px; object-fit:cover; border:1px solid #E5E7EB;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
 
         let commentsHtml = '';
         if(post.comments && post.comments.length > 0) {
             post.comments.forEach(c => {
                 commentsHtml += `
                     <div style="background:#F9FAFB; padding:12px; border-radius:12px; margin-bottom:10px; display:flex; gap:12px; border:1px solid #f1f5f9;">
-                        <div style="font-size:20px; flex-shrink:0; width:36px; height:36px; background:#E5E7EB; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden;">${c.avatarUrl ? `<img src="${c.avatarUrl}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">` : (c.avatar || '👤')}</div>
+                        <div style="font-size:20px; flex-shrink:0; width:36px; height:36px; background:#E5E7EB; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden;">${c.avatarUrl ? `<img src="${c.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (c.avatar || '👤')}</div>
                         <div style="flex:1;">
                             <div style="font-size:13px; font-weight:800; color:var(--text-dark); margin-bottom:4px; display:flex; justify-content:space-between;">
                                 <span>${c.name}</span>
@@ -3413,7 +3325,7 @@ function initializeUniLoop() {
             <input type="hidden" id="active-post-id" value="${post.id}">
             <div class="feed-post-header" style="justify-content:space-between; margin-bottom:15px;">
                 <div style="display:flex; align-items:center; gap:12px;">
-                    <div class="feed-post-avatar">${post.isAnonymous ? '🕵️' : (post.authorAvatarUrl ? `<img src="${post.authorAvatarUrl}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">` : (post.authorAvatar || '👤'))}</div>
+                    <div class="feed-post-avatar">${post.isAnonymous ? '🕵️' : (post.authorAvatarUrl ? `<img src="${post.authorAvatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (post.authorAvatar || '👤'))}</div>
                     <div class="feed-post-meta">
                         <span class="feed-post-author">${post.isAnonymous ? 'Gizli Kullanıcı' : post.authorName}</span>
                         <span class="feed-post-time">${post.time || ''}</span>
@@ -3496,7 +3408,7 @@ function initializeUniLoop() {
             const badgeHtml = isUnread ? `<div style="width:12px; height:12px; background:var(--primary); border-radius:50%; border:2px solid white; box-shadow:0 0 0 1px var(--primary); margin-left:auto;"></div>` : '';
 
             let avatarHtml = chat.avatar && chat.avatar.startsWith('http') 
-                ? `<img src="${chat.avatar}" loading="lazy" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">`
+                ? `<img src="${chat.avatar}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">`
                 : `<div style="width:48px; height:48px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:24px; border:1px solid #E5E7EB;">${chat.avatar || '👤'}</div>`;
 
             sbHtml += `
@@ -3618,7 +3530,7 @@ function initializeUniLoop() {
         mainArea.style.display = 'flex';
 
         let avatarHtml = chat.avatar && chat.avatar.startsWith('http') 
-            ? `<img src="${chat.avatar}" loading="lazy" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">`
+            ? `<img src="${chat.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">`
             : `<div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid #E5E7EB;">${chat.avatar || '👤'}</div>`;
 
         let headerHtml = `
@@ -3676,21 +3588,7 @@ function initializeUniLoop() {
         }
 
         mainArea.innerHTML = mainHtml;
-
-        /* 🌟 MESAJLAR İÇİN SON 15 SAYFALAMA LİSTENER'I 🌟 */
-        const scrollBox = document.getElementById('chat-messages-scroll');
-        if(scrollBox) {
-            scrollBox.addEventListener('scroll', () => {
-                if(scrollBox.scrollTop === 0 && window.chatMessageLimits[chatId] < chat.messages.length) {
-                    const oldHeight = scrollBox.scrollHeight;
-                    window.chatMessageLimits[chatId] += 15;
-                    window.updateChatMessagesOnly(chatId, true);
-                    scrollBox.scrollTop = scrollBox.scrollHeight - oldHeight;
-                }
-            });
-        }
-
-        window.updateChatMessagesOnly(chatId, false);
+        window.updateChatMessagesOnly(chatId);
 
         const inputField = document.getElementById('chat-input-field');
         if (inputField) {
@@ -3719,7 +3617,7 @@ function initializeUniLoop() {
         window.renderMessagesSidebarOnly();
     };
 
-    window.updateChatMessagesOnly = function(chatId, isPagination = false) {
+    window.updateChatMessagesOnly = function(chatId) {
         if(currentChatId !== chatId) return;
         const scrollBox = document.getElementById('chat-messages-scroll');
         if(!scrollBox) return;
@@ -3730,17 +3628,11 @@ function initializeUniLoop() {
         let chatHTML = '';
         const msgs = chat.messages || [];
         
-        const limitCount = window.chatMessageLimits[chatId] || 15;
-        const displayMsgs = msgs.slice(-limitCount);
-        
-        if (displayMsgs.length === 0) {
+        if (msgs.length === 0) {
             chatHTML = `<div style="text-align:center; padding:20px; color:#9CA3AF; font-size:14px;">Henüz mesaj yok. İlk mesajı sen gönder!</div>`;
         } else {
-            if(msgs.length > limitCount) {
-                chatHTML += `<div style="text-align:center; font-size:11px; color:#9CA3AF; padding:10px;">Daha eski mesajları görmek için yukarı kaydırın ↑</div>`;
-            }
-            
-            displayMsgs.forEach((msg, index) => {
+            let lastDate = null;
+            msgs.forEach((msg, index) => {
                 const isMe = msg.senderId === window.userProfile.uid;
                 const type = isMe ? 'sent' : 'received';
                 const msgTime = msg.time || '';
@@ -3751,7 +3643,7 @@ function initializeUniLoop() {
                     if (msg.mediaType === 'pdf') {
                         mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:5px; background:rgba(0,0,0,0.05); padding:10px; border-radius:8px; margin-bottom:5px; text-decoration:none; color:#EF4444; font-weight:bold; font-size:13px;"><span>📄</span> PDF İndir/Aç</a>`;
                     } else {
-                        mediaHtml = `<img src="${msg.mediaUrl}" loading="lazy" style="width:100%; max-width:250px; border-radius:8px; margin-bottom:5px; cursor:pointer;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([msg.mediaUrl]))}', 0)">`;
+                        mediaHtml = `<img src="${msg.mediaUrl}" style="width:100%; max-width:250px; border-radius:8px; margin-bottom:5px; cursor:pointer;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([msg.mediaUrl]))}', 0)">`;
                     }
                 }
 
@@ -3771,8 +3663,7 @@ function initializeUniLoop() {
 
         const isScrolledToBottom = scrollBox.scrollHeight - scrollBox.clientHeight <= scrollBox.scrollTop + 50;
         scrollBox.innerHTML = chatHTML;
-        
-        if(!isPagination && (isScrolledToBottom || displayMsgs.length <= 1)) {
+        if(isScrolledToBottom || msgs.length <= 1) {
             scrollBox.scrollTop = scrollBox.scrollHeight;
         }
     };
@@ -3834,7 +3725,7 @@ function initializeUniLoop() {
         
         let avatarHtml = u.avatarUrl 
             ? `<div style="position:relative; cursor:pointer;" onclick="document.getElementById('profile-avatar-upload').click()">
-                 <img src="${u.avatarUrl}" loading="lazy" class="id-card-avatar" style="${isPremium ? 'border-color:#111827;' : ''}">
+                 <img src="${u.avatarUrl}" class="id-card-avatar" style="${isPremium ? 'border-color:#111827;' : ''}">
                  <div style="position:absolute; bottom:0; right:0; background:white; color:#111827; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid #111827; box-shadow:0 2px 4px rgba(0,0,0,0.2);">📷</div>
                </div>` 
             : `<div style="position:relative; cursor:pointer;" onclick="document.getElementById('profile-avatar-upload').click()">
@@ -3931,7 +3822,7 @@ function initializeUniLoop() {
         let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px;">`;
         friends.forEach(f => {
             let avatarHtml = f.avatar && f.avatar.startsWith('http') 
-                ? `<img src="${f.avatar}" loading="lazy" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid #111827;">`
+                ? `<img src="${f.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid #111827;">`
                 : `<div style="width:40px; height:40px; border-radius:50%; background:white; color:#111827; display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid #111827;">${f.avatar || '👤'}</div>`;
 
             listHtml += `
