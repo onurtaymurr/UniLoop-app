@@ -13,10 +13,22 @@
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
 body { background-color: var(--bg-color); color: var(--text-dark); overflow-x: hidden; overscroll-behavior-y: none; }
 
-#auth-screen { height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--primary), #818CF8); position: fixed; top: 0; left: 0; z-index: 9999; }
-.auth-card { background: white; padding: 40px; border-radius: 24px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: fadeInUp 0.5s ease-out; }
+/* 🌟 Giriş Ekranı Koyu Gece Mavisi Teması 🌟 */
+#auth-screen { height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #111827, #1f2937); position: fixed; top: 0; left: 0; z-index: 9999; }
+.auth-card { background: white; padding: 40px; border-radius: 24px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); animation: fadeInUp 0.5s ease-out; }
 .auth-subtitle { color: var(--text-gray); margin-bottom: 30px; font-size: 15px; }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 🌟 Instagram Tarzı Yükleme Animasyonu (Sonsuz Kaydırma İçin) 🌟 */
+.loading-spinner {
+    border: 3px solid rgba(17, 24, 39, 0.1);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border-left-color: var(--primary);
+    animation: spin 1s linear infinite;
+    margin: 15px auto;
+}
 
 .autocomplete { position: relative; display: block; z-index: 50; }
 .autocomplete-items { position: absolute; border: 1px solid var(--border-color); border-top: none; z-index: 99; top: 100%; left: 0; right: 0; background: white; border-radius: 0 0 10px 10px; max-height: 160px; overflow-y: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: left; }
@@ -106,14 +118,14 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 #embedded-voice-chat {
     display: none;
     position: fixed;
-    top: 50px; /* Üst menü altı */
-    bottom: 60px; /* Alt menü üstü */
+    top: 50px; 
+    bottom: 60px; 
     left: 0; right: 0;
-    background-color: #FFFFFF; /* Arka plan bembeyaz */
+    background-color: #FFFFFF; 
     z-index: 1000;
     align-items: center;
     justify-content: center;
-    padding: 20px; /* Kenarlardan eşit boşluk */
+    padding: 20px; 
 }
 
 #embedded-voice-chat.active {
@@ -122,21 +134,20 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 
 .voice-chat-card {
     width: 100%;
-    max-width: 360px; /* Dikey dikdörtgeni korur */
+    max-width: 360px; 
     height: 100%;
-    max-height: 550px; /* Üstten alttan boşluk kalmasını sağlar */
+    max-height: 550px; 
     background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
-    border-radius: 35px; /* Köşeleri tamamen oval yapar */
+    border-radius: 35px; 
     padding: 30px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-    border: 4px solid #374151; /* Şık çerçeve */
+    border: 4px solid #374151; 
 }
 
-/* YENİ BUTON TONLARI (Geç, Maske İndir, Kapat) */
 .btn-gec { background: #4b5563; color: white; transition: 0.2s; }
 .btn-gec:hover { background: #6b7280; transform: translateY(-2px); }
 .btn-maske { background: #8b5cf6; color: white; transition: 0.2s; }
@@ -144,7 +155,6 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .btn-kapat { background: #ef4444; color: white; transition: 0.2s; }
 .btn-kapat:hover { background: #f87171; transform: translateY(-2px); }
 
-/* Ekranların aktiflik durumları */
 .screen {
     display: none;
     flex-direction: column;
@@ -264,6 +274,7 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .lightbox-next { right: 20px; }
 .lightbox-counter { position: absolute; top: 25px; left: 30px; color: white; font-size: 16px; font-weight: bold; z-index: 10001; letter-spacing: 2px; }
 
+/* Masaüstü ve Tablet Uyumlu Grid Sistemi */
 @media (max-width: 1024px) {
 .container { grid-template-columns: 1fr; padding: 16px; gap: 16px; overflow-x: hidden; }
 .right-panel { display: none; }
