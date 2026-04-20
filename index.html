@@ -42,7 +42,7 @@
 <div id="auth-screen">
     <div class="auth-card" id="login-card">
         <div class="auth-logo" style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-            <img src="uniloop-logo.png" alt="UniLoop" style="width: 100%; max-width: 240px; height: auto; object-fit: contain; display: block;">
+            <img src="uniloop-logo.png" alt="UniLoop" loading="lazy" style="width: 100%; max-width: 240px; height: auto; object-fit: contain; display: block;">
         </div>
 
         <p class="auth-subtitle">Kampüs ağına giriş yap, döngüde kal.</p>
@@ -64,8 +64,7 @@
         <p style="font-size: 12px; color: var(--text-gray); margin-top: 20px;">Sisteme giriş için e-posta onayı gereklidir.</p>
     </div>
 
-    <div id="register-card" style="display: none;"></div>
-    <div id="verify-card" style="display: none;"></div>
+    <div id="stepper-container-wrapper"></div>
 </div>
 
 <div id="app-screen" style="display: none;">
@@ -73,7 +72,7 @@
         <div class="logo-area">
             <div id="mobile-menu-btn" style="display: none;">☰</div>
             <div class="logo" id="logo-btn" onclick="window.loadPage('home')" style="cursor:pointer; display:flex; align-items:center;">
-                <img src="uniloop-logo.png" alt="UniLoop" style="height: 36px; width: auto; object-fit: contain;">
+                <img src="uniloop-logo.png" alt="UniLoop" loading="lazy" style="height: 36px; width: auto; object-fit: contain;">
             </div>
         </div>
         <div class="header-right-menu" style="display: flex; align-items: center; gap: 10px; height: 100%;"></div>
@@ -119,7 +118,7 @@
 
             <div id="state-revealed" class="screen">
                 <h3 style="color: #10b981; margin-bottom: 20px;">Eşleşme Başarılı! ✨</h3>
-                <img id="reveal-avatar" src="" class="real-avatar" alt="Avatar">
+                <img id="reveal-avatar" src="" loading="lazy" class="real-avatar" alt="Avatar">
                 <h2 id="reveal-name" style="margin: 0 0 5px 0; color:white;">İsim, Yaş</h2>
                 <p id="reveal-faculty" style="color: #8b5cf6; font-size: 14px; font-weight: bold; margin: 0 0 20px 0;">Fakülte</p>
                 
@@ -140,14 +139,11 @@
             <div class="sidebar-top">
                 <h3>Navigasyon</h3>
                 <div class="menu-item active" data-target="home">🏠 Ana Sayfa</div>
-                <div class="menu-item" data-target="loopmap">📍 LoopMap</div>
                 <div class="menu-item" data-target="market">🛒 Kampüs Market</div>
                 <div class="menu-item" data-target="confessions">🤫 Anonim Kampüs</div>
-                <div class="menu-item" data-target="qa">❓ Soru & Cevap</div>
                 <br>
                 <h3>Bana Özel</h3>
                 <div class="menu-item" id="nav-messages-btn" data-target="messages">💬 Mesajlarım <span id="msg-badge" class="badge" style="display:none;">0</span></div>
-                <div id="sidebar-networks-container"></div>
             </div>
             <div class="sidebar-bottom">
                 <div class="menu-item" data-target="settings">⚙️ Ayarlar</div>
@@ -178,7 +174,7 @@
     <span class="lightbox-close" onclick="window.closeLightbox()">&times;</span>
     <span class="lightbox-counter" id="lightbox-counter">1/3</span>
     <button class="lightbox-prev" onclick="window.changeLightboxImage(-1)">&#10094;</button>
-    <img class="lightbox-content" id="lightbox-img" src="">
+    <img class="lightbox-content" id="lightbox-img" src="" loading="lazy">
     <button class="lightbox-next" onclick="window.changeLightboxImage(1)">&#10095;</button>
 </div>
 
