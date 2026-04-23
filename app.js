@@ -3965,7 +3965,7 @@ function initializeUniLoop() {
         window.openModal('🔔 Bildirimler', html);
     };
 
-    window.loadPage = function(page) {
+        window.loadPage = function(page) {
         document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
         const targetNav = document.querySelector(`.bottom-nav-item[data-target="${page}"]`);
         if(targetNav) targetNav.classList.add('active');
@@ -3988,11 +3988,11 @@ function initializeUniLoop() {
     };
 
 // ============================================================================
-// 🤖 UNILOOP BOT MOTORU (BOT ENGINE) ENTEGRASYONU 🤖
+// 🤖 OTOMATİK BOT MOTORU (SESSİZ VE TAM OTOMATİK)
 // ============================================================================
 
-    window.inject100Bots = async function() {
-        if(!confirm("Veritabanına 100 adet gerçekçi bot kullanıcı eklenecek. Onaylıyor musun?")) return;
+    window.silentInject100Bots = async function() {
+        console.log("Sistemde bot bulunamadı. Otomatik bot üretimi arka planda başlıyor...");
         
         const namesM = ["Burak", "Emre", "Can", "Kerem", "Mert", "Oğuz", "Kaan", "Berk", "Doruk", "Ege", "Alp", "Onur"];
         const namesF = ["Zeynep", "Elif", "Ceren", "Ayşe", "Melis", "İrem", "Buse", "Selin", "Eda", "Gizem", "Doğa", "Aslı"];
@@ -4000,19 +4000,16 @@ function initializeUniLoop() {
         const faculties = ["Mühendislik Fakültesi", "Tıp Fakültesi", "İktisadi ve İdari Bilimler", "Hukuk Fakültesi", "İletişim Fakültesi", "Eğitim Fakültesi", "Fen-Edebiyat Fakültesi", "Mimarlık Fakültesi"];
         const interestsList = ['🎵 Müzik', '⚽ Spor', '📚 Kitap', '🎮 Oyun', '✈️ Seyahat', '☕ Kahve', '🎬 Sinema', '🍕 Yemek'];
 
-        alert("Bot basımı başlatılıyor... Lütfen işlem bitene kadar sekmeyi kapatma. (Console'dan takip edebilirsin)");
-
         for (let i = 1; i <= 100; i++) {
             let isMale = Math.random() > 0.5;
             let name = isMale ? namesM[Math.floor(Math.random() * namesM.length)] : namesF[Math.floor(Math.random() * namesF.length)];
             let surname = surnames[Math.floor(Math.random() * surnames.length)];
             let username = "#" + name.toLowerCase() + surname.toLowerCase() + Math.floor(Math.random() * 999);
             let gender = isMale ? "Erkek" : "Kadın";
-            let age = Math.floor(Math.random() * 6) + 18; // 18-23 arası
-            let grade = Math.floor(Math.random() * 4) + 1; // 1-4 arası
+            let age = Math.floor(Math.random() * 6) + 18; 
+            let grade = Math.floor(Math.random() * 4) + 1; 
             let fac = faculties[Math.floor(Math.random() * faculties.length)];
             
-            // Gerçekçi fotoğraflar çekmek için randomuser API'si
             let photoId = Math.floor(Math.random() * 70) + 1;
             let avatarUrl = isMale ? `https://randomuser.me/api/portraits/men/${photoId}.jpg` : `https://randomuser.me/api/portraits/women/${photoId}.jpg`;
             
@@ -4036,25 +4033,24 @@ function initializeUniLoop() {
                     avatar: "👨‍🎓",
                     avatarUrl: avatarUrl,
                     isOnline: true,
-                    isPremium: Math.random() > 0.8, // %20 ihtimalle premium
+                    isPremium: Math.random() > 0.8, 
                     fastMatchCount: 0,
                     popularity: Math.floor(Math.random() * 50),
                     isBot: true 
                 });
-                console.log(`Bot eklendi: ${name} ${surname} (${i}/100)`);
-            } catch(e) {
-                console.error("Bot ekleme hatası: ", e);
-            }
+            } catch(e) { console.error("Bot ekleme hatası: ", e); }
         }
-        alert("100 Bot başarıyla sisteme eklendi!");
+        console.log("100 Bot başarıyla sisteme eklendi!");
     };
 
-    window.startBotSimulation = function() {
-        console.log("🤖 Bot Simülasyonu Aktif Edildi.");
+    window.silentStartBotSimulation = function() {
+        console.log("🤖 Otomatik Bot Simülasyonu Aktif.");
         
+        const randomInterval = Math.floor(Math.random() * (480000 - 240000 + 1) + 240000); 
+
         setInterval(async () => {
             try {
-                const q = query(collection(db, "users"), where("isBot", "==", true), limit(100));
+                const q = query(collection(db, "users"), where("isBot", "==", true), limit(50));
                 const snap = await getDocs(q);
                 let bots = [];
                 snap.forEach(doc => bots.push(doc.data()));
@@ -4067,6 +4063,8 @@ function initializeUniLoop() {
                     "Bugün yemekhanedeki yemekler efsaneydi, yiyenler yoruma!",
                     "Kütüphanede yer bulmak neden bu kadar zor?",
                     "Kahve içmeye kampüs dışına çıkacak birileri aranıyor ☕",
+                    "Derse giden var mı? Yoklama alınıyor mu acil!",
+                    "Havalar güzelleşti çimlerde oturmalık tam.",
                     "Hocanın verdiği son ödevi anlayan biri bana anlatabilir mi lütfen..."
                 ];
                 
@@ -4082,9 +4080,33 @@ function initializeUniLoop() {
                     comments: []
                 });
             } catch (e) { console.error("Simülasyon hatası:", e); }
-        }, 180000); 
+        }, randomInterval); 
     };
-} // end of initializeUniLoop
+
+    window.autoRunBotEngine = async function() {
+        setTimeout(async () => {
+            try {
+                const q = query(collection(db, "users"), where("isBot", "==", true), limit(1));
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    await window.silentInject100Bots();
+                } 
+                
+                if (!window.botSimulationRunning) {
+                    window.silentStartBotSimulation();
+                    window.botSimulationRunning = true;
+                }
+            } catch(e) {
+                console.error("Otomatik motor hatası:", e);
+            }
+        }, 5000); 
+    };
+
+    // Sistemi otomatik başlatıyoruz
+    window.autoRunBotEngine();
+
+} // <--- initializeUniLoop fonksiyonunun GERÇEK BİTİŞİ
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeUniLoop);
