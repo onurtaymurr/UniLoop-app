@@ -3854,17 +3854,22 @@ function initializeUniLoop() {
         } catch(e) { console.error("Bot ekleme motoru hatası: ", e); }
     };
 
-    window.silentStartBotSimulation = function() {
+        window.silentStartBotSimulation = function() {
         console.log("🤖 Otomatik Bot İtiraf Simülasyonu Aktif.");
         
         const triggerPost = async () => {
             try {
-                // Veritabanını yormamak için 500 bot arasından sadece 1 tanesinin ID'sini rastgele buluyoruz
-                let randomBotId = "bot_uniloop_" + (Math.floor(Math.random() * 500) + 1);
-                const botSnap = await getDoc(doc(db, "users", randomBotId));
+                // Veritabanını yormamak için havadan gerçekçi bot oluşturup post atıyoruz
+                const namesM = ["Burak", "Emre", "Can", "Kerem", "Mert", "Oğuz", "Kaan", "Berk"];
+                const namesF = ["Zeynep", "Elif", "Ceren", "Ayşe", "Melis", "İrem", "Buse", "Selin"];
+                const surnames = ["Yılmaz", "Kaya", "Demir", "Şahin", "Çelik", "Yıldız"];
                 
-                if(!botSnap.exists()) return;
-                let randomBot = botSnap.data();
+                let isMale = Math.random() > 0.5;
+                let name = isMale ? namesM[Math.floor(Math.random() * namesM.length)] : namesF[Math.floor(Math.random() * namesF.length)];
+                let surname = surnames[Math.floor(Math.random() * surnames.length)];
+                
+                let photoId = Math.floor(Math.random() * 70) + 1;
+                let avatarUrl = isMale ? `https://randomuser.me/api/portraits/men/${photoId}.jpg` : `https://randomuser.me/api/portraits/women/${photoId}.jpg`;
                 
                 let postTexts = [
                     "Vizelere çalışmaya başlayan var mı? Ben hala konuları bilmiyorum 😭",
@@ -3881,18 +3886,35 @@ function initializeUniLoop() {
                 
                 await addDoc(collection(db, "confessions"), {
                     text: postTexts[Math.floor(Math.random() * postTexts.length)],
-                    authorId: randomBot.uid,
-                    authorName: randomBot.name,
-                    authorAvatarUrl: randomBot.avatarUrl,
-                    isAnonymous: Math.random() > 0.5, 
+                    authorId: "bot_" + Math.floor(Math.random() * 999999),
+                    authorName: name + " " + surname,
+                    authorAvatarUrl: avatarUrl,
+                    isAnonymous: Math.random() > 0.5, // %50 gizli paylaşım
                     time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                     createdAt: serverTimestamp(),
                     likes: [],
                     comments: []
                 });
-                console.log("Motor: " + randomBot.name + " tarafından bir gönderi atıldı.");
-            } catch (e) { console.error("Simülasyon hatası:", e); }
+                
+                console.log("Motor: Kampüs Keşfet'e yeni bir gönderi atıldı!");
+                
+                // Gönderi atıldıktan sonra eğer Keşfet sekmesindeysek ekranı güncelleyelim
+                if (document.querySelector('.bottom-nav-item[data-target="confessions"]')?.classList.contains('active')) {
+                    if (typeof window.drawConfessionsFeed === 'function') window.drawConfessionsFeed();
+                }
+
+            } catch (e) { 
+                console.error("Simülasyon Gönderi Hatası (Firebase Kurallarınızı Kontrol Edin):", e); 
+            }
         };
+
+        // Sistemi açar açmaz 1 tane post atsın (kullanıcı boş görmesin diye)
+        setTimeout(triggerPost, 3000);
+
+        // Sonra her 2 dakikada (120000 ms) bir atmaya devam etsin (Daha hızlı aksiyon için süreyi kısalttım)
+        setInterval(triggerPost, 120000); 
+    };
+
 
         // Siteye girildiğinde boş durmasın diye hemen 1 tane paylaşsın
         triggerPost();
