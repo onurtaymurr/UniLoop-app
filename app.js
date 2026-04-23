@@ -87,7 +87,6 @@ window.iceUnsubscribe = null;
 
 window.tournamentInterval = null;
 window.homeSliderInterval = null; 
-window.botSimulationRunning = false;
 
 window.registrationData = { interests: [] };
 
@@ -697,8 +696,7 @@ function initializeUniLoop() {
                 joinedClassRoom: null,
                 blockedUsers: [],
                 popularity: 0,
-                lastTournamentDate: 0,
-                isBot: false
+                lastTournamentDate: 0
             });
 
             alert("Harika! Profilin başarıyla oluşturuldu. Şimdi uygulamaya yönlendiriliyorsun.");
@@ -1402,6 +1400,12 @@ function initializeUniLoop() {
         }
     };
 
+    window.goToMessages = function() {
+        document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
+        const msgTab = document.querySelector('.bottom-nav-item[data-target="messages"]');
+        if(msgTab) { msgTab.classList.add('active'); window.loadPage('messages'); }
+    };
+
     window.showLeaderboard = async function() {
         window.openModal('🔥 Popülerlik Sıralaması', `<div style="text-align:center; padding:30px;"><div style="font-size:30px; animation: glowPulse 1.5s infinite alternate;">🔥</div><p style="color:var(--text-gray); margin-top:10px;">Sıralama yükleniyor...</p></div>`);
         try {
@@ -1457,26 +1461,20 @@ function initializeUniLoop() {
         `;
         
         try {
-            // SADECE RASTGELE DEĞİL, POPÜLERLİĞE GÖRE ÇEK VE 15 DAKİKA SABİTLE
-            const qSnap = await getDocs(query(collection(db, "users"), orderBy("popularity", "desc"), limit(100)));
+            const qSnap = await getDocs(query(collection(db, "users"), limit(100)));
             let allUsers = [];
             qSnap.forEach(doc => { 
                 const d = doc.data();
                 if(d.uid !== window.userProfile.uid) allUsers.push(d); 
             });
             
-            const timeSeed = Math.floor(Date.now() / (15 * 60 * 1000));
-            allUsers = allUsers.sort((a, b) => {
-                let hashA = ((a.uid || "a").charCodeAt(0) + timeSeed) % 100;
-                let hashB = ((b.uid || "b").charCodeAt(0) + timeSeed) % 100;
-                return hashA - hashB;
-            }).slice(0, 32);
+            allUsers = allUsers.sort(() => 0.5 - Math.random()).slice(0, 32);
             
             while(allUsers.length < 32) {
                 allUsers.push({ 
                     uid: "bot_" + Math.random().toString(36).substr(2, 9), 
                     name: "Sistem Botu 🤖", 
-                    age: "20",
+                    age: "?",
                     faculty: "UniLoop",
                     avatar: "🤖",
                     isClone: true 
@@ -1805,8 +1803,7 @@ function initializeUniLoop() {
         `;
 
         try {
-            // HIZLI EŞLEŞME İÇİN DE RASTGELE DEĞİL, BOTLARI ÇEKİYORUZ
-            const querySnapshot = await getDocs(query(collection(db, "users"), limit(500)));
+            const querySnapshot = await getDocs(query(collection(db, "users"), limit(50)));
             const interactedUids = chatsDB
                 .filter(c => c.status === 'accepted' || c.status === 'blocked')
                 .map(c => c.otherUid);
@@ -1936,13 +1933,17 @@ function initializeUniLoop() {
 
 
     /* ========================================================================= */
-    /* 🎙️ GERÇEK ZAMANLI SESLİ SOHBET BOT SİMÜLASYONU ENTEGRASYONU           */
+    /* 🎙️ GERÇEK ZAMANLI 1v1 EŞLEŞME & MASKE (RIZA) MOTORU                     */
     /* ========================================================================= */
     let voiceSearchTimeout = null;
     let voiceQueueUnsubscribe = null;
-    window.callRole = null;
+    window.callRole = null; // 'caller' veya 'callee'
 
-    const rtcConfig = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302'] }] };
+    const rtcConfig = {
+        iceServers: [
+            { urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302', 'stun:stun3.l.google.com:19302', 'stun:stun4.l.google.com:19302'] }
+        ]
+    };
 
     window.openFrequency = function() {
         const freqChat = document.getElementById('embedded-voice-chat');
@@ -1955,6 +1956,14 @@ function initializeUniLoop() {
             window.scrollTo(0, 0);
         }
         window.lastMatchedUid = null; 
+        
+        if(!document.getElementById('remote-audio-node')) {
+            const audioNode = document.createElement('audio');
+            audioNode.id = 'remote-audio-node';
+            audioNode.autoplay = true;
+            document.body.appendChild(audioNode);
+        }
+        
         window.startFrequencySearch();
     };
 
@@ -1972,7 +1981,9 @@ function initializeUniLoop() {
         clearInterval(window.freqTimerInterval);
         
         window.endWebRTCCall(); 
+        
         try { await deleteDoc(doc(db, "voice_queue", window.userProfile.uid)); } catch(e) {}
+        
         window.switchFrequencyState('state-search'); 
     };
 
@@ -1985,6 +1996,30 @@ function initializeUniLoop() {
     window.setupLocalAudio = async function() {
         try {
             window.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            
+            window.freqAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = window.freqAudioContext.createMediaStreamSource(window.localStream);
+            const analyser = window.freqAudioContext.createAnalyser();
+            analyser.fftSize = 32;
+            source.connect(analyser);
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            const bars = [document.getElementById('bar-1'), document.getElementById('bar-2'), document.getElementById('bar-3'), document.getElementById('bar-4'), document.getElementById('bar-5'), document.getElementById('bar-6'), document.getElementById('bar-7')];
+            
+            function animateBars() {
+                if(!window.localStream) return;
+                requestAnimationFrame(animateBars);
+                analyser.getByteFrequencyData(dataArray);
+                for(let i = 0; i < 7; i++) {
+                    let val = dataArray[i + 2] || 0; 
+                    let height = Math.max(10, (val / 255) * 50); 
+                    if(bars[i]) {
+                        bars[i].style.height = `${height}px`;
+                        bars[i].style.background = height > 20 ? '#34d399' : '#059669';
+                    }
+                }
+            }
+            animateBars();
             return true;
         } catch(err) {
             alert("Mikrofon izni alınamadı! Konuşabilmek için cihaz ayarlarından izin verin.");
@@ -1995,9 +2030,185 @@ function initializeUniLoop() {
     window.endWebRTCCall = function() {
         if(window.callUnsubscribe) { window.callUnsubscribe(); window.callUnsubscribe = null; }
         if(window.iceUnsubscribe) { window.iceUnsubscribe(); window.iceUnsubscribe = null; }
+        
         if(window.peerConnection) { window.peerConnection.close(); window.peerConnection = null; }
         if(window.localStream) { window.localStream.getTracks().forEach(t => t.stop()); window.localStream = null; }
-        if(window.callDocId) { deleteDoc(doc(db, "calls", window.callDocId)).catch(e=>{}); window.callDocId = null; }
+        if(window.freqAudioContext) { window.freqAudioContext.close(); window.freqAudioContext = null; }
+        
+        const remoteAudio = document.getElementById('remote-audio-node');
+        if(remoteAudio) {
+            remoteAudio.pause();
+            remoteAudio.srcObject = null;
+        }
+
+        if(window.callDocId) {
+             deleteDoc(doc(db, "calls", window.callDocId)).catch(e=>{});
+             window.callDocId = null;
+        }
+    };
+
+    window.createWebRTCCall = async function(calleeUid) {
+        window.callDocId = window.userProfile.uid + "_" + calleeUid;
+        const callDoc = doc(db, "calls", window.callDocId);
+        const offerCandidates = collection(callDoc, "offerCandidates");
+        const answerCandidates = collection(callDoc, "answerCandidates");
+
+        window.peerConnection = new RTCPeerConnection(rtcConfig);
+        window.localStream.getTracks().forEach(track => window.peerConnection.addTrack(track, window.localStream));
+
+        window.peerConnection.ontrack = (event) => {
+            const remoteAudio = document.getElementById('remote-audio-node');
+            if(remoteAudio) {
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.play().catch(e => console.log("Ses oynatma engellendi: ", e));
+            }
+        };
+
+        window.peerConnection.onicecandidate = event => {
+            if (event.candidate) { addDoc(offerCandidates, event.candidate.toJSON()); }
+        };
+
+        window.peerConnection.onconnectionstatechange = () => {
+            if (window.peerConnection.connectionState === 'disconnected' || window.peerConnection.connectionState === 'failed') {
+                window.startFrequencySearch();
+            }
+        };
+
+        const offerDescription = await window.peerConnection.createOffer();
+        await window.peerConnection.setLocalDescription(offerDescription);
+
+        const offer = { sdp: offerDescription.sdp, type: offerDescription.type };
+        // Maske inme durumu için iki alanı da false olarak başlatıyoruz
+        await setDoc(callDoc, { offer, reveal_caller: false, reveal_callee: false });
+
+        let remoteCandidatesBuffer = [];
+
+        window.callUnsubscribe = onSnapshot(callDoc, async (snapshot) => {
+            if (!snapshot.exists()) {
+                if(window.peerConnection) window.startFrequencySearch();
+                return;
+            }
+            const data = snapshot.data();
+            
+            if (!window.peerConnection.currentRemoteDescription && data?.answer) {
+                const answerDescription = new RTCSessionDescription(data.answer);
+                await window.peerConnection.setRemoteDescription(answerDescription);
+                remoteCandidatesBuffer.forEach(c => window.peerConnection.addIceCandidate(c));
+                remoteCandidatesBuffer = [];
+            }
+            
+            // RIZAYA DAYALI MASKE İNDİRME MANTIĞI
+            let myReveal = data.reveal_caller;
+            let otherReveal = data.reveal_callee;
+            
+            if (otherReveal && !myReveal) {
+                const statusEl = document.getElementById('reveal-status');
+                const revealBtn = document.getElementById('reveal-btn');
+                if(statusEl && revealBtn && revealBtn.style.display !== 'none') {
+                    statusEl.style.display = 'block';
+                    statusEl.style.color = '#10b981';
+                    statusEl.innerText = 'Karşı taraf maskesini indirdi! Görmek için sen de indirmelisin.';
+                }
+            }
+            if (myReveal && otherReveal) {
+                window.executeMutualReveal();
+            }
+        });
+
+        window.iceUnsubscribe = onSnapshot(answerCandidates, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const candidate = new RTCIceCandidate(change.doc.data());
+                    if (window.peerConnection.remoteDescription) {
+                        window.peerConnection.addIceCandidate(candidate);
+                    } else {
+                        remoteCandidatesBuffer.push(candidate);
+                    }
+                }
+            });
+        });
+    };
+
+    window.answerWebRTCCall = async function(callerUid) {
+        window.callDocId = callerUid + "_" + window.userProfile.uid;
+        const callDoc = doc(db, "calls", window.callDocId);
+        const offerCandidates = collection(callDoc, "offerCandidates");
+        const answerCandidates = collection(callDoc, "answerCandidates");
+
+        window.peerConnection = new RTCPeerConnection(rtcConfig);
+        window.localStream.getTracks().forEach(track => window.peerConnection.addTrack(track, window.localStream));
+
+        window.peerConnection.ontrack = (event) => {
+            const remoteAudio = document.getElementById('remote-audio-node');
+            if(remoteAudio) {
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.play().catch(e => console.log("Ses oynatma engellendi: ", e));
+            }
+        };
+
+        window.peerConnection.onicecandidate = event => {
+            if (event.candidate) { addDoc(answerCandidates, event.candidate.toJSON()); }
+        };
+
+        window.peerConnection.onconnectionstatechange = () => {
+            if (window.peerConnection.connectionState === 'disconnected' || window.peerConnection.connectionState === 'failed') {
+                window.startFrequencySearch();
+            }
+        };
+
+        let remoteCandidatesBuffer = [];
+
+        window.callUnsubscribe = onSnapshot(callDoc, async (snapshot) => {
+            if (!snapshot.exists()) {
+                if(window.peerConnection) window.startFrequencySearch();
+                return;
+            }
+            const data = snapshot.data();
+            
+            if (data?.offer && !window.peerConnection.currentRemoteDescription) {
+                const offerDescription = new RTCSessionDescription(data.offer);
+                await window.peerConnection.setRemoteDescription(offerDescription);
+
+                const answerDescription = await window.peerConnection.createAnswer();
+                await window.peerConnection.setLocalDescription(answerDescription);
+
+                const answer = { type: answerDescription.type, sdp: answerDescription.sdp };
+                await updateDoc(callDoc, { answer });
+                
+                remoteCandidatesBuffer.forEach(c => window.peerConnection.addIceCandidate(c));
+                remoteCandidatesBuffer = [];
+            }
+
+            // RIZAYA DAYALI MASKE İNDİRME MANTIĞI
+            let myReveal = data.reveal_callee;
+            let otherReveal = data.reveal_caller;
+            
+            if (otherReveal && !myReveal) {
+                const statusEl = document.getElementById('reveal-status');
+                const revealBtn = document.getElementById('reveal-btn');
+                if(statusEl && revealBtn && revealBtn.style.display !== 'none') {
+                    statusEl.style.display = 'block';
+                    statusEl.style.color = '#10b981';
+                    statusEl.innerText = 'Karşı taraf maskesini indirdi! Görmek için sen de indirmelisin.';
+                }
+            }
+            if (myReveal && otherReveal) {
+                window.executeMutualReveal();
+            }
+        });
+
+        window.iceUnsubscribe = onSnapshot(offerCandidates, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const candidate = new RTCIceCandidate(change.doc.data());
+                    if (window.peerConnection.remoteDescription) {
+                        window.peerConnection.addIceCandidate(candidate);
+                    } else {
+                        remoteCandidatesBuffer.push(candidate);
+                    }
+                }
+            });
+        });
     };
 
     window.startFrequencySearch = async function() {
@@ -2008,27 +2219,12 @@ function initializeUniLoop() {
 
         const myUid = window.userProfile.uid;
 
-        // 15 SANIYE BEKLE - KİMSE GELMEZSE BOTA BAĞLA!
         clearTimeout(voiceSearchTimeout);
         voiceSearchTimeout = setTimeout(async () => {
             if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
             try { await deleteDoc(doc(db, "voice_queue", myUid)); } catch(e) {}
-            
-            const micReady = await window.setupLocalAudio();
-            if(!micReady) { window.closeFrequency(); return; }
-            
-            // BOTA BAĞLANMA SİMÜLASYONU
-            window.currentVoiceMatch = { uid: "bot_voice", name: "Sistem Botu", faculty: "Kampüs", avatar: "🤖", isBot: true };
-            window.switchFrequencyState('state-chat');
-            window.startFrequencyTimer();
-            
-            document.getElementById('reveal-btn').style.display = 'block';
-            document.getElementById('skip-btn').style.display = 'block';
-            document.getElementById('reveal-status').style.display = 'block';
-            document.getElementById('reveal-status').innerText = 'Karşı taraf odaya bağlandı. Ses bekliyor...';
-            document.getElementById('reveal-status').style.color = '#10B981';
-            
-        }, 15000); // 15 saniye
+            window.switchFrequencyState('state-timeout');
+        }, 60000);
 
         try {
             const q = query(collection(db, "voice_queue"), where("status", "==", "waiting"), limit(5));
@@ -2037,11 +2233,12 @@ function initializeUniLoop() {
             let partnerFound = null;
             snap.forEach(docSnap => { 
                 const d = docSnap.data();
-                if(docSnap.id !== myUid && docSnap.id !== window.lastMatchedUid) { partnerFound = { uid: docSnap.id, ...d }; }
+                if(docSnap.id !== myUid && docSnap.id !== window.lastMatchedUid) {
+                    partnerFound = { uid: docSnap.id, ...d };
+                }
             });
 
             if(partnerFound) {
-                // GERÇEK KULLANICI BULUNDU KODLARI...
                 clearTimeout(voiceSearchTimeout);
                 await updateDoc(doc(db, "voice_queue", partnerFound.uid), {
                     status: "matched",
@@ -2051,17 +2248,23 @@ function initializeUniLoop() {
                 const micReady = await window.setupLocalAudio();
                 if(!micReady) { window.closeFrequency(); return; }
 
-                window.callRole = 'caller';
+                window.callRole = 'caller'; // Rolü belirle
                 await window.createWebRTCCall(partnerFound.uid);
 
                 const pDoc = await getDoc(doc(db, "users", partnerFound.uid));
                 window.currentVoiceMatch = pDoc.exists() ? pDoc.data() : { uid: partnerFound.uid, name: "Kampüs Öğrencisi", faculty: "Gizli", avatar: "🕵️" };
                 window.lastMatchedUid = partnerFound.uid; 
+                
                 window.connectFrequencyChat();
 
             } else {
-                await setDoc(doc(db, "voice_queue", myUid), { uid: myUid, status: "waiting", matchedWith: null, timestamp: serverTimestamp() });
-                
+                await setDoc(doc(db, "voice_queue", myUid), { 
+                    uid: myUid, 
+                    status: "waiting",
+                    matchedWith: null,
+                    timestamp: serverTimestamp() 
+                });
+
                 voiceQueueUnsubscribe = onSnapshot(doc(db, "voice_queue", myUid), async (docSnap) => {
                     if(docSnap.exists() && docSnap.data().status === "matched") {
                         clearTimeout(voiceSearchTimeout);
@@ -2073,17 +2276,20 @@ function initializeUniLoop() {
                         const micReady = await window.setupLocalAudio();
                         if(!micReady) { window.closeFrequency(); return; }
 
-                        window.callRole = 'callee';
+                        window.callRole = 'callee'; // Rolü belirle
                         await window.answerWebRTCCall(matchedUid);
 
                         const pDoc = await getDoc(doc(db, "users", matchedUid));
                         window.currentVoiceMatch = pDoc.exists() ? pDoc.data() : { uid: matchedUid, name: "Kampüs Öğrencisi", faculty: "Gizli", avatar: "🕵️" };
                         window.lastMatchedUid = matchedUid; 
+                        
                         window.connectFrequencyChat();
                     }
                 });
             }
-        } catch(e) {}
+        } catch(e) {
+            console.error("Eşleşme hatası:", e);
+        }
     };
 
     window.skipFrequencyUser = function() {
@@ -2120,25 +2326,26 @@ function initializeUniLoop() {
 
             if (maxSeconds <= 0) {
                 clearInterval(window.freqTimerInterval);
-                alert("Süre sınırına ulaştınız!");
+                alert("Süre sınırına ulaştınız! Başka birine bağlanıyorsunuz.");
                 window.startFrequencySearch(); 
             }
         }, 1000);
     };
 
+    // RIZAYA DAYALI MASKE İNDİRME İSTEĞİ (Sesi asla kesmez)
     window.requestReveal = async function() {
         document.getElementById('reveal-btn').style.display = 'none';
-        const statusEl = document.getElementById('reveal-status');
-        statusEl.innerText = 'Karşı tarafın onayı bekleniyor ⏳';
-        statusEl.style.display = 'block';
-        statusEl.style.color = '#f59e0b';
         
-        // Eğer bot ise 3 saniye sonra otomatik kabul etsin
-        if(window.currentVoiceMatch && window.currentVoiceMatch.isBot) {
-            setTimeout(() => {
-                window.executeMutualReveal();
-            }, 3000);
-        } else if (window.callDocId && window.callRole) {
+        const statusEl = document.getElementById('reveal-status');
+        if (statusEl.innerText.includes('Karşı taraf maskesini indirdi')) {
+            statusEl.innerText = 'Eşleşme onaylanıyor...';
+        } else {
+            statusEl.style.display = 'block';
+            statusEl.style.color = '#f59e0b';
+            statusEl.innerText = 'Karşı tarafın onayı bekleniyor ⏳';
+        }
+        
+        if (window.callDocId && window.callRole) {
             try {
                 await updateDoc(doc(db, "calls", window.callDocId), {
                     ['reveal_' + window.callRole]: true
@@ -2147,16 +2354,20 @@ function initializeUniLoop() {
         }
     };
 
+    // İKİ TARAF DA ONAYLADIĞINDA ÇALIŞIR (Ses kesilmez, sadece UI değişir)
     window.executeMutualReveal = function() {
         const matchUser = window.currentVoiceMatch;
         if(matchUser) {
             const avImg = document.getElementById('reveal-avatar');
             if(avImg) avImg.src = matchUser.avatarUrl || "https://i.pravatar.cc/150?img=" + Math.floor(Math.random() * 70);
+            
             const nameEl = document.getElementById('reveal-name');
             if(nameEl) nameEl.innerText = matchUser.name + (matchUser.age ? ", " + matchUser.age : "");
+            
             const facEl = document.getElementById('reveal-faculty');
             if(facEl) facEl.innerText = matchUser.faculty || "Kampüs Öğrencisi";
         }
+        
         window.switchFrequencyState('state-revealed');
     };
 
@@ -2174,11 +2385,7 @@ function initializeUniLoop() {
         }
     };
 
-    window.goToMessages = function() {
-        document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
-        const msgTab = document.querySelector('.bottom-nav-item[data-target="messages"]');
-        if(msgTab) { msgTab.classList.add('active'); window.loadPage('messages'); }
-    };
+    /* ========================================================================= */
 
     window.toggleHomeSearch = function() {
         const searchContainer = document.getElementById('home-search-container');
@@ -3662,7 +3869,6 @@ function initializeUniLoop() {
                 
                 <a href="#" onclick="event.preventDefault(); window.openLegalModal()" style="display:block; text-align:center; font-size:12px; color:var(--primary); text-decoration:underline;">Kullanıcı Sözleşmesi ve Hakları</a>
                 
-                <div style="text-
                 <div style="text-align:center; font-size:11px; color:#9CA3AF; margin-top:5px;">
                     UniLoop v3.2.0 Pro<br>Made with ❤️ for Students
                 </div>
@@ -3769,182 +3975,19 @@ function initializeUniLoop() {
         document.body.classList.remove('no-scroll-messages');
         document.body.classList.remove('no-scroll-home');
         
-        if(typeof window.closeFrequency === 'function') window.closeFrequency(); 
+        // EĞER BAŞKA BİR SEKMEYE GEÇİLİRSE FREKANSI KAPAT VE ARAMAYI İPTAL ET
+        window.closeFrequency(); 
 
         switch(page) {
-            case 'home': if(typeof window.renderHome === 'function') window.renderHome(); break;
-            case 'confessions': if(typeof window.drawConfessionsFeed === 'function') window.drawConfessionsFeed(); break;
-            case 'market': if(typeof window.renderListings === 'function') window.renderListings('market', '🛒 Kampüs Market'); break;
-            case 'messages': if(typeof window.renderMessages === 'function') window.renderMessages(); break;
-            case 'profile': if(typeof window.renderProfile === 'function') window.renderProfile(); break;
-            default: if(typeof window.renderHome === 'function') window.renderHome();
+            case 'home': window.renderHome(); break;
+            case 'confessions': window.drawConfessionsFeed(); break;
+            case 'market': window.renderListings('market', '🛒 Kampüs Market'); break;
+            case 'messages': window.renderMessages(); break;
+            case 'profile': window.renderProfile(); break;
+            default: window.renderHome();
         }
     };
-
-// ============================================================================
-// 🤖 OTOMATİK BOT MOTORU (SESSİZ VE TAM OTOMATİK)
-// ============================================================================
-
-    // ============================================================================
-// 🤖 OTOMATİK BOT MOTORU (500 SABİT BOT - KESİN ÇÖZÜM)
-// ============================================================================
-
-    window.silentInject500Bots = async function() {
-        console.log("Motor: Sabit botlar kontrol ediliyor...");
-        try {
-            // SADECE 1. botu kontrol et. Eğer o varsa, hepsi vardır. 
-            // (Bu sayede Firebase yorulmaz ve sorgu hatası vermez)
-            const firstBotSnap = await getDoc(doc(db, "users", "bot_uniloop_1"));
-            if (firstBotSnap.exists()) {
-                console.log("Motor: 500 sabit profil sistemde ZATEN VAR. Üretim atlandı.");
-                return; 
-            }
-
-            console.log("Motor: Sistem boş. 500 adet SABİT profil oluşturuluyor...");
-            
-            const namesM = ["Burak", "Emre", "Can", "Kerem", "Mert", "Oğuz", "Kaan", "Berk", "Doruk", "Ege", "Alp", "Onur", "Kıvanç", "Cem", "Deniz", "Tolga", "Barış", "Arda"];
-            const namesF = ["Zeynep", "Elif", "Ceren", "Ayşe", "Melis", "İrem", "Buse", "Selin", "Eda", "Gizem", "Doğa", "Aslı", "Leyla", "Naz", "Su", "Eylül", "Damla", "Pelin"];
-            const surnames = ["Yılmaz", "Kaya", "Demir", "Şahin", "Çelik", "Yıldız", "Öztürk", "Aydın", "Özdemir", "Arslan", "Doğan", "Kılıç", "Koç", "Turan", "Şen"];
-            const universities = ["İstanbul Üniversitesi", "Doğu Akdeniz Üniversitesi", "ODTÜ", "Marmara Üniversitesi", "Boğaziçi Üniversitesi", "Yakın Doğu Üniversitesi", "Ege Üniversitesi"];
-            const faculties = ["Mühendislik Fakültesi", "Tıp Fakültesi", "İktisadi ve İdari Bilimler", "Hukuk Fakültesi", "İletişim Fakültesi", "Eğitim Fakültesi", "Fen-Edebiyat Fakültesi", "Mimarlık Fakültesi"];
-            const interestsList = ['🎵 Müzik', '⚽ Spor', '📚 Kitap', '🎮 Oyun', '✈️ Seyahat', '☕ Kahve', '🎬 Sinema', '🍕 Yemek', '💻 Yazılım', '🎨 Sanat'];
-
-            for (let i = 1; i <= 500; i++) {
-                let isMale = Math.random() > 0.5;
-                let name = isMale ? namesM[Math.floor(Math.random() * namesM.length)] : namesF[Math.floor(Math.random() * namesF.length)];
-                let surname = surnames[Math.floor(Math.random() * surnames.length)];
-                let username = "#" + name.toLowerCase() + surname.toLowerCase() + Math.floor(Math.random() * 9999);
-                let gender = isMale ? "Erkek" : "Kadın";
-                let age = Math.floor(Math.random() * 6) + 18; 
-                let grade = Math.floor(Math.random() * 4) + 1; 
-                let fac = faculties[Math.floor(Math.random() * faculties.length)];
-                let uni = universities[Math.floor(Math.random() * universities.length)];
-                
-                let photoId = Math.floor(Math.random() * 70) + 1;
-                let avatarUrl = isMale ? `https://randomuser.me/api/portraits/men/${photoId}.jpg` : `https://randomuser.me/api/portraits/women/${photoId}.jpg`;
-                
-                let shuffledInterests = interestsList.sort(() => 0.5 - Math.random()).slice(0, 3);
-                
-                // ID'leri SABİT kılıyoruz! Her zaman bot_uniloop_1, bot_uniloop_2 olacak.
-                let botUid = "bot_uniloop_" + i;
-
-                await setDoc(doc(db, "users", botUid), {
-                    uid: botUid,
-                    name: name,
-                    surname: surname,
-                    username: username,
-                    email: `${username.replace('#','')}@uniloop.bot`,
-                    university: uni,
-                    faculty: fac,
-                    grade: `${grade}. Sınıf`,
-                    age: age.toString(),
-                    gender: gender,
-                    interests: shuffledInterests,
-                    purpose: "👋 Sosyalleşmek İstiyorum",
-                    avatar: "👨‍🎓",
-                    avatarUrl: avatarUrl,
-                    isOnline: true,
-                    isPremium: Math.random() > 0.8, 
-                    fastMatchCount: 0,
-                    popularity: Math.floor(Math.random() * 80), // 0 ile 80 arası popülerlik
-                    isBot: true 
-                });
-            }
-            console.log("Motor: 500 Sabit Profil başarıyla MÜHÜRLENDİ!");
-        } catch(e) { console.error("Bot ekleme motoru hatası: ", e); }
-    };
-
-        window.silentStartBotSimulation = function() {
-        console.log("🤖 Otomatik Bot İtiraf Simülasyonu Aktif.");
-        
-        const triggerPost = async () => {
-            try {
-                // Veritabanını yormamak için havadan gerçekçi bot oluşturup post atıyoruz
-                const namesM = ["Burak", "Emre", "Can", "Kerem", "Mert", "Oğuz", "Kaan", "Berk"];
-                const namesF = ["Zeynep", "Elif", "Ceren", "Ayşe", "Melis", "İrem", "Buse", "Selin"];
-                const surnames = ["Yılmaz", "Kaya", "Demir", "Şahin", "Çelik", "Yıldız"];
-                
-                let isMale = Math.random() > 0.5;
-                let name = isMale ? namesM[Math.floor(Math.random() * namesM.length)] : namesF[Math.floor(Math.random() * namesF.length)];
-                let surname = surnames[Math.floor(Math.random() * surnames.length)];
-                
-                let photoId = Math.floor(Math.random() * 70) + 1;
-                let avatarUrl = isMale ? `https://randomuser.me/api/portraits/men/${photoId}.jpg` : `https://randomuser.me/api/portraits/women/${photoId}.jpg`;
-                
-                let postTexts = [
-                    "Vizelere çalışmaya başlayan var mı? Ben hala konuları bilmiyorum 😭",
-                    "Bugün yemekhanedeki yemekler efsaneydi, yiyenler yoruma!",
-                    "Kütüphanede yer bulmak neden bu kadar zor?",
-                    "Kahve içmeye kampüs dışına çıkacak birileri aranıyor ☕",
-                    "Derse giden var mı? Yoklama alınıyor mu acil!",
-                    "Havalar güzelleşti çimlerde oturmalık tam.",
-                    "Hocanın verdiği son ödevi anlayan biri bana anlatabilir mi lütfen...",
-                    "Not ortalamasını yükseltmek için taktik verecek üst dönemler var mı?",
-                    "Kampüste kayboldum resmen, bu derslik nerede...",
-                    "Sosyalleşmek için hangi kulüplere yazılmalıyım sizce?"
-                ];
-                
-                await addDoc(collection(db, "confessions"), {
-                    text: postTexts[Math.floor(Math.random() * postTexts.length)],
-                    authorId: "bot_" + Math.floor(Math.random() * 999999),
-                    authorName: name + " " + surname,
-                    authorAvatarUrl: avatarUrl,
-                    isAnonymous: Math.random() > 0.5, // %50 gizli paylaşım
-                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                    createdAt: serverTimestamp(),
-                    likes: [],
-                    comments: []
-                });
-                
-                console.log("Motor: Kampüs Keşfet'e yeni bir gönderi atıldı!");
-                
-                // Gönderi atıldıktan sonra eğer Keşfet sekmesindeysek ekranı güncelleyelim
-                if (document.querySelector('.bottom-nav-item[data-target="confessions"]')?.classList.contains('active')) {
-                    if (typeof window.drawConfessionsFeed === 'function') window.drawConfessionsFeed();
-                }
-
-            } catch (e) { 
-                console.error("Simülasyon Gönderi Hatası (Firebase Kurallarınızı Kontrol Edin):", e); 
-            }
-        };
-
-        // Sistemi açar açmaz 1 tane post atsın (kullanıcı boş görmesin diye)
-        setTimeout(triggerPost, 3000);
-
-        // Sonra her 2 dakikada (120000 ms) bir atmaya devam etsin (Daha hızlı aksiyon için süreyi kısalttım)
-        setInterval(triggerPost, 120000); 
-    };
-
-
-        // Siteye girildiğinde boş durmasın diye hemen 1 tane paylaşsın
-        triggerPost();
-        
-        // Sonra her 3 dakikada bir paylaşmaya devam etsin
-        setInterval(triggerPost, 180000); 
-    };
-
-    window.autoRunBotEngine = async function() {
-        // ÖNEMLİ: Sistemin çalışması için giriş yapılmış olması şarttır.
-        // Bu yüzden Firebase bağlantısının kurulmasını güvenli bir şekilde bekliyoruz.
-        const checkAuthAndRun = setInterval(async () => {
-            if (auth.currentUser) { // Kullanıcı giriş yaptıysa
-                clearInterval(checkAuthAndRun); // Kontrolü durdur
-                try {
-                    await window.silentInject500Bots(); // 500 kişiyi mühürle
-                    if (!window.botSimulationRunning) {
-                        window.silentStartBotSimulation(); // Paylaşımları başlat
-                        window.botSimulationRunning = true;
-                    }
-                } catch(e) {
-                    console.error("Otomatik motor hatası:", e);
-                }
-            }
-        }, 2000); // Her 2 saniyede bir giriş durumunu kontrol et
-    };
-
-    window.autoRunBotEngine();
-
-} // <--- initializeUniLoop fonksiyonunun GERÇEK BİTİŞİ
+}
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeUniLoop);
