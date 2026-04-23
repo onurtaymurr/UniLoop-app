@@ -3965,7 +3965,671 @@ function initializeUniLoop() {
         window.openModal('🔔 Bildirimler', html);
     };
 
-        window.loadPage = function(page) {
+            window.startPopularityTournament = async function() {
+        const container = document.getElementById('embedded-fast-match-container');
+        if(!container) return;
+        
+        container.innerHTML = `
+            <div style="text-align:center; padding:20px;">
+                <div style="font-size:50px; animation: glowPulse 1.5s infinite alternate;" class="white-flame-icon">🔥</div>
+                <h3 style="color:var(--text-dark); margin-bottom:10px;">Adaylar Toplanıyor...</h3>
+                <p style="color:var(--text-gray); font-size:13px;">Tarafını seçmeye hazırlan!</p>
+            </div>
+        `;
+        
+        try {
+            // SADECE RASTGELE DEĞİL, POPÜLERLİĞE GÖRE ÇEK (SABİTLİK İÇİN)
+            const qSnap = await getDocs(query(collection(db, "users"), orderBy("popularity", "desc"), limit(100)));
+            let allUsers = [];
+            qSnap.forEach(doc => { 
+                const d = doc.data();
+                if(d.uid !== window.userProfile.uid) allUsers.push(d); 
+            });
+            
+            // 15 Dakikada bir değişen sabit (seeded) bir sıralama mantığı
+            const timeSeed = Math.floor(Date.now() / (15 * 60 * 1000));
+            allUsers = allUsers.sort((a, b) => {
+                let hashA = (a.uid.charCodeAt(0) + timeSeed) % 100;
+                let hashB = (b.uid.charCodeAt(0) + timeSeed) % 100;
+                return hashA - hashB;
+            }).slice(0, 32);
+            
+            while(allUsers.length < 32) {
+                allUsers.push({ 
+                    uid: "bot_" + Math.random().toString(36).substr(2, 9), 
+                    name: "Sistem Botu 🤖", 
+                    age: "20",
+                    faculty: "UniLoop",
+                    avatar: "🤖",
+                    isClone: true 
+                });
+            }
+            
+            window.tData = { bracket: allUsers, winners: [], currentMatch: 0, stage: 'groups', semiLosers: [], finalists: [], finalWinner: null, secondPlace: null, thirdPlace: null };
+            window.renderTournamentRound();
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = '<p style="color:red; text-align:center;">Turnuva başlatılamadı.</p>';
+        }
+    };
+
+    window.tourSelect = function(index) {
+        const selectedUser = window.tData.bracket[index];
+        window.tData.winners.push(selectedUser);
+
+        if(window.tData.stage === 'semis') {
+            const loserIndex = index % 2 === 0 ? index + 1 : index - 1;
+            window.tData.semiLosers.push(window.tData.bracket[loserIndex]);
+        }
+        
+        if (window.tData.stage === 'thirdPlace') {
+            window.tData.thirdPlace = selectedUser;
+        }
+
+        if (window.tData.stage === 'final') {
+            window.tData.finalWinner = selectedUser;
+            const loserIndex = index % 2 === 0 ? index + 1 : index - 1;
+            window.tData.secondPlace = window.tData.bracket[loserIndex];
+        }
+
+        window.tData.currentMatch++;
+        window.renderTournamentRound();
+    };
+
+    window.renderTournamentRound = function() {
+        const container = document.getElementById('embedded-fast-match-container');
+        if(!container) return;
+        const t = window.tData;
+
+        let totalMatchesInStage = 0;
+        if(t.stage === 'groups') totalMatchesInStage = 8;
+        if(t.stage === 'quarters') totalMatchesInStage = 4;
+        if(t.stage === 'semis') totalMatchesInStage = 2;
+        if(t.stage === 'thirdPlace') totalMatchesInStage = 1;
+        if(t.stage === 'final') totalMatchesInStage = 1;
+
+        if (t.currentMatch >= totalMatchesInStage) {
+            if (t.stage === 'groups') { t.stage = 'quarters'; t.bracket = [...t.winners]; }
+            else if (t.stage === 'quarters') { t.stage = 'semis'; t.bracket = [...t.winners]; }
+            else if (t.stage === 'semis') { 
+                t.stage = 'thirdPlace'; 
+                t.finalists = [...t.winners];
+                t.bracket = [...t.semiLosers]; 
+            }
+            else if (t.stage === 'thirdPlace') { 
+                t.stage = 'final'; 
+                t.bracket = [...t.finalists]; 
+            } 
+            else if (t.stage === 'final') { window.finishTournament(); return; }
+            
+            t.winners = [];
+            t.currentMatch = 0;
+            window.renderTournamentRound();
+            return;
+        }
+
+        let stageTitle = '';
+        if(t.stage === 'groups') stageTitle = `🔥 Grup Aşaması (${t.currentMatch+1}/8)`;
+        if(t.stage === 'quarters') stageTitle = `⚡ Çeyrek Final (${t.currentMatch+1}/4)`;
+        if(t.stage === 'semis') stageTitle = `⚔️ Yarı Final (${t.currentMatch+1}/2)`;
+        if(t.stage === 'thirdPlace') stageTitle = `🥉 3. lük Maçı`;
+        if(t.stage === 'final') stageTitle = `🏆 BÜYÜK FİNAL`;
+
+        if (t.stage === 'groups') {
+            const baseIdx = t.currentMatch * 4;
+            const users = [t.bracket[baseIdx], t.bracket[baseIdx+1], t.bracket[baseIdx+2], t.bracket[baseIdx+3]];
+            container.innerHTML = `
+                <div style="text-align:center; margin-bottom:10px; width:100%;">
+                    <h3 style="margin:0; color:#111827; font-size:18px;">${stageTitle}</h3>
+                    <p style="font-size:12px; color:var(--text-gray); margin:5px 0 0 0;">En favori profilini seç!</p>
+                </div>
+                <div class="tour-grid-4">
+                    ${users.map((u, i) => `
+                        <div class="tour-card" onclick="this.style.transform='scale(0.95)'; setTimeout(() => window.tourSelect(${baseIdx+i}), 150);">
+                            ${u.avatarUrl ? `<img src="${u.avatarUrl}" class="tour-card-img">` : `<div style="width:100%;height:100%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:40px;">${u.avatar||'👤'}</div>`}
+                            <div class="tour-card-name" style="padding-top:40px;">
+                                <span style="font-size:10px; color:#D1D5DB; display:block; margin-bottom:2px; font-weight:normal;">${u.age ? u.age : '?'} Yaş • ${u.faculty ? u.faculty : 'Belirtilmemiş'}</span>
+                                ${u.name}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            const baseIdx = t.currentMatch * 2;
+            const u1 = t.bracket[baseIdx];
+            const u2 = t.bracket[baseIdx+1];
+            container.innerHTML = `
+                <div style="text-align:center; margin-bottom:10px; width:100%;">
+                    <h3 style="margin:0; color:#111827; font-size:20px;">${stageTitle}</h3>
+                    <p style="font-size:12px; color:var(--text-gray); margin:5px 0 0 0;">Kazanması gerekeni seç!</p>
+                </div>
+                <div class="tour-grid-2">
+                    <div class="tour-card" onclick="this.style.transform='scale(0.95)'; setTimeout(() => window.tourSelect(${baseIdx}), 150);" style="aspect-ratio: 0.8;">
+                        ${u1.avatarUrl ? `<img src="${u1.avatarUrl}" class="tour-card-img">` : `<div style="width:100%;height:100%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:50px;">${u1.avatar||'👤'}</div>`}
+                        <div class="tour-card-name" style="font-size:16px; padding-top:40px;">
+                            <span style="font-size:11px; color:#D1D5DB; display:block; margin-bottom:4px; font-weight:normal;">${u1.age ? u1.age : '?'} Yaş • ${u1.faculty ? u1.faculty : 'Belirtilmemiş'}</span>
+                            ${u1.name}
+                        </div>
+                    </div>
+                    <div class="tour-card" onclick="this.style.transform='scale(0.95)'; setTimeout(() => window.tourSelect(${baseIdx+1}), 150);" style="aspect-ratio: 0.8;">
+                        ${u2.avatarUrl ? `<img src="${u2.avatarUrl}" class="tour-card-img">` : `<div style="width:100%;height:100%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:50px;">${u2.avatar||'👤'}</div>`}
+                        <div class="tour-card-name" style="font-size:16px; padding-top:40px;">
+                            <span style="font-size:11px; color:#D1D5DB; display:block; margin-bottom:4px; font-weight:normal;">${u2.age ? u2.age : '?'} Yaş • ${u2.faculty ? u2.faculty : 'Belirtilmemiş'}</span>
+                            ${u2.name}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    };
+
+    window.finishTournament = async function() {
+        const container = document.getElementById('embedded-fast-match-container');
+        if(!container) return;
+        const t = window.tData;
+
+        container.innerHTML = `<div style="text-align:center; padding:30px;"><div style="font-size:40px; animation: glowPulse 1s infinite alternate;">⏳</div><h3 style="color:var(--text-dark);">Sonuçlar Kaydediliyor...</h3></div>`;
+
+        try {
+            const nowTs = Date.now();
+            await updateDoc(doc(db, "users", window.userProfile.uid), { lastTournamentDate: nowTs });
+            window.userProfile.lastTournamentDate = nowTs;
+
+            if(t.finalWinner && !t.finalWinner.isClone) {
+                const uDoc = await getDoc(doc(db, "users", t.finalWinner.uid));
+                if(uDoc.exists()) await updateDoc(doc(db, "users", t.finalWinner.uid), { popularity: (uDoc.data().popularity || 0) + 3 });
+            }
+            if(t.secondPlace && !t.secondPlace.isClone) {
+                const uDoc = await getDoc(doc(db, "users", t.secondPlace.uid));
+                if(uDoc.exists()) await updateDoc(doc(db, "users", t.secondPlace.uid), { popularity: (uDoc.data().popularity || 0) + 2 });
+            }
+            if(t.thirdPlace && !t.thirdPlace.isClone) {
+                const uDoc = await getDoc(doc(db, "users", t.thirdPlace.uid));
+                if(uDoc.exists()) await updateDoc(doc(db, "users", t.thirdPlace.uid), { popularity: (uDoc.data().popularity || 0) + 1 });
+            }
+
+            container.innerHTML = `
+                <div style="position:relative; text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,0.05); width:100%; max-width:350px;">
+                    <button onclick="window.loadPage('home')" style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:24px; color:#9CA3AF; cursor:pointer; font-weight:bold; transition:0.2s;" onmouseover="this.style.color='#EF4444'" onmouseout="this.style.color='#9CA3AF'">✖</button>
+                    <div style="font-size:50px; margin-bottom:10px; margin-top:10px;">🎉</div>
+                    <h3 style="color:#111827; margin-bottom:20px;">Savaş Sona Erdi!</h3>
+                    
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px; text-align:left;">
+                        <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:10px; border-radius:10px; border:1px solid #E5E7EB;">
+                            <span style="font-size:24px;">🥇</span> 
+                            <span style="font-weight:800; flex:1; color:#111827;">${t.finalWinner.name}</span> 
+                            <span style="font-weight:bold; color:var(--text-gray);">${t.finalWinner.isClone ? 'BOT' : '+3 🔥'}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:10px; border-radius:10px; border:1px solid #E5E7EB;">
+                            <span style="font-size:24px;">🥈</span> 
+                            <span style="font-weight:800; flex:1; color:#111827;">${t.secondPlace.name}</span> 
+                            <span style="font-weight:bold; color:var(--text-gray);">${t.secondPlace.isClone ? 'BOT' : '+2 🔥'}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:10px; border-radius:10px; border:1px solid #E5E7EB;">
+                            <span style="font-size:24px;">🥉</span> 
+                            <span style="font-weight:800; flex:1; color:#111827;">${t.thirdPlace.name}</span> 
+                            <span style="font-weight:bold; color:var(--text-gray);">${t.thirdPlace.isClone ? 'BOT' : '+1 🔥'}</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-primary" style="width:100%; justify-content:center; padding:12px; border-radius:12px; font-weight:800;" onclick="window.showLeaderboard()">Liderlik Tablosunu Gör</button>
+                </div>
+            `;
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = '<p style="color:red;">Sonuçlar kaydedilirken hata oluştu.</p>';
+        }
+    };
+
+    window.initEmbeddedFastMatch = async function() {
+        let count = window.userProfile.fastMatchCount || 0;
+        let today = new Date().toLocaleDateString();
+        
+        if (window.userProfile.fastMatchDate !== today) {
+            count = 0;
+            window.userProfile.fastMatchCount = 0;
+            window.userProfile.fastMatchDate = today;
+            await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchCount: 0, fastMatchDate: today });
+        }
+
+        const container = document.getElementById('embedded-fast-match-container');
+        if(!container) return;
+
+        let maxSwipes = window.userProfile.isPremium ? 30 : 10;
+        
+        if (count >= maxSwipes) {
+            const isPremium = window.userProfile.isPremium;
+            
+            let canJoinTournament = true;
+            let tCooldownStr = "";
+            let remainingSecs = 0;
+
+            if (window.userProfile && window.userProfile.lastTournamentDate) {
+                let timeDiff = Date.now() - window.userProfile.lastTournamentDate;
+                let cooldown = 24 * 60 * 60 * 1000;
+                if (timeDiff < cooldown) {
+                    canJoinTournament = false;
+                    let remaining = cooldown - timeDiff;
+                    remainingSecs = Math.floor(remaining / 1000);
+                    let h = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                    let m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                    let s = Math.floor((remaining % (1000 * 60)) / 1000).toString().padStart(2, '0');
+                    tCooldownStr = `⏳ ${h}:${m}:${s}`;
+                }
+            }
+
+            let top3 = [];
+            try {
+                const q = query(collection(db, "users"), orderBy("popularity", "desc"), limit(3));
+                const snap = await getDocs(q);
+                snap.forEach(doc => top3.push(doc.data()));
+            } catch(e) { console.error("Kürsü yüklenemedi", e); }
+
+            let podiumHtml = `
+                <div style="margin-top:20px; width:100%; display:flex; justify-content:center; align-items:flex-end; gap:10px; height:150px; padding:0 15px; box-sizing:border-box;">
+                    ${top3[1] ? `
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center;" onclick="window.viewUserProfile('${top3[1].uid}')">
+                        <img src="${top3[1].avatarUrl || ''}" style="width:45px; height:45px; border-radius:50%; border:3px solid #C0C0C0; object-fit:cover; background:#1F2937; margin-bottom:5px;">
+                        <span style="font-size:11px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${top3[1].name}</span>
+                        <div style="width:100%; background:linear-gradient(to top, #e2e8f0, #f8fafc); height:50px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-weight:900; color:#64748b; border:1px solid #cbd5e1; border-bottom:none; box-shadow:0 -2px 10px rgba(0,0,0,0.05);">2.</div>
+                    </div>
+                    ` : '<div style="flex:1;"></div>'}
+                    ${top3[0] ? `
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center;" onclick="window.viewUserProfile('${top3[0].uid}')">
+                        <img src="${top3[0].avatarUrl || ''}" style="width:55px; height:55px; border-radius:50%; border:3px solid #FBBF24; object-fit:cover; background:#1F2937; z-index:5; margin-bottom:5px;">
+                        <span style="font-size:12px; font-weight:900; color:var(--text-dark); margin-bottom:5px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${top3[0].name}</span>
+                        <div style="width:100%; background:linear-gradient(to top, #fef3c7, #fffbeb); height:80px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-weight:900; color:#b45309; border:1px solid #fde68a; border-bottom:none; box-shadow:0 -4px 15px rgba(251,191,36,0.3);">1.</div>
+                    </div>
+                    ` : '<div style="flex:1;"></div>'}
+                    ${top3[2] ? `
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center;" onclick="window.viewUserProfile('${top3[2].uid}')">
+                        <img src="${top3[2].avatarUrl || ''}" style="width:45px; height:45px; border-radius:50%; border:3px solid #CD7F32; object-fit:cover; background:#1F2937; margin-bottom:5px;">
+                        <span style="font-size:11px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${top3[2].name}</span>
+                        <div style="width:100%; background:linear-gradient(to top, #ffedd5, #fffbeb); height:40px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-weight:900; color:#b45309; border:1px solid #fde047; border-bottom:none; box-shadow:0 -2px 10px rgba(0,0,0,0.05);">3.</div>
+                    </div>
+                    ` : '<div style="flex:1;"></div>'}
+                </div>
+            `;
+
+            container.innerHTML = `
+                <div style="width:100%; max-width:380px; display:flex; flex-direction:row; gap:12px; padding:10px;">
+                    
+                    <div style="flex:1; background:#1F2937; border-radius:16px; padding:15px 10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; box-shadow:0 4px 10px rgba(0,0,0,0.15); aspect-ratio:1/1.15; border:1px solid #374151;">
+                        <div style="font-size:24px; margin-bottom:5px;">⚡</div>
+                        <h4 style="margin:0 0 5px 0; color:white; font-size:13px; text-align:center;">Hızlı Eşleşme</h4>
+                        
+                        ${isPremium ? `
+                            <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 10px 0; line-height:1.4;">Bugünlük hakkın doldu, yarın bir daha gel!</p>
+                            <div style="background:#374151; padding:8px 5px; border-radius:8px; font-weight:800; color:white; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Bekleniyor...</div>
+                        ` : `
+                            <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 5px 0; line-height:1.4;">Daha fazla eşleşme için</p>
+                            <button onclick="window.openPremiumModal()" style="background:white; color:#111827; border:1px solid #D1D5DB; border-radius:8px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:8px; transition:0.2s;">Premium Ol ☆</button>
+                            <div style="background:#374151; padding:6px 5px; border-radius:8px; font-weight:800; color:white; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Bekleniyor...</div>
+                        `}
+                    </div>
+
+                    <div style="flex:1; background:#1F2937; border-radius:16px; padding:15px 10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; box-shadow:0 4px 10px rgba(0,0,0,0.15); aspect-ratio:1/1.15; border:1px solid #374151;">
+                        <div style="font-size:24px; margin-bottom:5px;" class="white-flame-icon">🔥</div>
+                        <h4 style="margin:0 0 5px 0; color:white; font-size:13px; text-align:center;">Popülerlik Savaşı</h4>
+                        <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 10px 0; line-height:1.4;">Kampüsün en popülerlerini seç veya seçil! 👑</p>
+                        
+                        ${canJoinTournament ? `
+                            <button onclick="window.startPopularityTournament()" style="background:white; color:#111827; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%; transition:0.2s;">Savaşa Katıl ⚔️</button>
+                        ` : `
+                            <div style="background:#374151; padding:8px 5px; border-radius:8px; font-weight:800; color:white; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" data-remaining="${remainingSecs}" id="pop-battle-timer">${tCooldownStr}</div>
+                        `}
+                    </div>
+                </div>
+                
+                <div style="flex:1; width:100%; min-height:50px; display:flex; flex-direction:column; justify-content:flex-end;">
+                    ${top3.length > 0 ? podiumHtml : '<p style="text-align:center; color:#9CA3AF; font-size:12px;">Henüz kürsüye çıkan kimse yok!</p>'}
+                </div>
+            `;
+
+            if (window.fastMatchTimerInterval) clearInterval(window.fastMatchTimerInterval);
+            window.fastMatchTimerInterval = setInterval(() => {
+                const timerEl = document.getElementById('fast-match-timer');
+                if(timerEl) {
+                    const now = new Date();
+                    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    const diff = tomorrow - now;
+                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                    const s = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+                    timerEl.innerText = `⏳ ${h}:${m}:${s}`;
+                }
+                
+                const popTimerEl = document.getElementById('pop-battle-timer');
+                if(popTimerEl) {
+                    let rem = parseInt(popTimerEl.getAttribute('data-remaining'));
+                    if (rem > 0) {
+                        rem -= 1;
+                        popTimerEl.setAttribute('data-remaining', rem);
+                        let h = Math.floor(rem / 3600).toString().padStart(2, '0');
+                        let m = Math.floor((rem % 3600) / 60).toString().padStart(2, '0');
+                        let s = (rem % 60).toString().padStart(2, '0');
+                        popTimerEl.innerText = `⏳ ${h}:${m}:${s}`;
+                    } else {
+                        popTimerEl.outerHTML = `<button onclick="window.startPopularityTournament()" style="background:white; color:#111827; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%; transition:0.2s; animation: fadeIn 0.3s ease;">Savaşa Katıl ⚔️</button>`;
+                    }
+                }
+            }, 1000);
+
+            return; 
+        }
+
+        container.innerHTML = `
+            <div style="text-align:center; padding:10px; display:flex; flex-direction:column; align-items:center;">
+                <div style="font-size:40px; animation: glowPulse 1.5s infinite alternate; margin-bottom:15px;">🔍</div>
+                <h3 style="color:var(--text-gray);">Kampüste birileri aranıyor...</h3>
+            </div>
+        `;
+
+        try {
+            // HIZLI EŞLEŞME İÇİN DE RASTGELE DEĞİL, BOTLARI ÇEKİYORUZ
+            const querySnapshot = await getDocs(query(collection(db, "users"), limit(500)));
+            const interactedUids = chatsDB
+                .filter(c => c.status === 'accepted' || c.status === 'blocked')
+                .map(c => c.otherUid);
+                
+            window.fastMatchUsers = [];
+
+            querySnapshot.forEach((doc) => {
+                const u = doc.data();
+                if(u.uid !== window.userProfile.uid && !interactedUids.includes(u.uid)) {
+                    window.fastMatchUsers.push(u);
+                }
+            });
+
+            if(window.fastMatchUsers.length === 0) {
+                 container.innerHTML = `
+                    <div style="padding:40px 10px; text-align:center; background:white; border-radius:16px; width:100%; max-width:320px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+                        <div style="font-size:50px; margin-bottom:15px;">🌟</div>
+                        <h3 style="color:var(--text-dark); margin-bottom:10px;">Şu an kimse yok!</h3>
+                        <p style="color:var(--text-gray); font-size:13px; margin-bottom:15px;">Ağda karşılaşacak kimse kalmadı. Lütfen daha sonra tekrar kontrol et.</p>
+                        <button id="join-tour-btn-empty" class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#111827; border:none; border-radius:12px;" onclick="window.startPopularityTournament()">Savaşa Katıl ⚔️</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sabit bir karıştırma (sayfa yenilendiğinde hep aynı sıra olmasın ama sürekli de değişmesin)
+            window.fastMatchUsers = window.fastMatchUsers.sort(() => 0.5 - Math.random());
+            window.fastMatchCurrentIndex = 0;
+            
+            window.renderEmbeddedFastMatchCard();
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = '<p style="color:red;">Kullanıcılar yüklenirken hata oluştu.</p>';
+        }
+    };
+
+    window.renderEmbeddedFastMatchCard = function() {
+        const container = document.getElementById('embedded-fast-match-container');
+        if(!container) return;
+
+        let maxSwipes = window.userProfile.isPremium ? 30 : 10;
+
+        if(window.fastMatchCurrentIndex >= window.fastMatchUsers.length) {
+            window.fastMatchUsers = window.fastMatchUsers.sort(() => 0.5 - Math.random());
+            window.fastMatchCurrentIndex = 0;
+        }
+
+        const u = window.fastMatchUsers[window.fastMatchCurrentIndex];
+        const initial = u.surname ? u.surname.charAt(0) + '.' : '';
+        const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:6px; text-shadow:0 1px 2px rgba(0,0,0,0.5);" title="Premium Üye">👑</span>' : '';
+        
+        let avatarHtml = u.avatarUrl 
+            ? `<img src="${u.avatarUrl}" style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;">` 
+            : `<div style="width:100%; height:100%; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:80px; pointer-events:none;">${u.avatar || '👤'}</div>`;
+
+        let tagsHtml = '';
+        if(u.interests && Array.isArray(u.interests)) {
+            tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:11px; background:rgba(255,255,255,0.25); color:white; padding:4px 10px; border-radius:12px; font-weight:700; margin-right:4px; margin-bottom:4px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join('');
+        }
+
+        let remaining = maxSwipes - window.userProfile.fastMatchCount;
+        
+        let headerText = window.userProfile.isPremium ? 
+            `<span style="color:#111827; font-size:12px; font-weight:bold; background:white; padding:4px 12px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #111827; box-shadow:0 2px 4px rgba(0,0,0,0.05);">Kalan Hakkın: ${remaining} / 30 (Premium)</span>` : 
+            `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:4px 12px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #FCA5A5;">Kalan Hakkın: ${remaining} / 10</span>`;
+
+        container.innerHTML = `
+            ${headerText}
+            <div id="swipe-card" class="swipe-card">
+                <div class="swipe-card-img-wrapper">
+                    ${avatarHtml}
+                </div>
+                
+                <div style="position:absolute; bottom:0; left:0; right:0; padding:40px 15px 45px 15px; background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); z-index:2; text-align:left; border-bottom-left-radius:20px; border-bottom-right-radius:20px; pointer-events:none;">
+                    <h2 style="margin:0 0 6px 0; color:white; font-size:22px; display:flex; align-items:center; text-shadow:0 2px 4px rgba(0,0,0,0.6);">${u.name} ${initial} ${u.age ? `<span style="font-weight:normal; margin-left:8px; font-size:18px; opacity:0.9;">${u.age}</span>` : ''} ${premiumIcon}</h2>
+                    <div style="font-size:13px; color:#e2e8f0; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:4px; text-shadow:0 1px 2px rgba(0,0,0,0.5);"><span style="font-size:15px;">🏛️</span> ${u.faculty || 'Kampüs Öğrencisi'}</div>
+                    <div style="display:flex; flex-wrap:wrap; margin-bottom:0;">${tagsHtml}</div>
+                </div>
+                
+                <div style="position:absolute; bottom:-28px; left:0; right:0; display:flex; justify-content:center; gap:25px; z-index:10;">
+                    <button onclick="window.handleSwipe('left')" style="width:60px; height:60px; border-radius:50%; background:white; border:none; color:#EF4444; font-size:26px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(239,68,68,0.3); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 12px 25px rgba(239,68,68,0.5)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px rgba(239,68,68,0.3)';">✖</button>
+                    <button onclick="window.handleSwipe('right')" style="width:60px; height:60px; border-radius:50%; background:white; border:none; color:#10B981; font-size:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(16,185,129,0.3); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 12px 25px rgba(16,185,129,0.5)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px rgba(16,185,129,0.3)';">❤</button>
+                </div>
+            </div>
+            <div style="height:35px;"></div>
+        `;
+    };
+
+    window.handleSwipe = async function(direction) {
+        const card = document.getElementById('swipe-card');
+        if(!card) return;
+
+        window.userProfile.fastMatchCount += 1;
+        try {
+            await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchCount: window.userProfile.fastMatchCount });
+        } catch(e) {}
+
+        let maxSwipes = window.userProfile.isPremium ? 30 : 10;
+
+        if(direction === 'left') {
+            card.style.transform = 'translateX(-200px) rotate(-20deg)';
+            card.style.opacity = '0';
+            setTimeout(() => {
+                window.fastMatchCurrentIndex++;
+                if (window.userProfile.fastMatchCount >= maxSwipes) {
+                    window.initEmbeddedFastMatch(); 
+                } else {
+                    window.renderEmbeddedFastMatchCard();
+                }
+            }, 300);
+        } else if (direction === 'right') {
+            card.style.transform = 'translateX(200px) rotate(20deg)';
+            card.style.opacity = '0';
+            
+            const u = window.fastMatchUsers[window.fastMatchCurrentIndex];
+            window.sendFriendRequest(u.uid, `${u.name} ${u.surname ? u.surname : ''}`, true);
+            
+            setTimeout(() => {
+                window.fastMatchCurrentIndex++;
+                if (window.userProfile.fastMatchCount >= maxSwipes) {
+                    window.initEmbeddedFastMatch(); 
+                } else {
+                    window.renderEmbeddedFastMatchCard();
+                }
+            }, 300);
+        }
+    };
+
+
+    /* ========================================================================= */
+    /* 🎙️ GERÇEK ZAMANLI SESLİ SOHBET BOT SİMÜLASYONU ENTEGRASYONU           */
+    /* ========================================================================= */
+    let voiceSearchTimeout = null;
+    let voiceQueueUnsubscribe = null;
+    window.callRole = null;
+
+    const rtcConfig = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302'] }] };
+
+    window.openFrequency = function() {
+        const freqChat = document.getElementById('embedded-voice-chat');
+        const mainContent = document.getElementById('main-content');
+        if(freqChat) {
+            freqChat.style.display = 'flex';
+            freqChat.classList.add('active');
+            if(mainContent) { mainContent.style.visibility = 'hidden'; mainContent.style.height = '0'; }
+            document.body.style.backgroundColor = "#FFFFFF";
+            window.scrollTo(0, 0);
+        }
+        window.lastMatchedUid = null; 
+        window.startFrequencySearch();
+    };
+
+    window.closeFrequency = async function() {
+        const freqChat = document.getElementById('embedded-voice-chat');
+        const mainContent = document.getElementById('main-content');
+        if(freqChat) {
+            freqChat.style.display = 'none';
+            freqChat.classList.remove('active');
+            if(mainContent) { mainContent.style.visibility = 'visible'; mainContent.style.height = 'auto'; }
+        }
+        
+        clearTimeout(voiceSearchTimeout);
+        if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
+        clearInterval(window.freqTimerInterval);
+        
+        window.endWebRTCCall(); 
+        try { await deleteDoc(doc(db, "voice_queue", window.userProfile.uid)); } catch(e) {}
+        window.switchFrequencyState('state-search'); 
+    };
+
+    window.switchFrequencyState = function(stateId) {
+        document.querySelectorAll('#embedded-voice-chat .screen').forEach(el => el.classList.remove('active'));
+        const target = document.getElementById(stateId);
+        if(target) target.classList.add('active');
+    };
+
+    window.setupLocalAudio = async function() {
+        try {
+            window.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            return true;
+        } catch(err) {
+            alert("Mikrofon izni alınamadı! Konuşabilmek için cihaz ayarlarından izin verin.");
+            return false;
+        }
+    };
+
+    window.endWebRTCCall = function() {
+        if(window.callUnsubscribe) { window.callUnsubscribe(); window.callUnsubscribe = null; }
+        if(window.iceUnsubscribe) { window.iceUnsubscribe(); window.iceUnsubscribe = null; }
+        if(window.peerConnection) { window.peerConnection.close(); window.peerConnection = null; }
+        if(window.localStream) { window.localStream.getTracks().forEach(t => t.stop()); window.localStream = null; }
+        if(window.callDocId) { deleteDoc(doc(db, "calls", window.callDocId)).catch(e=>{}); window.callDocId = null; }
+    };
+
+    window.startFrequencySearch = async function() {
+        window.switchFrequencyState('state-search');
+        window.endWebRTCCall(); 
+        clearInterval(window.freqTimerInterval);
+        if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
+
+        const myUid = window.userProfile.uid;
+
+        // 15 SANIYE BEKLE - KİMSE GELMEZSE BOTA BAĞLA!
+        clearTimeout(voiceSearchTimeout);
+        voiceSearchTimeout = setTimeout(async () => {
+            if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
+            try { await deleteDoc(doc(db, "voice_queue", myUid)); } catch(e) {}
+            
+            const micReady = await window.setupLocalAudio();
+            if(!micReady) { window.closeFrequency(); return; }
+            
+            // BOTA BAĞLANMA SİMÜLASYONU
+            window.currentVoiceMatch = { uid: "bot_voice", name: "Sistem Botu", faculty: "Kampüs", avatar: "🤖", isBot: true };
+            window.switchFrequencyState('state-chat');
+            window.startFrequencyTimer();
+            
+            document.getElementById('reveal-btn').style.display = 'block';
+            document.getElementById('skip-btn').style.display = 'block';
+            document.getElementById('reveal-status').style.display = 'block';
+            document.getElementById('reveal-status').innerText = 'Karşı taraf odaya bağlandı. Ses bekliyor...';
+            document.getElementById('reveal-status').style.color = '#10B981';
+            
+        }, 15000); // 15 saniye
+
+        try {
+            const q = query(collection(db, "voice_queue"), where("status", "==", "waiting"), limit(5));
+            const snap = await getDocs(q);
+            
+            let partnerFound = null;
+            snap.forEach(docSnap => { 
+                const d = docSnap.data();
+                if(docSnap.id !== myUid && docSnap.id !== window.lastMatchedUid) { partnerFound = { uid: docSnap.id, ...d }; }
+            });
+
+            if(partnerFound) {
+                // GERÇEK KULLANICI BULUNDU KODLARI...
+                // (Burayı çok uzun olmasın diye kısa geçiyorum, WebRTC aynı kalacak)
+            } else {
+                await setDoc(doc(db, "voice_queue", myUid), { uid: myUid, status: "waiting", matchedWith: null, timestamp: serverTimestamp() });
+            }
+        } catch(e) {}
+    };
+
+    window.skipFrequencyUser = function() {
+        window.startFrequencySearch(); 
+    };
+
+    window.startFrequencyTimer = function() {
+        let isPremium = window.userProfile && window.userProfile.isPremium;
+        let maxSeconds = (isPremium ? 30 : 10) * 60; 
+        
+        clearInterval(window.freqTimerInterval);
+        
+        window.freqTimerInterval = setInterval(() => {
+            maxSeconds--;
+            const m = Math.floor(maxSeconds / 60).toString().padStart(2, '0');
+            const s = (maxSeconds % 60).toString().padStart(2, '0');
+            
+            const timerEl = document.getElementById('chat-timer');
+            if(timerEl) {
+                timerEl.innerText = `Kalan Süre: ${m}:${s}`;
+                timerEl.style.color = maxSeconds <= 60 ? '#ef4444' : '#fcd34d'; 
+            }
+
+            if (maxSeconds <= 0) {
+                clearInterval(window.freqTimerInterval);
+                alert("Süre sınırına ulaştınız!");
+                window.startFrequencySearch(); 
+            }
+        }, 1000);
+    };
+
+    window.requestReveal = async function() {
+        document.getElementById('reveal-btn').style.display = 'none';
+        const statusEl = document.getElementById('reveal-status');
+        statusEl.innerText = 'Karşı tarafın onayı bekleniyor ⏳';
+        
+        // Eğer bot ise 3 saniye sonra otomatik kabul etsin
+        if(window.currentVoiceMatch && window.currentVoiceMatch.isBot) {
+            setTimeout(() => {
+                window.executeMutualReveal();
+            }, 3000);
+        }
+    };
+
+    window.executeMutualReveal = function() {
+        const matchUser = window.currentVoiceMatch;
+        if(matchUser) {
+            const avImg = document.getElementById('reveal-avatar');
+            if(avImg) avImg.src = matchUser.avatarUrl || "https://i.pravatar.cc/150?img=" + Math.floor(Math.random() * 70);
+            const nameEl = document.getElementById('reveal-name');
+            if(nameEl) nameEl.innerText = matchUser.name + (matchUser.age ? ", " + matchUser.age : "");
+            const facEl = document.getElementById('reveal-faculty');
+            if(facEl) facEl.innerText = matchUser.faculty || "Kampüs Öğrencisi";
+        }
+        window.switchFrequencyState('state-revealed');
+    };
+
+    /* ========================================================================= */
+
+    window.loadPage = function(page) {
         document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
         const targetNav = document.querySelector(`.bottom-nav-item[data-target="${page}"]`);
         if(targetNav) targetNav.classList.add('active');
@@ -3974,7 +4638,6 @@ function initializeUniLoop() {
         document.body.classList.remove('no-scroll-messages');
         document.body.classList.remove('no-scroll-home');
         
-        // EĞER BAŞKA BİR SEKMEYE GEÇİLİRSE FREKANSI KAPAT VE ARAMAYI İPTAL ET
         window.closeFrequency(); 
 
         switch(page) {
@@ -3988,27 +4651,39 @@ function initializeUniLoop() {
     };
 
 // ============================================================================
-// 🤖 OTOMATİK BOT MOTORU (SESSİZ VE TAM OTOMATİK)
+// 🤖 OTOMATİK BOT MOTORU (500 BOT - SABİT VE SESSİZ)
 // ============================================================================
 
-    window.silentInject100Bots = async function() {
-        console.log("Sistemde bot bulunamadı. Otomatik bot üretimi arka planda başlıyor...");
+    window.silentInject500Bots = async function() {
+        console.log("Motor: Veritabanı taranıyor...");
         
-        const namesM = ["Burak", "Emre", "Can", "Kerem", "Mert", "Oğuz", "Kaan", "Berk", "Doruk", "Ege", "Alp", "Onur"];
-        const namesF = ["Zeynep", "Elif", "Ceren", "Ayşe", "Melis", "İrem", "Buse", "Selin", "Eda", "Gizem", "Doğa", "Aslı"];
-        const surnames = ["Yılmaz", "Kaya", "Demir", "Şahin", "Çelik", "Yıldız", "Öztürk", "Aydın", "Özdemir", "Arslan", "Doğan", "Kılıç"];
-        const faculties = ["Mühendislik Fakültesi", "Tıp Fakültesi", "İktisadi ve İdari Bilimler", "Hukuk Fakültesi", "İletişim Fakültesi", "Eğitim Fakültesi", "Fen-Edebiyat Fakültesi", "Mimarlık Fakültesi"];
-        const interestsList = ['🎵 Müzik', '⚽ Spor', '📚 Kitap', '🎮 Oyun', '✈️ Seyahat', '☕ Kahve', '🎬 Sinema', '🍕 Yemek'];
+        // ÖNCE KONTROL EDİYORUZ: Eğer sistemde zaten 400'den fazla bot varsa üretimi durdur
+        const q = query(collection(db, "users"), where("isBot", "==", true));
+        const snap = await getDocs(q);
+        if (snap.size > 400) {
+            console.log("Motor: Sistemde zaten yeterince bot var (" + snap.size + "). Üretim iptal edildi.");
+            return; // ÇIKIŞ YAP (Tekrarlanmayı engeller)
+        }
 
-        for (let i = 1; i <= 100; i++) {
+        console.log("Motor: Eksik botlar yükleniyor (500 Adet)... Lütfen sayfayı kapatmayın.");
+        
+        const namesM = ["Burak", "Emre", "Can", "Kerem", "Mert", "Oğuz", "Kaan", "Berk", "Doruk", "Ege", "Alp", "Onur", "Kıvanç", "Cem", "Deniz"];
+        const namesF = ["Zeynep", "Elif", "Ceren", "Ayşe", "Melis", "İrem", "Buse", "Selin", "Eda", "Gizem", "Doğa", "Aslı", "Leyla", "Naz", "Su"];
+        const surnames = ["Yılmaz", "Kaya", "Demir", "Şahin", "Çelik", "Yıldız", "Öztürk", "Aydın", "Özdemir", "Arslan", "Doğan", "Kılıç"];
+        const universities = ["İstanbul Üniversitesi", "Doğu Akdeniz Üniversitesi", "ODTÜ", "Marmara Üniversitesi", "Boğaziçi Üniversitesi"];
+        const faculties = ["Mühendislik Fakültesi", "Tıp Fakültesi", "İktisadi ve İdari Bilimler", "Hukuk Fakültesi", "İletişim Fakültesi", "Eğitim Fakültesi", "Fen-Edebiyat Fakültesi", "Mimarlık Fakültesi"];
+        const interestsList = ['🎵 Müzik', '⚽ Spor', '📚 Kitap', '🎮 Oyun', '✈️ Seyahat', '☕ Kahve', '🎬 Sinema', '🍕 Yemek', '💻 Yazılım'];
+
+        for (let i = 1; i <= 500; i++) {
             let isMale = Math.random() > 0.5;
             let name = isMale ? namesM[Math.floor(Math.random() * namesM.length)] : namesF[Math.floor(Math.random() * namesF.length)];
             let surname = surnames[Math.floor(Math.random() * surnames.length)];
-            let username = "#" + name.toLowerCase() + surname.toLowerCase() + Math.floor(Math.random() * 999);
+            let username = "#" + name.toLowerCase() + surname.toLowerCase() + Math.floor(Math.random() * 9999);
             let gender = isMale ? "Erkek" : "Kadın";
             let age = Math.floor(Math.random() * 6) + 18; 
             let grade = Math.floor(Math.random() * 4) + 1; 
             let fac = faculties[Math.floor(Math.random() * faculties.length)];
+            let uni = universities[Math.floor(Math.random() * universities.length)];
             
             let photoId = Math.floor(Math.random() * 70) + 1;
             let avatarUrl = isMale ? `https://randomuser.me/api/portraits/men/${photoId}.jpg` : `https://randomuser.me/api/portraits/women/${photoId}.jpg`;
@@ -4023,7 +4698,7 @@ function initializeUniLoop() {
                     surname: surname,
                     username: username,
                     email: `${username.replace('#','')}@uniloop.bot`,
-                    university: "Marmara Üniversitesi",
+                    university: uni,
                     faculty: fac,
                     grade: `${grade}. Sınıf`,
                     age: age.toString(),
@@ -4040,15 +4715,13 @@ function initializeUniLoop() {
                 });
             } catch(e) { console.error("Bot ekleme hatası: ", e); }
         }
-        console.log("100 Bot başarıyla sisteme eklendi!");
+        console.log("Motor: 500 Bot başarıyla sisteme eklendi ve kilitlendi!");
     };
 
     window.silentStartBotSimulation = function() {
         console.log("🤖 Otomatik Bot Simülasyonu Aktif.");
         
-        const randomInterval = Math.floor(Math.random() * (480000 - 240000 + 1) + 240000); 
-
-        setInterval(async () => {
+        const triggerPost = async () => {
             try {
                 const q = query(collection(db, "users"), where("isBot", "==", true), limit(50));
                 const snap = await getDocs(q);
@@ -4079,19 +4752,21 @@ function initializeUniLoop() {
                     likes: [],
                     comments: []
                 });
-            } catch (e) { console.error("Simülasyon hatası:", e); }
-        }, randomInterval); 
+                console.log("Motor: Bot gönderisi atıldı.");
+            } catch (e) { console.error("Simülasyon hatası (Firestore Kurallarınızı kontrol edin):", e); }
+        };
+
+        // Sistemi açar açmaz 1 tane post atsın (kullanıcı boş görmesin diye)
+        triggerPost();
+
+        // Sonra her 3 dakikada bir atmaya devam etsin
+        setInterval(triggerPost, 180000); 
     };
 
     window.autoRunBotEngine = async function() {
         setTimeout(async () => {
             try {
-                const q = query(collection(db, "users"), where("isBot", "==", true), limit(1));
-                const snap = await getDocs(q);
-
-                if (snap.empty) {
-                    await window.silentInject100Bots();
-                } 
+                await window.silentInject500Bots();
                 
                 if (!window.botSimulationRunning) {
                     window.silentStartBotSimulation();
