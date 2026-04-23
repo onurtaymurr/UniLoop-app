@@ -4629,7 +4629,7 @@ function initializeUniLoop() {
 
     /* ========================================================================= */
 
-    window.loadPage = function(page) {
+        window.loadPage = function(page) {
         document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
         const targetNav = document.querySelector(`.bottom-nav-item[data-target="${page}"]`);
         if(targetNav) targetNav.classList.add('active');
@@ -4638,60 +4638,59 @@ function initializeUniLoop() {
         document.body.classList.remove('no-scroll-messages');
         document.body.classList.remove('no-scroll-home');
         
-        window.closeFrequency(); 
+        // EĞER BAŞKA BİR SEKMEYE GEÇİLİRSE FREKANSI KAPAT VE ARAMAYI İPTAL ET
+        if(typeof window.closeFrequency === 'function') window.closeFrequency(); 
 
         switch(page) {
-            case 'home': window.renderHome(); break;
-            case 'confessions': window.drawConfessionsFeed(); break;
-            case 'market': window.renderListings('market', '🛒 Kampüs Market'); break;
-            case 'messages': window.renderMessages(); break;
-            case 'profile': window.renderProfile(); break;
-            default: window.renderHome();
+            case 'home': if(typeof window.renderHome === 'function') window.renderHome(); break;
+            case 'confessions': if(typeof window.drawConfessionsFeed === 'function') window.drawConfessionsFeed(); break;
+            case 'market': if(typeof window.renderListings === 'function') window.renderListings('market', '🛒 Kampüs Market'); break;
+            case 'messages': if(typeof window.renderMessages === 'function') window.renderMessages(); break;
+            case 'profile': if(typeof window.renderProfile === 'function') window.renderProfile(); break;
+            default: if(typeof window.renderHome === 'function') window.renderHome();
         }
     };
 
 // ============================================================================
-// 🤖 OTOMATİK BOT MOTORU (500 BOT - SABİT VE SESSİZ)
+// 🤖 OTOMATİK BOT MOTORU (SESSİZ VE TAM OTOMATİK)
 // ============================================================================
 
     window.silentInject500Bots = async function() {
         console.log("Motor: Veritabanı taranıyor...");
-        
-        // ÖNCE KONTROL EDİYORUZ: Eğer sistemde zaten 400'den fazla bot varsa üretimi durdur
-        const q = query(collection(db, "users"), where("isBot", "==", true));
-        const snap = await getDocs(q);
-        if (snap.size > 400) {
-            console.log("Motor: Sistemde zaten yeterince bot var (" + snap.size + "). Üretim iptal edildi.");
-            return; // ÇIKIŞ YAP (Tekrarlanmayı engeller)
-        }
+        try {
+            const q = query(collection(db, "users"), where("isBot", "==", true));
+            const snap = await getDocs(q);
+            if (snap.size > 400) {
+                console.log("Motor: Sistemde zaten yeterince bot var (" + snap.size + "). Üretim iptal edildi.");
+                return; 
+            }
 
-        console.log("Motor: Eksik botlar yükleniyor (500 Adet)... Lütfen sayfayı kapatmayın.");
-        
-        const namesM = ["Burak", "Emre", "Can", "Kerem", "Mert", "Oğuz", "Kaan", "Berk", "Doruk", "Ege", "Alp", "Onur", "Kıvanç", "Cem", "Deniz"];
-        const namesF = ["Zeynep", "Elif", "Ceren", "Ayşe", "Melis", "İrem", "Buse", "Selin", "Eda", "Gizem", "Doğa", "Aslı", "Leyla", "Naz", "Su"];
-        const surnames = ["Yılmaz", "Kaya", "Demir", "Şahin", "Çelik", "Yıldız", "Öztürk", "Aydın", "Özdemir", "Arslan", "Doğan", "Kılıç"];
-        const universities = ["İstanbul Üniversitesi", "Doğu Akdeniz Üniversitesi", "ODTÜ", "Marmara Üniversitesi", "Boğaziçi Üniversitesi"];
-        const faculties = ["Mühendislik Fakültesi", "Tıp Fakültesi", "İktisadi ve İdari Bilimler", "Hukuk Fakültesi", "İletişim Fakültesi", "Eğitim Fakültesi", "Fen-Edebiyat Fakültesi", "Mimarlık Fakültesi"];
-        const interestsList = ['🎵 Müzik', '⚽ Spor', '📚 Kitap', '🎮 Oyun', '✈️ Seyahat', '☕ Kahve', '🎬 Sinema', '🍕 Yemek', '💻 Yazılım'];
-
-        for (let i = 1; i <= 500; i++) {
-            let isMale = Math.random() > 0.5;
-            let name = isMale ? namesM[Math.floor(Math.random() * namesM.length)] : namesF[Math.floor(Math.random() * namesF.length)];
-            let surname = surnames[Math.floor(Math.random() * surnames.length)];
-            let username = "#" + name.toLowerCase() + surname.toLowerCase() + Math.floor(Math.random() * 9999);
-            let gender = isMale ? "Erkek" : "Kadın";
-            let age = Math.floor(Math.random() * 6) + 18; 
-            let grade = Math.floor(Math.random() * 4) + 1; 
-            let fac = faculties[Math.floor(Math.random() * faculties.length)];
-            let uni = universities[Math.floor(Math.random() * universities.length)];
+            console.log("Motor: Eksik botlar yükleniyor (500 Adet)...");
             
-            let photoId = Math.floor(Math.random() * 70) + 1;
-            let avatarUrl = isMale ? `https://randomuser.me/api/portraits/men/${photoId}.jpg` : `https://randomuser.me/api/portraits/women/${photoId}.jpg`;
-            
-            let shuffledInterests = interestsList.sort(() => 0.5 - Math.random()).slice(0, 3);
-            let botUid = "bot_" + Date.now() + "_" + i;
+            const namesM = ["Burak", "Emre", "Can", "Kerem", "Mert", "Oğuz", "Kaan", "Berk", "Doruk", "Ege", "Alp", "Onur", "Kıvanç", "Cem", "Deniz"];
+            const namesF = ["Zeynep", "Elif", "Ceren", "Ayşe", "Melis", "İrem", "Buse", "Selin", "Eda", "Gizem", "Doğa", "Aslı", "Leyla", "Naz", "Su"];
+            const surnames = ["Yılmaz", "Kaya", "Demir", "Şahin", "Çelik", "Yıldız", "Öztürk", "Aydın", "Özdemir", "Arslan", "Doğan", "Kılıç"];
+            const universities = ["İstanbul Üniversitesi", "Doğu Akdeniz Üniversitesi", "ODTÜ", "Marmara Üniversitesi", "Boğaziçi Üniversitesi"];
+            const faculties = ["Mühendislik Fakültesi", "Tıp Fakültesi", "İktisadi ve İdari Bilimler", "Hukuk Fakültesi", "İletişim Fakültesi", "Eğitim Fakültesi", "Fen-Edebiyat Fakültesi", "Mimarlık Fakültesi"];
+            const interestsList = ['🎵 Müzik', '⚽ Spor', '📚 Kitap', '🎮 Oyun', '✈️ Seyahat', '☕ Kahve', '🎬 Sinema', '🍕 Yemek', '💻 Yazılım'];
 
-            try {
+            for (let i = 1; i <= 500; i++) {
+                let isMale = Math.random() > 0.5;
+                let name = isMale ? namesM[Math.floor(Math.random() * namesM.length)] : namesF[Math.floor(Math.random() * namesF.length)];
+                let surname = surnames[Math.floor(Math.random() * surnames.length)];
+                let username = "#" + name.toLowerCase() + surname.toLowerCase() + Math.floor(Math.random() * 9999);
+                let gender = isMale ? "Erkek" : "Kadın";
+                let age = Math.floor(Math.random() * 6) + 18; 
+                let grade = Math.floor(Math.random() * 4) + 1; 
+                let fac = faculties[Math.floor(Math.random() * faculties.length)];
+                let uni = universities[Math.floor(Math.random() * universities.length)];
+                
+                let photoId = Math.floor(Math.random() * 70) + 1;
+                let avatarUrl = isMale ? `https://randomuser.me/api/portraits/men/${photoId}.jpg` : `https://randomuser.me/api/portraits/women/${photoId}.jpg`;
+                
+                let shuffledInterests = interestsList.sort(() => 0.5 - Math.random()).slice(0, 3);
+                let botUid = "bot_" + Date.now() + "_" + i;
+
                 await setDoc(doc(db, "users", botUid), {
                     uid: botUid,
                     name: name,
@@ -4713,9 +4712,9 @@ function initializeUniLoop() {
                     popularity: Math.floor(Math.random() * 50),
                     isBot: true 
                 });
-            } catch(e) { console.error("Bot ekleme hatası: ", e); }
-        }
-        console.log("Motor: 500 Bot başarıyla sisteme eklendi ve kilitlendi!");
+            }
+            console.log("Motor: 500 Bot başarıyla sisteme eklendi ve kilitlendi!");
+        } catch(e) { console.error("Bot ekleme motoru hatası: ", e); }
     };
 
     window.silentStartBotSimulation = function() {
@@ -4753,13 +4752,10 @@ function initializeUniLoop() {
                     comments: []
                 });
                 console.log("Motor: Bot gönderisi atıldı.");
-            } catch (e) { console.error("Simülasyon hatası (Firestore Kurallarınızı kontrol edin):", e); }
+            } catch (e) { console.error("Simülasyon hatası:", e); }
         };
 
-        // Sistemi açar açmaz 1 tane post atsın (kullanıcı boş görmesin diye)
         triggerPost();
-
-        // Sonra her 3 dakikada bir atmaya devam etsin
         setInterval(triggerPost, 180000); 
     };
 
@@ -4767,7 +4763,6 @@ function initializeUniLoop() {
         setTimeout(async () => {
             try {
                 await window.silentInject500Bots();
-                
                 if (!window.botSimulationRunning) {
                     window.silentStartBotSimulation();
                     window.botSimulationRunning = true;
@@ -4778,7 +4773,6 @@ function initializeUniLoop() {
         }, 5000); 
     };
 
-    // Sistemi otomatik başlatıyoruz
     window.autoRunBotEngine();
 
 } // <--- initializeUniLoop fonksiyonunun GERÇEK BİTİŞİ
