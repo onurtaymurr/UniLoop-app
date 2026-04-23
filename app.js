@@ -2037,7 +2037,6 @@ function initializeUniLoop() {
         
         const remoteAudio = document.getElementById('remote-audio-node');
         if(remoteAudio) {
-            remoteAudio.pause();
             remoteAudio.srcObject = null;
         }
 
@@ -3987,7 +3986,105 @@ function initializeUniLoop() {
             default: window.renderHome();
         }
     };
-}
+
+// ============================================================================
+// 🤖 UNILOOP BOT MOTORU (BOT ENGINE) ENTEGRASYONU 🤖
+// ============================================================================
+
+    window.inject100Bots = async function() {
+        if(!confirm("Veritabanına 100 adet gerçekçi bot kullanıcı eklenecek. Onaylıyor musun?")) return;
+        
+        const namesM = ["Burak", "Emre", "Can", "Kerem", "Mert", "Oğuz", "Kaan", "Berk", "Doruk", "Ege", "Alp", "Onur"];
+        const namesF = ["Zeynep", "Elif", "Ceren", "Ayşe", "Melis", "İrem", "Buse", "Selin", "Eda", "Gizem", "Doğa", "Aslı"];
+        const surnames = ["Yılmaz", "Kaya", "Demir", "Şahin", "Çelik", "Yıldız", "Öztürk", "Aydın", "Özdemir", "Arslan", "Doğan", "Kılıç"];
+        const faculties = ["Mühendislik Fakültesi", "Tıp Fakültesi", "İktisadi ve İdari Bilimler", "Hukuk Fakültesi", "İletişim Fakültesi", "Eğitim Fakültesi", "Fen-Edebiyat Fakültesi", "Mimarlık Fakültesi"];
+        const interestsList = ['🎵 Müzik', '⚽ Spor', '📚 Kitap', '🎮 Oyun', '✈️ Seyahat', '☕ Kahve', '🎬 Sinema', '🍕 Yemek'];
+
+        alert("Bot basımı başlatılıyor... Lütfen işlem bitene kadar sekmeyi kapatma. (Console'dan takip edebilirsin)");
+
+        for (let i = 1; i <= 100; i++) {
+            let isMale = Math.random() > 0.5;
+            let name = isMale ? namesM[Math.floor(Math.random() * namesM.length)] : namesF[Math.floor(Math.random() * namesF.length)];
+            let surname = surnames[Math.floor(Math.random() * surnames.length)];
+            let username = "#" + name.toLowerCase() + surname.toLowerCase() + Math.floor(Math.random() * 999);
+            let gender = isMale ? "Erkek" : "Kadın";
+            let age = Math.floor(Math.random() * 6) + 18; // 18-23 arası
+            let grade = Math.floor(Math.random() * 4) + 1; // 1-4 arası
+            let fac = faculties[Math.floor(Math.random() * faculties.length)];
+            
+            // Gerçekçi fotoğraflar çekmek için randomuser API'si
+            let photoId = Math.floor(Math.random() * 70) + 1;
+            let avatarUrl = isMale ? `https://randomuser.me/api/portraits/men/${photoId}.jpg` : `https://randomuser.me/api/portraits/women/${photoId}.jpg`;
+            
+            let shuffledInterests = interestsList.sort(() => 0.5 - Math.random()).slice(0, 3);
+            let botUid = "bot_" + Date.now() + "_" + i;
+
+            try {
+                await setDoc(doc(db, "users", botUid), {
+                    uid: botUid,
+                    name: name,
+                    surname: surname,
+                    username: username,
+                    email: `${username.replace('#','')}@uniloop.bot`,
+                    university: "Marmara Üniversitesi",
+                    faculty: fac,
+                    grade: `${grade}. Sınıf`,
+                    age: age.toString(),
+                    gender: gender,
+                    interests: shuffledInterests,
+                    purpose: "👋 Sosyalleşmek İstiyorum",
+                    avatar: "👨‍🎓",
+                    avatarUrl: avatarUrl,
+                    isOnline: true,
+                    isPremium: Math.random() > 0.8, // %20 ihtimalle premium
+                    fastMatchCount: 0,
+                    popularity: Math.floor(Math.random() * 50),
+                    isBot: true 
+                });
+                console.log(`Bot eklendi: ${name} ${surname} (${i}/100)`);
+            } catch(e) {
+                console.error("Bot ekleme hatası: ", e);
+            }
+        }
+        alert("100 Bot başarıyla sisteme eklendi!");
+    };
+
+    window.startBotSimulation = function() {
+        console.log("🤖 Bot Simülasyonu Aktif Edildi.");
+        
+        setInterval(async () => {
+            try {
+                const q = query(collection(db, "users"), where("isBot", "==", true), limit(100));
+                const snap = await getDocs(q);
+                let bots = [];
+                snap.forEach(doc => bots.push(doc.data()));
+                
+                if(bots.length === 0) return;
+                
+                let randomBot = bots[Math.floor(Math.random() * bots.length)];
+                let postTexts = [
+                    "Vizelere çalışmaya başlayan var mı? Ben hala konuları bilmiyorum 😭",
+                    "Bugün yemekhanedeki yemekler efsaneydi, yiyenler yoruma!",
+                    "Kütüphanede yer bulmak neden bu kadar zor?",
+                    "Kahve içmeye kampüs dışına çıkacak birileri aranıyor ☕",
+                    "Hocanın verdiği son ödevi anlayan biri bana anlatabilir mi lütfen..."
+                ];
+                
+                await addDoc(collection(db, "confessions"), {
+                    text: postTexts[Math.floor(Math.random() * postTexts.length)],
+                    authorId: randomBot.uid,
+                    authorName: randomBot.name,
+                    authorAvatarUrl: randomBot.avatarUrl,
+                    isAnonymous: Math.random() > 0.5, 
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    createdAt: serverTimestamp(),
+                    likes: [],
+                    comments: []
+                });
+            } catch (e) { console.error("Simülasyon hatası:", e); }
+        }, 180000); 
+    };
+} // end of initializeUniLoop
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeUniLoop);
