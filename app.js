@@ -914,7 +914,6 @@ function initializeUniLoop() {
                         <div class="menu-item bottom-nav-item active" data-target="home" onclick="window.loadPage('home')"><div class="bottom-nav-icon"><svg class="fill-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div><span>Ana Sayfa</span></div>
                         <div class="menu-item bottom-nav-item" data-target="confessions" onclick="window.loadPage('confessions')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg></div><span>Keşfet</span></div>
                         <div class="menu-item bottom-nav-item" data-target="market" onclick="window.loadPage('market')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></div><span>Market</span></div>
-                        <div class="menu-item bottom-nav-item" data-target="clubs" onclick="window.loadPage('clubs')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div><span>Kulüpler</span></div>
                         <div class="menu-item bottom-nav-item" data-target="messages" onclick="window.loadPage('messages')"><div class="bottom-nav-icon" style="position:relative;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-6px; background:#EF4444; color:white; border-radius:50%; width:14px; height:14px; font-size:9px; align-items:center; justify-content:center; font-weight:bold; border: 2px solid white;">0</span></div><span>Mesajlar</span></div>
                         <div class="menu-item bottom-nav-item" data-target="profile" onclick="window.loadPage('profile')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><span>Profil</span></div>
                     `;
@@ -1052,7 +1051,7 @@ function initializeUniLoop() {
 // 🌟 BÖLÜM 1 SONU 🌟
 // ============================================================================
 // ============================================================================
-// 🌟 MEDYA YÜKLEME, POPÜLERLİK SAVAŞI, HIZLI EŞLEŞME, FREKANS VE KULÜPLER (BÖLÜM 2) 🌟
+// 🌟 MEDYA YÜKLEME, POPÜLERLİK SAVAŞI, HIZLI EŞLEŞME VE KAMPÜS FREKANSI (BÖLÜM 2) 🌟
 // ============================================================================
 
     window.uploadChatMedia = async function(event, targetId, chatType) {
@@ -2384,59 +2383,6 @@ function initializeUniLoop() {
         } else {
             alert("Bilinmeyen bir kullanıcıya istek gönderilemez.");
         }
-    };
-
-    /* ========================================================================= */
-    /* 🎭 YENİ KULÜPLER ALANI MANTIĞI                                            */
-    /* ========================================================================= */
-    window.renderClubs = function() {
-        const clubsData = [
-            { id: 'spor', name: 'Spor Kulübü', icon: '⚽', members: '1.2K Üye', desc: 'Kampüsün spor etkinlikleri, takım seçmeleri ve halı saha organizasyonları burada.' },
-            { id: 'tiyatro', name: 'Tiyatro Kulübü', icon: '🎭', members: '450 Üye', desc: 'Oyun provaları, sahne arkası dedikoduları ve yeni oyun planlamaları.' },
-            { id: 'saglik', name: 'Sağlık Kulübü', icon: '⚕️', members: '800 Üye', desc: 'Tıp, diş hekimliği ve sağlık bilimleri öğrencilerinin dayanışma ve etkinlik ağı.' },
-            { id: 'muzik', name: 'Müzik Kulübü', icon: '🎸', members: '600 Üye', desc: 'Grup kurmak isteyenler, kampüs içi konser planlamaları ve müzik tutkunları.' },
-            { id: 'yazilim', name: 'Yazılım Kulübü', icon: '💻', members: '950 Üye', desc: 'Hackathonlar, kodlama tartışmaları ve projeler için takım arkadaşı bulma yeri.' },
-            { id: 'doga', name: 'Doğa ve Gezi', icon: '🏕️', members: '1.5K Üye', desc: 'Hafta sonu kampları, trekking rotaları ve şehir dışı kampüs gezileri.' }
-        ];
-
-        let gridHtml = '';
-        clubsData.forEach(club => {
-            gridHtml += `
-                <div class="club-card" onclick="window.openClub('${club.id}', '${club.name}', '${club.icon}', '${club.desc}')">
-                    <div class="club-icon">${club.icon}</div>
-                    <div class="club-title">${club.name}</div>
-                    <div class="club-members">${club.members}</div>
-                </div>
-            `;
-        });
-
-        const html = `
-            <div class="card">
-                <div style="margin-bottom: 20px; text-align:center;">
-                    <h2 style="margin:0; justify-content:center; color: var(--text-dark);">🎭 Üniversite Kulüpleri</h2>
-                    <p style="font-size: 13px; color: var(--text-gray); margin-top: 5px;">Kulübünü seç, etkinlik planla ve insanlarla tanış.</p>
-                </div>
-                <div class="clubs-grid">
-                    ${gridHtml}
-                </div>
-            </div>
-        `;
-        
-        mainContent.innerHTML = html;
-    };
-
-    window.openClub = function(clubId, clubName, icon, desc) {
-        window.openModal(`${icon} ${clubName}`, `
-            <div style="text-align:center; padding: 20px 10px;">
-                <div style="font-size: 60px; margin-bottom: 15px;">${icon}</div>
-                <h3 style="color: var(--text-dark); margin-bottom: 10px;">${clubName}'ne Hoş Geldin!</h3>
-                <p style="color: var(--text-gray); font-size: 14px; line-height: 1.5; margin-bottom: 25px;">
-                    ${desc}<br><br>
-                    <strong>Çok Yakında:</strong> Burada kulüp üyeleriyle canlı grup sohbetleri yapabilecek, ortak takvim üzerinden etkinlik planlayabilecek ve anketler düzenleyebileceksin!
-                </p>
-                <button class="btn-primary" style="width: 100%; padding: 14px; font-size: 15px; border-radius: 12px; background: #111827; border:none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="window.closeModal()">Anladım, Beklemedeyim 🚀</button>
-            </div>
-        `);
     };
 
     /* ========================================================================= */
@@ -4036,7 +3982,6 @@ function initializeUniLoop() {
             case 'home': window.renderHome(); break;
             case 'confessions': window.drawConfessionsFeed(); break;
             case 'market': window.renderListings('market', '🛒 Kampüs Market'); break;
-            case 'clubs': window.renderClubs(); break; // YENİ KULÜPLER SAYFASI
             case 'messages': window.renderMessages(); break;
             case 'profile': window.renderProfile(); break;
             default: window.renderHome();
