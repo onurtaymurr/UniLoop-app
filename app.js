@@ -3785,24 +3785,29 @@ function initializeUniLoop() {
 // 🤖 OTOMATİK BOT MOTORU (SESSİZ VE TAM OTOMATİK)
 // ============================================================================
 
+    // ============================================================================
+// 🤖 OTOMATİK BOT MOTORU (500 SABİT BOT - KESİN ÇÖZÜM)
+// ============================================================================
+
     window.silentInject500Bots = async function() {
-        console.log("Motor: Veritabanı taranıyor...");
+        console.log("Motor: Sabit botlar kontrol ediliyor...");
         try {
-            const q = query(collection(db, "users"), where("isBot", "==", true));
-            const snap = await getDocs(q);
-            if (snap.size > 400) {
-                console.log("Motor: Sistemde zaten yeterince bot var (" + snap.size + "). Üretim iptal edildi.");
+            // SADECE 1. botu kontrol et. Eğer o varsa, hepsi vardır. 
+            // (Bu sayede Firebase yorulmaz ve sorgu hatası vermez)
+            const firstBotSnap = await getDoc(doc(db, "users", "bot_uniloop_1"));
+            if (firstBotSnap.exists()) {
+                console.log("Motor: 500 sabit profil sistemde ZATEN VAR. Üretim atlandı.");
                 return; 
             }
 
-            console.log("Motor: Eksik botlar yükleniyor (500 Adet)...");
+            console.log("Motor: Sistem boş. 500 adet SABİT profil oluşturuluyor...");
             
-            const namesM = ["Burak", "Emre", "Can", "Kerem", "Mert", "Oğuz", "Kaan", "Berk", "Doruk", "Ege", "Alp", "Onur", "Kıvanç", "Cem", "Deniz"];
-            const namesF = ["Zeynep", "Elif", "Ceren", "Ayşe", "Melis", "İrem", "Buse", "Selin", "Eda", "Gizem", "Doğa", "Aslı", "Leyla", "Naz", "Su"];
-            const surnames = ["Yılmaz", "Kaya", "Demir", "Şahin", "Çelik", "Yıldız", "Öztürk", "Aydın", "Özdemir", "Arslan", "Doğan", "Kılıç"];
-            const universities = ["İstanbul Üniversitesi", "Doğu Akdeniz Üniversitesi", "ODTÜ", "Marmara Üniversitesi", "Boğaziçi Üniversitesi"];
+            const namesM = ["Burak", "Emre", "Can", "Kerem", "Mert", "Oğuz", "Kaan", "Berk", "Doruk", "Ege", "Alp", "Onur", "Kıvanç", "Cem", "Deniz", "Tolga", "Barış", "Arda"];
+            const namesF = ["Zeynep", "Elif", "Ceren", "Ayşe", "Melis", "İrem", "Buse", "Selin", "Eda", "Gizem", "Doğa", "Aslı", "Leyla", "Naz", "Su", "Eylül", "Damla", "Pelin"];
+            const surnames = ["Yılmaz", "Kaya", "Demir", "Şahin", "Çelik", "Yıldız", "Öztürk", "Aydın", "Özdemir", "Arslan", "Doğan", "Kılıç", "Koç", "Turan", "Şen"];
+            const universities = ["İstanbul Üniversitesi", "Doğu Akdeniz Üniversitesi", "ODTÜ", "Marmara Üniversitesi", "Boğaziçi Üniversitesi", "Yakın Doğu Üniversitesi", "Ege Üniversitesi"];
             const faculties = ["Mühendislik Fakültesi", "Tıp Fakültesi", "İktisadi ve İdari Bilimler", "Hukuk Fakültesi", "İletişim Fakültesi", "Eğitim Fakültesi", "Fen-Edebiyat Fakültesi", "Mimarlık Fakültesi"];
-            const interestsList = ['🎵 Müzik', '⚽ Spor', '📚 Kitap', '🎮 Oyun', '✈️ Seyahat', '☕ Kahve', '🎬 Sinema', '🍕 Yemek', '💻 Yazılım'];
+            const interestsList = ['🎵 Müzik', '⚽ Spor', '📚 Kitap', '🎮 Oyun', '✈️ Seyahat', '☕ Kahve', '🎬 Sinema', '🍕 Yemek', '💻 Yazılım', '🎨 Sanat'];
 
             for (let i = 1; i <= 500; i++) {
                 let isMale = Math.random() > 0.5;
@@ -3819,7 +3824,9 @@ function initializeUniLoop() {
                 let avatarUrl = isMale ? `https://randomuser.me/api/portraits/men/${photoId}.jpg` : `https://randomuser.me/api/portraits/women/${photoId}.jpg`;
                 
                 let shuffledInterests = interestsList.sort(() => 0.5 - Math.random()).slice(0, 3);
-                let botUid = "bot_" + Date.now() + "_" + i;
+                
+                // ID'leri SABİT kılıyoruz! Her zaman bot_uniloop_1, bot_uniloop_2 olacak.
+                let botUid = "bot_uniloop_" + i;
 
                 await setDoc(doc(db, "users", botUid), {
                     uid: botUid,
@@ -3839,27 +3846,26 @@ function initializeUniLoop() {
                     isOnline: true,
                     isPremium: Math.random() > 0.8, 
                     fastMatchCount: 0,
-                    popularity: Math.floor(Math.random() * 50),
+                    popularity: Math.floor(Math.random() * 80), // 0 ile 80 arası popülerlik
                     isBot: true 
                 });
             }
-            console.log("Motor: 500 Bot başarıyla sisteme eklendi ve kilitlendi!");
+            console.log("Motor: 500 Sabit Profil başarıyla MÜHÜRLENDİ!");
         } catch(e) { console.error("Bot ekleme motoru hatası: ", e); }
     };
 
     window.silentStartBotSimulation = function() {
-        console.log("🤖 Otomatik Bot Simülasyonu Aktif.");
+        console.log("🤖 Otomatik Bot İtiraf Simülasyonu Aktif.");
         
         const triggerPost = async () => {
             try {
-                const q = query(collection(db, "users"), where("isBot", "==", true), limit(50));
-                const snap = await getDocs(q);
-                let bots = [];
-                snap.forEach(doc => bots.push(doc.data()));
+                // Veritabanını yormamak için 500 bot arasından sadece 1 tanesinin ID'sini rastgele buluyoruz
+                let randomBotId = "bot_uniloop_" + (Math.floor(Math.random() * 500) + 1);
+                const botSnap = await getDoc(doc(db, "users", randomBotId));
                 
-                if(bots.length === 0) return;
+                if(!botSnap.exists()) return;
+                let randomBot = botSnap.data();
                 
-                let randomBot = bots[Math.floor(Math.random() * bots.length)];
                 let postTexts = [
                     "Vizelere çalışmaya başlayan var mı? Ben hala konuları bilmiyorum 😭",
                     "Bugün yemekhanedeki yemekler efsaneydi, yiyenler yoruma!",
@@ -3867,7 +3873,10 @@ function initializeUniLoop() {
                     "Kahve içmeye kampüs dışına çıkacak birileri aranıyor ☕",
                     "Derse giden var mı? Yoklama alınıyor mu acil!",
                     "Havalar güzelleşti çimlerde oturmalık tam.",
-                    "Hocanın verdiği son ödevi anlayan biri bana anlatabilir mi lütfen..."
+                    "Hocanın verdiği son ödevi anlayan biri bana anlatabilir mi lütfen...",
+                    "Not ortalamasını yükseltmek için taktik verecek üst dönemler var mı?",
+                    "Kampüste kayboldum resmen, bu derslik nerede...",
+                    "Sosyalleşmek için hangi kulüplere yazılmalıyım sizce?"
                 ];
                 
                 await addDoc(collection(db, "confessions"), {
@@ -3881,26 +3890,34 @@ function initializeUniLoop() {
                     likes: [],
                     comments: []
                 });
-                console.log("Motor: Bot gönderisi atıldı.");
+                console.log("Motor: " + randomBot.name + " tarafından bir gönderi atıldı.");
             } catch (e) { console.error("Simülasyon hatası:", e); }
         };
 
+        // Siteye girildiğinde boş durmasın diye hemen 1 tane paylaşsın
         triggerPost();
+        
+        // Sonra her 3 dakikada bir paylaşmaya devam etsin
         setInterval(triggerPost, 180000); 
     };
 
     window.autoRunBotEngine = async function() {
-        setTimeout(async () => {
-            try {
-                await window.silentInject500Bots();
-                if (!window.botSimulationRunning) {
-                    window.silentStartBotSimulation();
-                    window.botSimulationRunning = true;
+        // ÖNEMLİ: Sistemin çalışması için giriş yapılmış olması şarttır.
+        // Bu yüzden Firebase bağlantısının kurulmasını güvenli bir şekilde bekliyoruz.
+        const checkAuthAndRun = setInterval(async () => {
+            if (auth.currentUser) { // Kullanıcı giriş yaptıysa
+                clearInterval(checkAuthAndRun); // Kontrolü durdur
+                try {
+                    await window.silentInject500Bots(); // 500 kişiyi mühürle
+                    if (!window.botSimulationRunning) {
+                        window.silentStartBotSimulation(); // Paylaşımları başlat
+                        window.botSimulationRunning = true;
+                    }
+                } catch(e) {
+                    console.error("Otomatik motor hatası:", e);
                 }
-            } catch(e) {
-                console.error("Otomatik motor hatası:", e);
             }
-        }, 5000); 
+        }, 2000); // Her 2 saniyede bir giriş durumunu kontrol et
     };
 
     window.autoRunBotEngine();
