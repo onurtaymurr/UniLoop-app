@@ -139,9 +139,8 @@
         <aside class="sidebar" id="sidebar" style="display: none;">
             <div class="sidebar-top">
                 <h3>Navigasyon</h3>
-                <div class="menu-item active" data-target="home">🏠 Ana Sayfa</div>
+                <div class="menu-item active" data-target="home">📸 Puanla</div>
                 <div class="menu-item" data-target="loopmap">📍 LoopMap</div>
-                <div class="menu-item" data-target="market">🛒 Kampüs Market</div>
                 <div class="menu-item" data-target="confessions">🤫 Anonim Kampüs</div>
                 <div class="menu-item" data-target="qa">❓ Soru & Cevap</div>
                 <br>
@@ -181,6 +180,27 @@
     <img class="lightbox-content" id="lightbox-img" src="">
     <button class="lightbox-next" onclick="window.changeLightboxImage(1)">&#10095;</button>
 </div>
+
+<template id="puanla-card-template">
+    <div class="puanla-polaroid-card">
+        <div class="puanla-img-container">
+            <img src="" class="puanla-img" alt="Kullanıcı Fotoğrafı">
+        </div>
+        <div class="puanla-footer">
+            <h4 class="puanla-username">Kullanıcı</h4>
+            
+            <div class="cute-rating-wrapper">
+                <span class="rating-val-display">10</span>
+                <input type="range" min="1" max="10" value="10" class="cute-slider">
+            </div>
+
+            <div class="puanla-actions">
+                <button class="btn-rate">Gönder 💖</button>
+                <button class="btn-photo-reply">📸 Yanıtla</button>
+            </div>
+        </div>
+    </div>
+</template>
 
 <script type="module" src="app.js"></script>
 </body>
