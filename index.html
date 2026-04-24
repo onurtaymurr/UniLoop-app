@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UniMatch — Kampüste Tanış</title>
+<title>UniLoop — Kampüste Tanış</title>
 <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#060610;--s1:#0d0d1e;--s2:#141428;--s3:#1c1c38;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--rose:#ff4d6d;--rose2:#ff8fa3;--violet:#7c3aed;--violet2:#a78bfa;--emerald:#10b981;--amber:#f59e0b;--sky:#0ea5e9;--text:#f1f0ff;--sub:#9999bb;--muted:#55556e;--r:16px;--rl:22px;}
@@ -21,12 +20,20 @@ body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--t
 .screen{display:none;height:100dvh;overflow-y:auto;scrollbar-width:none;}
 .screen::-webkit-scrollbar{display:none;}
 .screen.active{display:flex;flex-direction:column;}
+
+/* LOGO CSS GÜNCELLEMELERİ */
+.auth-logo{text-align:center;margin-bottom:12px;display:flex;justify-content:center;align-items:center;}
+.auth-logo img{max-width:220px;height:auto;}
+.topbar-logo{display:flex;align-items:center;}
+.topbar-logo img{max-height:28px;width:auto;}
+.sidebar-logo{padding:0 22px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;margin-top:10px;}
+.sidebar-logo img{max-width:150px;height:auto;}
+
 /* AUTH */
 #s-auth{align-items:center;justify-content:center;padding:20px;}
 .auth-wrap{width:100%;max-width:400px;animation:cardIn .6s cubic-bezier(.34,1.56,.64,1) both;}
 @keyframes cardIn{from{opacity:0;transform:translateY(28px) scale(.95)}to{opacity:1;transform:none}}
 .auth-card{background:rgba(13,13,30,.9);backdrop-filter:blur(24px);border:1px solid var(--border2);border-radius:var(--rl);padding:32px 28px;box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 1px rgba(124,58,237,.08);}
-.auth-logo{text-align:center;font-family:'Clash Display',sans-serif;font-size:2rem;font-weight:700;background:linear-gradient(135deg,var(--rose),var(--violet2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
 .auth-tag{text-align:center;color:var(--sub);font-size:.82rem;margin-bottom:24px;}
 .tab-sw{display:flex;background:var(--s2);border-radius:12px;padding:4px;gap:4px;margin-bottom:22px;}
 .tab-sw button{flex:1;padding:9px;border:none;border-radius:9px;font-family:'Instrument Sans',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;transition:.2s;background:transparent;color:var(--sub);}
@@ -46,6 +53,7 @@ select.fi option{background:var(--s2);}
 .btn-g:hover{background:var(--s3);}
 .auth-err{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.25);border-radius:10px;padding:10px 14px;font-size:.8rem;color:var(--rose2);margin-top:12px;display:none;}
 .auth-err.show{display:block;}
+
 /* SETUP */
 #s-setup{align-items:center;justify-content:flex-start;padding:20px;padding-top:40px;}
 .setup-card{width:100%;max-width:400px;background:rgba(13,13,30,.9);backdrop-filter:blur(24px);border:1px solid var(--border2);border-radius:var(--rl);padding:28px 24px;animation:cardIn .5s ease both;}
@@ -57,10 +65,10 @@ select.fi option{background:var(--s2);}
 .int-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;}
 .int-chip{padding:7px 13px;border-radius:20px;font-size:.78rem;font-weight:500;border:1px solid var(--border2);background:var(--s2);cursor:pointer;transition:.2s;user-select:none;}
 .int-chip.sel{background:rgba(124,58,237,.2);border-color:var(--violet2);color:var(--violet2);}
+
 /* APP */
 #s-app{max-width:430px;margin:0 auto;position:relative;}
 .topbar{padding:14px 16px 8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.topbar-logo{font-family:'Clash Display',sans-serif;font-size:1.3rem;font-weight:700;background:linear-gradient(135deg,var(--rose),var(--violet2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .topbar-acts{display:flex;gap:8px;}
 .topbar-btn{width:36px;height:36px;border-radius:11px;background:var(--s1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.95rem;transition:.2s;position:relative;}
 .topbar-btn:hover{background:var(--s2);}
@@ -82,6 +90,7 @@ select.fi option{background:var(--s2);}
 .panel{display:none;padding:0 14px;}
 .panel.active{display:block;animation:fadeUp .3s ease both;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
 /* SWIPE */
 .card-stack{position:relative;height:450px;margin-bottom:12px;}
 .swipe-card{position:absolute;inset:0;border-radius:22px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 20px 55px rgba(0,0,0,.55);cursor:grab;user-select:none;touch-action:none;will-change:transform;}
@@ -113,6 +122,7 @@ select.fi option{background:var(--s2);}
 .swipe-hint{text-align:center;font-size:.7rem;color:var(--muted);margin-bottom:3px;}
 .no-cards{text-align:center;padding:60px 20px;}
 .no-cards span{font-size:3rem;display:block;margin-bottom:12px;}
+
 /* ANON */
 .anon-hero{background:linear-gradient(135deg,rgba(124,58,237,.1),rgba(99,102,241,.04));border:1px solid rgba(124,58,237,.18);border-radius:20px;padding:20px;text-align:center;margin-bottom:14px;}
 .mask-fl{font-size:2.8rem;display:block;animation:fl 3s ease-in-out infinite;margin-bottom:10px;}
@@ -123,57 +133,12 @@ select.fi option{background:var(--s2);}
 .queue-btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(124,58,237,.4);}
 .queue-btn:disabled{opacity:.5;cursor:default;transform:none;}
 .sec-lbl{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 9px;}
-.anon-row{display:flex;align-items:center;gap:11px;padding:12px 13px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);margin-bottom:7px;cursor:pointer;transition:.2s;}
-.anon-row:hover{background:var(--s2);transform:translateX(3px);}
-.anon-avi{width:42px;height:42px;border-radius:13px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;}
-.anon-info{flex:1;}
-.anon-name{font-weight:600;font-size:.85rem;margin-bottom:2px;}
-.anon-dept{font-size:.72rem;color:var(--sub);}
-.anon-btn{padding:7px 13px;border-radius:9px;border:1px solid rgba(124,58,237,.3);background:rgba(124,58,237,.15);color:var(--violet2);font-size:.76rem;font-weight:600;cursor:pointer;transition:.2s;}
-.anon-btn:hover{background:var(--violet);color:#fff;}
-/* VOICE MODAL */
-.modal-ov{display:none;position:fixed;inset:0;z-index:500;background:rgba(6,6,16,.92);backdrop-filter:blur(18px);align-items:center;justify-content:center;padding:24px;}
-.modal-ov.open{display:flex;}
-.modal-card{width:100%;max-width:330px;background:rgba(20,20,40,.97);border:1px solid rgba(124,58,237,.22);border-radius:var(--rl);padding:26px 22px;text-align:center;animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;}
-@keyframes popIn{from{opacity:0;transform:scale(.75)}to{opacity:1;transform:none}}
-.modal-mask{font-size:3.2rem;display:block;animation:fl 3s ease-in-out infinite;margin-bottom:12px;}
-.modal-card h3{font-family:'Clash Display',sans-serif;font-size:1.05rem;font-weight:600;margin-bottom:4px;}
-.modal-card>p{color:var(--sub);font-size:.78rem;margin-bottom:16px;line-height:1.5;}
-.waveform{display:flex;gap:3px;justify-content:center;align-items:center;height:40px;margin-bottom:18px;}
-.waveform span{width:4px;border-radius:4px;background:linear-gradient(to top,var(--violet),var(--violet2));animation:wv 1.2s ease-in-out infinite;}
-.waveform span:nth-child(1){height:10px;animation-delay:0s}.waveform span:nth-child(2){height:22px;animation-delay:.08s}.waveform span:nth-child(3){height:34px;animation-delay:.16s}.waveform span:nth-child(4){height:26px;animation-delay:.24s}.waveform span:nth-child(5){height:38px;animation-delay:.32s}.waveform span:nth-child(6){height:28px;animation-delay:.4s}.waveform span:nth-child(7){height:16px;animation-delay:.48s}.waveform span:nth-child(8){height:24px;animation-delay:.56s}
-@keyframes wv{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
-.modal-timer{font-family:'Clash Display',sans-serif;font-size:1.4rem;font-weight:600;color:var(--violet2);margin-bottom:18px;}
-.modal-acts{display:flex;flex-direction:column;gap:9px;}
-.mbtn{width:100%;padding:12px;border-radius:13px;border:none;cursor:pointer;font-family:'Instrument Sans',sans-serif;font-size:.88rem;font-weight:600;transition:.25s;}
-.mbtn.reveal{background:linear-gradient(135deg,var(--rose),var(--violet));color:#fff;}
-.mbtn.reveal:hover{transform:translateY(-2px);}
-.mbtn.mute{background:var(--s2);border:1px solid var(--border2);color:var(--text);}
-.mbtn.end{background:transparent;color:var(--muted);border:1px solid var(--border2);}
-.mbtn.end:hover{background:rgba(248,113,113,.1);color:#f87171;border-color:#f87171;}
+
 /* TOURNAMENT */
 .tourney-hdr{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(251,191,36,.03));border:1px solid rgba(245,158,11,.18);border-radius:20px;padding:15px 17px;margin-bottom:13px;display:flex;align-items:center;justify-content:space-between;}
 .tourney-hdr h3{font-family:'Clash Display',sans-serif;font-size:.97rem;font-weight:600;}
 .tourney-hdr p{font-size:.74rem;color:var(--sub);margin-top:2px;}
-.rnd-bar{display:flex;gap:4px;margin-bottom:5px;}
-.rnd-seg{flex:1;height:3px;border-radius:4px;background:var(--s2);}
-.rnd-seg.done{background:var(--amber);}
-.rnd-seg.active{background:linear-gradient(90deg,var(--amber),var(--emerald));}
-.rnd-labels{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);margin-bottom:12px;}
-.rnd-cur{text-align:center;font-size:.73rem;color:var(--amber);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:11px;}
-.matchup-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:9px;}
-.matchup-lbl{font-size:.67rem;color:var(--muted);text-align:center;margin-bottom:9px;text-transform:uppercase;letter-spacing:.06em;}
-.contestants{display:flex;gap:7px;align-items:center;}
-.cont{flex:1;background:var(--s2);border:2px solid transparent;border-radius:13px;padding:13px 8px;text-align:center;cursor:pointer;transition:.3s;}
-.cont:hover:not(.voted):not(.lose){border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.05);}
-.cont.voted{border-color:var(--emerald);background:rgba(16,185,129,.06);}
-.cont.lose{opacity:.38;cursor:default;}
-.cont-emoji{font-size:1.9rem;display:block;margin-bottom:5px;}
-.cont-name{font-weight:600;font-size:.8rem;margin-bottom:2px;}
-.cont-dept{font-size:.69rem;color:var(--sub);}
-.cont-votes{font-size:.7rem;color:var(--amber);margin-top:3px;font-weight:600;}
-.vs-dot{width:27px;height:27px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,var(--amber),#f59e0b);display:flex;align-items:center;justify-content:center;font-family:'Clash Display',sans-serif;font-weight:700;font-size:.58rem;color:#000;}
-.champ-box{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.18);border-radius:15px;padding:13px;text-align:center;margin-top:4px;}
+
 /* MESSAGES */
 .search-wrap{display:flex;align-items:center;gap:9px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:10px 13px;margin-bottom:13px;}
 .search-wrap input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:.86rem;}
@@ -199,6 +164,7 @@ select.fi option{background:var(--s2);}
 .mini-badge{display:inline-flex;align-items:center;gap:2px;background:rgba(124,58,237,.13);border:1px solid rgba(124,58,237,.22);border-radius:5px;padding:1px 5px;font-size:.56rem;color:var(--violet2);}
 .empty-st{text-align:center;padding:44px 20px;}
 .empty-st span{font-size:2.8rem;display:block;margin-bottom:11px;}
+
 /* CHAT FULL SCREEN */
 #s-chat{position:fixed;inset:0;z-index:400;background:var(--bg);max-width:430px;margin:0 auto;display:none;flex-direction:column;}
 #s-chat.open{display:flex;}
@@ -223,6 +189,7 @@ select.fi option{background:var(--s2);}
 .chat-inp{flex:1;padding:10px 14px;border-radius:13px;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:.86rem;outline:none;transition:.2s;}
 .chat-inp:focus{border-color:var(--violet2);}
 .chat-send{width:42px;height:42px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--rose),var(--violet));color:#fff;font-size:.95rem;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
 /* PROFILE */
 .prof-hero{background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(255,77,109,.04));border:1px solid rgba(124,58,237,.14);border-radius:20px;padding:20px 17px;text-align:center;margin-bottom:13px;position:relative;overflow:hidden;}
 .prof-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--rose),var(--violet),var(--emerald));}
@@ -242,6 +209,7 @@ select.fi option{background:var(--s2);}
 .setting-lbl{flex:1;font-size:.85rem;font-weight:500;}
 .setting-val{font-size:.76rem;color:var(--sub);margin-right:5px;}
 .setting-arr{color:var(--muted);}
+
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(6,6,16,.94);backdrop-filter:blur(22px);border-top:1px solid var(--border);display:flex;padding:8px 8px 16px;z-index:100;}
 .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:7px 0;border-radius:11px;transition:.2s;color:var(--muted);font-size:.58rem;font-weight:500;position:relative;}
@@ -250,6 +218,7 @@ select.fi option{background:var(--s2);}
 .bnav-ico{font-size:1.2rem;transition:.25s;}
 .bnav-item.active .bnav-ico{transform:scale(1.18);}
 .bnav-badge{position:absolute;top:3px;right:calc(50% - 16px);width:14px;height:14px;border-radius:50%;background:var(--rose);color:#fff;font-size:.48rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);}
+
 /* MATCH BLAST */
 .match-blast{display:none;position:fixed;inset:0;z-index:600;background:rgba(6,6,16,.94);backdrop-filter:blur(18px);align-items:center;justify-content:center;padding:24px;}
 .match-blast.show{display:flex;}
@@ -260,9 +229,11 @@ select.fi option{background:var(--s2);}
 .blast-sub{color:var(--sub);font-size:.82rem;margin-bottom:20px;}
 .blast-chat{padding:12px 30px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--rose),var(--violet));color:#fff;font-family:'Instrument Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;}
 .blast-skip{margin-top:11px;cursor:pointer;color:var(--muted);font-size:.78rem;}
+
 /* CHIPS */
 .chips-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:15px;}
 .chip{padding:6px 12px;border-radius:17px;font-size:.76rem;font-weight:500;background:var(--s1);border:1px solid var(--border2);}
+
 /* TOAST */
 .toast-wrap{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:700;pointer-events:none;display:flex;flex-direction:column;gap:7px;align-items:center;}
 .toast{background:rgba(20,20,40,.96);backdrop-filter:blur(16px);border:1px solid var(--border2);border-radius:13px;padding:10px 17px;display:flex;align-items:center;gap:9px;box-shadow:0 8px 28px rgba(0,0,0,.5);white-space:nowrap;animation:toastIn .38s cubic-bezier(.34,1.56,.64,1) both;font-size:.83rem;font-weight:500;}
@@ -271,177 +242,68 @@ select.fi option{background:var(--s2);}
 @keyframes toastOut{to{opacity:0;transform:translateY(-10px) scale(.95)}}
 .spinner{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .75s linear infinite;display:inline-block;}
 @keyframes spin{to{transform:rotate(360deg)}}
-</style>
 
-<style>
 /* ═══════════════════════════════════
    TABLET OVERRIDES (768px+)
 ═══════════════════════════════════ */
-
-/* Tablet: sidebar layout */
 @media (min-width: 768px) {
   html, body { overflow: hidden; }
-
-  #screens {
-    display: flex;
-    height: 100dvh;
-  }
-
-  /* AUTH & SETUP: centered card, wider */
-  #s-auth, #s-setup {
-    flex: 1;
-    background: transparent;
-  }
+  #screens { display: flex; height: 100dvh; }
+  #s-auth, #s-setup { flex: 1; background: transparent; }
   .auth-wrap { max-width: 480px; }
   .auth-card { padding: 44px 40px; }
-  .auth-logo { font-size: 2.5rem; }
   .setup-card { max-width: 560px; padding: 36px 32px; }
 
-  /* MAIN APP: 2-column layout */
   #s-app {
-    max-width: 100%;
-    width: 100%;
-    display: flex !important;
-    flex-direction: row !important;
-    height: 100dvh;
-    overflow: hidden;
+    max-width: 100%; width: 100%;
+    display: flex !important; flex-direction: row !important;
+    height: 100dvh; overflow: hidden;
   }
 
-  /* LEFT SIDEBAR */
   .app-sidebar {
-    width: 260px;
-    flex-shrink: 0;
-    background: rgba(13,13,30,.97);
-    border-right: 1px solid var(--border2);
-    display: flex;
-    flex-direction: column;
-    padding: 24px 0 0;
-    height: 100dvh;
-    overflow: hidden;
+    width: 260px; flex-shrink: 0; background: rgba(13,13,30,.97);
+    border-right: 1px solid var(--border2); display: flex;
+    flex-direction: column; padding: 24px 0 0; height: 100dvh; overflow: hidden;
   }
 
-  .sidebar-logo {
-    font-family: 'Clash Display', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, var(--rose), var(--violet2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    padding: 0 22px 20px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .sidebar-profile {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 18px 22px;
-    border-bottom: 1px solid var(--border);
-  }
-  .sidebar-avi {
-    width: 46px; height: 46px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, var(--rose), var(--violet));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem; flex-shrink: 0;
-  }
+  .sidebar-profile { display: flex; align-items: center; gap: 12px; padding: 18px 22px; border-bottom: 1px solid var(--border); }
+  .sidebar-avi { width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, var(--rose), var(--violet)); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
   .sidebar-info h3 { font-family: 'Clash Display',sans-serif; font-size: .95rem; font-weight: 600; }
   .sidebar-info p  { font-size: .72rem; color: var(--sub); margin-top: 2px; }
 
-  .sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 16px 12px;
-    flex: 1;
-  }
-  .s-nav-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 14px; border-radius: 12px;
-    cursor: pointer; transition: .2s;
-    color: var(--muted); font-size: .88rem; font-weight: 500;
-    border: 1px solid transparent;
-  }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 4px; padding: 16px 12px; flex: 1; }
+  .s-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; cursor: pointer; transition: .2s; color: var(--muted); font-size: .88rem; font-weight: 500; border: 1px solid transparent; }
   .s-nav-item:hover { background: var(--s2); color: var(--text); }
   .s-nav-item.active { background: rgba(124,58,237,.15); color: var(--violet2); border-color: rgba(124,58,237,.2); }
   .s-nav-ico { font-size: 1.15rem; width: 22px; text-align: center; }
   .s-nav-badge { margin-left: auto; width: 18px; height: 18px; border-radius: 50%; background: var(--rose); color: #fff; font-size: .55rem; font-weight: 700; display: none; align-items: center; justify-content: center; }
   .s-nav-badge.show { display: flex; }
 
-  .sidebar-bottom {
-    padding: 14px 12px 20px;
-    border-top: 1px solid var(--border);
-    display: flex; flex-direction: column; gap: 4px;
-  }
-  .sidebar-stat-row {
-    display: flex; gap: 8px; padding: 0 4px;
-  }
+  .sidebar-bottom { padding: 14px 12px 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+  .sidebar-stat-row { display: flex; gap: 8px; padding: 0 4px; }
   .ss { flex: 1; background: var(--s2); border-radius: 10px; padding: 9px 6px; text-align: center; }
   .ss-val { font-family: 'Clash Display',sans-serif; font-size: .95rem; font-weight: 700; }
   .ss-lbl { font-size: .6rem; color: var(--muted); margin-top: 1px; }
-  .logout-btn {
-    margin-top: 6px; width: 100%; padding: 10px; border: 1px solid rgba(248,113,113,.25);
-    border-radius: 10px; background: transparent; color: #f87171;
-    font-family: 'Instrument Sans',sans-serif; font-size: .84rem; font-weight: 500;
-    cursor: pointer; transition: .2s;
-  }
+  .logout-btn { margin-top: 6px; width: 100%; padding: 10px; border: 1px solid rgba(248,113,113,.25); border-radius: 10px; background: transparent; color: #f87171; font-family: 'Instrument Sans',sans-serif; font-size: .84rem; font-weight: 500; cursor: pointer; transition: .2s; }
   .logout-btn:hover { background: rgba(248,113,113,.1); }
 
-  /* RIGHT CONTENT AREA */
-  .app-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-width: 0;
-  }
-
-  /* CONTENT INNER: 2 column for swipe */
-  .scroll-area {
-    padding-bottom: 0 !important;
-  }
-
-  /* Hide mobile elements */
-  .topbar { display: none; }
-  .w-strip { display: none; }
-  .nav-tabs { display: none; }
-  .bottom-nav { display: none; }
-
-  /* Show sidebar (hidden on mobile) */
+  .app-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+  .scroll-area { padding-bottom: 0 !important; }
+  .topbar, .w-strip, .nav-tabs, .bottom-nav { display: none; }
   .app-sidebar { display: flex; }
 
-  /* SWIPE panel: larger cards */
-  #panel-swipe {
-    display: none;
-    padding: 24px 32px;
-    flex-direction: row;
-    gap: 32px;
-    align-items: flex-start;
-  }
+  #panel-swipe { display: none; padding: 24px 32px; flex-direction: row; gap: 32px; align-items: flex-start; }
   #panel-swipe.active { display: flex; }
-
-  .swipe-left-col {
-    flex: 0 0 380px;
-  }
-  .swipe-right-col {
-    flex: 1;
-    min-width: 0;
-  }
-
+  .swipe-left-col { flex: 0 0 380px; }
+  .swipe-right-col { flex: 1; min-width: 0; }
   .card-stack { height: 520px; }
   .swipe-acts { margin-top: 16px; }
   .sact.like { width: 66px; height: 66px; font-size: 1.4rem; }
   .sact.skip, .sact.super { width: 56px; height: 56px; }
 
-  /* Nearby users list for tablet */
   .nearby-list { margin-top: 0; }
   .nearby-title { font-family: 'Clash Display',sans-serif; font-size: 1rem; font-weight: 600; margin-bottom: 14px; }
-  .nearby-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 14px; background: var(--s1);
-    border: 1px solid var(--border); border-radius: var(--r);
-    margin-bottom: 8px; cursor: pointer; transition: .2s;
-  }
+  .nearby-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--s1); border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 8px; cursor: pointer; transition: .2s; }
   .nearby-item:hover { background: var(--s2); border-color: var(--border2); }
   .nearby-avi { width: 44px; height: 44px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
   .nearby-info { flex: 1; min-width: 0; }
@@ -449,87 +311,25 @@ select.fi option{background:var(--s2);}
   .nearby-dept { font-size: .72rem; color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nearby-tag { padding: 3px 8px; border-radius: 8px; font-size: .65rem; background: rgba(124,58,237,.15); color: var(--violet2); font-weight: 500; }
 
-  /* ANON panel tablet */
-  #panel-anon.active {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    padding: 24px 32px;
-  }
+  #panel-anon.active { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 24px 32px; }
   #panel-anon .anon-hero { margin-bottom: 0; }
   #panel-anon .sec-lbl { margin-top: 0; }
 
-  /* TOURNAMENT tablet */
-  #panel-tournament.active {
-    display: block;
-    padding: 24px 32px;
-    max-width: 800px;
-  }
-  .matchup-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
+  #panel-tournament.active { display: block; padding: 24px 32px; max-width: 800px; }
+  .matchup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-  /* MESSAGES tablet: split view */
-  #panel-messages.active {
-    display: flex;
-    flex-direction: row;
-    padding: 0;
-    height: 100%;
-    gap: 0;
-  }
-  .msg-list-col {
-    width: 320px;
-    flex-shrink: 0;
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    padding: 20px 16px;
-    overflow-y: auto;
-  }
-  .msg-detail-col {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--muted);
-    font-size: .9rem;
-    gap: 12px;
-  }
+  #panel-messages.active { display: flex; flex-direction: row; padding: 0; height: 100%; gap: 0; }
+  .msg-list-col { width: 320px; flex-shrink: 0; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 16px; overflow-y: auto; }
+  .msg-detail-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted); font-size: .9rem; gap: 12px; }
   .msg-detail-col span { font-size: 2.5rem; }
 
-  /* PROFILE tablet */
-  #panel-profile.active {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 24px;
-    padding: 24px 32px;
-    align-items: start;
-  }
-  .prof-left { }
-  .prof-right { }
+  #panel-profile.active { display: grid; grid-template-columns: 320px 1fr; gap: 24px; padding: 24px 32px; align-items: start; }
 
-  /* CHAT full screen on tablet: side panel */
-  #s-chat {
-    position: fixed;
-    left: 260px; /* sidebar width */
-    right: 0;
-    top: 0; bottom: 0;
-    width: auto;
-    max-width: none;
-    border-left: 1px solid var(--border2);
-  }
-
-  /* Online pill bigger */
+  #s-chat { position: fixed; left: 260px; right: 0; top: 0; bottom: 0; width: auto; max-width: none; border-left: 1px solid var(--border2); }
   .online-pill { font-size: .75rem; padding: 3px 10px; }
-
-  /* Scroll areas */
   .scroll-area { overflow-y: auto; flex: 1; }
 }
 
-/* Large tablet / small desktop */
 @media (min-width: 1024px) {
   .app-sidebar { width: 280px; }
   #s-chat { left: 280px; }
@@ -537,18 +337,16 @@ select.fi option{background:var(--s2);}
   .swipe-left-col { flex: 0 0 420px; }
 }
 </style>
-
 </head>
 <body>
 <div class="bg-mesh"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
 <div class="toast-wrap" id="toastWrap"></div>
 
 <div id="screens">
-<!-- AUTH -->
 <div class="screen active" id="s-auth">
   <div class="auth-wrap">
     <div class="auth-card">
-      <div class="auth-logo">UniMatch</div>
+      <div class="auth-logo"><img src="uniloop-logo.png" alt="UniLoop Logo"></div>
       <p class="auth-tag">Kampüste gerçek bağlantılar kur 🎓</p>
       <div class="tab-sw">
         <button class="active" id="btnLogin" onclick="authTab('login')">Giriş Yap</button>
@@ -582,8 +380,6 @@ select.fi option{background:var(--s2);}
     </div>
   </div>
 </div>
-
-<!-- SETUP -->
 
 <div class="screen" id="s-setup">
   <div style="width:100%;max-width:400px;margin:0 auto;padding:20px 16px 100px;">
@@ -629,12 +425,9 @@ select.fi option{background:var(--s2);}
   </div>
 </div>
 
-<!-- MAIN APP -->
-
 <div class="screen" id="s-app">
-  <!-- SIDEBAR (tablet only) -->
   <div class="app-sidebar" id="appSidebar">
-    <div class="sidebar-logo">UniMatch</div>
+    <div class="sidebar-logo"><img src="uniloop-logo.png" alt="UniLoop Logo"></div>
     <div class="sidebar-profile">
       <div class="sidebar-avi" id="sbAvi">😎</div>
       <div class="sidebar-info">
@@ -643,22 +436,11 @@ select.fi option{background:var(--s2);}
       </div>
     </div>
     <div class="sidebar-nav">
-      <div class="s-nav-item active" id="sn-swipe" onclick="switchPanel('swipe')">
-        <span class="s-nav-ico">🔥</span> Keşfet
-      </div>
-      <div class="s-nav-item" id="sn-anon" onclick="switchPanel('anon')">
-        <span class="s-nav-ico">🎭</span> Anonim Ses
-      </div>
-      <div class="s-nav-item" id="sn-tournament" onclick="switchPanel('tournament')">
-        <span class="s-nav-ico">🏆</span> Turnuva
-      </div>
-      <div class="s-nav-item" id="sn-messages" onclick="switchPanel('messages')">
-        <span class="s-nav-ico">💬</span> Mesajlar
-        <span class="s-nav-badge" id="snMsgBadge">!</span>
-      </div>
-      <div class="s-nav-item" id="sn-profile" onclick="switchPanel('profile')">
-        <span class="s-nav-ico">👤</span> Profil
-      </div>
+      <div class="s-nav-item active" id="sn-swipe" onclick="switchPanel('swipe')"><span class="s-nav-ico">🔥</span> Keşfet</div>
+      <div class="s-nav-item" id="sn-anon" onclick="switchPanel('anon')"><span class="s-nav-ico">🎭</span> Anonim Ses</div>
+      <div class="s-nav-item" id="sn-tournament" onclick="switchPanel('tournament')"><span class="s-nav-ico">🏆</span> Turnuva</div>
+      <div class="s-nav-item" id="sn-messages" onclick="switchPanel('messages')"><span class="s-nav-ico">💬</span> Mesajlar<span class="s-nav-badge" id="snMsgBadge">!</span></div>
+      <div class="s-nav-item" id="sn-profile" onclick="switchPanel('profile')"><span class="s-nav-ico">👤</span> Profil</div>
     </div>
     <div class="sidebar-bottom">
       <div class="sidebar-stat-row">
@@ -669,111 +451,122 @@ select.fi option{background:var(--s2);}
       <button class="logout-btn" onclick="doLogout()">🚪 Çıkış Yap</button>
     </div>
   </div>
-  <!-- CONTENT AREA -->
+  
   <div class="app-content">
-
-  <div class="topbar">
-    <div class="topbar-logo">UniMatch</div>
-    <div class="topbar-acts">
-      <div class="topbar-btn" onclick="switchPanel('messages')">🔔<span class="t-badge" id="notifBadge" style="display:none"></span></div>
-      <div class="topbar-btn" onclick="switchPanel('profile')">⚙️</div>
-    </div>
-  </div>
-  <div class="w-strip">
-    <div class="w-avi" id="wAvi">😎</div>
-    <div class="w-text">
-      <h3 id="wName">Merhaba!</h3>
-      <p><span class="online-pill"><span class="pulse-dot"></span><span id="onlineCnt">—</span> çevrimiçi</span> <span id="wUni" style="color:var(--sub);font-size:.7rem;margin-left:4px;"></span></p>
-    </div>
-  </div>
-  <div class="nav-tabs">
-    <div class="nav-tab active" id="nt-swipe" onclick="switchPanel('swipe')">🔥 Keşfet</div>
-    <div class="nav-tab" id="nt-anon" onclick="switchPanel('anon')">🎭 Anonim Ses</div>
-    <div class="nav-tab" id="nt-tournament" onclick="switchPanel('tournament')">🏆 Turnuva</div>
-    <div class="nav-tab" id="nt-messages" onclick="switchPanel('messages')">💬 Mesajlar</div>
-    <div class="nav-tab" id="nt-profile" onclick="switchPanel('profile')">👤 Profil</div>
-  </div>
-  <div class="scroll-area">
-    <div class="panel active" id="panel-swipe"><div class="swipe-left-col">
-      <div class="card-stack" id="cardStack"></div>
-      <p class="swipe-hint">← Geç &nbsp;·&nbsp; Beğen → &nbsp;·&nbsp; ⬆ Süper Beğeni</p>
-      <div class="swipe-acts">
-        <button class="sact boost" onclick="showToast('⚡ Boost aktif!','success')">⚡</button>
-        <button class="sact skip" onclick="swipe('left')">✕</button>
-        <button class="sact like" onclick="swipe('right')">♥</button>
-        <button class="sact super" onclick="swipe('up')">⭐</button>
+    <div class="topbar">
+      <div class="topbar-logo"><img src="uniloop-logo.png" alt="UniLoop Logo"></div>
+      <div class="topbar-acts">
+        <div class="topbar-btn" onclick="switchPanel('messages')">🔔<span class="t-badge" id="notifBadge" style="display:none"></span></div>
+        <div class="topbar-btn" onclick="switchPanel('profile')">⚙️</div>
       </div>
-    </div></div>
-      <!-- Nearby users (tablet right column) -->
-      <div class="swipe-right-col nearby-list" id="nearbyList">
-        <div class="nearby-title">📍 Yakınındaki Kullanıcılar</div>
+    </div>
+    <div class="w-strip">
+      <div class="w-avi" id="wAvi">😎</div>
+      <div class="w-text">
+        <h3 id="wName">Merhaba!</h3>
+        <p><span class="online-pill"><span class="pulse-dot"></span><span id="onlineCnt">—</span> çevrimiçi</span> <span id="wUni" style="color:var(--sub);font-size:.7rem;margin-left:4px;"></span></p>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <div class="nav-tab active" id="nt-swipe" onclick="switchPanel('swipe')">🔥 Keşfet</div>
+      <div class="nav-tab" id="nt-anon" onclick="switchPanel('anon')">🎭 Anonim Ses</div>
+      <div class="nav-tab" id="nt-tournament" onclick="switchPanel('tournament')">🏆 Turnuva</div>
+      <div class="nav-tab" id="nt-messages" onclick="switchPanel('messages')">💬 Mesajlar</div>
+      <div class="nav-tab" id="nt-profile" onclick="switchPanel('profile')">👤 Profil</div>
+    </div>
+    
+    <div class="scroll-area">
+      <div class="panel active" id="panel-swipe">
+        <div class="swipe-left-col">
+          <div class="card-stack" id="cardStack"></div>
+          <p class="swipe-hint">← Geç &nbsp;·&nbsp; Beğen → &nbsp;·&nbsp; ⬆ Süper Beğeni</p>
+          <div class="swipe-acts">
+            <button class="sact boost" onclick="showToast('⚡ Boost aktif!','success')">⚡</button>
+            <button class="sact skip" onclick="swipe('left')">✕</button>
+            <button class="sact like" onclick="swipe('right')">♥</button>
+            <button class="sact super" onclick="swipe('up')">⭐</button>
+          </div>
+        </div>
+        <div class="swipe-right-col nearby-list" id="nearbyList">
+          <div class="nearby-title">📍 Yakınındaki Kullanıcılar</div>
+        </div>
       </div>
 
-```
-<div class="panel" id="panel-anon">
-  <div class="anon-hero">
-    <span class="mask-fl">🎭</span>
-    <h3>Anonim Sesli Tanışma</h3>
-    <p>Kimliğini gizle, sesini tanıt. Beğenirsen maskeyi kaldır!</p>
-    <button class="queue-btn" id="queueBtn" onclick="joinQueue()"><span id="queueBtnTxt">🎙️ Kuyruğa Gir</span></button>
-  </div>
-  <div class="sec-lbl">Kuyruktaki Kullanıcılar</div>
-  <div id="anonList"></div>
-</div>
-<div class="panel" id="panel-tournament">
-  <div class="tourney-hdr">
-    <div><h3>🏆 Haftalık Turnuva</h3><p id="tourneySub">Yükleniyor...</p></div>
-    <span style="font-size:1.9rem;animation:fl 3s ease-in-out infinite">🏆</span>
-  </div>
-  <div class="rnd-bar"><div class="rnd-seg done"></div><div class="rnd-seg active"></div><div class="rnd-seg"></div><div class="rnd-seg"></div></div>
-  <div class="rnd-labels"><span>1/8 Final</span><span>Çeyrek</span><span>Yarı</span><span>Final</span></div>
-  <div class="rnd-cur">⚡ Çeyrek Final — Oy Ver!</div>
-  <div class="matchup-grid" id="matchupList"></div>
-</div>
-<div class="panel" id="panel-messages"><div class="msg-list-col"><div class="search-wrap">
-    <span style="color:var(--muted)">🔍</span>
-    <input type="text" placeholder="Mesajlarda ara..." id="msgSearch" oninput="filterMsgs()">
-  </div>
-  <div class="match-bubbles" id="matchBubbles"></div>
-  <div id="chatList"></div></div><div class="msg-detail-col" id="msgDetailPlaceholder"><span>💬</span><p>Bir sohbet seçin</p></div></div>
-<div class="panel" id="panel-profile"><div class="prof-left"><div class="prof-hero">
-    <div class="prof-pic-wrap">
-      <div class="prof-pic" id="pPic">😎</div>
-      <div class="prof-edit-ico" onclick="editBio()">✏️</div>
-    </div>
-    <div class="prof-name" id="pName">—</div>
-    <div class="prof-school" id="pSchool">—</div>
-    <div class="prof-stats">
-      <div class="pstat"><div class="pstat-val" id="stLikes" style="color:var(--rose)">0</div><div class="pstat-lbl">Beğeni</div></div>
-      <div class="pstat"><div class="pstat-val" id="stMatches" style="color:var(--emerald)">0</div><div class="pstat-lbl">Eşleşme</div></div>
-      <div class="pstat"><div class="pstat-val" id="stChats" style="color:var(--violet2)">0</div><div class="pstat-lbl">Sohbet</div></div>
-      <div class="pstat"><div class="pstat-val" id="stTour" style="color:var(--amber)">—</div><div class="pstat-lbl">Turnuva</div></div>
-    </div>
-  </div>
-```
+      <div class="panel" id="panel-anon">
+        <div class="anon-hero">
+          <span class="mask-fl">🎭</span>
+          <h3>Anonim Sesli Tanışma</h3>
+          <p>Kimliğini gizle, sesini tanıt. Beğenirsen maskeyi kaldır!</p>
+          <button class="queue-btn" id="queueBtn" onclick="joinQueue()"><span id="queueBtnTxt">🎙️ Kuyruğa Gir</span></button>
+        </div>
+        <div class="sec-lbl">Kuyruktaki Kullanıcılar</div>
+        <div id="anonList"></div>
+      </div>
 
-</div><div class="prof-right"><div class="sec-lbl" style="margin-top:4px">İlgi Alanları</div>
-      <div class="chips-wrap" id="pChips"></div>
-      <div class="sec-lbl">Hesap</div>
-      <div class="setting-row" onclick="editBio()"><span class="setting-ico">✏️</span><span class="setting-lbl">Bio Düzenle</span><span class="setting-arr">›</span></div>
-      <div class="setting-row" onclick="showToast('📍 Yakında!','info')"><span class="setting-ico">📍</span><span class="setting-lbl">Konum & Mesafe</span><span class="setting-val">10 km</span><span class="setting-arr">›</span></div>
-      <div class="setting-row" onclick="showToast('🔔 Bildirimler açık','success')"><span class="setting-ico">🔔</span><span class="setting-lbl">Bildirimler</span><span class="setting-arr">›</span></div>
-      <div class="setting-row" onclick="showToast('💎 UniMatch Plus yakında!','info')"><span class="setting-ico">💎</span><span class="setting-lbl">UniMatch Plus</span><span class="setting-val" style="color:var(--amber);font-weight:600">PREMIUM</span><span class="setting-arr">›</span></div>
-      <div class="setting-row" onclick="doLogout()"><span class="setting-ico">🚪</span><span class="setting-lbl" style="color:#f87171">Çıkış Yap</span><span class="setting-arr">›</span></div>
+      <div class="panel" id="panel-tournament">
+        <div class="tourney-hdr">
+          <div><h3>🏆 Haftalık Turnuva</h3><p id="tourneySub">Yükleniyor...</p></div>
+          <span style="font-size:1.9rem;animation:fl 3s ease-in-out infinite">🏆</span>
+        </div>
+        <div class="rnd-bar"><div class="rnd-seg done"></div><div class="rnd-seg active"></div><div class="rnd-seg"></div><div class="rnd-seg"></div></div>
+        <div class="rnd-labels"><span>1/8 Final</span><span>Çeyrek</span><span>Yarı</span><span>Final</span></div>
+        <div class="rnd-cur">⚡ Çeyrek Final</div>
+        <div class="matchup-grid" id="matchupList"></div>
+      </div>
+
+      <div class="panel" id="panel-messages">
+        <div class="msg-list-col">
+          <div class="search-wrap">
+            <span style="color:var(--muted)">🔍</span>
+            <input type="text" placeholder="Mesajlarda ara..." id="msgSearch" oninput="filterMsgs()">
+          </div>
+          <div class="match-bubbles" id="matchBubbles"></div>
+          <div id="chatList"></div>
+        </div>
+        <div class="msg-detail-col" id="msgDetailPlaceholder">
+          <span>💬</span><p>Bir sohbet seçin</p>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-profile">
+        <div class="prof-left">
+          <div class="prof-hero">
+            <div class="prof-pic-wrap">
+              <div class="prof-pic" id="pPic">😎</div>
+              <div class="prof-edit-ico" onclick="editBio()">✏️</div>
+            </div>
+            <div class="prof-name" id="pName">—</div>
+            <div class="prof-school" id="pSchool">—</div>
+            <div class="prof-stats">
+              <div class="pstat"><div class="pstat-val" id="stLikes" style="color:var(--rose)">0</div><div class="pstat-lbl">Beğeni</div></div>
+              <div class="pstat"><div class="pstat-val" id="stMatches" style="color:var(--emerald)">0</div><div class="pstat-lbl">Eşleşme</div></div>
+              <div class="pstat"><div class="pstat-val" id="stChats" style="color:var(--violet2)">0</div><div class="pstat-lbl">Sohbet</div></div>
+              <div class="pstat"><div class="pstat-val" id="stTour" style="color:var(--amber)">—</div><div class="pstat-lbl">Turnuva</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="prof-right">
+          <div class="sec-lbl" style="margin-top:4px">İlgi Alanları</div>
+          <div class="chips-wrap" id="pChips"></div>
+          <div class="sec-lbl">Hesap</div>
+          <div class="setting-row" onclick="editBio()"><span class="setting-ico">✏️</span><span class="setting-lbl">Bio Düzenle</span><span class="setting-arr">›</span></div>
+          <div class="setting-row" onclick="showToast('📍 Yakında!','info')"><span class="setting-ico">📍</span><span class="setting-lbl">Konum & Mesafe</span><span class="setting-val">10 km</span><span class="setting-arr">›</span></div>
+          <div class="setting-row" onclick="showToast('🔔 Bildirimler açık','success')"><span class="setting-ico">🔔</span><span class="setting-lbl">Bildirimler</span><span class="setting-arr">›</span></div>
+          <div class="setting-row" onclick="showToast('💎 UniLoop Plus yakında!','info')"><span class="setting-ico">💎</span><span class="setting-lbl">UniLoop Plus</span><span class="setting-val" style="color:var(--amber);font-weight:600">PREMIUM</span><span class="setting-arr">›</span></div>
+          <div class="setting-row" onclick="doLogout()"><span class="setting-ico">🚪</span><span class="setting-lbl" style="color:#f87171">Çıkış Yap</span><span class="setting-arr">›</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="bnav-item active" id="bn-swipe" onclick="switchPanel('swipe')"><span class="bnav-ico">🔥</span>Keşfet</div>
+      <div class="bnav-item" id="bn-anon" onclick="switchPanel('anon')"><span class="bnav-ico">🎭</span>Anonim</div>
+      <div class="bnav-item" id="bn-tournament" onclick="switchPanel('tournament')"><span class="bnav-ico">🏆</span>Turnuva</div>
+      <div class="bnav-item" id="bn-messages" onclick="switchPanel('messages')"><span class="bnav-ico">💬</span>Mesajlar<span class="bnav-badge" id="msgBadge" style="display:none"></span></div>
+      <div class="bnav-item" id="bn-profile" onclick="switchPanel('profile')"><span class="bnav-ico">👤</span>Profil</div>
     </div>
   </div>
-  <div class="bottom-nav">
-    <div class="bnav-item active" id="bn-swipe" onclick="switchPanel('swipe')"><span class="bnav-ico">🔥</span>Keşfet</div>
-    <div class="bnav-item" id="bn-anon" onclick="switchPanel('anon')"><span class="bnav-ico">🎭</span>Anonim</div>
-    <div class="bnav-item" id="bn-tournament" onclick="switchPanel('tournament')"><span class="bnav-ico">🏆</span>Turnuva</div>
-    <div class="bnav-item" id="bn-messages" onclick="switchPanel('messages')"><span class="bnav-ico">💬</span>Mesajlar<span class="bnav-badge" id="msgBadge" style="display:none"></span></div>
-    <div class="bnav-item" id="bn-profile" onclick="switchPanel('profile')"><span class="bnav-ico">👤</span>Profil</div>
-  </div>
-</div></div>
-</div><!-- app-content -->
-</div><!-- end #screens -->
-
-<!-- CHAT -->
+</div>
 
 <div id="s-chat">
   <div class="chat-topbar">
@@ -792,25 +585,6 @@ select.fi option{background:var(--s2);}
   </div>
 </div>
 
-<!-- VOICE MODAL -->
-
-<div class="modal-ov" id="voiceModal">
-  <div class="modal-card">
-    <span class="modal-mask">🎭</span>
-    <h3>Anonim Bağlantı Aktif</h3>
-    <p>Karşındaki kişiyle bağlandın. İstersen maskeyi kaldır!</p>
-    <div class="waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-    <div class="modal-timer" id="callTimer">00:00</div>
-    <div class="modal-acts">
-      <button class="mbtn reveal" onclick="revealId()">🎭 Maskeyi Kaldır</button>
-      <button class="mbtn mute" id="muteBtn" onclick="toggleMute()">🎙️ Sesi Kapat</button>
-      <button class="mbtn end" onclick="endCall()">📞 Bağlantıyı Kes</button>
-    </div>
-  </div>
-</div>
-
-<!-- MATCH BLAST -->
-
 <div class="match-blast" id="matchBlast">
   <div class="blast-inner">
     <div style="font-size:.78rem;color:var(--sub);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">✨ Tebrikler!</div>
@@ -822,14 +596,9 @@ select.fi option{background:var(--s2);}
   </div>
 </div>
 
-<!-- FIREBASE SDK (compat — doğrudan tarayıcıda çalışır) -->
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
 
 <script>
@@ -851,35 +620,15 @@ var db   = firebase.firestore();
 try { firebase.analytics(); } catch(e) {}
 
 // ═══════════════════════════════════════
-// STATE
+// STATE (GERÇEK VERİLER)
 // ═══════════════════════════════════════
 var ME = null, PROFILE = null;
 var swipePool = [], swipeIdx = 0;
 var allChats = [];
 var currentChatId = null, currentChatMatchId = null;
 var unsubMsgs = null;
-var voiceStream = null, callInterval = null, callSec = 0, isMuted = false;
-var inQueue = false, anonTarget = '';
 var selectedAv = '😎', selectedInts = [];
-var tourneyVotes = {};
 var matchBlastData = {};
-
-var DEMO_POOL = [
-  {id:'demo1',name:'Zeynep Aydın',age:22,uni:'Boğaziçi Üniversitesi',dept:'Psikoloji',year:'3. Sınıf',avatar:'🌙',bio:'Kitap kurdu, kahve bağımlısı.',interests:['📚 Kitap','☕ Kahve','🎨 Sanat'],online:true},
-  {id:'demo2',name:'Selin Kaya',age:21,uni:'Hacettepe Üniversitesi',dept:'Tıp',year:'2. Sınıf',avatar:'🌺',bio:'Piyano çalan tıp öğrencisi.',interests:['🏃 Spor','🎬 Film','🌿 Doğa'],online:true},
-  {id:'demo3',name:'Ceren Demir',age:23,uni:'Bilkent Üniversitesi',dept:'İletişim',year:'4. Sınıf',avatar:'🎸',bio:'Müzik olmadan yaşayamam.',interests:['🎸 Müzik','✈️ Seyahat','📸 Fotoğraf'],online:false},
-  {id:'demo4',name:'Lara Erdoğan',age:20,uni:'ODTÜ',dept:'İşletme',year:'2. Sınıf',avatar:'⭐',bio:'Girişimcilik ruhluyum!',interests:['💃 Dans','🎮 Oyun','🍕 Yemek'],online:true},
-  {id:'demo5',name:'Naz Mercan',age:22,uni:'Ankara Üniversitesi',dept:'Hukuk',year:'3. Sınıf',avatar:'🌊',bio:'Hukuk öğrencisi, satranç sever.',interests:['📚 Kitap','♟️ Satranç','☕ Kahve'],online:false},
-  {id:'demo6',name:'Deniz Ak',age:21,uni:'İTÜ',dept:'Mimarlık',year:'3. Sınıf',avatar:'🦋',bio:'Tasarım hayatımın merkezi.',interests:['🎨 Sanat','✈️ Seyahat','📸 Fotoğraf'],online:true},
-  {id:'demo7',name:'Elif Çelik',age:22,uni:'Koç Üniversitesi',dept:'Ekonomi',year:'4. Sınıf',avatar:'🔥',bio:'Trekking, kahve, piyasalar.',interests:['🌿 Doğa','☕ Kahve','🎬 Film'],online:true},
-];
-var ANON_POOL = [{code:'#447',year:'3. Sınıf'},{code:'#238',year:'2. Sınıf'},{code:'#891',year:'4. Sınıf'},{code:'#156',year:'1. Sınıf'},{code:'#723',year:'Yüksek Lisans'}];
-var TOURNAMENT = [
-  {id:'t1',label:'Maç 1',a:{id:'ta1',name:'Selin K.',emoji:'🌺',dept:'Tıp • 3. Sınıf',votes:142},b:{id:'tb1',name:'Kaan B.',emoji:'⚡',dept:'Hukuk • 2. Sınıf',votes:89}},
-  {id:'t2',label:'Maç 2',a:{id:'ta2',name:'Ayşe M.',emoji:'🌙',dept:'İktisat • 4. Sınıf',votes:201},b:{id:'tb2',name:'Mert Y.',emoji:'🔥',dept:'Mimarlık • 3. Sınıf',votes:178}},
-  {id:'t3',label:'Maç 3',a:{id:'ta3',name:'Deniz A.',emoji:'🌊',dept:'Psikoloji • 2. Sınıf',votes:95},b:{id:'tb3',name:'Berk S.',emoji:'🎯',dept:'Bil. Müh. • 4. Sınıf',votes:114}},
-];
-var BOT = ['Harika! 😊','Çok ilginç, anlat!','Kesinlikle! 🌟','Haha 😄','Bu hafta müsait misin? 🗓️','Seninle konuşmak çok güzel ✨','❤️','Gerçekten mi?!','Vay be! 😍'];
 
 // ═══════════════════════════════════════
 // AUTH
@@ -921,8 +670,7 @@ function doLogin() {
 
 function doGoogle() {
   var provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider)
-    .catch(function(e){showErr(document.getElementById('lErr'),trErr(e.code));});
+  auth.signInWithPopup(provider).catch(function(e){showErr(document.getElementById('lErr'),trErr(e.code));});
 }
 
 function doRegister() {
@@ -982,41 +730,48 @@ function startApp() {
   document.getElementById('pSchool').textContent= '🎓 '+(PROFILE.dept||'')+' • '+(PROFILE.uni||'')+' • '+(PROFILE.year||'');
   document.getElementById('pChips').innerHTML   = (PROFILE.interests||[]).map(function(i){return '<div class="chip">'+i+'</div>';}).join('');
   document.getElementById('stLikes').textContent  = PROFILE.likes||0;
-  // Sidebar
   document.getElementById('sbAvi').textContent   = PROFILE.avatar||'😎';
   document.getElementById('sbName').textContent  = name;
   document.getElementById('sbUni').textContent   = PROFILE.uni||'';
   document.getElementById('sbLikes').textContent = PROFILE.likes||0;
   document.getElementById('sbMatches').textContent = PROFILE.matchCount||0;
   document.getElementById('stMatches').textContent= PROFILE.matchCount||0;
-  try{tourneyVotes=JSON.parse(localStorage.getItem('um_tv_'+ME.uid)||'{}');}catch(e){}
+  
   buildSwipe();
   buildNearby();
   buildAnonList();
   buildTournament();
   loadMatches();
+
   setInterval(function(){document.getElementById('onlineCnt').textContent=80+Math.floor(Math.random()*220);},8000);
   document.getElementById('onlineCnt').textContent=80+Math.floor(Math.random()*220);
 }
 
 // ═══════════════════════════════════════
-// SWIPE
+// SWIPE (GERÇEK ORGANİK VERİ)
 // ═══════════════════════════════════════
 function buildSwipe() {
-  db.collection('users').where('avatar','!=',null).limit(30).get()
-    .then(function(snap){
+  db.collection('swipes').where('from', '==', ME.uid).get().then(function(swipeSnap) {
+    let swipedIds = [ME.uid]; 
+    swipeSnap.forEach(function(doc) { swipedIds.push(doc.data().to); });
+
+    db.collection('users').limit(50).get().then(function(userSnap){
       var real=[];
-      snap.forEach(function(d){if(d.id!==ME.uid)real.push(Object.assign({id:d.id},d.data()));});
-      swipePool=real.length>2?real:DEMO_POOL.slice();
-      shuffle(swipePool); swipeIdx=0; renderCards();
-    })
-    .catch(function(){swipePool=DEMO_POOL.slice();shuffle(swipePool);swipeIdx=0;renderCards();});
+      userSnap.forEach(function(d){
+        if(!swipedIds.includes(d.id) && d.data().avatar) {
+          real.push(Object.assign({id:d.id},d.data()));
+        }
+      });
+      swipePool = real;
+      shuffle(swipePool); swipeIdx = 0; renderCards();
+    });
+  });
 }
 
 function renderCards() {
   var stack=document.getElementById('cardStack');
   if(!swipePool.length){
-    stack.innerHTML='<div class="no-cards"><span>🎉</span><h3>Hepsi bu kadar!</h3><p>Birazdan daha fazlası gelecek!</p></div>';return;
+    stack.innerHTML='<div class="no-cards"><span>🎉</span><h3>Hepsi bu kadar!</h3><p>Şu an çevrendeki tüm gerçek profilleri gördün. Birazdan tekrar gel!</p></div>';return;
   }
   stack.innerHTML='';
   var count=Math.min(3,swipePool.length);
@@ -1031,7 +786,7 @@ function renderCards() {
 function makeCard(p,cls){
   var el=document.createElement('div');
   el.className='swipe-card '+cls;
-  el.innerHTML='<div class="card-bg" style="background:'+cardGrad(p.avatar||p.emoji||'😎')+'"><span style="font-size:5.5rem">'+(p.avatar||p.emoji||'😎')+'</span><div class="card-ov"></div></div>'
+  el.innerHTML='<div class="card-bg" style="background:'+cardGrad(p.avatar||'😎')+'"><span style="font-size:5.5rem">'+(p.avatar||'😎')+'</span><div class="card-ov"></div></div>'
     +'<div class="stamp like">BEĞEN 💚</div><div class="stamp nope">HAYIR 💔</div><div class="stamp super">SÜPER ⭐</div>'
     +'<div class="card-content">'
     +'<div class="card-name">'+(p.name||'Kullanıcı')+'<span class="card-age">'+(p.age||'')+'</span></div>'
@@ -1083,44 +838,51 @@ function swipe(dir){
   front.dataset.animating='1';
   var p=swipePool[swipeIdx%swipePool.length];
   front.style.transition='transform .5s ease,opacity .5s ease';
+  
   if(dir==='right'){
     front.querySelector('.stamp.like').style.opacity=1;
     front.style.transform='translate(160%,-20px) rotate(20deg)';
-    recordSwipe(p,'like');
-    var isMatch=p.id.startsWith('demo')?Math.random()<.35:false;
-    if(isMatch)setTimeout(function(){showMatchBlast(p);},400);
-    else showToast('💚 Beğenildi!','success');
+    checkRealMatch(p, 'like');
   } else if(dir==='left'){
     front.querySelector('.stamp.nope').style.opacity=1;
     front.style.transform='translate(-160%,-20px) rotate(-20deg)';
-    recordSwipe(p,'skip');
+    db.collection('swipes').add({from:ME.uid,to:p.id,action:'skip',ts:firebase.firestore.FieldValue.serverTimestamp()});
   } else {
     front.querySelector('.stamp.super').style.opacity=1;
     front.style.transform='translate(0,-160%)';
-    recordSwipe(p,'super');
-    showToast('⭐ Süper Beğeni!','success');
-    var isMatch2=Math.random()<.5;
-    if(isMatch2)setTimeout(function(){showMatchBlast(p);},500);
+    checkRealMatch(p, 'super');
   }
-  setTimeout(function(){swipeIdx++;renderCards();},500);
+  
+  swipePool.splice(swipeIdx % swipePool.length, 1);
+  setTimeout(function(){ renderCards(); }, 500);
 }
 
-function recordSwipe(p,action){
-  db.collection('swipes').add({from:ME.uid,to:p.id,action:action,ts:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(){});
-  if(action==='like'||action==='super'){
-    db.collection('users').doc(ME.uid).update({likes:firebase.firestore.FieldValue.increment(1)}).catch(function(){});
-    PROFILE.likes=(PROFILE.likes||0)+1;
-    document.getElementById('stLikes').textContent=PROFILE.likes; try{document.getElementById('sbLikes').textContent=PROFILE.likes;}catch(e){}
-  }
+// ═══════════════════════════════════════
+// GERÇEK EŞLEŞME ALGORİTMASI
+// ═══════════════════════════════════════
+function checkRealMatch(p, action) {
+  db.collection('swipes').add({from:ME.uid, to:p.id, action:action, ts:firebase.firestore.FieldValue.serverTimestamp()});
+  
+  db.collection('swipes').where('from', '==', p.id).where('to', '==', ME.uid).where('action', 'in', ['like', 'super']).get()
+  .then(function(snap) {
+    if(!snap.empty) {
+      showMatchBlast(p);
+      saveMatch(p);
+    } else {
+      showToast(action === 'super' ? '⭐ Süper Beğeni Gönderildi!' : '💚 Beğenildi!', 'success');
+      db.collection('users').doc(ME.uid).update({likes:firebase.firestore.FieldValue.increment(1)}).catch(function(){});
+      PROFILE.likes=(PROFILE.likes||0)+1;
+      document.getElementById('stLikes').textContent=PROFILE.likes; try{document.getElementById('sbLikes').textContent=PROFILE.likes;}catch(e){}
+    }
+  });
 }
 
 function showMatchBlast(p){
   document.getElementById('bfMe').textContent=PROFILE.avatar||'😎';
-  document.getElementById('bfThem').textContent=p.avatar||p.emoji||'🌙';
+  document.getElementById('bfThem').textContent=p.avatar||'🌙';
   document.getElementById('bSub').textContent=(p.name)+' ve sen birbirinizi beğendiniz!';
-  matchBlastData={id:p.id,name:p.name,emoji:p.avatar||p.emoji||'🌙',online:p.online||false};
+  matchBlastData={id:p.id,name:p.name,emoji:p.avatar||'🌙',online:true};
   document.getElementById('matchBlast').classList.add('show');
-  saveMatch(p);
 }
 
 function saveMatch(p){
@@ -1128,10 +890,11 @@ function saveMatch(p){
   db.collection('matches').doc(chatId).set({
     users:[ME.uid,p.id],
     user1:{uid:ME.uid,name:ME.displayName||PROFILE.name,avatar:PROFILE.avatar},
-    user2:{uid:p.id,name:p.name,avatar:p.avatar||p.emoji},
+    user2:{uid:p.id,name:p.name,avatar:p.avatar},
     createdAt:firebase.firestore.FieldValue.serverTimestamp(),lastMsg:null,lastTs:firebase.firestore.FieldValue.serverTimestamp()
-  },{merge:true}).catch(function(){});
-  db.collection('users').doc(ME.uid).update({matchCount:firebase.firestore.FieldValue.increment(1)}).catch(function(){});
+  },{merge:true});
+  
+  db.collection('users').doc(ME.uid).update({matchCount:firebase.firestore.FieldValue.increment(1)});
   PROFILE.matchCount=(PROFILE.matchCount||0)+1;
   document.getElementById('stMatches').textContent=PROFILE.matchCount; try{document.getElementById('sbMatches').textContent=PROFILE.matchCount;}catch(e){}
   loadMatches();
@@ -1146,109 +909,53 @@ function startBlastChat(){
 }
 
 // ═══════════════════════════════════════
-// ANON VOICE
+// GERÇEK ZAMANLI LİSTELER
 // ═══════════════════════════════════════
+function buildNearby() {
+  db.collection('users').limit(15).get().then(function(snap){
+    var el = document.getElementById('nearbyList');
+    if(!el) return;
+    var html = '<div class="nearby-title">📍 Yakınındaki Kullanıcılar</div>';
+    var found = false;
+    snap.forEach(function(doc){
+      if(doc.id !== ME.uid && doc.data().avatar) {
+        found = true;
+        var p = doc.data();
+        html += '<div class="nearby-item">'
+          +'<div class="nearby-avi" style="background:'+cardGrad(p.avatar)+'">'+p.avatar+'</div>'
+          +'<div class="nearby-info">'
+            +'<div class="nearby-name">'+p.name+'</div>'
+            +'<div class="nearby-dept">'+(p.dept||'')+' • '+(p.uni||'')+'</div>'
+          +'</div></div>';
+      }
+    });
+    if(!found) html += '<div style="color:var(--sub); font-size:.8rem; padding: 10px 0;">Şu an yakınlarda kimse yok.</div>';
+    el.innerHTML = html;
+  });
+}
+
 function buildAnonList(){
-  document.getElementById('anonList').innerHTML=ANON_POOL.map(function(a){
-    return '<div class="anon-row" onclick="connectAnon(\''+a.code+'\')"><div class="anon-avi">🎭</div><div class="anon-info"><div class="anon-name">Anonim '+a.code+'</div><div class="anon-dept">Bölüm gizli • '+a.year+'</div></div><button class="anon-btn">Bağlan</button></div>';
-  }).join('');
+  document.getElementById('anonList').innerHTML = '<div style="text-align:center; padding: 20px; color: var(--sub); font-size: 0.85rem;">Şu an kuyrukta kimse yok. İlk sen ol! 🎙️</div>';
 }
 
 function joinQueue(){
-  if(inQueue)return;
-  inQueue=true;
-  var btn=document.getElementById('queueBtn');
-  document.getElementById('queueBtnTxt').innerHTML='<span class="spinner"></span> Eşleşme aranıyor...';
-  btn.disabled=true;
-  navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){voiceStream=s;}).catch(function(){showToast('🎙️ Mikrofon izni gerekli','error');});
+  showToast('Kuyruğa girildi, anonim eşleşme bekleniyor...', 'info');
+  document.getElementById('queueBtn').disabled = true;
+  document.getElementById('queueBtnTxt').innerHTML = '<span class="spinner"></span> Eşleşme aranıyor...';
   setTimeout(function(){
-    inQueue=false;btn.disabled=false;
-    document.getElementById('queueBtnTxt').textContent='🎙️ Kuyruğa Gir';
-    var a=ANON_POOL[Math.floor(Math.random()*ANON_POOL.length)];
-    openVoiceModal('Anonim '+a.code);
-  },1500+Math.random()*2500);
+    showToast('Şu an aktif anonim kullanıcı bulunamadı. Lütfen daha sonra tekrar dene.', 'error');
+    document.getElementById('queueBtn').disabled = false;
+    document.getElementById('queueBtnTxt').textContent = '🎙️ Kuyruğa Gir';
+  }, 4000);
 }
 
-function connectAnon(code){
-  navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){voiceStream=s;}).catch(function(){});
-  openVoiceModal('Anonim '+code);
-}
-
-function openVoiceModal(name){
-  anonTarget=name;callSec=0;isMuted=false;
-  document.getElementById('callTimer').textContent='00:00';
-  document.getElementById('muteBtn').textContent='🎙️ Sesi Kapat';
-  document.getElementById('voiceModal').classList.add('open');
-  callInterval=setInterval(function(){
-    callSec++;
-    var m=String(Math.floor(callSec/60)).padStart(2,'0');
-    var s=String(callSec%60).padStart(2,'0');
-    document.getElementById('callTimer').textContent=m+':'+s;
-  },1000);
-}
-
-function toggleMute(){
-  isMuted=!isMuted;
-  if(voiceStream)voiceStream.getAudioTracks().forEach(function(t){t.enabled=!isMuted;});
-  document.getElementById('muteBtn').textContent=isMuted?'🔇 Sesi Aç':'🎙️ Sesi Kapat';
-}
-
-function endCall(){
-  clearInterval(callInterval);
-  document.getElementById('voiceModal').classList.remove('open');
-  if(voiceStream){voiceStream.getTracks().forEach(function(t){t.stop();});voiceStream=null;}
-  showToast('📞 Bağlantı kesildi','info');
-}
-
-function revealId(){
-  clearInterval(callInterval);
-  document.getElementById('voiceModal').classList.remove('open');
-  if(voiceStream){voiceStream.getTracks().forEach(function(t){t.stop();});voiceStream=null;}
-  var revealed=DEMO_POOL[Math.floor(Math.random()*DEMO_POOL.length)];
-  showToast('🎭 '+anonTarget+' → '+revealed.name+' çıktı!','success');
-  setTimeout(function(){showMatchBlast(revealed);},800);
-}
-
-// ═══════════════════════════════════════
-// TOURNAMENT
-// ═══════════════════════════════════════
 function buildTournament(){
-  document.getElementById('tourneySub').textContent='Turnuva aktif • '+getTimeLeft()+' kaldı';
-  var html=TOURNAMENT.map(function(m){
-    var v=tourneyVotes[m.id];
-    return '<div class="matchup-card"><div class="matchup-lbl">'+m.label+'</div><div class="contestants">'
-      +'<div class="cont'+(v===m.a.id?' voted':'')+(v&&v!==m.a.id?' lose':'')+'" onclick="castVote(\''+m.id+'\',\''+m.a.id+'\',\''+m.b.id+'\')">'
-      +'<span class="cont-emoji">'+m.a.emoji+'</span><div class="cont-name">'+m.a.name+'</div><div class="cont-dept">'+m.a.dept+'</div>'
-      +'<div class="cont-votes">'+(m.a.votes+(v===m.a.id?1:0))+' oy</div></div>'
-      +'<div class="vs-dot">VS</div>'
-      +'<div class="cont'+(v===m.b.id?' voted':'')+(v&&v!==m.b.id?' lose':'')+'" onclick="castVote(\''+m.id+'\',\''+m.b.id+'\',\''+m.a.id+'\')">'
-      +'<span class="cont-emoji">'+m.b.emoji+'</span><div class="cont-name">'+m.b.name+'</div><div class="cont-dept">'+m.b.dept+'</div>'
-      +'<div class="cont-votes">'+(m.b.votes+(v===m.b.id?1:0))+' oy</div></div>'
-      +'</div></div>';
-  }).join('');
-  html+='<div class="champ-box"><div style="font-size:.73rem;color:var(--amber);font-weight:600;margin-bottom:3px">🏆 Geçen Haftanın Şampiyonu</div><div style="font-family:\'Clash Display\',sans-serif;font-size:1rem;font-weight:600">🌟 Elif Çelik</div><div style="font-size:.72rem;color:var(--sub);margin-top:2px">İşletme • Koç Üniversitesi • 342 oy</div></div>';
-  document.getElementById('matchupList').innerHTML=html;
-}
-
-function castVote(matchId,winnerId){
-  if(tourneyVotes[matchId]){showToast('Bu maç için zaten oy kullandınız','info');return;}
-  tourneyVotes[matchId]=winnerId;
-  try{localStorage.setItem('um_tv_'+ME.uid,JSON.stringify(tourneyVotes));}catch(e){}
-  db.collection('tournament_votes').doc(ME.uid+'_'+matchId).set({uid:ME.uid,matchId,vote:winnerId,ts:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(){});
-  showToast('✅ Oyunuz kaydedildi!','success');
-  buildTournament();
-  document.getElementById('stTour').textContent='🥈'; try{document.getElementById('sbTour').textContent='🥈';}catch(e){}
-}
-
-function getTimeLeft(){
-  var now=new Date(),end=new Date();end.setHours(20,0,0,0);
-  if(now>end)end.setDate(end.getDate()+1);
-  var d=Math.floor((end-now)/60000);
-  return Math.floor(d/60)+'sa '+(d%60)+'dk';
+  document.getElementById('tourneySub').textContent = 'Turnuvalar Yakında Başlıyor!';
+  document.getElementById('matchupList').innerHTML = '<div style="text-align:center; padding: 40px; color: var(--sub);">Haftalık kampüs turnuvaları yakında aktif edilecek! Kampüsünün en popülerini sen seçeceksin. 🏆</div>';
 }
 
 // ═══════════════════════════════════════
-// MATCHES & MESSAGES
+// MATCHES & MESSAGES (GERÇEK VERİTABANI)
 // ═══════════════════════════════════════
 function loadMatches(){
   db.collection('matches').where('users','array-contains',ME.uid).get()
@@ -1260,7 +967,7 @@ function loadMatches(){
         allChats.push({
           chatId:d.id,matchId:otherInfo.uid,
           name:otherInfo.name,emoji:otherInfo.avatar||'🌙',
-          online:Math.random()>.4,
+          online:true,
           lastMsg:data.lastMsg,
           lastTs:data.lastTs&&data.lastTs.toMillis?data.lastTs.toMillis():Date.now(),
           unread:0
@@ -1307,9 +1014,6 @@ function filterMsgs(){
   }).join('');
 }
 
-// ═══════════════════════════════════════
-// CHAT
-// ═══════════════════════════════════════
 function openChat(chatId,name,emoji,online,matchId){
   currentChatId=chatId;currentChatMatchId=matchId||null;
   document.getElementById('chatTopAvi').textContent=emoji;
@@ -1326,11 +1030,6 @@ function listenMsgs(chatId){
   unsubMsgs=q.onSnapshot(function(snap){
     var msgs=[];snap.forEach(function(d){msgs.push(d.data());});
     renderChatMsgs(msgs);
-    // cache locally
-    try{localStorage.setItem('um_msgs_'+chatId,JSON.stringify(msgs.map(function(m){return {from:m.from,text:m.text,ts:m.ts&&m.ts.toMillis?m.ts.toMillis():Date.now()};})));}catch(e){}
-  },function(){
-    // offline: use cache
-    try{renderChatMsgs(JSON.parse(localStorage.getItem('um_msgs_'+chatId)||'[]'));}catch(e){}
   });
 }
 
@@ -1354,13 +1053,6 @@ function sendMsg(){
   var msgData={chatId:currentChatId,from:ME.uid,text:text,ts:firebase.firestore.FieldValue.serverTimestamp()};
   db.collection('messages').add(msgData).catch(function(){});
   db.collection('matches').doc(currentChatId).update({lastMsg:text,lastTs:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(){});
-  // Bot reply for demo matches
-  if(currentChatMatchId&&currentChatMatchId.startsWith('demo')){
-    setTimeout(function(){
-      var reply=BOT[Math.floor(Math.random()*BOT.length)];
-      db.collection('messages').add({chatId:currentChatId,from:currentChatMatchId,text:reply,ts:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(){});
-    },1000+Math.random()*2000);
-  }
 }
 
 function closeChat(){
@@ -1370,7 +1062,7 @@ function closeChat(){
 }
 
 // ═══════════════════════════════════════
-// PROFILE
+// PROFILE & UTILS
 // ═══════════════════════════════════════
 function editBio(){
   var nb=prompt('Yeni bio (max 80 karakter):',PROFILE.bio||'');
@@ -1381,9 +1073,6 @@ function editBio(){
   showToast('✅ Bio güncellendi!','success');
 }
 
-// ═══════════════════════════════════════
-// NAV
-// ═══════════════════════════════════════
 function switchPanel(name){
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
@@ -1400,9 +1089,6 @@ function switchPanel(name){
   }
 }
 
-// ═══════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════
 function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById(id).classList.add('active');}
 function gv(id){return document.getElementById(id).value.trim();}
 function showErr(el,msg){el.textContent=msg;el.classList.add('show');}
@@ -1411,23 +1097,6 @@ function trErr(code){var m={'auth/email-already-in-use':'Bu e-posta zaten kayıt
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmtTime(ts){if(!ts)return'';var d=new Date(ts),now=new Date(),diff=now-d;if(diff<60000)return'Şimdi';if(diff<3600000)return Math.floor(diff/60000)+' dk';if(diff<86400000)return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');return d.getDate()+'/'+(d.getMonth()+1);}
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}}
-
-function buildNearby(){
-  var el=document.getElementById('nearbyList');
-  if(!el)return;
-  var items=DEMO_POOL.slice(0,5);
-  el.innerHTML='<div class="nearby-title">📍 Yakınındaki Kullanıcılar</div>'
-    +items.map(function(p){
-      return '<div class="nearby-item" onclick="showToast(''+p.name+' profiline bak!','info')">'
-        +'<div class="nearby-avi" style="background:'+cardGrad(p.avatar)+'">'+p.avatar+'</div>'
-        +'<div class="nearby-info">'
-          +'<div class="nearby-name">'+p.name+'</div>'
-          +'<div class="nearby-dept">'+p.dept+' • '+p.uni+'</div>'
-        +'</div>'
-        +'<div class="nearby-tag">'+(p.online?'🟢 Online':'⚫ Offline')+'</div>'
-        +'</div>';
-    }).join('');
-}
 
 function showToast(msg,type){
   var wrap=document.getElementById('toastWrap');
@@ -1438,6 +1107,5 @@ function showToast(msg,type){
   setTimeout(function(){el.classList.add('out');setTimeout(function(){el.remove();},280);},3000);
 }
 </script>
-
 </body>
 </html>
