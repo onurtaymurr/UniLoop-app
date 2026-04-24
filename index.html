@@ -28,15 +28,7 @@ html, body { height: 100%; width: 100%; overflow: hidden; background: #000; -web
 body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 
 /* ─── APP CONTAINER ─── */
-#app-container {
-  width: 100%; max-width: var(--app-max); height: 100dvh;
-  background: var(--bg); position: relative; overflow: hidden;
-  box-shadow: 0 0 40px rgba(0,0,0,0.8); display: flex; flex-direction: column;
-}
-
-/* ═══════════════════════════════════
-   SCREENS & COMPONENTS
-═══════════════════════════════════ */
+#app-container { width: 100%; max-width: var(--app-max); height: 100dvh; background: var(--bg); position: relative; overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; }
 .screen { display: none; flex-direction: column; height: 100%; width: 100%; overflow-y: auto; scrollbar-width: none; position: relative; z-index: 1; }
 .screen::-webkit-scrollbar { display: none; }
 .screen.show { display: flex; animation: fadeScreen 0.3s ease; }
@@ -49,16 +41,14 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 .btn-outline { width: 100%; padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: transparent; color: var(--text); font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
 .btn-outline:active { background: var(--surface); }
 
-/* ─── TOPBAR (Premium Header) ─── */
+/* ─── TOPBAR & BOTTOM NAV ─── */
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: rgba(15,16,21,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 50; flex-shrink: 0; padding-top: max(16px, env(safe-area-inset-top)); }
 .tb-logo { display: flex; align-items: center; gap: 8px; font-size: 1.2rem; font-weight: 800; background: var(--primary-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .tb-actions { display: flex; gap: 12px; align-items: center; }
 .tb-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: var(--text); }
 .tb-icon:active { transform: scale(0.9); }
 .tb-icon svg { width: 18px; height: 18px; fill: currentColor; }
-.tb-premium { color: var(--warning); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.1); }
 
-/* ─── BOTTOM NAV (SVG Icons) ─── */
 .bottom-nav { display: flex; justify-content: space-around; align-items: center; height: var(--nav-height); padding-bottom: env(safe-area-inset-bottom); background: rgba(15,16,21,0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); flex-shrink: 0; z-index: 50; }
 .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; transition: 0.2s; width: 60px; height: 100%; position: relative; }
 .nav-item.on { color: var(--primary); }
@@ -75,8 +65,16 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 .input-label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
 .input-field { width: 100%; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; color: var(--text); font-family: inherit; font-size: 0.95rem; outline: none; transition: 0.2s; }
 .input-field:focus { border-color: var(--primary); background: var(--surface-hover); }
+.tabs { display: flex; background: var(--surface); border-radius: 14px; padding: 4px; margin-bottom: 24px; border: 1px solid var(--border); }
+.tab { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-muted); font-family: inherit; font-size: 0.9rem; font-weight: 700; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+.tab.on { background: var(--surface-hover); color: var(--text); }
+.err-msg { background: rgba(255,75,114,0.1); border: 1px solid rgba(255,75,114,0.2); color: #ff4b72; padding: 14px; border-radius: 12px; font-size: 0.85rem; margin-top: 16px; display: none; text-align: center; font-weight: 600; }
+.err-msg.show { display: block; }
 
 /* ─── SWIPE PANEL ─── */
+.content-area { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.panel { display: none; flex: 1; flex-direction: column; overflow-y: auto; scrollbar-width: none; padding: 0 16px; }
+.panel.on { display: flex; animation: fadeScreen 0.3s ease; }
 #pSwipe { padding: 16px; display: flex; flex-direction: column; }
 .card-stack { position: relative; flex: 1; width: 100%; margin-bottom: 20px; perspective: 1000px; }
 .swipe-card { position: absolute; inset: 0; border-radius: 24px; overflow: hidden; background: var(--surface); box-shadow: 0 10px 40px rgba(0,0,0,0.6); border: 1px solid var(--border); cursor: grab; touch-action: none; will-change: transform; display: flex; flex-direction: column; }
@@ -87,7 +85,6 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 .c-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px; z-index: 2; }
 .c-name-age { font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: baseline; gap: 8px; }
 .c-bio { font-size: 0.9rem; color: rgba(255,255,255,0.9); line-height: 1.5; margin-bottom: 16px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
 .action-bar { display: flex; justify-content: center; align-items: center; gap: 24px; padding-bottom: 10px; flex-shrink: 0; }
 .act-btn { border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; background: var(--surface); border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 .act-btn:active { transform: scale(0.9); }
@@ -96,6 +93,10 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 .act-btn.super { width: 50px; height: 50px; color: var(--secondary); }
 .act-btn svg { width: 40%; height: 40%; fill: currentColor; }
 .act-btn.like svg { width: 45%; height: 45%; }
+.stamp { position: absolute; padding: 6px 20px; border-radius: 10px; font-size: 1.6rem; font-weight: 800; z-index: 10; opacity: 0; pointer-events: none; border: 3px solid; text-transform: uppercase; letter-spacing: 1px; }
+.stamp.lk { top: 40px; left: 20px; color: var(--success); border-color: var(--success); transform: rotate(-15deg); }
+.stamp.np { top: 40px; right: 20px; color: var(--primary); border-color: var(--primary); transform: rotate(15deg); }
+.stamp.sp { top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-5deg); color: var(--secondary); border-color: var(--secondary); font-size: 1.4rem; }
 
 /* ─── POPÜLERLİK SAVAŞI (FACE MASH) ─── */
 #pBattle { padding: 20px 16px; display: flex; flex-direction: column; }
@@ -112,7 +113,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 .bc-score { font-size: 0.85rem; color: var(--warning); font-weight: 700; background: rgba(245,158,11,0.2); padding: 4px 12px; border-radius: 12px; display: inline-block; }
 .vs-badge { width: 44px; height: 44px; border-radius: 50%; background: var(--bg); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; color: var(--text-muted); margin: 0 auto; position: relative; z-index: 10; margin-top: -30px; margin-bottom: -30px; }
 
-/* ─── PROFILE PANEL (Detailed) ─── */
+/* ─── PROFILE PANEL ─── */
 #pProfile { padding: 20px 16px; }
 .p-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 24px; position: relative; }
 .p-avatar-wrap { position: relative; margin-bottom: 16px; }
@@ -120,13 +121,11 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 .p-upload-btn { position: absolute; bottom: 0; right: 0; width: 36px; height: 36px; background: var(--primary); border: 3px solid var(--bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; }
 .p-upload-btn svg { width: 16px; height: 16px; fill: currentColor; }
 .p-name { font-size: 1.6rem; font-weight: 800; margin-bottom: 4px; }
-
 .p-stats { display: flex; background: var(--surface); border-radius: 16px; padding: 16px; margin-bottom: 24px; border: 1px solid var(--border); }
 .p-stat { flex: 1; text-align: center; border-right: 1px solid var(--border); }
 .p-stat:last-child { border-right: none; }
 .p-stat-val { font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
 .p-stat-lbl { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-
 .p-menu { background: var(--surface); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 24px; }
 .p-menu-item { display: flex; align-items: center; padding: 16px; border-bottom: 1px solid var(--border-light); cursor: pointer; transition: 0.2s; }
 .p-menu-item:active { background: var(--surface-hover); }
@@ -144,7 +143,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 .radar-sub { color: var(--text-muted); font-size: 0.9rem; }
 .btn-cancel { margin-top: 40px; background: transparent; border: 1px solid var(--border); color: var(--text); padding: 12px 30px; border-radius: 20px; font-weight: 600; cursor: pointer; }
 
-/* ─── MESSAGES ─── */
+/* ─── MESSAGES & CHAT ─── */
 #pMessages { padding: 0; }
 .chat-row { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--border-light); cursor: pointer; transition: 0.2s; }
 .chat-row:active { background: var(--surface); }
@@ -154,7 +153,6 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 .cr-name { font-weight: 700; font-size: 1rem; color: var(--text); }
 .cr-msg { font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Active Chat */
 #chatView { display: none; flex-direction: column; position: absolute; inset: 0; background: var(--bg); z-index: 100; }
 .cv-header { display: flex; align-items: center; padding: 16px; background: rgba(15,16,21,0.95); border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 12px; padding-top: max(16px, env(safe-area-inset-top)); }
 .cv-back { background: transparent; border: none; color: var(--text); font-size: 1.8rem; cursor: pointer; }
@@ -163,20 +161,27 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 .msg { max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 0.95rem; }
 .msg.me { align-self: flex-end; background: var(--primary-grad); color: #fff; border-bottom-right-radius: 4px; }
 .msg.them { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-
 .cv-input { display: flex; gap: 10px; padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border); padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
-.cv-input input { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 14px 16px; border-radius: 24px; color: var(--text); outline: none; }
+.cv-input input { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 12px 16px; border-radius: 24px; color: var(--text); outline: none; }
 .cv-input button { width: 48px; height: 48px; border-radius: 50%; background: var(--primary-grad); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-/* ─── TOASTS ─── */
-.toast-container { position: absolute; top: env(safe-area-inset-top, 20px); left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 300; pointer-events: none; }
+/* ─── TOASTS & MODALS ─── */
+.toast-container { position: absolute; top: env(safe-area-inset-top, 20px); left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 300; pointer-events: none; padding-top: 16px; }
 .toast { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.5); animation: dropIn 0.3s; }
 @keyframes dropIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .toast.out { animation: dropOut 0.3s forwards; }
 @keyframes dropOut { to { opacity: 0; } }
 
-/* Dosya Yükleme Inputu Gizli */
+.overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+.overlay.show { display: flex; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 40px 24px; width: 100%; max-width: 340px; text-align: center; }
+.match-title { font-family: inherit; font-size: 2.2rem; font-weight: 800; background: var(--primary-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 24px; }
+.match-faces { display: flex; justify-content: center; gap: 12px; margin-bottom: 24px; }
+.match-face { width: 80px; height: 80px; border-radius: 50%; background-size: cover; background-position: center; background-color: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; border: 3px solid var(--primary); box-shadow: 0 0 20px rgba(255,75,114,0.3); }
+
 #fileInput { display: none; }
+.spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; animation: spin .75s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -186,6 +191,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 
   <div class="screen show" id="pgAuth">
     <div class="auth-wrap">
+      <div class="auth-logo"><img src="uniloop-logo.png" alt="" onerror="this.style.display='none'"></div>
       <div class="auth-title">UniLoop</div>
       <p class="auth-sub">Kampüste gerçek bağlantılar kur.</p>
       
@@ -213,16 +219,23 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
     </div>
   </div>
 
+  <div class="screen" id="pgSetup">
+    <div class="auth-wrap" style="justify-content: flex-start; padding-top: 60px;">
+      <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;">Profili Tamamla</h2>
+      <p class="auth-sub" style="text-align: left;">Seni daha iyi tanıyabilmemiz için birkaç detay.</p>
+      <div class="input-group"><label class="input-label">Kısa Bio</label><input type="text" class="input-field" id="sBio" placeholder="Kendini kısaca tanıt..." maxlength="80"></div>
+      <div class="input-group"><label class="input-label">Yaş</label><input type="number" class="input-field" id="sAge" placeholder="Örn: 21" min="18" max="35"></div>
+      <button class="btn-primary" onclick="saveSetup()">Uygulamaya Geç</button>
+    </div>
+  </div>
+
   <div class="screen" id="appShell">
     
     <div class="topbar">
-      <div class="tb-logo">UniLoop</div>
+      <div class="tb-logo"><img src="uniloop-logo.png" style="height:24px;display:none" onerror="this.nextElementSibling.style.display='inline'" alt=""><span style="display:inline">UniLoop</span></div>
       <div class="tb-actions">
         <div class="tb-icon tb-premium" onclick="toast('Premium özellikleri yakında!','info')">
           <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        </div>
-        <div class="tb-icon" onclick="toast('Bildirim yok','info')">
-          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
         </div>
       </div>
     </div>
@@ -249,8 +262,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
           <div class="battle-title">Popülerlik Savaşı</div>
           <div class="battle-sub">Kampüsün en popüleri kim? Tıkla ve seç!</div>
         </div>
-        <div class="battle-arena" id="battleArena">
-          </div>
+        <div class="battle-arena" id="battleArena"></div>
       </div>
 
       <div class="panel" id="pMessages">
@@ -267,7 +279,6 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
             </div>
           </div>
           <div class="p-name" id="pName">Kullanıcı</div>
-          <div class="p-bio" id="pSchool">Üniversite</div>
         </div>
         
         <div class="p-stats">
@@ -279,7 +290,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
         <div class="p-menu">
           <div class="p-menu-item" onclick="editBio()">
             <div class="pm-icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></div>
-            <span class="pm-label">Bio Düzenle</span><span class="pm-arrow">›</span>
+            <span class="pm-label">Bio Düzenle</span>
           </div>
           <div class="p-menu-item" onclick="doLogout()">
             <div class="pm-icon" style="color:var(--primary)"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></div>
@@ -294,7 +305,6 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
           <div class="cv-av" id="ctAvi">🌙</div>
           <div class="cv-info">
             <div class="cv-name" id="ctName">İsim</div>
-            <div class="cv-status">Çevrimiçi</div>
           </div>
         </div>
         <div class="cv-msgs" id="chatMsgs"></div>
@@ -326,15 +336,24 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
   </div>
 
   <div class="radar-ov" id="radarOv">
-    <div class="radar-circle">
-      🎭
-      <div class="radar-pulse"></div>
-    </div>
+    <div class="radar-circle">🎭<div class="radar-pulse"></div></div>
     <div class="radar-text">Anonim Aranıyor...</div>
     <div class="radar-sub">Yakındaki sesli kullanıcılar taranıyor</div>
     <button class="btn-cancel" onclick="cancelAnon()">İptal Et</button>
   </div>
 
+  <div class="overlay" id="matchBlast">
+    <div class="modal">
+      <h2 class="match-title">Eşleşme!</h2>
+      <div class="match-faces">
+        <div class="match-face" id="bfMe">😎</div>
+        <div class="match-face" id="bfThem">🌙</div>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 24px;" id="bMsg">Birbirinizi beğendiniz!</p>
+      <button class="btn-primary" onclick="startBlastChat()">Mesaj At</button>
+      <button class="btn-outline" style="border:none; margin-top:8px; color:var(--text-muted);" onclick="document.getElementById('matchBlast').classList.remove('show')">Kapat</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -345,9 +364,6 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); }
 <script>
 'use strict';
 
-/* ════════════════════════════════════════════
-   FIREBASE INIT
-════════════════════════════════════════════ */
 firebase.initializeApp({
   apiKey:"AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
   authDomain:"uniloop-app.firebaseapp.com",
@@ -357,35 +373,28 @@ firebase.initializeApp({
   appId:"1:272654005890:web:0b1dd388364e86d22f269b"
 });
 var auth = firebase.auth();
-var db   = firebase.firestore();
+var db = firebase.firestore();
 var storage = firebase.storage();
-var FS   = firebase.firestore.FieldValue;
+var FS = firebase.firestore.FieldValue;
 
-/* STATE */
 var ME = null, PROF = null;
 var swipePool = [], swipeIdx = 0;
 var battleUsers = [];
 var currentChatId = null, unsubMsgs = null;
+var blastData = {};
 
-/* ════════════════════════════════════════════
-   AUTH
-════════════════════════════════════════════ */
-auth.onAuthStateChanged(function(user){
-  if(user){
-    ME = user;
-    db.collection('users').doc(user.uid).get().then(function(s){
+auth.onAuthStateChanged(function(u){
+  if(u){
+    ME = u;
+    db.collection('users').doc(u.uid).get().then(function(s){
       if(s.exists){
-        PROF = s.data();
-        launchApp();
+        PROF = s.data(); launchApp();
       } else {
-        PROF = {name:user.displayName||'', email:user.email||'', avatar:'😎', popScore:0, likes:0, matchCount:0};
-        db.collection('users').doc(user.uid).set(PROF, {merge:true});
-        launchApp();
+        PROF = {name:u.displayName||'', email:u.email||'', avatar:'😎', popScore:0, likes:0, matchCount:0};
+        db.collection('users').doc(u.uid).set(PROF, {merge:true}); launchApp();
       }
     });
-  } else {
-    ME=null; PROF=null; showScreen('pgAuth');
-  }
+  } else { ME=null; PROF=null; showScreen('pgAuth'); }
 });
 
 function authTab(t){
@@ -397,25 +406,33 @@ function authTab(t){
 
 function doLogin(){
   var e=gv('lEmail'), p=gv('lPass'), err=document.getElementById('authErr');
-  if(!e||!p){err.textContent='E-posta ve şifre zorunlu.'; err.classList.add('show'); return;}
-  auth.signInWithEmailAndPassword(e,p).catch(function(ex){err.textContent='Giriş başarısız.'; err.classList.add('show');});
+  if(!e||!p){err.textContent='Zorunlu alanlar eksik.'; err.classList.add('show'); return;}
+  auth.signInWithEmailAndPassword(e,p).catch(function(){err.textContent='Giriş başarısız.'; err.classList.add('show');});
 }
+
+function doGoogle(){ auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
 function doRegister(){
   var n=gv('rName'), e=gv('rEmail'), p=gv('rPass'), u=gv('rUni'), err=document.getElementById('authErr');
   if(!n||!e||!p){err.textContent='Tüm alanları doldurun.'; err.classList.add('show'); return;}
+  if(p.length<6){err.textContent='Şifre min 6 karakter.'; err.classList.add('show'); return;}
   auth.createUserWithEmailAndPassword(e,p).then(function(c){
     c.user.updateProfile({displayName:n});
     db.collection('users').doc(c.user.uid).set({name:n, email:e, uni:u, avatar:'😎', popScore:0, likes:0, matchCount:0, createdAt:FS.serverTimestamp()});
-  }).catch(function(ex){err.textContent='Kayıt başarısız.'; err.classList.add('show');});
+  }).catch(function(){err.textContent='Kayıt başarısız.'; err.classList.add('show');});
 }
 
 function doLogout(){ auth.signOut(); }
 
-/* ════════════════════════════════════════════
-   APP LAUNCH & NAV
-════════════════════════════════════════════ */
+function saveSetup(){
+  var bio=gv('sBio'), age=parseInt(gv('sAge'));
+  if(!bio || !age) { toast('Lütfen eksik alanları doldurun.','error'); return; }
+  var data={bio, age, updatedAt:FS.serverTimestamp()};
+  db.collection('users').doc(ME.uid).set(data,{merge:true}).then(function(){PROF=Object.assign({},PROF,data); launchApp();});
+}
+
 function launchApp(){
+  if(!PROF.bio) { showScreen('pgSetup'); return; }
   showScreen('appShell');
   updateProfileUI();
   buildSwipe();
@@ -428,9 +445,7 @@ function updateProfileUI(){
   var avEl = document.getElementById('pPic');
   if(av) { avEl.style.backgroundImage = av; avEl.textContent = ''; } 
   else { avEl.textContent = PROF.avatar||'😎'; avEl.style.backgroundImage = 'none'; }
-  
   document.getElementById('pName').textContent = PROF.name;
-  document.getElementById('pSchool').textContent = PROF.uni || 'Üniversite belirtilmemiş';
   document.getElementById('stLikes').textContent = PROF.likes||0;
   document.getElementById('stMatches').textContent = PROF.matchCount||0;
   document.getElementById('stScore').textContent = PROF.popScore||0;
@@ -442,15 +457,16 @@ function goPanel(name){
   document.getElementById('p'+cap(name)).classList.add('on');
   try{document.getElementById('nav-'+name).classList.add('on');}catch(e){}
   if(name==='messages') loadMatches();
+  closeChat();
 }
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 
-/* ════════════════════════════════════════════
-   FOTOĞRAF YÜKLEME (STORAGE)
-════════════════════════════════════════════ */
 function uploadAvatar(e){
   var file = e.target.files[0];
   if(!file) return;
+  // FIREBASE STORAGE KURALINA UYUM: DOSYA 5MB KONTROLÜ
+  if(file.size > 5 * 1024 * 1024) { toast('Dosya boyutu 5MB sınırını aşıyor!', 'error'); return; }
+  
   toast('Fotoğraf yükleniyor...','info');
   var ref = storage.ref('avatars/' + ME.uid + '_' + Date.now());
   ref.put(file).then(function(snapshot){
@@ -468,20 +484,24 @@ function editBio(){
   if(nb!==null){ PROF.bio=nb; db.collection('users').doc(ME.uid).update({bio:nb}); toast('Güncellendi!','success'); }
 }
 
-/* ════════════════════════════════════════════
-   SWIPE PANEL
-════════════════════════════════════════════ */
 function buildSwipe(){
-  db.collection('users').limit(20).get().then(function(uSnap){
-    var real=[];
-    uSnap.forEach(function(d){ if(d.id !== ME.uid) real.push(Object.assign({id:d.id},d.data())); });
-    swipePool = real; shuf(swipePool); swipeIdx = 0; renderCards();
+  db.collection('swipes').where('from', '==', ME.uid).get().then(function(sSnap) {
+    let swiped = [ME.uid]; 
+    sSnap.forEach(function(doc) { swiped.push(doc.data().to); });
+
+    db.collection('users').limit(40).get().then(function(uSnap){
+      var real=[];
+      uSnap.forEach(function(d){
+        if(!swiped.includes(d.id)) { real.push(Object.assign({id:d.id},d.data())); }
+      });
+      swipePool = real; shuf(swipePool); swipeIdx = 0; renderCards();
+    });
   });
 }
 
 function renderCards(){
   var stack=document.getElementById('cardStack');
-  if(!swipePool.length){ stack.innerHTML='<div class="empty-state"><span>🎉</span><h3>Hepsi bu kadar!</h3><p>Çevrendeki herkesi gördün.</p></div>'; return; }
+  if(!swipePool.length){ stack.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)">Herkesi gördün!</div>'; return; }
   stack.innerHTML='';
   for(var i=Math.min(2,swipePool.length-1);i>=0;i--){
     var p=swipePool[(swipeIdx+i)%swipePool.length];
@@ -491,11 +511,7 @@ function renderCards(){
     var el=document.createElement('div'); el.className='swipe-card '+cls;
     el.innerHTML=`<div class="c-image" style="${bg}">${p.photoURL?'':(p.avatar||'😎')}<div class="c-overlay"></div></div>
       <div class="stamp lk">BEĞEN</div><div class="stamp np">PAS</div><div class="stamp sp">SÜPER</div>
-      <div class="c-info">
-        <div class="c-name-age">${p.name||'Kullanıcı'}</div>
-        <div class="c-school">🎓 ${p.uni||''}</div>
-        <div class="c-bio">${p.bio||''}</div>
-      </div>`;
+      <div class="c-info"><div class="c-name-age">${p.name||'Kullanıcı'}</div><div class="c-bio">${p.bio||''}</div></div>`;
     stack.appendChild(el);
   }
   setupDrag(stack.querySelector('.swipe-card.f'));
@@ -543,123 +559,88 @@ function swipe(dir){
 
 function checkRealMatch(p) {
   db.collection('swipes').add({from:ME.uid, to:p.id, ts:FS.serverTimestamp()});
-  // Simüle edilmiş %30 eşleşme ihtimali (Canlıda sadece db kontrolü yapılmalı)
-  if(Math.random() < 0.3) {
-    var cid=[ME.uid,p.id].sort().join('_');
-    db.collection('matches').doc(cid).set({
-      users:[ME.uid,p.id],
-      user1:{uid:ME.uid, name:PROF.name, avatar:PROF.photoURL||PROF.avatar},
-      user2:{uid:p.id, name:p.name, avatar:p.photoURL||p.avatar},
-      createdAt:FS.serverTimestamp(), lastMsg:null, lastTs:FS.serverTimestamp()
-    },{merge:true});
-    toast('Eşleşme sağlandı!','success');
-  } else {
-    toast('Beğenildi!','success');
-  }
-}
-
-/* ════════════════════════════════════════════
-   POPÜLERLİK SAVAŞI (FACE MASH)
-════════════════════════════════════════════ */
-function loadBattleUsers() {
-  db.collection('users').where('photoURL','!=',null).limit(20).get().then(function(s){
-    var usrs = [];
-    s.forEach(function(d){ if(d.id !== ME.uid) usrs.push(Object.assign({id:d.id}, d.data())); });
-    battleUsers = usrs;
-    renderBattle();
+  // Karşı taraf beğendi mi kontrolü
+  db.collection('swipes').where('from', '==', p.id).where('to', '==', ME.uid).get()
+  .then(function(snap) {
+    if(!snap.empty) {
+      var cid=[ME.uid,p.id].sort().join('_');
+      db.collection('matches').doc(cid).set({
+        users:[ME.uid,p.id],
+        user1:{uid:ME.uid, name:PROF.name, avatar:PROF.photoURL||PROF.avatar},
+        user2:{uid:p.id, name:p.name, avatar:p.photoURL||p.avatar},
+        createdAt:FS.serverTimestamp()
+      },{merge:true});
+      showBlast(p);
+    } else { toast('Beğenildi!','success'); }
   });
 }
 
+function showBlast(p){
+  blastData={id:p.id,name:p.name,emoji:p.photoURL||p.avatar||'🌙'};
+  document.getElementById('bfMe').style.backgroundImage = PROF.photoURL ? `url(${PROF.photoURL})` : '';
+  document.getElementById('bfMe').textContent = PROF.photoURL ? '' : (PROF.avatar||'😎');
+  document.getElementById('bfThem').style.backgroundImage = p.photoURL ? `url(${p.photoURL})` : '';
+  document.getElementById('bfThem').textContent = p.photoURL ? '' : (p.avatar||'🌙');
+  document.getElementById('matchBlast').classList.add('show');
+}
+function closeBlast(){document.getElementById('matchBlast').classList.remove('show');}
+function startBlastChat(){ closeBlast(); openChat(blastData.id, blastData.name, blastData.emoji); goPanel('messages'); }
+
+function loadBattleUsers() {
+  db.collection('users').where('photoURL','!=',null).limit(20).get().then(function(s){
+    var usrs = []; s.forEach(function(d){ if(d.id !== ME.uid) usrs.push(Object.assign({id:d.id}, d.data())); });
+    battleUsers = usrs; renderBattle();
+  });
+}
 function renderBattle() {
   var arena = document.getElementById('battleArena');
-  if(battleUsers.length < 2) {
-    arena.innerHTML = '<div style="text-align:center; color:var(--text-muted); margin-top:40px;">Savaş için yeterli fotoğraflı kullanıcı yok. Fotoğraf yükleyerek ilk sen katıl!</div>';
-    return;
-  }
-  shuf(battleUsers);
-  var u1 = battleUsers[0], u2 = battleUsers[1];
-  
+  if(battleUsers.length < 2) { arena.innerHTML = '<div style="text-align:center;color:var(--text-muted)">Yeterli fotoğraflı kullanıcı yok.</div>'; return; }
+  shuf(battleUsers); var u1 = battleUsers[0], u2 = battleUsers[1];
   arena.innerHTML = `
     <div class="battle-card" style="background-image:url(${u1.photoURL})" onclick="castPopVote('${u1.id}')">
-      <div class="bc-overlay"></div>
-      <div class="bc-info"><div class="bc-name">${u1.name.split(' ')[0]}</div><div class="bc-score">${u1.popScore||0} Puan</div></div>
+      <div class="bc-overlay"></div><div class="bc-info"><div class="bc-name">${u1.name.split(' ')[0]}</div><div class="bc-score">${u1.popScore||0} Puan</div></div>
     </div>
     <div class="vs-badge">VS</div>
     <div class="battle-card" style="background-image:url(${u2.photoURL})" onclick="castPopVote('${u2.id}')">
-      <div class="bc-overlay"></div>
-      <div class="bc-info"><div class="bc-name">${u2.name.split(' ')[0]}</div><div class="bc-score">${u2.popScore||0} Puan</div></div>
+      <div class="bc-overlay"></div><div class="bc-info"><div class="bc-name">${u2.name.split(' ')[0]}</div><div class="bc-score">${u2.popScore||0} Puan</div></div>
     </div>
   `;
 }
+function castPopVote(winnerId) { db.collection('users').doc(winnerId).update({popScore: FS.increment(1)}); toast('Oyun kaydedildi!','success'); setTimeout(renderBattle, 600); }
 
-function castPopVote(winnerId) {
-  db.collection('users').doc(winnerId).update({popScore: FS.increment(1)});
-  toast('Oyun kaydedildi!','success');
-  // Kısa bekleme ve yeni savaş
-  setTimeout(renderBattle, 600);
-}
-
-/* ════════════════════════════════════════════
-   ANON RADAR (SESLİ ARAMA)
-════════════════════════════════════════════ */
 function startAnonSearch() {
   document.getElementById('radarOv').classList.add('show');
-  setTimeout(function(){
-    document.getElementById('radarOv').classList.remove('show');
-    toast('Şu an anonim bekleyen kullanıcı yok.', 'error');
-  }, 4000);
+  setTimeout(function(){ document.getElementById('radarOv').classList.remove('show'); toast('Aktif kullanıcı yok.', 'error'); }, 4000);
 }
 function cancelAnon() { document.getElementById('radarOv').classList.remove('show'); }
 
-/* ════════════════════════════════════════════
-   MESSAGES
-════════════════════════════════════════════ */
 function loadMatches(){
-  db.collection('matches').where('users','array-contains',ME.uid).get()
-    .then(function(snap){
-      allChats=[];
-      snap.forEach(function(d){
-        var data=d.data();
-        var other=data.user1.uid===ME.uid?data.user2:data.user1;
-        allChats.push({
-          chatId:d.id, name:other.name, avatar:other.avatar||'😎',
-          lastMsg:data.lastMsg, lastTs:data.lastTs&&data.lastTs.toMillis?data.lastTs.toMillis():Date.now()
-        });
-      });
-      allChats.sort(function(a,b){return b.lastTs-a.lastTs;});
-      renderChats(allChats);
+  db.collection('matches').where('users','array-contains',ME.uid).get().then(function(snap){
+    var list=[];
+    snap.forEach(function(d){
+      var data=d.data(); var other=data.user1.uid===ME.uid?data.user2:data.user1;
+      if(other) list.push({chatId:d.id, name:other.name, avatar:other.avatar||'😎', lastMsg:data.lastMsg});
     });
-}
-
-function renderChats(list){
-  var chatEl=document.getElementById('chatList');
-  if(!list.length){ chatEl.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)">Henüz mesaj yok.</div>'; return; }
-  chatEl.innerHTML=list.map(function(c){
-    var bg = c.avatar.includes('http') ? `background-image:url(${c.avatar}); font-size:0;` : '';
-    return `<div class="chat-row" onclick="openChat('${c.chatId}', '${c.name}', '${c.avatar}')">
-      <div class="cr-av" style="${bg}">${c.avatar.includes('http')?'':c.avatar}</div>
-      <div class="cr-info">
-        <div class="cr-top"><div class="cr-name">${c.name}</div></div>
-        <div class="cr-msg">${c.lastMsg||'Sohbete başla'}</div>
-      </div></div>`;
-  }).join('');
+    var chatEl=document.getElementById('chatList');
+    if(!list.length){ chatEl.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted)">Henüz mesaj yok.</div>'; return; }
+    chatEl.innerHTML=list.map(function(c){
+      var bg = c.avatar.includes('http') ? `background-image:url(${c.avatar}); font-size:0;` : '';
+      return `<div class="chat-row" onclick="openChat('${c.chatId}', '${c.name}', '${c.avatar}')">
+        <div class="cr-av" style="${bg}">${c.avatar.includes('http')?'':c.avatar}</div>
+        <div class="cr-info"><div class="cr-top"><div class="cr-name">${c.name}</div></div><div class="cr-msg">${c.lastMsg||'Sohbete başla'}</div></div></div>`;
+    }).join('');
+  });
 }
 
 function openChat(chatId, name, avatar){
-  currentChatId=chatId;
-  var cv = document.getElementById('chatView'); cv.style.display='flex';
-  document.getElementById('ctName').textContent=name;
+  currentChatId=chatId; document.getElementById('chatView').style.display='flex'; document.getElementById('ctName').textContent=name;
   var avEl = document.getElementById('ctAvi');
-  if(avatar.includes('http')){ avEl.style.backgroundImage=`url(${avatar})`; avEl.textContent=''; }
-  else { avEl.style.backgroundImage='none'; avEl.textContent=avatar; }
-  
+  if(avatar.includes('http')){ avEl.style.backgroundImage=`url(${avatar})`; avEl.textContent=''; } else { avEl.style.backgroundImage='none'; avEl.textContent=avatar; }
   if(unsubMsgs)unsubMsgs();
   unsubMsgs=db.collection('messages').where('chatId','==',chatId).orderBy('ts','asc').onSnapshot(function(s){
     var msgs=[]; s.forEach(function(d){msgs.push(d.data());});
     var c=document.getElementById('chatMsgs');
-    c.innerHTML=msgs.map(function(m){
-      return `<div class="msg ${m.from===ME.uid?'me':'them'}"><div class="msg-bubble">${esc(m.text)}</div></div>`;
-    }).join('');
+    c.innerHTML=msgs.map(function(m){ return `<div class="msg ${m.from===ME.uid?'me':'them'}"><div class="msg-bubble">${esc(m.text)}</div></div>`; }).join('');
     c.scrollTop=c.scrollHeight;
   });
 }
@@ -671,7 +652,6 @@ function sendMsg(){
   db.collection('matches').doc(currentChatId).update({lastMsg:t,lastTs:FS.serverTimestamp()});
 }
 
-/* UTILS */
 function showScreen(id){ document.querySelectorAll('.screen').forEach(function(p){p.classList.remove('show');}); document.getElementById(id).classList.add('show'); }
 function gv(id){return document.getElementById(id).value.trim();}
 function showErr(el,msg){el.textContent=msg;el.classList.add('show');}
