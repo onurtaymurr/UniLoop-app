@@ -1,6 +1,6 @@
 // ============================================================================
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
-// 🌟 EKSİKSİZ VE HATASIZ JS KODU - BÖLÜM 1 🌟
+// 🌟 EKSİKSİZ VE HATASIZ JS KODU - BÖLÜM 1 (PUANLA GÜNCELLEMESİ) 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -62,7 +62,7 @@ window.userProfile = {
 };
 
 // GLOBAL ARAYÜZ VE VERİTABANI DEĞİŞKENLERİ
-let marketDB = [];
+let puanlaDB = []; // Market kaldırıldı, Puanla eklendi
 let confessionsDB = [];
 let chatsDB = [];
 let currentChatId = null;
@@ -136,148 +136,6 @@ function initializeUniLoop() {
     const cropperJs = document.createElement('script');
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
-
-    const styleFix = document.createElement('style');
-    styleFix.innerHTML = `
-        html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; background-color: #f3f4f6; color: #111827; }
-        header, #app-header { height: 50px !important; box-sizing: border-box; }
-
-        .edit-profile-icon { font-size: 14px; background: #EEF2FF; color: var(--primary); padding: 5px 10px; border-radius: 8px; border: 1px solid #C7D2FE; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 700; transition: 0.2s; }
-        .edit-profile-icon:hover { background: #DBEAFE; }
-
-        body.no-scroll-messages, body.no-scroll-home { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
-        
-        #main-content { padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important; }
-
-        .no-scroll-messages #main-content, .no-scroll-home #main-content { 
-            position: fixed !important;
-            top: 50px !important;
-            bottom: calc(75px + env(safe-area-inset-bottom)) !important; 
-            left: 0 !important;
-            right: 0 !important;
-            padding: 0 !important; 
-            margin: 0 !important; 
-            height: auto !important;
-            overflow: hidden !important; 
-            display: flex !important;
-            flex-direction: column !important;
-            z-index: 40;
-        }
-
-        .hidden { display: none !important; }
-
-        #chat-layout-container { position: relative !important; width: 100% !important; height: 100% !important; display: flex; flex-direction: row; background: #fff; flex: 1; overflow: hidden; }
-        .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
-        #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; display:flex; flex-direction:column; }
-        .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 50; position: relative; }
-
-        #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
-        #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; transition: opacity 0.3s ease;}
-        #auth-screen { position: relative; z-index: 1000 !important; display: none; }
-        #auth-screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important; }
-        button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; }
-        
-        #sidebar, #mobile-menu-btn { display: none !important; }
-
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #ffffff; border-top: 1px solid #f1f1f1; display: flex; justify-content: space-around; align-items: center; height: calc(60px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; z-index: 99999; box-shadow: 0 -2px 10px rgba(0,0,0,0.02); }
-        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8E8E93; font-size: 10px; text-decoration: none; cursor: pointer; transition: 0.2s; flex: 1; background: transparent !important; border: none !important; font-weight: 500; -webkit-tap-highlight-color: transparent; height: 60px; padding: 0; }
-        .bottom-nav-item.active { color: #6366f1 !important; font-weight: 600; }
-        .bottom-nav-icon { width: 22px; height: 22px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; }
-        .bottom-nav-icon svg { width: 100%; height: 100%; transition: 0.2s; }
-        .bottom-nav-item.active .bottom-nav-icon svg.fill-active { fill: currentColor; }
-        .bottom-nav-item.active .bottom-nav-icon svg { stroke-width: 2.2; }
-
-        .white-flame-icon { filter: grayscale(100%) brightness(200%); text-shadow: 0 0 8px rgba(255,255,255,0.8); cursor:pointer; font-size:24px; transition: 0.2s; display:inline-block; }
-        .white-flame-icon:hover { transform: scale(1.15) rotate(5deg); }
-        
-        .tour-grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width:100%; max-width:400px; margin: 0 auto; }
-        .tour-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width:100%; max-width:400px; align-items:center; margin: 0 auto; padding-top:20px; }
-        
-        .tour-card { background: #fff; border-radius:16px; overflow:hidden; position:relative; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.08); transition:all 0.15s ease-out; aspect-ratio: 1; display:flex; flex-direction:column; border:3px solid transparent; -webkit-tap-highlight-color: transparent; }
-        .tour-card:active { transform: scale(0.95) !important; border-color: #6366f1 !important; box-shadow:0 8px 20px rgba(99, 102, 241, 0.3) !important; }
-        
-        .tour-card-img { width: 100%; height: 100%; object-fit: cover; }
-        .tour-card-name { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.4), transparent); color:white; padding: 30px 10px 10px 10px; font-size:14px; font-weight:800; text-align:center; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;}
-
-        .stepper-container { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 400px; margin: 0 auto; width: 100%; animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .step-header { font-size: 14px; font-weight: bold; color: var(--primary); text-align: center; margin-bottom: 15px; }
-        .step-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 20px; color: #111827; }
-        .grade-btn, .interest-btn, .purpose-btn { background: #F3F4F6; border: 1px solid #E5E7EB; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; margin: 5px; display: inline-block; color: var(--text-dark); }
-        .grade-btn.active, .interest-btn.active, .purpose-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
-        
-        .id-card { background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); width: 100%; max-width: 100%; box-sizing: border-box; margin: 0 auto 20px auto; position: relative; overflow: hidden; }
-        .id-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--primary), #818cf8); }
-        .id-card-left { flex-shrink: 0; position:relative; }
-        .id-card-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e5e7eb; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow:hidden; }
-        .id-card-right { flex: 1; text-align: left; }
-        .id-card-name { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
-        .id-card-faculty { font-size: 13px; color: var(--primary); font-weight: 700; margin-bottom: 8px; }
-        .id-card-details { font-size: 12px; color: #64748b; margin-bottom: 10px; font-weight: 500; display:flex; flex-direction:column; gap:3px;}
-        .id-card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
-        .id-tag { font-size: 10px; background: #e0e7ff; color: var(--primary); padding: 4px 8px; border-radius: 8px; font-weight: 700; }
-
-        .notif-compact-panel { max-height: 400px; overflow-y: auto; padding-right: 5px; scroll-behavior: smooth; }
-        .notif-compact-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 12px; border-radius: 16px; border: 1px solid #f1f5f9; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); flex-wrap: wrap; gap: 10px; transition: transform 0.2s; }
-        .notif-compact-item:hover { transform: translateY(-2px); border-color: #e2e8f0; }
-
-        .cropper-modal-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999999; display: none; flex-direction: column; pointer-events: auto !important;}
-        .cropper-modal-container.active { display: flex; }
-        .cropper-view-box, .cropper-face { border-radius: 50%; }
-        .cropper-view-box { outline: 0; box-shadow: 0 0 0 1px #39f; }
-
-        .chat-sidebar { width: 320px; overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; border-right: 1px solid #e5e7eb; }
-        .chat-contact.active { background: #EEF2FF; border-left: 4px solid var(--primary); }
-        .chat-contact:hover { background: #F9FAFB; }
-        
-        .bubble { position: relative; max-width: 75%; padding: 10px 14px; border-radius: 16px; margin-bottom: 8px; font-size: 15px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); width: fit-content; }
-        .bubble.sent { align-self: flex-end; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border-bottom-right-radius: 4px; }
-        .bubble.received { align-self: flex-start; background: #ffffff; color: #111827; border: 1px solid #e5e7eb; border-bottom-left-radius: 4px; }
-        .bubble.sent .msg-time { color: rgba(255,255,255,0.8) !important; }
-        .bubble.received .msg-time { color: #6b7280 !important; }
-        .bubble.sent .msg-text { color: white !important; }
-
-        #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; }
-        .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; scroll-behavior: smooth; }
-        .feed-layout-container { height: auto !important; display: flex; flex-direction: column; overflow: hidden; margin: -20px; background: #F3F4F6; }
-        #conf-feed { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; max-width: 600px !important; margin: 0 auto !important; width: 100%;}
-        .feed-post { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 16px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
-        .feed-post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .feed-post-avatar { font-size: 24px; width: 44px; height: 44px; background: #F3F4F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0; border: 1px solid #E5E7EB; overflow: hidden;}
-        .feed-post-meta { display: flex; flex-direction: column; }
-        .feed-post-author { font-weight: 800; font-size: 15px; color: #111827; display:flex; align-items:center; }
-        .feed-post-time { font-size: 12px; color: #6B7280; margin-top: 2px; }
-        .feed-post-text { font-size: 15px; margin-bottom: 12px; line-height: 1.5; color: #374151; word-break: break-word; }
-        .feed-post-img { width: 100%; border-radius: 12px; margin-bottom: 12px; max-height: 450px; object-fit: cover; cursor: pointer; border: 1px solid #E5E7EB; }
-        .feed-post-actions { display: flex; border-top: 1px solid #E5E7EB; padding-top: 12px; gap: 20px; }
-        .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
-        .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
-        
-        #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
-        #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
-        #app-header > :last-child, .header-right-menu { display: flex !important; align-items: center !important; justify-content: flex-end !important; flex-wrap: nowrap !important; gap: 10px; height: 100% !important; }
-        
-        #notif-btn-top { position: relative; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; transition: 0.2s; }
-        #notif-btn-top:hover { background: #E5E7EB; }
-        
-        .premium-card-bw::before { background: #111827 !important; }
-
-        @media (max-width: 1024px) {
-            .chat-sidebar { width: 100%; display: block; border-right: none; }
-            .chat-active .chat-sidebar { display: none !important; }
-            .chat-main { display: none !important; }
-            .chat-active .chat-main { display: flex !important; }
-        }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(107, 114, 128, 0.8); }
-
-        .home-slider::-webkit-scrollbar { display: none; }
-        .home-slider { -ms-overflow-style: none; scrollbar-width: none; }
-    `;
-    document.head.appendChild(styleFix);
 
     const cropperModalHtml = `
         <div id="cropper-modal" class="cropper-modal-container">
@@ -464,7 +322,7 @@ function initializeUniLoop() {
                 <button class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:12px;" onclick="window.processStep(4)">Devam Et →</button>
             `;
         } else if (step === 5) {
-            const purposes = ['👋 Sosyalleşmek İstiyorum', '👥 Yeni Arkadaşlar Arıyorum', '📚 Ders Çalışma Arkadaşı', '❤️ Belki Bir Randevu', '🛒 Sadece Market & İlanlar'];
+            const purposes = ['👋 Sosyalleşmek İstiyorum', '👥 Yeni Arkadaşlar Arıyorum', '📚 Ders Çalışma Arkadaşı', '❤️ Belki Bir Randevu', '📸 Puanla ve Keşfet'];
             html = `
                 <div class="step-header">Adım 5 / 6</div>
                 <div class="step-title">Buradaki Amacın Ne? 🚀</div>
@@ -910,10 +768,11 @@ function initializeUniLoop() {
                     const bottomNav = document.createElement('div');
                     bottomNav.id = 'uniloop-bottom-nav';
                     bottomNav.className = 'bottom-nav';
+                    // MARKET KALDIRILDI -> PUANLA EKLENDİ
                     bottomNav.innerHTML = `
                         <div class="menu-item bottom-nav-item active" data-target="home" onclick="window.loadPage('home')"><div class="bottom-nav-icon"><svg class="fill-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div><span>Ana Sayfa</span></div>
                         <div class="menu-item bottom-nav-item" data-target="confessions" onclick="window.loadPage('confessions')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg></div><span>Keşfet</span></div>
-                        <div class="menu-item bottom-nav-item" data-target="market" onclick="window.loadPage('market')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></div><span>Market</span></div>
+                        <div class="menu-item bottom-nav-item" data-target="puanla" onclick="window.loadPage('puanla')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div><span>Puanla</span></div>
                         <div class="menu-item bottom-nav-item" data-target="messages" onclick="window.loadPage('messages')"><div class="bottom-nav-icon" style="position:relative;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-6px; background:#EF4444; color:white; border-radius:50%; width:14px; height:14px; font-size:9px; align-items:center; justify-content:center; font-weight:bold; border: 2px solid white;">0</span></div><span>Mesajlar</span></div>
                         <div class="menu-item bottom-nav-item" data-target="profile" onclick="window.loadPage('profile')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><span>Profil</span></div>
                     `;
@@ -949,12 +808,13 @@ function initializeUniLoop() {
     function initRealtimeListeners(currentUid) {
         const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
 
-        onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
-            marketDB = [];
-            snapshot.forEach(doc => { marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
-            marketDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
+        // Puanla Fotoğraf Akışını Dinleme
+        onSnapshot(query(collection(db, "puanla_posts"), orderBy("createdAt", "desc"), limit(30)), (snapshot) => {
+            puanlaDB = [];
+            snapshot.forEach(doc => { puanlaDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
+            puanlaDB.sort((a, b) => safeSortTime(a) - safeSortTime(b)); // Eskiden yeniye ki üst üste binsin
             const activeTab = document.querySelector('.bottom-nav-item.active');
-            if(activeTab && activeTab.getAttribute('data-target') === 'market') window.renderListings('market', '🛒 Kampüs Market');
+            if(activeTab && activeTab.getAttribute('data-target') === 'puanla') window.renderPuanla();
         });
 
         onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
@@ -1051,7 +911,8 @@ function initializeUniLoop() {
 // 🌟 BÖLÜM 1 SONU 🌟
 // ============================================================================
 // ============================================================================
-// 🌟 MEDYA YÜKLEME, POPÜLERLİK SAVAŞI, HIZLI EŞLEŞME VE KAMPÜS FREKANSI (BÖLÜM 2) 🌟
+// 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
+// 🌟 EKSİKSİZ VE HATASIZ JS KODU - BÖLÜM 2 (YENİ PUANLA SİSTEMİ) 🌟
 // ============================================================================
 
     window.uploadChatMedia = async function(event, targetId, chatType) {
@@ -1105,7 +966,7 @@ function initializeUniLoop() {
                 <div style="font-size:32px; font-weight:800; margin-bottom:20px; color:var(--text-dark);">
                     79.99 ₺ <span style="font-size:14px; color:var(--text-gray); font-weight:normal;">/ aylık</span>
                 </div>
-                <ul style="text-align:left; font-size:14px; margin-bottom:20px; line-height:1.6; color:var(--text-dark); background:#F9FAFB; padding:15px 15px 15px 35px; border-radius:12px; border:1px solid #111827;">
+                <ul style="text-align:left; font-size:14px; margin-bottom:20px; line-height:1.6; color:var(--text-dark); background:rgba(249, 250, 251, 0.8); padding:15px 15px 15px 35px; border-radius:12px; border:1px solid rgba(17, 24, 39, 0.2);">
                     <li>👀 <b>Diğer kullanıcıların detaylı profillerini görüntüleme hakkı!</b> Blurları kaldır.</li>
                     <li>📚 <b>${fac} ${grade}</b> çıkmış sorularına anında erişim!</li>
                     <li>🎙️ <b>Kampüs Frekansı</b> sohbetlerinde 30 Dakika konuşma süresi!</li>
@@ -1183,133 +1044,264 @@ function initializeUniLoop() {
         }
     };
 
-    window.uploadArchiveFile = async function() {
-        const facBtn = document.getElementById('admin-archive-faculty');
-        const grBtn = document.getElementById('admin-archive-grade');
-        const fileInput = document.getElementById('admin-archive-file');
+    /* ========================================================================= */
+    /* 🌟 YENİ NESİL "PUANLA" (SCATTER BOARD) ALTYAPISI 🌟 */
+    /* ========================================================================= */
+
+    window.renderPuanla = function() {
+        let html = `
+            <div class="card" style="position:relative; overflow:hidden; padding:20px; text-align:center; background:rgba(255,255,255,0.9); backdrop-filter:blur(10px);">
+                <h2 style="margin-bottom:10px; display:flex; justify-content:center; align-items:center; gap:8px;">
+                    <span style="font-size:28px;">📸</span> Puanla & Keşfet
+                </h2>
+                <p style="color:var(--text-gray); font-size:13px; margin-bottom:20px; line-height:1.5;">
+                    Tarzını konuştur, kampüsün nabzını tut. Bir fotoğrafa puan verdiğinde veya karşılık attığında o fotoğraf <b>kaybolur</b>, alttan yepyeni biri çıkar!
+                </p>
+                <button class="btn-primary" style="margin-bottom:20px; width:auto; padding:12px 24px; font-size:15px; border-radius:12px;" onclick="window.openPuanlaUploadForm()">+ Yeni Fotoğraf Fırlat</button>
+                <div id="scatter-container" class="scatter-board"></div>
+            </div>
+        `;
+        mainContent.innerHTML = html;
+        window.drawScatterBoard();
+    };
+
+    window.drawScatterBoard = function() {
+        const container = document.getElementById('scatter-container');
+        if(!container) return;
+
+        // Kullanıcının daha önce puanladığı/cevapladığı fotoğrafları filtrele
+        const unratedPosts = puanlaDB.filter(post => !post.ratedBy || !post.ratedBy.includes(window.userProfile.uid));
+
+        if(unratedPosts.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; color:var(--text-gray); z-index:10; padding:40px;">
+                    <span style="font-size:50px; display:block; margin-bottom:15px;">📭</span>
+                    Şu an puanlanacak yeni fotoğraf yok.<br>İlk sen yükle ve akımı başlat!
+                </div>`;
+            return;
+        }
+
+        let boardHtml = '';
+        unratedPosts.forEach((post, index) => {
+            // Rastgele Asimetrik Açılar (Kaotik Düzen)
+            const randomAngle = Math.floor(Math.random() * 30) - 15; // -15 ile +15 derece arası
+            const randomX = Math.floor(Math.random() * 40) - 20;
+            const randomY = Math.floor(Math.random() * 40) - 20;
+            
+            let rateButtons = '';
+            for(let i=1; i<=10; i++) {
+                rateButtons += `<button class="rate-btn" onclick="event.stopPropagation(); window.ratePuanlaPost('${post.id}', ${i}, this)">${i}</button>`;
+            }
+
+            boardHtml += `
+                <div class="scatter-card" id="puanla-card-${post.id}" style="transform: translate(${randomX}px, ${randomY}px) rotate(${randomAngle}deg); z-index:${index};" onclick="window.focusPuanlaCard(this)">
+                    <img src="${post.imgUrl}" class="scatter-img">
+                    <div class="scatter-user-info">${post.authorName}</div>
+                    
+                    <button class="match-back-btn" onclick="event.stopPropagation(); window.triggerReplyPhoto('${post.id}', '${post.authorId}', '${post.authorName}')" title="Bende de daha iyisi var!">🔥</button>
+
+                    <div class="rating-dock">
+                        <div style="font-size:13px; font-weight:800; color:#111827; margin-right:5px; display:flex; align-items:center;">Puan:</div>
+                        <div style="display:flex; gap:6px; overflow-x:auto; padding:5px; -webkit-overflow-scrolling:touch;">
+                            ${rateButtons}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
         
-        if(!fileInput || !fileInput.files.length) return alert("Lütfen yüklenecek bir PDF seçin.");
+        // Gizli dosya yükleyici (Görsel Karşılık İçin)
+        boardHtml += `<input type="file" id="reply-photo-input" accept="image/*" style="display:none;" onchange="window.processReplyPhoto(event)">`;
         
-        const fac = facBtn.value.trim();
-        const gr = grBtn.value.trim();
-        const file = fileInput.files[0];
+        container.innerHTML = boardHtml;
+    };
+
+    window.focusPuanlaCard = function(cardElement) {
+        // Tıklanan kartı en öne alır ve dock'u aktif eder
+        document.querySelectorAll('.scatter-card').forEach(el => {
+            el.style.zIndex = el.style.zIndex > 0 ? el.style.zIndex - 1 : 0;
+            const dock = el.querySelector('.rating-dock');
+            if(dock) dock.classList.remove('active');
+        });
+        cardElement.style.zIndex = 1000;
+        const myDock = cardElement.querySelector('.rating-dock');
+        if(myDock) myDock.classList.add('active');
+    };
+
+    window.ratePuanlaPost = async function(postId, rateValue, btnElement) {
+        const card = document.getElementById(`puanla-card-${postId}`);
+        if(!card) return;
+
+        // Görsel Patlama Efekti
+        btnElement.style.background = "var(--success)";
+        btnElement.style.color = "white";
+        btnElement.style.transform = "scale(1.3)";
+
+        // Kartı tüket (Yukarı uçarak kaybolma animasyonu)
+        setTimeout(() => {
+            card.classList.add('consuming');
+        }, 300);
         
-        const uploadBtn = document.getElementById('upload-archive-btn');
-        const originalText = uploadBtn.innerText;
-        uploadBtn.innerText = "Yükleniyor... Lütfen bekleyin ⏳";
-        uploadBtn.disabled = true;
+        setTimeout(() => {
+            card.remove();
+        }, 900); // animasyon süresi kadar bekle
 
         try {
-            const cleanName = file.name.replace(/[^a-zA-Z0-9.\-]/g, "_");
-            const storagePath = `archives/${fac}/${gr}/${Date.now()}_${cleanName}`;
-            const storageRef = ref(storage, storagePath);
-            
-            await uploadBytes(storageRef, file);
-            const downloadUrl = await getDownloadURL(storageRef);
+            // Firestore güncellemesi
+            await updateDoc(doc(db, "puanla_posts", postId), {
+                ratedBy: arrayUnion(window.userProfile.uid),
+                [`ratings.${window.userProfile.uid}`]: rateValue
+            });
+            // Opsiyonel: Karşı tarafa bildirim gidebilir
+        } catch(e) {
+            console.error("Puanlanırken hata:", e);
+        }
+    };
 
-            await addDoc(collection(db, "archives"), {
-                faculty: fac,
-                grade: gr,
-                fileName: file.name,
-                fileUrl: downloadUrl,
-                uploadedBy: window.userProfile.uid,
+    window.openPuanlaUploadForm = function() {
+        window.openModal('📸 Yeni Fotoğraf Fırlat', `
+            <div style="text-align:center;">
+                <p style="font-size:13px; color:var(--text-gray); margin-bottom:15px;">En iyi açını yakala. Fotoğrafın diğer kullanıcıların ekranına düşecek!</p>
+                <div class="upload-btn-wrapper" style="margin-bottom: 20px;">
+                    <button class="action-btn" onclick="document.getElementById('new-puanla-photo').click()" style="width:100%; justify-content:center; padding: 15px; font-weight:bold; background: rgba(238, 242, 255, 0.8); color: var(--primary); border:2px dashed var(--primary); border-radius:16px; font-size:16px;">📷 Galeriden Seç</button>
+                    <input type="file" id="new-puanla-photo" accept="image/*" style="display:none;" onchange="window.previewPuanlaImage(event)" />
+                </div>
+                <div id="puanla-preview-container" style="display:none; margin-bottom:20px; border-radius:16px; overflow:hidden; border:1px solid rgba(0,0,0,0.1); box-shadow:0 10px 25px rgba(0,0,0,0.1);">
+                    <img id="puanla-preview-img" style="width:100%; max-height:300px; object-fit:cover; display:block;">
+                </div>
+                <button class="btn-primary" id="publish-puanla-btn" style="width:100%; padding:14px; font-size:16px; border-radius:12px; display:none;" onclick="window.submitPuanlaPost()">Akışa Fırlat 🚀</button>
+            </div>
+        `);
+    };
+
+    window.previewPuanlaImage = function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('puanla-preview-img').src = e.target.result;
+                document.getElementById('puanla-preview-container').style.display = 'block';
+                document.getElementById('publish-puanla-btn').style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    };
+
+    window.submitPuanlaPost = async function() {
+        const fileInput = document.getElementById('new-puanla-photo');
+        if(!fileInput || fileInput.files.length === 0) return alert("Lütfen bir fotoğraf seçin.");
+
+        const btn = document.getElementById('publish-puanla-btn');
+        btn.disabled = true;
+        btn.innerText = "Fırlatılıyor... ⏳";
+
+        try {
+            const file = fileInput.files[0];
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+            const storageRef = ref(storage, 'puanla/' + window.userProfile.uid + '/' + Date.now() + '_' + cleanName);
+            await uploadBytes(storageRef, file);
+            const imgUrl = await getDownloadURL(storageRef);
+
+            await addDoc(collection(db, "puanla_posts"), {
+                authorId: window.userProfile.uid,
+                authorName: window.userProfile.name,
+                imgUrl: imgUrl,
+                ratedBy: [],
+                ratings: {},
                 createdAt: serverTimestamp()
             });
 
-            alert(`✅ Başarılı! ${fac} - ${gr} için çıkmış sorular sisteme eklendi.`);
-            fileInput.value = '';
+            alert("Harika! Fotoğrafın Puanla akışına düştü.");
             window.closeModal();
-        } catch(e) {
-            console.error("Yükleme Hatası:", e);
-            alert("Dosya yüklenirken hata oluştu: " + e.message);
-        } finally {
-            if(uploadBtn) { uploadBtn.innerText = originalText; uploadBtn.disabled = false; }
+        } catch(error) {
+            console.error(error);
+            alert("Yüklenirken hata oluştu.");
+            btn.disabled = false;
+            btn.innerText = "Akışa Fırlat 🚀";
         }
     };
 
-    window.viewArchive = async function() {
-        const u = window.userProfile;
+    window.tempReplyData = { postId: null, targetUserId: null, targetUserName: null };
+
+    window.triggerReplyPhoto = function(postId, targetUserId, targetUserName) {
+        window.tempReplyData = { postId, targetUserId, targetUserName };
+        document.getElementById('reply-photo-input').click();
+    };
+
+    window.processReplyPhoto = async function(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+
+        const { postId, targetUserId, targetUserName } = window.tempReplyData;
+        const card = document.getElementById(`puanla-card-${postId}`);
         
-        if (!u.lockedArchiveFaculty || !u.lockedArchiveGrade) {
-            if (!u.faculty || !u.grade) {
-                alert("Profilinizde fakülte veya sınıf bilginiz eksik. Lütfen ayarlardan profilinizi güncelleyin.");
-                return;
-            }
-            
-            let currentGradeFormatted = u.grade.toString().includes("Sınıf") ? u.grade.toString().trim() : u.grade.toString().trim() + ". Sınıf";
-            
-            if(confirm(`⚠️ DİKKAT: Arşiv hakkınız tüm eğitim yılı boyunca [${u.faculty} - ${currentGradeFormatted}] olarak sabitlenecektir. \n\nDaha sonra profilinizden sınıf veya fakülte değiştirseniz bile diğer arşivleri GÖREMEZSİNİZ.\n\nOnaylıyor musunuz?`)) {
-                try {
-                    await updateDoc(doc(db, "users", u.uid), {
-                        lockedArchiveFaculty: u.faculty.trim(),
-                        lockedArchiveGrade: currentGradeFormatted
-                    });
-                    u.lockedArchiveFaculty = u.faculty.trim();
-                    u.lockedArchiveGrade = currentGradeFormatted;
-                    alert("✅ Arşiviniz başarıyla kilitlendi. Yıl boyunca bu bölümün sorularına erişebileceksiniz.");
-                } catch(e) {
-                    alert("Kilitlenme sırasında bir hata oluştu: " + e.message);
-                    return;
-                }
-            } else {
-                return; 
-            }
+        // Görsel efekt: Cevap verildiği için kartı tüket
+        if(card) {
+            card.style.transition = "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+            card.style.transform = "scale(1.1) rotate(-10deg)";
+            setTimeout(() => { card.classList.add('consuming'); }, 200);
+            setTimeout(() => { card.remove(); }, 800);
         }
 
-        const fac = u.lockedArchiveFaculty;
-        const gr = u.lockedArchiveGrade;
-
-        window.openModal(`📚 ${fac} - ${gr} Arşivi`, `<div style="text-align:center; padding:20px; color:var(--text-gray);">Arşiv güvenli bir şekilde taranıyor... ⏳</div>`);
+        // Bildirim/Yükleme Toast'ı göster
+        alert(`🔥 ${targetUserName} adlı kullanıcıya fotoğrafın gönderiliyor. Lütfen bekle...`);
 
         try {
-            const q = query(collection(db, "archives"), where("faculty", "==", fac));
-            const snap = await getDocs(q);
+            // Fotoğrafı Storage'a yükle
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+            const storagePath = `chat_media/${window.userProfile.uid}/${Date.now()}_reply_${cleanName}`;
+            const storageRef = ref(storage, storagePath);
+            await uploadBytes(storageRef, file);
+            const downloadUrl = await getDownloadURL(storageRef);
 
-            let matchedDocs = [];
-            snap.forEach(doc => {
-                if (doc.data().grade === gr) {
-                    matchedDocs.push(doc.data());
-                }
+            // Chat kontrolü
+            const myUid = window.userProfile.uid;
+            let existingChat = chatsDB.find(c => c.otherUid === targetUserId && !c.isMarketChat);
+            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            const replyMsg = {
+                senderId: myUid,
+                text: "🔥 Puanla akışındaki fotoğrafına karşılık veriyorum!",
+                time: timeStr,
+                mediaUrl: downloadUrl,
+                mediaType: 'image',
+                read: false
+            };
+
+            if (existingChat) {
+                await updateDoc(doc(db, "chats", existingChat.id), {
+                    messages: arrayUnion(replyMsg),
+                    lastUpdated: serverTimestamp()
+                });
+            } else {
+                await addDoc(collection(db, "chats"), {
+                    participants: [myUid, targetUserId],
+                    participantNames: { [myUid]: window.userProfile.name, [targetUserId]: targetUserName },
+                    participantAvatars: { [myUid]: window.userProfile.avatarUrl || window.userProfile.avatar || "👨‍🎓", [targetUserId]: "👤" },
+                    lastUpdated: serverTimestamp(), 
+                    status: 'accepted', // Doğrudan kabul edilmiş başlasın
+                    initiator: myUid, 
+                    isMarketChat: false, 
+                    messages: [replyMsg] 
+                });
+            }
+
+            // Puanla postunu benim için gizle
+            await updateDoc(doc(db, "puanla_posts", postId), {
+                ratedBy: arrayUnion(myUid)
             });
 
-            let html = '<div style="max-height: 400px; overflow-y: auto; padding-right: 5px;">';
-            
-            if(matchedDocs.length === 0) {
-                html += `
-                <div style="text-align:center; padding:30px 10px;">
-                    <div style="font-size:40px; margin-bottom:10px;">📭</div>
-                    <div style="font-size:14px; color:var(--text-gray); line-height:1.5;">Henüz kilitlendiğiniz bölüm <b>(${fac})</b> ve sınıfa <b>(${gr})</b> ait bir arşiv bulunamadı. Admin'in dosyaları yüklemesini bekleyin.</div>
-                </div>`;
-            } else {
-                html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
-                matchedDocs.forEach(data => {
-                    html += `
-                        <div style="display:flex; align-items:center; justify-content:space-between; padding:15px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:12px;">
-                            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
-                                <div style="font-size:24px;">📄</div>
-                                <div style="flex:1; min-width:0;">
-                                    <div style="font-weight:700; font-size:14px; color:var(--text-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${data.fileName}</div>
-                                    <div style="font-size:11px; color:var(--text-gray);">Çıkmış Sorular / Ders Notu</div>
-                                </div>
-                            </div>
-                            <a href="${data.fileUrl}" target="_blank" style="background:#111827; color:white; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:bold; flex-shrink:0; box-shadow:0 2px 4px rgba(0,0,0,0.3);">İndir / Aç</a>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-            html += '</div>';
-            document.getElementById('modal-body').innerHTML = html;
-
-        } catch(e) {
-            console.error("Arşiv Çekme Hatası:", e);
-            document.getElementById('modal-body').innerHTML = `
-                <div style="color:#EF4444; text-align:center; padding:20px;">
-                    <strong>Bağlantı Hatası</strong><br><br>
-                    Arşiv yüklenirken bir hata oluştu: ${e.message}
-                </div>`;
+            alert("Karşılığın başarıyla gönderildi! Mesajlarından takip edebilirsin.");
+        } catch(err) {
+            console.error("Cevap verilirken hata:", err);
+            alert("Fotoğraf gönderilirken bir hata oluştu.");
         }
     };
+
+
+    /* ========================================================================= */
+    /* DİĞER FONKSİYONLAR (GERİ KALAN ALTYAPI) */
+    /* ========================================================================= */
 
     window.openPremiumFeaturesModal = async function() {
         try {
@@ -1328,7 +1320,7 @@ function initializeUniLoop() {
                     }
                 }
                 viewersHtml = uniqueViewers.map(v => `
-                    <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; background:#fff; border-radius:10px; margin-bottom:8px; border:1px solid #E5E7EB; cursor:pointer;" onclick="window.viewUserProfile('${v.uid}')">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:rgba(255,255,255,0.8); border-radius:12px; margin-bottom:8px; border:1px solid rgba(229,231,235,0.6); cursor:pointer; backdrop-filter:blur(5px);" onclick="window.viewUserProfile('${v.uid}')">
                         <div style="display:flex; align-items:center; gap:10px;">
                             <span style="font-size:20px;">👀</span>
                             <span style="font-weight:bold; font-size:14px; color:var(--text-dark);">${v.name}</span>
@@ -1350,7 +1342,7 @@ function initializeUniLoop() {
                 let gradeOptions = [1, 2, 3, 4, 5, 6].map(g => `<option value="${g}. Sınıf">${g}. Sınıf</option>`).join('');
                 
                 archiveSectionHtml = `
-                    <div class="card" style="background:linear-gradient(135deg, #F3F4F6, #E5E7EB); border:1px solid #111827; padding:20px; border-radius:12px;">
+                    <div class="card" style="background:linear-gradient(135deg, rgba(243,244,246,0.9), rgba(229,231,235,0.9)); border:1px solid #111827; padding:20px; border-radius:16px;">
                         <div style="font-size:30px; margin-bottom:10px; text-align:center;">👑</div>
                         <h4 style="color:#111827; margin-bottom:8px; font-size:16px; text-align:center;">Admin Paneli: Arşive Dosya Ekle</h4>
                         <p style="font-size:12px; color:#374151; text-align:center; margin-bottom:15px; font-weight:bold;">Fakülte ve sınıf seçip PDF yükleyin.</p>
@@ -1370,7 +1362,7 @@ function initializeUniLoop() {
                 `;
             } else {
                 archiveSectionHtml = `
-                    <div class="card" style="background:linear-gradient(135deg, #F9FAFB, #F3F4F6); border:1px solid #111827; padding:20px; border-radius:12px;">
+                    <div class="card" style="background:linear-gradient(135deg, rgba(249,250,251,0.9), rgba(243,244,246,0.9)); border:1px solid rgba(17,24,39,0.2); padding:20px; border-radius:16px; backdrop-filter:blur(10px);">
                         <div style="font-size:30px; margin-bottom:10px; text-align:center;">📚</div>
                         <h4 style="color:#111827; margin-bottom:8px; font-size:16px; text-align:center;">Çıkmış Sorular Arşivi</h4>
                         <p style="font-size:13px; color:#374151; text-align:center; margin-bottom:15px; font-weight:bold;">Tüm Yıl Boyunca Sabit Erişim</p>
@@ -1385,7 +1377,7 @@ function initializeUniLoop() {
                 <div style="display:flex; flex-direction:column; gap:15px;">
                     ${archiveSectionHtml}
                     
-                    <div class="card" style="background:#F9FAFB; border:1px solid #111827; padding:20px; border-radius:12px;">
+                    <div class="card" style="background:rgba(249,250,251,0.6); border:1px solid rgba(17,24,39,0.1); padding:20px; border-radius:16px; backdrop-filter:blur(10px);">
                         <h4 style="color:#111827; margin-bottom:12px; font-size:15px; display:flex; align-items:center; gap:5px;">
                             <span>🕵️</span> Kimler Profilime Baktı?
                         </h4>
@@ -1419,15 +1411,15 @@ function initializeUniLoop() {
                 if(u.popularity > 0) {
                     let medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
                     html += `
-                        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#F9FAFB; border-radius:12px; border:1px solid #E5E7EB; cursor:pointer; transition:0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'" onclick="window.closeModal(); window.viewUserProfile('${u.uid}')">
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:rgba(255,255,255,0.7); border-radius:12px; border:1px solid rgba(229,231,235,0.5); cursor:pointer; transition:0.2s; backdrop-filter:blur(5px);" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='rgba(229,231,235,0.5)'" onclick="window.closeModal(); window.viewUserProfile('${u.uid}')">
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <div style="font-size:18px; font-weight:800; width:25px; text-align:center;">${medal}</div>
-                                <div style="width:40px; height:40px; border-radius:50%; overflow:hidden; background:#E5E7EB; border:1px solid #111827;">
+                                <div style="width:40px; height:40px; border-radius:50%; overflow:hidden; background:#E5E7EB; border:1px solid rgba(17,24,39,0.2);">
                                     ${u.avatarUrl ? `<img src="${u.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="font-size:20px; text-align:center; line-height:40px;">${u.avatar || '👤'}</div>`}
                                 </div>
                                 <span style="font-weight:700; font-size:14px;">${u.name} ${u.surname ? u.surname.charAt(0)+'.' : ''}</span>
                             </div>
-                            <div style="font-weight:800; color:#111827; font-size:14px; background:white; padding:4px 10px; border-radius:12px; border:1px solid #111827;">${u.popularity} 🔥</div>
+                            <div style="font-weight:800; color:#111827; font-size:14px; background:white; padding:4px 10px; border-radius:12px; border:1px solid rgba(17,24,39,0.2); box-shadow:0 2px 5px rgba(0,0,0,0.05);">${u.popularity} 🔥</div>
                         </div>
                     `;
                     rank++;
@@ -1626,23 +1618,23 @@ function initializeUniLoop() {
             }
 
             container.innerHTML = `
-                <div style="position:relative; text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,0.05); width:100%; max-width:350px;">
+                <div style="position:relative; text-align:center; padding:20px; background:rgba(255,255,255,0.9); backdrop-filter:blur(10px); border-radius:16px; border:1px solid rgba(229,231,235,0.5); width:100%; max-width:350px;">
                     <button onclick="window.loadPage('home')" style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:24px; color:#9CA3AF; cursor:pointer; font-weight:bold; transition:0.2s;" onmouseover="this.style.color='#EF4444'" onmouseout="this.style.color='#9CA3AF'">✖</button>
                     <div style="font-size:50px; margin-bottom:10px; margin-top:10px;">🎉</div>
                     <h3 style="color:#111827; margin-bottom:20px;">Savaş Sona Erdi!</h3>
                     
                     <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px; text-align:left;">
-                        <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:10px; border-radius:10px; border:1px solid #E5E7EB;">
+                        <div style="display:flex; align-items:center; gap:10px; background:rgba(249,250,251,0.8); padding:10px; border-radius:10px; border:1px solid rgba(229,231,235,0.5);">
                             <span style="font-size:24px;">🥇</span> 
                             <span style="font-weight:800; flex:1; color:#111827;">${t.finalWinner.name}</span> 
                             <span style="font-weight:bold; color:var(--text-gray);">${t.finalWinner.isClone ? 'BOT' : '+3 🔥'}</span>
                         </div>
-                        <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:10px; border-radius:10px; border:1px solid #E5E7EB;">
+                        <div style="display:flex; align-items:center; gap:10px; background:rgba(249,250,251,0.8); padding:10px; border-radius:10px; border:1px solid rgba(229,231,235,0.5);">
                             <span style="font-size:24px;">🥈</span> 
                             <span style="font-weight:800; flex:1; color:#111827;">${t.secondPlace.name}</span> 
                             <span style="font-weight:bold; color:var(--text-gray);">${t.secondPlace.isClone ? 'BOT' : '+2 🔥'}</span>
                         </div>
-                        <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:10px; border-radius:10px; border:1px solid #E5E7EB;">
+                        <div style="display:flex; align-items:center; gap:10px; background:rgba(249,250,251,0.8); padding:10px; border-radius:10px; border:1px solid rgba(229,231,235,0.5);">
                             <span style="font-size:24px;">🥉</span> 
                             <span style="font-weight:800; flex:1; color:#111827;">${t.thirdPlace.name}</span> 
                             <span style="font-weight:bold; color:var(--text-gray);">${t.thirdPlace.isClone ? 'BOT' : '+1 🔥'}</span>
@@ -1866,7 +1858,7 @@ function initializeUniLoop() {
         let remaining = maxSwipes - window.userProfile.fastMatchCount;
         
         let headerText = window.userProfile.isPremium ? 
-            `<span style="color:#111827; font-size:12px; font-weight:bold; background:white; padding:4px 12px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #111827; box-shadow:0 2px 4px rgba(0,0,0,0.05);">Kalan Hakkın: ${remaining} / 30 (Premium)</span>` : 
+            `<span style="color:#111827; font-size:12px; font-weight:bold; background:rgba(255,255,255,0.8); backdrop-filter:blur(5px); padding:4px 12px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid rgba(17,24,39,0.3); box-shadow:0 2px 4px rgba(0,0,0,0.05);">Kalan Hakkın: ${remaining} / 30 (Premium)</span>` : 
             `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:4px 12px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #FCA5A5;">Kalan Hakkın: ${remaining} / 10</span>`;
 
         container.innerHTML = `
@@ -1937,7 +1929,7 @@ function initializeUniLoop() {
     /* ========================================================================= */
     let voiceSearchTimeout = null;
     let voiceQueueUnsubscribe = null;
-    window.callRole = null; // 'caller' veya 'callee'
+    window.callRole = null; 
 
     const rtcConfig = {
         iceServers: [
@@ -2078,7 +2070,6 @@ function initializeUniLoop() {
         await window.peerConnection.setLocalDescription(offerDescription);
 
         const offer = { sdp: offerDescription.sdp, type: offerDescription.type };
-        // Maske inme durumu için iki alanı da false olarak başlatıyoruz
         await setDoc(callDoc, { offer, reveal_caller: false, reveal_callee: false });
 
         let remoteCandidatesBuffer = [];
@@ -2097,7 +2088,6 @@ function initializeUniLoop() {
                 remoteCandidatesBuffer = [];
             }
             
-            // RIZAYA DAYALI MASKE İNDİRME MANTIĞI
             let myReveal = data.reveal_caller;
             let otherReveal = data.reveal_callee;
             
@@ -2179,7 +2169,6 @@ function initializeUniLoop() {
                 remoteCandidatesBuffer = [];
             }
 
-            // RIZAYA DAYALI MASKE İNDİRME MANTIĞI
             let myReveal = data.reveal_callee;
             let otherReveal = data.reveal_caller;
             
@@ -2248,7 +2237,7 @@ function initializeUniLoop() {
                 const micReady = await window.setupLocalAudio();
                 if(!micReady) { window.closeFrequency(); return; }
 
-                window.callRole = 'caller'; // Rolü belirle
+                window.callRole = 'caller'; 
                 await window.createWebRTCCall(partnerFound.uid);
 
                 const pDoc = await getDoc(doc(db, "users", partnerFound.uid));
@@ -2276,7 +2265,7 @@ function initializeUniLoop() {
                         const micReady = await window.setupLocalAudio();
                         if(!micReady) { window.closeFrequency(); return; }
 
-                        window.callRole = 'callee'; // Rolü belirle
+                        window.callRole = 'callee'; 
                         await window.answerWebRTCCall(matchedUid);
 
                         const pDoc = await getDoc(doc(db, "users", matchedUid));
@@ -2332,7 +2321,6 @@ function initializeUniLoop() {
         }, 1000);
     };
 
-    // RIZAYA DAYALI MASKE İNDİRME İSTEĞİ (Sesi asla kesmez)
     window.requestReveal = async function() {
         document.getElementById('reveal-btn').style.display = 'none';
         
@@ -2354,7 +2342,6 @@ function initializeUniLoop() {
         }
     };
 
-    // İKİ TARAF DA ONAYLADIĞINDA ÇALIŞIR (Ses kesilmez, sadece UI değişir)
     window.executeMutualReveal = function() {
         const matchUser = window.currentVoiceMatch;
         if(matchUser) {
@@ -2413,7 +2400,7 @@ function initializeUniLoop() {
         let usernameWarning = '';
         if (!window.userProfile.username) {
             usernameWarning = `
-                <div style="background: #FEF2F2; color: #DC2626; padding: 12px; border-radius: 12px; border: 1px solid #FCA5A5; margin-bottom: 6px; font-weight: bold; text-align: center; cursor:pointer; flex-shrink:0;" onclick="window.loadPage('profile')">
+                <div style="background: rgba(254, 242, 242, 0.9); color: #DC2626; padding: 12px; border-radius: 12px; border: 1px solid rgba(252, 165, 165, 0.5); margin-bottom: 6px; font-weight: bold; text-align: center; cursor:pointer; flex-shrink:0; backdrop-filter:blur(5px);" onclick="window.loadPage('profile')">
                     ⚠️ Lütfen profilinden bir kullanıcı adı belirle!
                 </div>
             `;
@@ -2433,7 +2420,7 @@ function initializeUniLoop() {
                         <div style="font-size:24px; cursor:pointer;" onclick="window.toggleHomeSearch()" title="Arkadaşını Bul">🔍</div>
                     </div>
                 </div>
-                <div id="home-search-container" class="hidden" style="position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:20; display:flex; align-items:center; background:white; border-radius:20px; padding:5px 12px; width:100%; box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+                <div id="home-search-container" class="hidden" style="position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:20; display:flex; align-items:center; background:rgba(255,255,255,0.9); backdrop-filter:blur(10px); border-radius:20px; padding:5px 12px; width:100%; box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1); border:1px solid rgba(229,231,235,0.5);">
                         <span style="color:var(--primary); font-weight:800; font-size:14px; margin-right:5px;">#</span>
                         <input type="text" id="home-friend-search-input" style="border:none; background:transparent; width:100%; outline:none; font-size:13px; color:black;" placeholder="Kullanıcı adı..." onkeypress="if(event.key==='Enter') window.searchAndAddFriendHome()">
                         <button onclick="window.searchAndAddFriendHome()" style="background:transparent; border:none; font-size:16px; cursor:pointer;">➡️</button>
@@ -2459,7 +2446,7 @@ function initializeUniLoop() {
             <div style="display:flex; flex-direction:column; height:100%; overflow:hidden;">
                 ${usernameWarning}
                 
-                <div style="position:relative; margin: 10px; border-radius:16px; flex-shrink:0; box-shadow:0 6px 15px rgba(0,0,0,0.1); background:#1F2937;">
+                <div style="position:relative; margin: 10px; border-radius:16px; flex-shrink:0; box-shadow:0 6px 15px rgba(0,0,0,0.15); background:linear-gradient(135deg, rgba(31, 41, 55, 0.9), rgba(17, 24, 39, 0.9)); backdrop-filter:blur(10px); border:1px solid rgba(55,65,81,0.5);">
                     <div id="home-slider-container" class="home-slider" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; width:100%; scroll-behavior:smooth;">
                         ${slides.map(slide => `
                             <div style="flex: 0 0 100%; scroll-snap-align: center; padding: 15px; box-sizing:border-box; display:flex; justify-content:flex-start; align-items:center; color:white; min-height:80px;">
@@ -2705,25 +2692,25 @@ function initializeUniLoop() {
             <div style="display:flex; flex-direction:column; gap:12px;">
                 <div>
                     <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Kullanıcı Adı</label>
-                    <div style="display:flex; align-items:center; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px; padding:0 10px;">
+                    <div style="display:flex; align-items:center; background:rgba(249,250,251,0.8); border:1px solid rgba(229,231,235,0.8); border-radius:10px; padding:0 10px;">
                         <span style="color:var(--primary); font-weight:bold; font-size:14px;">#</span>
                         <input type="text" id="edit-username" value="${uNameStr}" style="border:none; background:transparent; width:100%; padding:12px 5px; outline:none; font-size:14px;">
                     </div>
                 </div>
                 <div>
                     <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Yaş</label>
-                    <input type="number" id="edit-age" value="${u.age || ''}" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white;">
+                    <input type="number" id="edit-age" value="${u.age || ''}" style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(229,231,235,0.8); outline:none; font-size:14px; box-sizing:border-box; background:rgba(255,255,255,0.8);">
                 </div>
                 <div>
                     <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Fakülte</label>
-                    <select id="edit-faculty" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white;">
+                    <select id="edit-faculty" style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(229,231,235,0.8); outline:none; font-size:14px; box-sizing:border-box; background:rgba(255,255,255,0.8);">
                         <option value="">Fakülte Seçiniz</option>
                         ${facOptions}
                     </select>
                 </div>
                 <div>
                     <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Kaçıncı Sınıf</label>
-                    <select id="edit-grade" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white;">
+                    <select id="edit-grade" style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(229,231,235,0.8); outline:none; font-size:14px; box-sizing:border-box; background:rgba(255,255,255,0.8);">
                         <option value="1" ${u.grade == '1' ? 'selected' : ''}>1. Sınıf</option>
                         <option value="2" ${u.grade == '2' ? 'selected' : ''}>2. Sınıf</option>
                         <option value="3" ${u.grade == '3' ? 'selected' : ''}>3. Sınıf</option>
@@ -2811,316 +2798,15 @@ function initializeUniLoop() {
         }
     };
 
-    window.sendMarketMessage = async function(sellerId, sellerName, itemTitle, listingId) {
-        try {
-            const myUid = window.userProfile.uid;
-            const msgText = `Merhaba, "${itemTitle}" başlıklı ilanınızla ilgileniyorum. Durumu nedir?`;
-            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            const existingChat = chatsDB.find(c => c.otherUid === sellerId && c.isMarketChat);
-
-            if (existingChat) {
-                if (existingChat.listingIds && existingChat.listingIds.includes(listingId)) {
-                    alert("Bu ilan için satıcıya zaten mesaj gönderdiniz!");
-                    window.openChatViewDirect(existingChat.id);
-                    return;
-                }
-
-                await updateDoc(doc(db, "chats", existingChat.id), {
-                    messages: arrayUnion({ senderId: myUid, text: msgText, time: timeStr, read: false }),
-                    listingIds: arrayUnion(listingId),
-                    lastUpdated: serverTimestamp()
-                });
-                alert("Yeni ilan için mesajınız satıcıyla olan sohbetinize eklendi!");
-                window.loadPage('messages');
-                setTimeout(() => window.openChatView(existingChat.id), 300);
-            } else {
-                const newChatRef = await addDoc(collection(db, "chats"), {
-                    participants: [myUid, sellerId],
-                    participantNames: { [myUid]: window.userProfile.name, [sellerId]: sellerName },
-                    participantAvatars: { [myUid]: window.userProfile.avatarUrl || window.userProfile.avatar || "👨‍🎓", [sellerId]: "👤" },
-                    lastUpdated: serverTimestamp(), 
-                    status: 'pending', 
-                    initiator: myUid,
-                    isMarketChat: true,
-                    listingIds: [listingId], 
-                    messages: [{ senderId: myUid, text: msgText, time: timeStr, read: false }]
-                });
-                
-                const newLocalChat = {
-                    id: newChatRef.id,
-                    otherUid: sellerId,
-                    name: sellerName,
-                    avatar: "👤",
-                    messages: [{ senderId: myUid, text: msgText, time: timeStr, read: false }],
-                    status: 'pending',
-                    initiator: myUid,
-                    isMarketChat: true,
-                    listingIds: [listingId]
-                };
-                chatsDB.unshift(newLocalChat);
-                
-                alert("Satıcıya mesaj isteği başarıyla gönderildi!");
-                window.loadPage('messages');
-                setTimeout(() => window.openChatView(newChatRef.id), 100);
-            }
-        } catch (error) {
-            alert("Hata oluştu: " + error.message);
-        }
-    };
-
-    window.renderListings = function(type, title) {
-        let html = `
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
-                    <h2 style="margin:0;">${title}</h2>
-                    <button class="btn-primary" style="width:auto; padding: 10px 24px;" onclick="window.openListingForm('${type}')">+ Yeni İlan Ekle</button>
-                </div>
-                <input type="text" id="local-search-input" class="local-search-bar" placeholder="${title} içinde hızlıca ara...">
-                <div class="market-grid" id="listings-grid-container"></div>
-            </div>
-        `;
-        
-        mainContent.innerHTML = html;
-        window.drawListingsGrid(type, '');
-        
-        const searchInput = document.getElementById('local-search-input');
-        if(searchInput) {
-            searchInput.addEventListener('input', (e) => { window.drawListingsGrid(type, e.target.value.toLowerCase()); }); 
-        }
-    };
-
-    window.drawListingsGrid = function(type, filterText) {
-        const container = document.getElementById('listings-grid-container');
-        if(!container) return;
-
-        const filteredData = marketDB.filter(item => 
-            item.type === type && (item.title.toLowerCase().includes(filterText) || item.desc.toLowerCase().includes(filterText))
-        );
-        
-        if(filteredData.length === 0) {
-            container.innerHTML = `<p style="grid-column: 1 / -1; color: var(--text-gray); text-align:center; padding: 40px 0;">Henüz ilan yok veya bulunamadı.</p>`; 
-            return;
-        }
-
-        let gridHtml = '';
-        filteredData.forEach(item => {
-            let imgHtml = ''; 
-            const displayCurrency = item.currency || '₺';
-
-            if (item.isPdf) {
-                imgHtml = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; background:#F9FAFB;"><span style="font-size:40px;">📄</span><span style="font-size:12px; font-weight:bold; color:#EF4444; margin-top:5px;">PDF Dosyası</span></div>`;
-            } else if (item.imgUrl) { 
-                imgHtml = `<img src="${item.imgUrl}" alt="İlan" style="width:100%; height:100%; object-fit:cover;">`; 
-            } else { 
-                imgHtml = `<div style="font-size:48px; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">📦</div>`; 
-            }
-
-            gridHtml += `
-                <div class="item-card" onclick="window.openListingDetail('${item.id}')">
-                    <div class="item-img-large">${imgHtml}</div>
-                    <div class="item-details">
-                        <div class="item-title">${item.title}</div>
-                        <div class="item-price-large">${item.price} ${displayCurrency}</div>
-                    </div>
-                </div>
-            `;
-        });
-        container.innerHTML = gridHtml;
-    };
-
-    window.openListingDetail = function(docId) {
-        const item = marketDB.find(i => i.id === docId);
-        if(!item) return;
-
-        let imgHtml = '';
-        let indicatorsHtml = '';
-        const displayCurrency = item.currency || '₺';
-
-        if (item.isPdf) {
-            imgHtml = `<div style="width:100%; height:250px; background:#F9FAFB; border:2px dashed #EF4444; border-radius:12px; margin-bottom:16px; display:flex; align-items:center; justify-content:center; flex-direction:column;"><span style="font-size:60px;">📄</span><h3 style="color:#EF4444; margin-top:10px; margin-bottom:5px;">PDF Dosyası</h3><p style="font-size:13px; color:var(--text-gray);">Bu içerik bir PDF belgesidir.</p></div>`;
-        } else if (item.imgUrls && item.imgUrls.length > 0) {
-            imgHtml += '<div class="image-gallery" style="height:250px; border-radius:12px; margin-bottom:16px;">';
-            const imgArrayStr = encodeURIComponent(JSON.stringify(item.imgUrls));
-            item.imgUrls.forEach((url, i) => {
-                imgHtml += `<div class="gallery-item" onclick="window.openLightbox('${imgArrayStr}', ${i})" style="cursor:pointer;"><img src="${url}" alt="İlan" style="border-radius:12px;"></div>`;
-                indicatorsHtml += `<div class="gallery-dot ${i === 0 ? 'active' : ''}"></div>`;
-            });
-            imgHtml += '</div>';
-            if(item.imgUrls.length > 1) { imgHtml += `<div class="gallery-indicators" style="bottom: 25px;">${indicatorsHtml}</div>`; }
-        } else if (item.imgUrl) { 
-            const singleImgStr = encodeURIComponent(JSON.stringify([item.imgUrl]));
-            imgHtml = `<img src="${item.imgUrl}" onclick="window.openLightbox('${singleImgStr}', 0)" style="width:100%; height:250px; object-fit:cover; border-radius:12px; margin-bottom:16px; cursor:pointer;">`;
-        }
-
-        let actionButtonsHtml = '';
-        const currentUid = window.userProfile.uid || (auth.currentUser ? auth.currentUser.uid : null);
-        const safeTitle = item.title.replace(/'/g, "\\'"); 
-        
-        if (item.sellerId === currentUid) {
-             actionButtonsHtml = `
-                <div style="display:flex; gap:10px; margin-top: 20px;">
-                    <button class="action-btn" style="flex:1; padding:12px;" onclick="window.editListing('${item.id}', '${safeTitle}', '${item.price}')">✏️ Fiyatı Güncelle</button>
-                    <button class="btn-danger" style="flex:1; padding:12px;" onclick="window.deleteListing('${item.id}'); window.closeModal();">🗑️ Sil</button>
-                </div>
-             `;
-        } else {
-            const existingChat = chatsDB.find(c => c.otherUid === item.sellerId && c.isMarketChat);
-            const hasMessagedThisListing = existingChat && existingChat.listingIds && existingChat.listingIds.includes(item.id);
-
-            if(hasMessagedThisListing) {
-                 actionButtonsHtml = `
-                    <button class="btn-primary" style="margin-top: 20px; width:100%; padding:12px; font-size:15px; background:#10B981; border-color:#10B981; box-shadow:0 4px 6px rgba(16,185,129,0.3);" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">
-                        💬 Mevcut Sohbete Git
-                    </button>
-                 `;
-            } else {
-                 actionButtonsHtml = `
-                    <button class="btn-primary" style="margin-top: 20px; width:100%; padding:12px; font-size:15px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendMarketMessage('${item.sellerId}', '${item.sellerName}', '${safeTitle}', '${item.id}'); window.closeModal();">
-                        💬 Satıcıya Mesaj Gönder
-                    </button>
-                 `;
-            }
-        }
-
-        window.openModal(item.title, `
-            <div style="position:relative;">${imgHtml}</div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <div style="font-size:24px; font-weight:800; color:#059669;">${item.price} ${displayCurrency}</div>
-                <div style="font-size:13px; color:var(--text-gray); background:#F3F4F6; padding:6px 12px; border-radius:20px;">Satıcı: <strong>${item.sellerName}</strong></div>
-            </div>
-            <div style="font-size:15px; line-height:1.6; color:var(--text-dark); background:#F9FAFB; padding:16px; border-radius:12px; border:1px solid var(--border-color);">${item.desc}</div>
-            ${actionButtonsHtml}
-        `);
-    };
-
-    window.deleteListing = async function(docId) {
-        if(confirm("Bu ilanı tamamen silmek istediğinize emin misiniz?")) {
-            try { await deleteDoc(doc(db, "listings", docId)); alert("İlan başarıyla silindi!"); } 
-            catch(e) { console.error(e); alert("Silinirken bir hata oluştu: " + e.message); }
-        }
-    };
-
-    window.editListing = async function(docId, oldTitle, oldPrice) {
-        let newPrice = prompt(`"${oldTitle}" için yeni fiyatı girin (Sadece rakam):`, oldPrice);
-        if(newPrice !== null && newPrice.trim() !== "") {
-            try { await updateDoc(doc(db, "listings", docId), { price: newPrice.trim() }); alert("İlan fiyatı güncellendi!"); } 
-            catch(e) { console.error(e); alert("Hata: " + e.message); }
-        }
-    };
-
-    window.previewMarketImages = function(event) {
-        const files = Array.from(event.target.files).slice(0, 3);
-        const previewContainer = document.getElementById('preview-container');
-        previewContainer.innerHTML = ''; 
-        files.forEach(file => {
-            if (file.type === "application/pdf") {
-                previewContainer.innerHTML += `<div class="preview-box" style="display:inline-flex; flex-direction:column; align-items:center; justify-content:center; background:#F9FAFB; border:1px solid #E5E7EB; width:80px; height:80px; border-radius:8px; margin-right:8px;"><span style="font-size:30px;">📄</span><span style="font-size:10px; color:#EF4444; font-weight:bold; margin-top:5px;">PDF</span></div>`;
-            } else {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    previewContainer.innerHTML += `<div class="preview-box" style="width:80px; height:80px; overflow:hidden; border-radius:8px; border:1px solid #E5E7EB; display:inline-block; margin-right:8px;"><img src="${ev.target.result}" style="width:100%; height:100%; object-fit:cover;"></div>`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    };
-
-    window.openListingForm = function(type) {
-        const formTitle = '🛒 Kampüs Market İlanı Ekle';
-        const titlePlaceholder = 'İlan Başlığı (Örn: Temiz Çalışma Masası veya Çıkmış Sorular)';
-        const descPlaceholder = 'Ürünün durumu ve detayları...';
-
-        window.openModal(formTitle, `
-            <div class="form-group"><input type="text" id="new-item-title" placeholder="${titlePlaceholder}"></div>
-            <div class="form-group" style="display: flex; gap: 10px;">
-                <input type="number" id="new-item-price" placeholder="Fiyat / Kira Bedeli" style="flex: 2;">
-                <select id="new-item-currency" style="flex: 1;">
-                    <option value="₺">TL (₺)</option>
-                    <option value="$">Dolar ($)</option>
-                    <option value="€">Euro (€)</option>
-                    <option value="£">Sterlin (£)</option>
-                </select>
-            </div>
-            <div class="form-group"><textarea id="new-item-desc" rows="3" placeholder="${descPlaceholder}"></textarea></div>
-            
-            <div class="upload-btn-wrapper" style="margin-bottom: 15px;">
-                <button class="action-btn" onclick="document.getElementById('new-item-photo').click()" style="width:100%; justify-content:center; padding: 12px; font-weight:bold; background: #EEF2FF; color: var(--primary); border:none; border-radius:12px;">📷 Fotoğraf veya 📄 PDF Seç</button>
-                <input type="file" id="new-item-photo" accept="image/*, application/pdf" multiple style="display:none;" onchange="window.previewMarketImages(event)" />
-            </div>
-            
-            <div id="preview-container" class="preview-container" style="display:flex; flex-wrap:wrap; margin-bottom:15px; min-height:0px;"></div>
-            
-            <button class="btn-primary" id="publish-listing-btn" onclick="window.submitListing('${type}')">İlanı Yayınla</button>
-            <p id="upload-status" style="font-size:12px; color:var(--primary); text-align:center; margin-top:10px; display:none; font-weight:bold;">Dosyalar Yükleniyor, lütfen bekleyin...</p>
-        `);
-    };
-
-    window.submitListing = async function(type) {
-        const title = document.getElementById('new-item-title').value.trim();
-        const price = document.getElementById('new-item-price').value.trim();
-        const currency = document.getElementById('new-item-currency').value;
-        const desc = document.getElementById('new-item-desc').value.trim();
-        const fileInput = document.getElementById('new-item-photo');
-        const files = fileInput ? fileInput.files : [];
-
-        if(!title || !price || !desc) return alert("Lütfen başlık, fiyat ve açıklama alanlarını eksiksiz doldurun.");
-
-        const btn = document.getElementById('publish-listing-btn');
-        const statusText = document.getElementById('upload-status');
-        btn.disabled = true;
-        btn.innerText = "Yükleniyor... Lütfen Bekleyin";
-        if(files.length > 0) statusText.style.display = "block";
-
-        let imgUrls = [];
-        let isPdf = false;
-
-        try {
-            for(let i=0; i<files.length; i++) {
-                const file = files[i];
-                if(file.type === "application/pdf") isPdf = true;
-                const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-                const storageRef = ref(storage, 'listings/' + window.userProfile.uid + '/' + Date.now() + '_' + cleanName);
-                await uploadBytes(storageRef, file);
-                const url = await getDownloadURL(storageRef);
-                imgUrls.push(url);
-            }
-
-            await addDoc(collection(db, "listings"), {
-                type: type, 
-                title: title, 
-                price: price, 
-                currency: currency, 
-                desc: desc,
-                sellerId: window.userProfile.uid, 
-                sellerName: window.userProfile.name,
-                imgUrls: imgUrls, 
-                imgUrl: imgUrls[0] || null, 
-                isPdf: isPdf,
-                createdAt: serverTimestamp()
-            });
-
-            alert("Harika! İlanınız başarıyla yayınlandı.");
-            window.closeModal();
-            window.loadPage('market');
-        } catch(error) {
-            console.error(error);
-            alert("İlan yüklenirken bir hata oluştu: " + error.message);
-            btn.disabled = false;
-            btn.innerText = "İlanı Yayınla";
-            statusText.style.display = "none";
-        }
-    };
-
     window.drawConfessionsFeed = function() {
         let html = `
             <div class="feed-layout-container">
-                <div style="background: white; padding: 15px; border-bottom: 1px solid #E5E7EB; z-index: 10; display:flex; gap:10px; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                    <div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; border:1px solid #E5E7EB; flex-shrink:0;">
+                <div style="background: rgba(255,255,255,0.9); backdrop-filter:blur(10px); padding: 15px; border-bottom: 1px solid rgba(229,231,235,0.5); z-index: 10; display:flex; gap:10px; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="width:40px; height:40px; border-radius:50%; background:rgba(243,244,246,0.8); display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; border:1px solid rgba(229,231,235,0.5); flex-shrink:0;">
                         ${window.userProfile.avatarUrl ? `<img src="${window.userProfile.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : window.userProfile.avatar}
                     </div>
                     <button onclick="window.openConfessionForm()" style="background:var(--primary); color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(79,70,229,0.3); flex-shrink:0; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Yeni Paylaşım Ekle">+</button>
-                    <button class="btn-primary" style="flex:1; text-align:left; background:#F9FAFB; color:var(--text-gray); border:1px solid #E5E7EB; box-shadow:none; padding:12px 15px; font-weight:normal; border-radius:20px;" onclick="window.openConfessionForm()">Kampüste neler oluyor?</button>
+                    <button class="btn-primary" style="flex:1; text-align:left; background:rgba(249,250,251,0.8); color:var(--text-gray); border:1px solid rgba(229,231,235,0.5); box-shadow:none; padding:12px 15px; font-weight:normal; border-radius:20px;" onclick="window.openConfessionForm()">Kampüste neler oluyor?</button>
                 </div>
                 <div id="conf-feed"></div>
             </div>
@@ -3147,7 +2833,7 @@ function initializeUniLoop() {
             let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" class="feed-post-img" onclick="event.stopPropagation(); window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
             
             feedHtml += `
-                <div class="feed-post" onclick="window.openConfessionDetail('${post.id}')" style="cursor:pointer; transition: transform 0.2s;">
+                <div class="feed-post" onclick="window.openConfessionDetail('${post.id}')" style="cursor:pointer; transition: transform 0.2s; background:rgba(255,255,255,0.9); backdrop-filter:blur(5px); border:1px solid rgba(229,231,235,0.5);">
                     <div class="feed-post-header">
                         <div class="feed-post-avatar">${post.isAnonymous ? '🕵️' : (post.authorAvatarUrl ? `<img src="${post.authorAvatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (post.authorAvatar || '👤'))}</div>
                         <div class="feed-post-meta">
@@ -3169,19 +2855,19 @@ function initializeUniLoop() {
 
     window.openConfessionForm = function() {
         window.openModal('📝 Gönderi Paylaş', `
-            <textarea id="new-post-text" rows="4" placeholder="Düşüncelerini özgürce paylaş..." style="width:100%; padding:15px; border-radius:12px; border:1px solid #E5E7EB; outline:none; resize:none; font-size:15px; margin-bottom:15px; box-sizing:border-box; background:#F9FAFB;"></textarea>
+            <textarea id="new-post-text" rows="4" placeholder="Düşüncelerini özgürce paylaş..." style="width:100%; padding:15px; border-radius:12px; border:1px solid rgba(229,231,235,0.5); outline:none; resize:none; font-size:15px; margin-bottom:15px; box-sizing:border-box; background:rgba(249,250,251,0.8);"></textarea>
             
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; background:#fff; padding:10px; border-radius:12px; border:1px solid #E5E7EB;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; background:rgba(255,255,255,0.8); padding:10px; border-radius:12px; border:1px solid rgba(229,231,235,0.5);">
                 <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; cursor:pointer; color:var(--text-dark);">
                     <input type="checkbox" id="new-post-anon" style="width:18px; height:18px; accent-color:var(--primary);"> 🕵️ Gizli Paylaş
                 </label>
                 <div style="position:relative;">
-                    <button class="action-btn" onclick="document.getElementById('post-img-upload').click()" style="padding:8px 16px; font-size:13px; background:#EEF2FF; color:var(--primary); border:none;">📷 Fotoğraf Ekle</button>
+                    <button class="action-btn" onclick="document.getElementById('post-img-upload').click()" style="padding:8px 16px; font-size:13px; background:rgba(238,242,255,0.8); color:var(--primary); border:none;">📷 Fotoğraf Ekle</button>
                     <input type="file" id="post-img-upload" accept="image/*" style="display:none;" onchange="window.previewPostImage(event)">
                 </div>
             </div>
             
-            <div id="post-img-preview" style="margin-bottom:15px; display:none; position:relative; border-radius:12px; overflow:hidden; border:1px solid #E5E7EB;">
+            <div id="post-img-preview" style="margin-bottom:15px; display:none; position:relative; border-radius:12px; overflow:hidden; border:1px solid rgba(229,231,235,0.5);">
                 <img id="post-img-display" style="width:100%; max-height:250px; object-fit:cover; display:block;">
                 <button onclick="document.getElementById('post-img-upload').value=''; document.getElementById('post-img-preview').style.display='none';" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:30px; height:30px; font-size:16px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center;">×</button>
             </div>
@@ -3297,13 +2983,13 @@ function initializeUniLoop() {
         const isLiked = post.likes && post.likes.includes(window.userProfile.uid);
         const likeIcon = isLiked ? '❤️' : '🤍';
         const likeCount = post.likes ? post.likes.length : 0;
-        let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" style="width:100%; border-radius:12px; margin-bottom:15px; cursor:pointer; max-height:400px; object-fit:cover; border:1px solid #E5E7EB;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
+        let imgHtml = post.imgUrl ? `<img src="${post.imgUrl}" style="width:100%; border-radius:12px; margin-bottom:15px; cursor:pointer; max-height:400px; object-fit:cover; border:1px solid rgba(229,231,235,0.5);" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([post.imgUrl]))}', 0)">` : '';
 
         let commentsHtml = '';
         if(post.comments && post.comments.length > 0) {
             post.comments.forEach(c => {
                 commentsHtml += `
-                    <div style="background:#F9FAFB; padding:12px; border-radius:12px; margin-bottom:10px; display:flex; gap:12px; border:1px solid #f1f5f9;">
+                    <div style="background:rgba(249,250,251,0.8); padding:12px; border-radius:12px; margin-bottom:10px; display:flex; gap:12px; border:1px solid rgba(241,245,249,0.5);">
                         <div style="font-size:20px; flex-shrink:0; width:36px; height:36px; background:#E5E7EB; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden;">${c.avatarUrl ? `<img src="${c.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (c.avatar || '👤')}</div>
                         <div style="flex:1;">
                             <div style="font-size:13px; font-weight:800; color:var(--text-dark); margin-bottom:4px; display:flex; justify-content:space-between;">
@@ -3335,12 +3021,12 @@ function initializeUniLoop() {
             </div>
             <div class="feed-post-text" style="font-size:16px; margin-bottom:15px;">${post.text}</div>
             ${imgHtml}
-            <div class="feed-post-actions" style="margin-bottom:15px; border-bottom:1px solid #E5E7EB; padding-bottom:15px;">
+            <div class="feed-post-actions" style="margin-bottom:15px; border-bottom:1px solid rgba(229,231,235,0.5); padding-bottom:15px;">
                 <button class="feed-action-btn" onclick="window.likePost('${post.id}', event)" style="font-size:15px;">${likeIcon} <span style="margin-left:5px; font-weight:bold;">${likeCount} Beğeni</span></button>
             </div>
             <div class="answers-container" id="comments-container" style="margin-bottom:15px; max-height: 300px; overflow-y:auto;">${commentsHtml}</div>
-            <div style="display:flex; gap:10px; background:white; padding-top:10px;">
-                <input type="text" id="comment-input" placeholder="Bir yanıt yaz..." style="flex:1; padding:14px 15px; border-radius:25px; border:1px solid #E5E7EB; outline:none; background:#F9FAFB; font-size:14px;" onkeypress="if(event.key==='Enter') window.addComment('${post.id}')">
+            <div style="display:flex; gap:10px; background:rgba(255,255,255,0.8); padding-top:10px;">
+                <input type="text" id="comment-input" placeholder="Bir yanıt yaz..." style="flex:1; padding:14px 15px; border-radius:25px; border:1px solid rgba(229,231,235,0.5); outline:none; background:rgba(249,250,251,0.8); font-size:14px;" onkeypress="if(event.key==='Enter') window.addComment('${post.id}')">
                 <button class="chat-send-btn" onclick="window.addComment('${post.id}')" style="width:46px; height:46px; border-radius:50%; background:var(--primary); color:white; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(79,70,229,0.3); font-size:18px;">➤</button>
             </div>
         `;
@@ -3408,14 +3094,13 @@ function initializeUniLoop() {
             const badgeHtml = isUnread ? `<div style="width:12px; height:12px; background:var(--primary); border-radius:50%; border:2px solid white; box-shadow:0 0 0 1px var(--primary); margin-left:auto;"></div>` : '';
 
             let avatarHtml = chat.avatar && chat.avatar.startsWith('http') 
-                ? `<img src="${chat.avatar}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">`
-                : `<div style="width:48px; height:48px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:24px; border:1px solid #E5E7EB;">${chat.avatar || '👤'}</div>`;
+                ? `<img src="${chat.avatar}" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid rgba(229,231,235,0.5);">`
+                : `<div style="width:48px; height:48px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:24px; border:1px solid rgba(229,231,235,0.5);">${chat.avatar || '👤'}</div>`;
 
             sbHtml += `
-                <div class="chat-contact ${activeClass}" onclick="window.openChatView('${chat.id}')" style="display:flex; align-items:center; padding:15px; border-bottom:1px solid #f1f5f9; cursor:pointer; gap:12px; transition:background 0.2s;">
+                <div class="chat-contact ${activeClass}" onclick="window.openChatView('${chat.id}')">
                     <div style="position:relative; flex-shrink:0;">
                         ${avatarHtml}
-                        ${chat.isMarketChat ? '<div style="position:absolute; bottom:-5px; right:-5px; font-size:14px; background:white; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,0.1);">🛒</div>' : ''}
                     </div>
                     <div style="flex:1; min-width:0;">
                         <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
@@ -3435,7 +3120,7 @@ function initializeUniLoop() {
             <div style="padding:40px 20px; text-align:center; color:#9CA3AF;">
                 <div style="font-size:40px; margin-bottom:10px;">💬</div>
                 <div style="font-size:14px; font-weight:500;">Mesajınız yok.</div>
-                <div style="font-size:12px; margin-top:5px;">Keşfet'ten yeni insanlarla tanışın.</div>
+                <div style="font-size:12px; margin-top:5px;">Puanla ve Keşfet'ten yeni insanlarla etkileşime geçin.</div>
             </div>
         `;
     };
@@ -3460,12 +3145,12 @@ function initializeUniLoop() {
         let html = `
             <div id="chat-layout-container" style="display:flex; width:100%; height:100%; flex-direction:row;">
                 <div class="chat-sidebar" id="chat-sidebar-main">
-                    <div class="chat-sidebar-header" style="padding:15px 20px; border-bottom:1px solid #E5E7EB; background:white; position:sticky; top:0; z-index:10; display:flex; justify-content:space-between; align-items:center;">
+                    <div class="chat-sidebar-header">
                         <h2 style="margin:0; font-size:20px; font-weight:800;">Sohbetler ${unreadHtml}</h2>
                     </div>
                     <div id="chat-sidebar-list" style="padding-bottom:20px;"></div>
                 </div>
-                <div class="chat-main" id="chat-main-area" style="display:none; flex-direction:column; height:100%; position:relative; background:#f9fafb; flex:1;">
+                <div class="chat-main" id="chat-main-area" style="display:none;">
                 </div>
             </div>
         `;
@@ -3530,23 +3215,23 @@ function initializeUniLoop() {
         mainArea.style.display = 'flex';
 
         let avatarHtml = chat.avatar && chat.avatar.startsWith('http') 
-            ? `<img src="${chat.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid #E5E7EB;">`
-            : `<div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid #E5E7EB;">${chat.avatar || '👤'}</div>`;
+            ? `<img src="${chat.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid rgba(229,231,235,0.5);">`
+            : `<div style="width:40px; height:40px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid rgba(229,231,235,0.5);">${chat.avatar || '👤'}</div>`;
 
         let headerHtml = `
-            <div class="chat-header" style="padding:10px 15px; border-bottom:1px solid #E5E7EB; background:white; display:flex; align-items:center; gap:12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); z-index:10; flex-shrink:0;">
-                <button onclick="window.closeChatView()" style="background:#F3F4F6; border:none; border-radius:50%; width:40px; height:40px; font-size:20px; cursor:pointer; font-weight:bold; color:var(--text-dark); display:flex; align-items:center; justify-content:center; transition:0.2s; display:block !important; pointer-events:auto; z-index:9999;" class="back-btn-mobile">←</button>
+            <div class="chat-header" style="padding:10px 15px; display:flex; align-items:center; gap:12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); z-index:10; flex-shrink:0;">
+                <button onclick="window.closeChatView()" style="background:rgba(243,244,246,0.8); border:none; border-radius:50%; width:40px; height:40px; font-size:20px; cursor:pointer; font-weight:bold; color:var(--text-dark); display:flex; align-items:center; justify-content:center; transition:0.2s; display:block !important; pointer-events:auto; z-index:9999;" class="back-btn-mobile">←</button>
                 ${avatarHtml}
                 <div style="flex:1;">
                     <div style="font-weight:800; font-size:16px; color:#0f172a; cursor:pointer;" onclick="window.viewUserProfile('${chat.otherUid}')">${chat.name}</div>
-                    <div style="font-size:12px; color:#10B981; font-weight:600; display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; background:#10B981; border-radius:50%;"></div> ${chat.isMarketChat ? 'Market İletişimi' : 'Kampüs İçi'}</div>
+                    <div style="font-size:12px; color:#10B981; font-weight:600; display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; background:#10B981; border-radius:50%;"></div> Kampüs İçi Sohbet</div>
                 </div>
                 
                 <div style="position:relative;">
                     <button onclick="document.getElementById('chat-options-menu').classList.toggle('hidden'); event.stopPropagation();" style="background:none; border:none; font-size:20px; color:var(--text-gray); cursor:pointer;" id="chat-options-dropdown-wrapper">⋮</button>
-                    <div id="chat-options-menu" class="hidden" style="position:absolute; right:0; top:35px; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); border-radius:12px; overflow:hidden; z-index:100; min-width:180px; border:1px solid #E5E7EB;">
-                        <div onclick="window.clearChatHistory('${chat.id}')" style="padding:14px 15px; font-size:13px; font-weight:600; color:var(--text-dark); cursor:pointer; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:10px; transition:0.2s;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='white'">🗑️ Geçmişi Sil</div>
-                        <div onclick="window.blockUser('${chat.otherUid}', '${chat.id}', '${chat.name}')" style="padding:14px 15px; font-size:13px; font-weight:600; color:#EF4444; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.2s;" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='white'">🚫 Kişiyi Engelle</div>
+                    <div id="chat-options-menu" class="hidden" style="position:absolute; right:0; top:35px; background:rgba(255,255,255,0.9); backdrop-filter:blur(10px); box-shadow:0 10px 25px rgba(0,0,0,0.1); border-radius:12px; overflow:hidden; z-index:100; min-width:180px; border:1px solid rgba(229,231,235,0.5);">
+                        <div onclick="window.clearChatHistory('${chat.id}')" style="padding:14px 15px; font-size:13px; font-weight:600; color:var(--text-dark); cursor:pointer; border-bottom:1px solid rgba(241,245,249,0.5); display:flex; align-items:center; gap:10px; transition:0.2s;" onmouseover="this.style.background='rgba(243,244,246,0.8)'" onmouseout="this.style.background='transparent'">🗑️ Geçmişi Sil</div>
+                        <div onclick="window.blockUser('${chat.otherUid}', '${chat.id}', '${chat.name}')" style="padding:14px 15px; font-size:13px; font-weight:600; color:#EF4444; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.2s;" onmouseover="this.style.background='rgba(254,242,242,0.8)'" onmouseout="this.style.background='transparent'">🚫 Kişiyi Engelle</div>
                     </div>
                 </div>
             </div>
@@ -3555,10 +3240,10 @@ function initializeUniLoop() {
         let statusAreaHtml = '';
         if (chat.status === 'pending') {
             if (chat.initiator === window.userProfile.uid) {
-                statusAreaHtml = `<div style="padding:15px; background:#EEF2FF; text-align:center; font-size:13px; color:#4F46E5; border-bottom:1px solid #E5E7EB; font-weight:700; flex-shrink:0;">⏳ Karşı tarafın onayı bekleniyor. ${chat.isMarketChat ? 'Onaylanana kadar manuel mesaj gönderemezsiniz.' : ''}</div>`;
+                statusAreaHtml = `<div style="padding:15px; background:rgba(238,242,255,0.8); text-align:center; font-size:13px; color:#4F46E5; border-bottom:1px solid rgba(229,231,235,0.5); font-weight:700; flex-shrink:0; backdrop-filter:blur(5px);">⏳ Karşı tarafın onayı bekleniyor.</div>`;
             } else {
                 statusAreaHtml = `
-                    <div style="padding:20px 15px; background:#F0FDF4; text-align:center; border-bottom:1px solid #E5E7EB; flex-shrink:0;">
+                    <div style="padding:20px 15px; background:rgba(240,253,244,0.8); text-align:center; border-bottom:1px solid rgba(229,231,235,0.5); flex-shrink:0; backdrop-filter:blur(5px);">
                     <div style="font-size:14px; color:#166534; margin-bottom:12px; font-weight:700;">👋 ${chat.name} seninle bağlantı kurmak istiyor.</div>
                     <div style="display:flex; justify-content:center; gap:10px;">
                         <button class="btn-primary" style="padding:10px 20px; background:#10B981; border-color:#10B981; font-size:14px; box-shadow:none; border-radius:10px;" onclick="window.acceptChatRequest('${chat.id}')">✅ Kabul Et</button>
@@ -3571,17 +3256,17 @@ function initializeUniLoop() {
         let mainHtml = `
             ${headerHtml}
             ${statusAreaHtml}
-            <div id="chat-messages-scroll" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; background:#f9fafb;">
+            <div id="chat-messages-scroll" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; background:transparent;">
                 <div style="text-align:center; padding:20px; color:#9CA3AF; font-size:14px;">Mesajlar yükleniyor...</div>
             </div>
         `;
 
         if (chat.status === 'accepted') {
             mainHtml += `
-                <div class="chat-input-area" style="padding:15px 20px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:12px; align-items:center; flex-shrink:0;">
+                <div class="chat-input-area" style="padding:15px 20px; display:flex; gap:12px; align-items:center; flex-shrink:0;">
                     <input type="file" id="dm-chat-media" accept="image/*, application/pdf" style="display:none;" onchange="window.uploadChatMedia(event, '${chat.id}', 'dm')">
                     <button onclick="document.getElementById('dm-chat-media').click()" style="background:transparent; color:#6B7280; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
-                    <input type="text" id="chat-input-field" placeholder="Mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:25px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:15px; color:var(--text-dark);">
+                    <input type="text" id="chat-input-field" placeholder="Mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:25px; border:1px solid rgba(229,231,235,0.8); background:rgba(249,250,251,0.8); outline:none; font-size:15px; color:var(--text-dark);">
                     <button onclick="window.sendDirectMessage('${chat.id}', '${chat.otherUid}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(79,70,229,0.3); flex-shrink:0; transition: transform 0.2s;">➤</button>
                 </div>
             `;
@@ -3650,10 +3335,10 @@ function initializeUniLoop() {
                 const textHtml = msg.text ? `<div class="msg-text" style="word-break: break-word;">${msg.text}</div>` : '';
 
                 chatHTML += `
-                    <div class="bubble ${type}" style="display:flex; flex-direction:column; position:relative;">
+                    <div class="bubble ${type}">
                         ${mediaHtml}
                         ${textHtml}
-                        <div class="msg-time" style="align-self:flex-end; font-size:10px; opacity:0.7; margin-top:4px; display:flex; align-items:center; gap:4px;">
+                        <div class="msg-time">
                             ${msgTime} ${isMe ? `<span style="font-weight:bold;">${isRead}</span>` : ''}
                         </div>
                     </div>
@@ -3771,15 +3456,15 @@ function initializeUniLoop() {
             <div class="card" style="margin-bottom:15px;">
                 <h3 style="font-size:15px; margin-bottom:10px; color:#111827; border-bottom:1px solid #111827; padding-bottom:8px;">İstatistiklerim</h3>
                 <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; text-align:center;">
-                    <div style="background:white; padding:15px 10px; border-radius:12px; border:1px solid #111827;">
+                    <div style="background:rgba(255,255,255,0.8); padding:15px 10px; border-radius:12px; border:1px solid rgba(17,24,39,0.2);">
                         <div style="font-size:20px; font-weight:800; color:#111827;">${confessionsDB.filter(c => c.authorId === u.uid).length}</div>
                         <div style="font-size:11px; color:#111827; font-weight:bold; margin-top:4px;">Gönderi</div>
                     </div>
-                    <div style="background:white; padding:15px 10px; border-radius:12px; border:1px solid #111827;">
-                        <div style="font-size:20px; font-weight:800; color:#111827;">${marketDB.filter(m => m.sellerId === u.uid).length}</div>
-                        <div style="font-size:11px; color:#111827; font-weight:bold; margin-top:4px;">Market İlanı</div>
+                    <div style="background:rgba(255,255,255,0.8); padding:15px 10px; border-radius:12px; border:1px solid rgba(17,24,39,0.2);">
+                        <div style="font-size:20px; font-weight:800; color:#111827;">${puanlaDB.filter(p => p.authorId === u.uid).length}</div>
+                        <div style="font-size:11px; color:#111827; font-weight:bold; margin-top:4px;">Puanlanan Post</div>
                     </div>
-                    <div style="background:white; padding:15px 10px; border-radius:12px; border:1px solid #111827;">
+                    <div style="background:rgba(255,255,255,0.8); padding:15px 10px; border-radius:12px; border:1px solid rgba(17,24,39,0.2);">
                         <div style="font-size:20px; font-weight:800; color:#111827;">${friendsCount}</div>
                         <div style="font-size:11px; color:#111827; font-weight:bold; margin-top:4px;">Bağlantı</div>
                     </div>
@@ -3790,7 +3475,8 @@ function initializeUniLoop() {
             <div class="card premium-glow" style="margin-bottom:15px; background:white; border:1px solid #111827; cursor:pointer;" onclick="window.openPremiumModal()">
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div>
-                        <div style="font-weight:800; color:#111827; font-size:16px; margin-bottom:4px;">🌟 UniLoop Premium'a Geç</div>
+                        <div style="font-weight:800; color:#111827;
+font-size:16px; margin-bottom:4px;">🌟 UniLoop Premium'a Geç</div>
                         <div style="font-size:12px; color:#111827; font-weight:bold;">Kampüsün en popüler kişisi ol, sınırları kaldır!</div>
                     </div>
                     <div style="font-size:24px;">👑</div>
@@ -3798,7 +3484,7 @@ function initializeUniLoop() {
             </div>
             ` : ''}
 
-            <button class="card" style="width:100%; padding:16px; margin-bottom:20px; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:10px; background:#fff; border:1px solid #111827; cursor:pointer; color:#111827; font-weight:bold; transition:transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.renderSettings()">
+            <button class="card" style="width:100%; padding:16px; margin-bottom:20px; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:10px; background:rgba(255,255,255,0.9); backdrop-filter:blur(10px); border:1px solid rgba(17,24,39,0.2); cursor:pointer; color:#111827; font-weight:bold; transition:transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.03);" onclick="window.renderSettings()">
                 <span style="font-size:20px;">⚙️</span> <strong style="font-size:15px;">Hesap Ayarları</strong>
             </button>
         `;
@@ -3822,11 +3508,11 @@ function initializeUniLoop() {
         let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px;">`;
         friends.forEach(f => {
             let avatarHtml = f.avatar && f.avatar.startsWith('http') 
-                ? `<img src="${f.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid #111827;">`
-                : `<div style="width:40px; height:40px; border-radius:50%; background:white; color:#111827; display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid #111827;">${f.avatar || '👤'}</div>`;
+                ? `<img src="${f.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid rgba(17,24,39,0.2);">`
+                : `<div style="width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.8); color:#111827; display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid rgba(17,24,39,0.2);">${f.avatar || '👤'}</div>`;
 
             listHtml += `
-                <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; background:white; border:1px solid #111827; border-radius:12px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; background:rgba(255,255,255,0.8); backdrop-filter:blur(5px); border:1px solid rgba(229,231,235,0.5); border-radius:12px;">
                     <div style="display:flex; align-items:center; gap:10px; flex:1; cursor:pointer;" onclick="window.viewUserProfile('${f.otherUid}')">
                         ${avatarHtml}
                         <span style="font-weight:700; font-size:14px; color:#111827;">${f.name}</span>
@@ -3851,17 +3537,17 @@ function initializeUniLoop() {
             <div style="display:flex; flex-direction:column; gap:15px;">
                 <div class="form-group" style="margin:0;">
                     <label style="font-size:13px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; display:block;">Dil Seçimi</label>
-                    <select onchange="window.setLanguage(this.value)" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; background:#F9FAFB;">
+                    <select onchange="window.setLanguage(this.value)" style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(229,231,235,0.8); outline:none; background:rgba(249,250,251,0.8);">
                         <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>🇹🇷 Türkçe</option>
                         <option value="en" ${currentLang === 'en' ? 'selected' : ''}>🇬🇧 English</option>
                     </select>
                 </div>
                 
-                <div style="border-top:1px solid #E5E7EB; margin:10px 0;"></div>
+                <div style="border-top:1px solid rgba(229,231,235,0.5); margin:10px 0;"></div>
                 
                 <button class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; background:#4B5563; border-color:#4B5563;" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
                 
-                <div style="border-top:1px solid #E5E7EB; margin:10px 0;"></div>
+                <div style="border-top:1px solid rgba(229,231,235,0.5); margin:10px 0;"></div>
                 
                 <a href="#" onclick="event.preventDefault(); window.deleteAccount()" style="display:block; text-align:center; font-size:12px; color:#EF4444; text-decoration:underline; margin-bottom:5px;">Hesabımı Sil</a>
                 
@@ -3981,7 +3667,7 @@ function initializeUniLoop() {
         switch(page) {
             case 'home': window.renderHome(); break;
             case 'confessions': window.drawConfessionsFeed(); break;
-            case 'market': window.renderListings('market', '🛒 Kampüs Market'); break;
+            case 'puanla': window.renderPuanla(); break;
             case 'messages': window.renderMessages(); break;
             case 'profile': window.renderProfile(); break;
             default: window.renderHome();
