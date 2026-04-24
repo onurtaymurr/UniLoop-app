@@ -133,11 +133,59 @@ select.fi option{background:var(--s2);}
 .queue-btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(124,58,237,.4);}
 .queue-btn:disabled{opacity:.5;cursor:default;transform:none;}
 .sec-lbl{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 9px;}
+.anon-row{display:flex;align-items:center;gap:11px;padding:12px 13px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);margin-bottom:7px;cursor:pointer;transition:.2s;}
+.anon-row:hover{background:var(--s2);transform:translateX(3px);}
+.anon-avi{width:42px;height:42px;border-radius:13px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;}
+.anon-info{flex:1;}
+.anon-name{font-weight:600;font-size:.85rem;margin-bottom:2px;}
+.anon-dept{font-size:.72rem;color:var(--sub);}
+.anon-btn{padding:7px 13px;border-radius:9px;border:1px solid rgba(124,58,237,.3);background:rgba(124,58,237,.15);color:var(--violet2);font-size:.76rem;font-weight:600;cursor:pointer;transition:.2s;}
+.anon-btn:hover{background:var(--violet);color:#fff;}
+
+/* VOICE MODAL */
+.modal-ov{display:none;position:fixed;inset:0;z-index:500;background:rgba(6,6,16,.92);backdrop-filter:blur(18px);align-items:center;justify-content:center;padding:24px;}
+.modal-ov.open{display:flex;}
+.modal-card{width:100%;max-width:330px;background:rgba(20,20,40,.97);border:1px solid rgba(124,58,237,.22);border-radius:var(--rl);padding:26px 22px;text-align:center;animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes popIn{from{opacity:0;transform:scale(.75)}to{opacity:1;transform:none}}
+.modal-mask{font-size:3.2rem;display:block;animation:fl 3s ease-in-out infinite;margin-bottom:12px;}
+.modal-card h3{font-family:'Clash Display',sans-serif;font-size:1.05rem;font-weight:600;margin-bottom:4px;}
+.modal-card>p{color:var(--sub);font-size:.78rem;margin-bottom:16px;line-height:1.5;}
+.waveform{display:flex;gap:3px;justify-content:center;align-items:center;height:40px;margin-bottom:18px;}
+.waveform span{width:4px;border-radius:4px;background:linear-gradient(to top,var(--violet),var(--violet2));animation:wv 1.2s ease-in-out infinite;}
+.waveform span:nth-child(1){height:10px;animation-delay:0s}.waveform span:nth-child(2){height:22px;animation-delay:.08s}.waveform span:nth-child(3){height:34px;animation-delay:.16s}.waveform span:nth-child(4){height:26px;animation-delay:.24s}.waveform span:nth-child(5){height:38px;animation-delay:.32s}.waveform span:nth-child(6){height:28px;animation-delay:.4s}.waveform span:nth-child(7){height:16px;animation-delay:.48s}.waveform span:nth-child(8){height:24px;animation-delay:.56s}
+@keyframes wv{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+.modal-timer{font-family:'Clash Display',sans-serif;font-size:1.4rem;font-weight:600;color:var(--violet2);margin-bottom:18px;}
+.modal-acts{display:flex;flex-direction:column;gap:9px;}
+.mbtn{width:100%;padding:12px;border-radius:13px;border:none;cursor:pointer;font-family:'Instrument Sans',sans-serif;font-size:.88rem;font-weight:600;transition:.25s;}
+.mbtn.reveal{background:linear-gradient(135deg,var(--rose),var(--violet));color:#fff;}
+.mbtn.reveal:hover{transform:translateY(-2px);}
+.mbtn.mute{background:var(--s2);border:1px solid var(--border2);color:var(--text);}
+.mbtn.end{background:transparent;color:var(--muted);border:1px solid var(--border2);}
+.mbtn.end:hover{background:rgba(248,113,113,.1);color:#f87171;border-color:#f87171;}
 
 /* TOURNAMENT */
 .tourney-hdr{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(251,191,36,.03));border:1px solid rgba(245,158,11,.18);border-radius:20px;padding:15px 17px;margin-bottom:13px;display:flex;align-items:center;justify-content:space-between;}
 .tourney-hdr h3{font-family:'Clash Display',sans-serif;font-size:.97rem;font-weight:600;}
 .tourney-hdr p{font-size:.74rem;color:var(--sub);margin-top:2px;}
+.rnd-bar{display:flex;gap:4px;margin-bottom:5px;}
+.rnd-seg{flex:1;height:3px;border-radius:4px;background:var(--s2);}
+.rnd-seg.done{background:var(--amber);}
+.rnd-seg.active{background:linear-gradient(90deg,var(--amber),var(--emerald));}
+.rnd-labels{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);margin-bottom:12px;}
+.rnd-cur{text-align:center;font-size:.73rem;color:var(--amber);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:11px;}
+.matchup-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:9px;}
+.matchup-lbl{font-size:.67rem;color:var(--muted);text-align:center;margin-bottom:9px;text-transform:uppercase;letter-spacing:.06em;}
+.contestants{display:flex;gap:7px;align-items:center;}
+.cont{flex:1;background:var(--s2);border:2px solid transparent;border-radius:13px;padding:13px 8px;text-align:center;cursor:pointer;transition:.3s;}
+.cont:hover:not(.voted):not(.lose){border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.05);}
+.cont.voted{border-color:var(--emerald);background:rgba(16,185,129,.06);}
+.cont.lose{opacity:.38;cursor:default;}
+.cont-emoji{font-size:1.9rem;display:block;margin-bottom:5px;}
+.cont-name{font-weight:600;font-size:.8rem;margin-bottom:2px;}
+.cont-dept{font-size:.69rem;color:var(--sub);}
+.cont-votes{font-size:.7rem;color:var(--amber);margin-top:3px;font-weight:600;}
+.vs-dot{width:27px;height:27px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,var(--amber),#f59e0b);display:flex;align-items:center;justify-content:center;font-family:'Clash Display',sans-serif;font-weight:700;font-size:.58rem;color:#000;}
+.champ-box{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.18);border-radius:15px;padding:13px;text-align:center;margin-top:4px;}
 
 /* MESSAGES */
 .search-wrap{display:flex;align-items:center;gap:9px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:10px 13px;margin-bottom:13px;}
@@ -585,6 +633,21 @@ select.fi option{background:var(--s2);}
   </div>
 </div>
 
+<div class="modal-ov" id="voiceModal">
+  <div class="modal-card">
+    <span class="modal-mask">🎭</span>
+    <h3>Anonim Bağlantı Aktif</h3>
+    <p>Karşındaki kişiyle bağlandın. İstersen maskeyi kaldır!</p>
+    <div class="waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="modal-timer" id="callTimer">00:00</div>
+    <div class="modal-acts">
+      <button class="mbtn reveal" onclick="revealId()">🎭 Maskeyi Kaldır</button>
+      <button class="mbtn mute" id="muteBtn" onclick="toggleMute()">🎙️ Sesi Kapat</button>
+      <button class="mbtn end" onclick="endCall()">📞 Bağlantıyı Kes</button>
+    </div>
+  </div>
+</div>
+
 <div class="match-blast" id="matchBlast">
   <div class="blast-inner">
     <div style="font-size:.78rem;color:var(--sub);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">✨ Tebrikler!</div>
@@ -595,7 +658,6 @@ select.fi option{background:var(--s2);}
     <div class="blast-skip" onclick="closeBlast()">Şimdi değil</div>
   </div>
 </div>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
