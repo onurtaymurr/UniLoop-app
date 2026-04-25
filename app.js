@@ -27,7 +27,6 @@ import {
     getDoc,
     updateDoc,
     arrayUnion,
-    arrayRemove,
     where,
     getDocs,
     deleteDoc,
@@ -58,16 +57,14 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 window.userProfile = { 
-    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: "", fastMatchResetTime: 0, lockedArchiveFaculty: "", lockedArchiveGrade: "", lastArchiveResetYear: 0, blockedUsers: [], popularity: 0, lastTournamentDate: 0
+    uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", fastMatchCount: 0, fastMatchDate: "", fastMatchResetTime: 0, blockedUsers: [], popularity: 0, lastTournamentDate: 0
 };
 
-// GLOBAL ARAYÜZ VE VERİTABANI DEĞİŞKENLERİ (Tüm eski koleksiyonlar korundu)
-let marketDB = [];
-let confessionsDB = [];
+// GLOBAL ARAYÜZ VE VERİTABANI DEĞİŞKENLERİ
 let chatsDB = [];
 let currentChatId = null;
 
-// Eşleşme değişkenleri (Hızlı Eşleşme ve 12 Saatlik Sayaç)
+// Eşleşme değişkenleri
 window.fastMatchUsers = [];
 window.fastMatchCurrentIndex = 0;
 window.fastMatchTimerInterval = null;
@@ -75,25 +72,21 @@ window.fastMatchTimerInterval = null;
 // GÖMÜLÜ KAMPÜS FREKANSI & WEBRTC GLOBAL DEĞİŞKENLERİ
 window.freqTimerInterval = null;
 window.freqAudioContext = null;
-window.freqMicrophoneStream = null;
-window.freqFakeAnimationInterval = null;
-window.currentVoiceMatch = null; 
-window.voiceMatchQueueInterval = null;
-window.lastMatchedUid = null;
-window.peerConnection = null;
 window.localStream = null;
+window.peerConnection = null;
+window.currentVoiceMatch = null; 
+window.lastMatchedUid = null;
 window.callDocId = null;
 window.callUnsubscribe = null;
 window.iceUnsubscribe = null;
 
-window.tournamentInterval = null;
+// Popülerlik Savaşı Global Değişkeni
+window.tData = { bracket: [], winners: [], currentMatch: 0, stage: 'none', semiLosers: [], finalists: [], finalWinner: null, secondPlace: null, thirdPlace: null };
+
 window.homeSliderInterval = null; 
-
 window.registrationData = { interests: [] };
-
 window.resetCurrentChatId = function() { currentChatId = null; };
 
-// KULLANICI KAYDI İÇİN FAKÜLTE LİSTESİ
 const allFaculties = [
     "Tıp Fakültesi", "Diş Hekimliği Fakültesi", "Eczacılık Fakültesi", "Hukuk Fakültesi", "Mühendislik Fakültesi", 
     "Bilgisayar ve Bilişim Bilimleri", "Mimarlık Fakültesi", "Eğitim Fakültesi", "İletişim Fakültesi", 
@@ -102,17 +95,7 @@ const allFaculties = [
     "Ziraat Fakültesi", "Orman Fakültesi", "Denizcilik Fakültesi", "Havacılık ve Uzay Bilimleri", "Uygulamalı Bilimler"
 ];
 
-let authScreen;
-let appScreen;
-let mainContent;
-let modal;
-let cropper = null;
-
-// TURNUVA DEĞİŞKENLERİ
-window.tData = { 
-    bracket: [], winners: [], currentMatch: 0, stage: 'none', 
-    semiLosers: [], finalists: [], finalWinner: null, secondPlace: null, thirdPlace: null 
-};
+let authScreen, appScreen, mainContent, modal, cropper = null;
 
 function initializeUniLoop() {
     authScreen = document.getElementById('auth-screen');
@@ -196,6 +179,20 @@ function initializeUniLoop() {
     `;
     document.head.appendChild(styleFix);
 
+    const cropperModalHtml = `
+        <div id="cropper-modal" class="cropper-modal-container">
+            <div class="cropper-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:#111; color:white; z-index:10; position:relative;">
+                <button onclick="window.closeCropper()" style="background:transparent; border:none; color:#EF4444; font-size:16px; font-weight:bold; cursor:pointer;">İptal</button>
+                <span style="font-weight:bold; font-size:16px;">Fotoğrafı Kırp</span>
+                <button id="cropper-save-btn" onclick="window.saveCroppedImage()" style="background:transparent; border:none; color:#10B981; font-size:16px; font-weight:bold; cursor:pointer;">Kaydet</button>
+            </div>
+            <div class="cropper-body" style="flex:1; position:relative; background:#000; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <img id="cropper-image" src="" style="max-width: 100%; display: block;">
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', cropperModalHtml);
+
     window.setLanguage = function(lang) { localStorage.setItem('uniloop_lang', lang); window.renderSettings(); };
 
     window.openModal = function(title, contentHTML) { 
@@ -265,8 +262,8 @@ function initializeUniLoop() {
             const btn = e.target.closest('#login-btn') || e.target;
 
             if(!email || !password) return alert("Lütfen e-posta ve şifrenizi girin.");
-            btn.innerText = "Giriş Yapılıyor..."; btn.disabled = true;
 
+            btn.innerText = "Giriş Yapılıyor..."; btn.disabled = true;
             try {
                 const userCred = await signInWithEmailAndPassword(auth, email, password);
                 if(!userCred.user.emailVerified) {
@@ -287,7 +284,7 @@ function initializeUniLoop() {
         }
     });
 
-    // 🌟 KAYIT SİSTEMİ VE HOBİ KISITLAMASI 🌟
+    // 🌟 KAYIT SİSTEMİ VE 3 HOBİ KISITLAMASI 🌟
     function startRegistrationStepper(startStep = 1) {
         window.registrationData = { interests: [] };
         let container = document.getElementById('stepper-wrapper');
@@ -389,7 +386,7 @@ function initializeUniLoop() {
 
     window.toggleInterest = function(btn, interest) {
         if (!btn.classList.contains('active') && window.registrationData.interests.length >= 3) {
-            return alert("Lütfen sadece 3 tane ilgi alanı seçin!");
+            return alert("Sadece 3 ilgi alanı seçebilirsiniz!");
         }
         btn.classList.toggle('active');
         if (btn.classList.contains('active')) { 
@@ -487,6 +484,55 @@ function initializeUniLoop() {
         }
     };
 
+    window.currentCropperContext = ''; 
+    window.openCropper = function(event, context) {
+        const file = event.target.files[0];
+        if(!file) return;
+        window.currentCropperContext = context;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('cropper-image').src = e.target.result;
+            document.getElementById('cropper-modal').classList.add('active');
+            if(cropper) { cropper.destroy(); }
+            setTimeout(() => {
+                const image = document.getElementById('cropper-image');
+                cropper = new Cropper(image, { aspectRatio: 1, viewMode: 1, dragMode: 'move', autoCropArea: 0.9, restore: false, guides: false, center: false, highlight: false, cropBoxMovable: false, cropBoxResizable: false, toggleDragModeOnDblclick: false });
+            }, 150);
+        };
+        reader.readAsDataURL(file);
+        event.target.value = ''; 
+    };
+    window.closeCropper = function() {
+        document.getElementById('cropper-modal').classList.remove('active');
+        if(cropper) { cropper.destroy(); cropper = null; }
+    };
+    window.saveCroppedImage = async function() {
+        if(!cropper) return;
+        const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+        const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+        if (window.currentCropperContext === 'register') {
+            window.registrationData.avatarDataUrl = base64Image;
+            document.getElementById('preview-pc-avatar-container').innerHTML = `<img src="${base64Image}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+            window.closeCropper();
+        } else if (window.currentCropperContext === 'profile') {
+            const btn = document.getElementById('cropper-save-btn');
+            if(btn) { btn.innerText = "⏳ Yükleniyor..."; btn.disabled = true; }
+            await window.uploadProfileAvatarDirect(base64Image);
+            window.closeCropper();
+            if(btn) { btn.innerText = "Kaydet"; btn.disabled = false; }
+        }
+    };
+    window.uploadProfileAvatarDirect = async function(base64Image) {
+        try {
+            const fileName = window.userProfile.uid + '_avatar_' + Date.now() + '.jpg';
+            const storageRef = ref(storage, 'avatars/' + fileName);
+            await uploadString(storageRef, base64Image, 'data_url');
+            const url = await getDownloadURL(storageRef);
+            await updateDoc(doc(db, "users", window.userProfile.uid), { avatarUrl: url });
+            window.userProfile.avatarUrl = url; window.renderProfile();
+        } catch(e) { alert("Fotoğraf yüklenirken hata oluştu."); }
+    };
+
     window.ensureWelcomeMessage = async function(user, userName) {
         if(!user) return;
         try {
@@ -568,18 +614,7 @@ function initializeUniLoop() {
         }
     });
 
-    // CHAT VE BİLDİRİM DİNLEYİCİSİ (MARKET VE İTİRAFLAR ARKA PLANDA GÜVENDE)
     function initRealtimeListeners(currentUid) {
-        const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
-        onSnapshot(query(collection(db, "listings"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
-            marketDB = []; snapshot.forEach(doc => { marketDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
-            marketDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
-        });
-        onSnapshot(query(collection(db, "confessions"), orderBy("createdAt", "desc"), limit(50)), (snapshot) => {
-            confessionsDB = []; snapshot.forEach(doc => { confessionsDB.push({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }); });
-            confessionsDB.sort((a, b) => safeSortTime(b) - safeSortTime(a));
-        });
-
         onSnapshot(query(collection(db, "chats"), where("participants", "array-contains", currentUid)), (snapshot) => {
             chatsDB = [];
             let pendingRequestsCount = 0;
@@ -669,7 +704,7 @@ function initializeUniLoop() {
         } catch(error) { alert("Medya gönderilirken bir hata oluştu."); }
     };
 
-    // PREMIUM İŞLEMLERİ
+    // 🌟 PREMIUM İŞLEMLERİ 🌟
     window.openPremiumModal = function() {
         const fac = window.userProfile.faculty || "Fakültenizin";
         const grade = window.userProfile.grade ? window.userProfile.grade + ". Sınıf" : "";
@@ -697,7 +732,7 @@ function initializeUniLoop() {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: true });
                 window.userProfile.isPremium = true; window.closeModal();
                 alert("🎉 Tebrikler! UniLoop Premium ayrıcalıklarına sahipsiniz!"); window.loadPage('home'); 
-            } catch(e) { alert("Hata oluştu."); btn.innerText = 'Güvenli Ödeme'; btn.disabled = false; }
+            } catch(e) { alert("Hata oluştu."); btn.innerText = 'Güvenli Ödeme İle Satın Al'; btn.disabled = false; }
         }, 2000);
     };
 
@@ -813,7 +848,6 @@ function initializeUniLoop() {
                             </div>
                         `).join('')}
                     </div>
-                    
                     <div style="position:absolute; bottom:5px; left:0; right:0; display:flex; justify-content:center; gap:5px; pointer-events:none;">
                         ${slides.map((_, i) => `<div class="slider-dot" id="slider-dot-${i}" style="width:6px; height:6px; border-radius:50%; background:${i===0 ? 'white' : 'rgba(255,255,255,0.3)'};"></div>`).join('')}
                     </div>
@@ -1056,13 +1090,14 @@ function initializeUniLoop() {
             card.style.transform = 'translateX(200px) rotate(20deg)'; card.style.opacity = '0';
             const u = window.fastMatchUsers[window.fastMatchCurrentIndex];
             
-            // 🔥 SAĞA KAYDIRILDIĞINDA +1 POPÜLERLİK PUANI EKLENİR
+            // 🔥 SAĞA KAYDIRILAN KİŞİYE OTOMATİK +1 POPÜLERLİK PUANI EKLENİR
             try {
-                const targetDoc = await getDoc(doc(db, "users", u.uid));
-                if (targetDoc.exists()) {
-                    await updateDoc(doc(db, "users", u.uid), { popularity: (targetDoc.data().popularity || 0) + 1 });
+                const targetDocRef = doc(db, "users", u.uid);
+                const targetDocSnap = await getDoc(targetDocRef);
+                if (targetDocSnap.exists()) {
+                    await updateDoc(targetDocRef, { popularity: (targetDocSnap.data().popularity || 0) + 1 });
                 }
-            } catch(err) { console.warn("Puan güncellenemedi."); }
+            } catch(err) { console.warn("Puan güncellenemedi.", err); }
 
             window.sendFriendRequest(u.uid, `${u.name} ${u.surname ? u.surname : ''}`, true);
             
@@ -2002,7 +2037,7 @@ function initializeUniLoop() {
         const premiumBadgeHtml = isPremium ? `<div style="background:white; color:#111827; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:12px; border:1px solid #111827; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-top:5px;">☆ Premium Üye</div>` : ``;
         const friendsCount = chatsDB.filter(c => c.status === 'accepted' && c.otherUid !== 'system').length;
 
-        // 🌟 YENİ: ORİJİNAL İSTATİSTİKLERİM EKLENDİ VE ALTINA ALEVLİ UI GETİRİLDİ
+        // 🌟 YENİ: İSTATİSTİKLER SİLİNDİ, ORTADA SADECE ALEVLİ UI VAR
         let html = `
             <div style="padding: 15px; display:flex; flex-direction:column; height:100%; overflow-y:auto;">
                 <input type="file" id="profile-avatar-upload" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
@@ -2022,31 +2057,13 @@ function initializeUniLoop() {
                     </div>
                 </div>
 
-                <div class="card" style="margin-bottom:15px;">
-                    <h3 style="font-size:15px; margin-bottom:10px; color:#111827; border-bottom:1px solid #111827; padding-bottom:8px;">İstatistiklerim</h3>
-                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; text-align:center;">
-                        <div style="background:white; padding:15px 10px; border-radius:12px; border:1px solid #111827;">
-                            <div style="font-size:20px; font-weight:800; color:#111827;">${confessionsDB.filter(c => c.authorId === u.uid).length}</div>
-                            <div style="font-size:11px; color:#111827; font-weight:bold; margin-top:4px;">Gönderi</div>
-                        </div>
-                        <div style="background:white; padding:15px 10px; border-radius:12px; border:1px solid #111827;">
-                            <div style="font-size:20px; font-weight:800; color:#111827;">${marketDB.filter(m => m.sellerId === u.uid).length}</div>
-                            <div style="font-size:11px; color:#111827; font-weight:bold; margin-top:4px;">Market İlanı</div>
-                        </div>
-                        <div style="background:white; padding:15px 10px; border-radius:12px; border:1px solid #111827;">
-                            <div style="font-size:20px; font-weight:800; color:#111827;">${friendsCount}</div>
-                            <div style="font-size:11px; color:#111827; font-weight:bold; margin-top:4px;">Bağlantı</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display:flex; gap:15px; margin-bottom:15px;">
-                    <div style="flex:1; background:linear-gradient(135deg, #FF7E5F, #FEB47B); border-radius:16px; padding:15px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; box-shadow:0 4px 10px rgba(255,126,95,0.3);">
+                <div style="display:flex; justify-content:center; gap:15px; margin-bottom:20px;">
+                    <div style="flex:1; max-width:140px; background:linear-gradient(135deg, #FF7E5F, #FEB47B); border-radius:16px; padding:15px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; box-shadow:0 4px 10px rgba(255,126,95,0.3);">
                         <div style="font-size:28px; margin-bottom:5px; text-shadow:0 2px 4px rgba(0,0,0,0.2);">🔥</div>
                         <div style="font-size:24px; font-weight:900;">${u.popularity || 0}</div>
                         <div style="font-size:11px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-top:2px;">Popülerlik</div>
                     </div>
-                    <button style="flex:1; background:white; border:2px solid #111827; border-radius:16px; padding:15px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#111827; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.05); transition:transform 0.2s;" onclick="window.openFriendsList()">
+                    <button style="flex:1; max-width:140px; background:white; border:1px solid #111827; border-radius:16px; padding:15px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#111827; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.05); transition:transform 0.2s;" onclick="window.openFriendsList()">
                         <div style="font-size:28px; margin-bottom:5px;">👥</div>
                         <div style="font-size:24px; font-weight:900;">${friendsCount}</div>
                         <div style="font-size:11px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-top:2px;">Arkadaşlarım</div>
@@ -2213,27 +2230,6 @@ function initializeUniLoop() {
         if (!hasNotif) { html += `<div style="text-align:center; padding:30px 10px; color:var(--text-gray);"><div style="font-size:40px; margin-bottom:10px;">🔔</div><div style="font-size:14px;">Şu an için yeni bir bildiriminiz yok.</div></div>`; }
         html += '</div>'; window.openModal('🔔 Bildirimler', html);
     };
-
-    // =========================================================================
-    // 🌟 ESKİ MARKET VE İTİRAF FONKSİYONLARI (KORUNUYOR) 🌟
-    // =========================================================================
-
-    window.openListingForm = function() {};
-    window.submitListing = async function() {};
-    window.drawListingsGrid = function() {};
-    window.openListingDetail = function() {};
-    window.deleteListing = async function() {};
-    window.editListing = async function() {};
-    window.previewMarketImages = function() {};
-    window.renderListings = function() {};
-    window.openConfessionForm = function() {};
-    window.submitPost = async function() {};
-    window.drawConfessionsFeed = function() {};
-    window.likePost = async function() {};
-    window.openConfessionDetail = function() {};
-    window.addComment = async function() {};
-    window.deleteConfession = async function() {};
-    window.updateConfessionDetailLive = function() {};
 
     window.loadPage = function(page) {
         document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
