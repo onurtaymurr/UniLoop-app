@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
+        /* Tıklama efektini (mavi/gri gölge) tüm elemanlardan kaldırır */
+        * { -webkit-tap-highlight-color: transparent !important; }
+
         #main-content { padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
 
         body.no-scroll-messages #main-content {
