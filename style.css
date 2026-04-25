@@ -10,14 +10,7 @@
 --danger: #EF4444;
 }
 
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-    -webkit-tap-highlight-color: transparent !important;
-}
-
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
 body { background-color: var(--bg-color); color: var(--text-dark); overflow-x: hidden; overscroll-behavior-y: none; }
 
 #auth-screen { height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--primary), #818CF8); position: fixed; top: 0; left: 0; z-index: 9999; }
@@ -71,6 +64,7 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: var(--text-dark); }
 .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #D1D5DB; border-radius: 10px; outline: none; font-size: 15px; transition: 0.2s; background: #F9FAFB; font-family: inherit;}
 .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+
 .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; margin-bottom:15px; }
 .upload-btn-wrapper .btn { border: 2px dashed #D1D5DB; color: var(--text-gray); background-color: #F9FAFB; padding: 20px 20px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s;}
 .upload-btn-wrapper .btn:hover { border-color: var(--primary); color: var(--primary); background: #EEF2FF; }
@@ -79,13 +73,11 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .preview-box { width: 70px; height: 70px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); position: relative; background: #F3F4F6;}
 .preview-box img { width: 100%; height: 100%; object-fit: cover; }
 
-/* 🌟 KUSURSUZ EŞLEŞME KARTI BOŞLUK DÜZELTMESİ 🌟 */
+/* 🌟 KUSURSUZ EŞLEŞME KARTI YENİLEMESİ 🌟 */
 .swipe-card {
-    height: calc(100vh - 280px); /* Üstteki boşluğu azaltıp kartı yukarı çekmek için 350px'den 280px'e düşürüldü */
-    min-height: 320px;
-    max-height: 480px;
+    height: 420px;
     width: 100%;
-    max-width: 340px;
+    max-width: 320px;
     position: relative;
     margin: 0 auto;
     transition: transform 0.3s ease, opacity 0.3s ease;
@@ -110,16 +102,15 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .premium-card-bw::before { background: #111827 !important; }
 
 /* ========================================================================= */
-/* 🌟 KAMPÜS FREKANSI - GÜZELLEŞTİRİLMİŞ MODERN TASARIM 🌟 */
+/* 🌟 KAMPÜS FREKANSI - SEKMEYE GÖMÜLÜ OVAL DİKEY KART TASARIMI 🌟 */
 /* ========================================================================= */
 #embedded-voice-chat {
     display: none;
     width: 100%;
-    height: 100%;
-    min-height: calc(100vh - 120px);
+    min-height: calc(100vh - 200px);
     align-items: center;
     justify-content: center;
-    padding: 20px 10px;
+    padding: 20px 0;
 }
 
 #embedded-voice-chat.active {
@@ -128,31 +119,26 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 
 .voice-chat-card {
     width: 100%;
-    max-width: 360px; 
-    height: calc(100vh - 160px); 
-    max-height: 550px; 
-    min-height: 450px;
-    /* Kartın arka planı ve gölgelendirmesi çok daha şık hale getirildi */
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-    border-radius: 40px; 
+    max-width: 360px;
+    height: 550px;
+    background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+    border-radius: 35px;
     padding: 30px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 0 20px rgba(139, 92, 246, 0.2);
-    border: 2px solid rgba(139, 92, 246, 0.3); 
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    border: 4px solid #374151;
 }
 
-/* YENİ BUTON TONLARI (Geç, Maske İndir, Kapat) - Daha uyumlu ve şık */
-.btn-gec { background: rgba(255,255,255,0.1); color: white; transition: 0.2s; backdrop-filter: blur(5px); }
-.btn-gec:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
-.btn-maske { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; transition: 0.2s; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
-.btn-maske:hover { background: linear-gradient(135deg, #a78bfa, #7c3aed); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6); }
-.btn-kapat { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); transition: 0.2s; }
-.btn-kapat:hover { background: rgba(239, 68, 68, 0.2); transform: translateY(-2px); }
+.btn-gec { background: #4b5563; color: white; transition: 0.2s; }
+.btn-gec:hover { background: #6b7280; transform: translateY(-2px); }
+.btn-maske { background: #8b5cf6; color: white; transition: 0.2s; }
+.btn-maske:hover { background: #a78bfa; transform: translateY(-2px); }
+.btn-kapat { background: #ef4444; color: white; transition: 0.2s; }
+.btn-kapat:hover { background: #f87171; transform: translateY(-2px); }
 
-/* Ekranların aktiflik durumları */
 .screen {
     display: none;
     flex-direction: column;
@@ -168,23 +154,22 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 @keyframes slideDown { from { transform: translateY(-20px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
 
 .radar-container {
-    width: 160px;
-    height: 160px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
-    border: 2px solid rgba(139, 92, 246, 0.4);
+    border: 2px solid rgba(139, 92, 246, 0.3);
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 25px;
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+    margin-bottom: 20px;
 }
 .radar-sweep {
     position: absolute;
-    width: 80px;
-    height: 160px;
-    background: linear-gradient(90deg, rgba(139,92,246,0.6) 0%, transparent 100%);
-    border-radius: 80px 0 0 80px;
+    width: 75px;
+    height: 150px;
+    background: linear-gradient(90deg, rgba(139,92,246,0.5) 0%, transparent 100%);
+    border-radius: 75px 0 0 75px;
     transform-origin: center right;
     left: 0;
     animation: spin 2s linear infinite;
@@ -192,14 +177,13 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
 .blurred-avatar {
-    width: 110px;
-    height: 110px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
-    background: radial-gradient(circle, #6d28d9, #1e1b4b);
+    background: radial-gradient(circle, #4c1d95, #111827);
     filter: blur(8px);
     margin-bottom: 30px;
     animation: breathe 3s infinite alternate;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 }
 @keyframes breathe { 0% { transform: scale(0.95); opacity: 0.8;} 100% { transform: scale(1.05); opacity: 1;} }
 
@@ -210,10 +194,6 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     gap: 8px;
     height: 50px;
     margin-bottom: 30px;
-    background: rgba(0,0,0,0.2);
-    padding: 10px 20px;
-    border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.05);
 }
 .bar {
     width: 6px;
@@ -229,28 +209,13 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
     height: 80px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #10b981;
+    border: 3px solid #8b5cf6;
     margin: -20px auto 15px auto;
     background: white;
 }
 
-/* Market ve İtiraf sistemlerinin eski CSS kuralları (Orijinal haliyle korundu) */
-.market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 20px;}
-@media (max-width: 600px) { .market-grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
-
-.item-card { cursor: pointer; border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; background: var(--card-bg); display: flex; flex-direction: column; transition: 0.2s;}
-.item-card:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); transform: translateY(-3px); border-color: var(--primary); }
-.item-img-large { height: 150px; background-color: #F9FAFB; display: flex; align-items: center; justify-content: center; font-size: 48px; border-bottom: 1px solid var(--border-color); overflow: hidden; position: relative;}
-@media (max-width: 600px) { .item-img-large { height: 130px; } }
-.item-details { padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: flex-start;}
-.item-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; color: var(--text-dark); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
-.item-price-large { color: #059669; font-weight: 800; font-size: 16px; }
-
 .local-search-bar { width: 100%; padding: 14px 20px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 15px; outline: none; margin-bottom: 24px; transition: 0.2s; background: #F9FAFB; font-weight: 500;}
 .local-search-bar:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-
-.feed-layout-container { height: auto !important; overflow: visible !important; margin: 0 !important; background: transparent !important; display: flex; flex-direction: column; }
-.feed-layout-container > div:first-child { position: static !important; background: var(--card-bg) !important; border: 1px solid var(--border-color) !important; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 
 .chat-sidebar-header { padding: 20px; font-weight: 800; font-size: 18px; border-bottom: 1px solid var(--border-color); background: #FFFFFF; position: sticky; top:0; z-index: 10; }
 .chat-contact { padding: 16px 20px; border-bottom: 1px solid #F9FAFB; cursor: pointer; display: flex; gap: 16px; align-items: center; transition: 0.2s; position: relative; }
@@ -276,7 +241,7 @@ header { background-color: var(--card-bg); padding: 15px 5%; display: flex; just
 .lightbox-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; z-index: 10001; }
 .lightbox-prev, .lightbox-next { cursor: pointer; position: absolute; top: 50%; transform: translateY(-50%); padding: 16px; color: white; font-weight: bold; font-size: 24px; background: rgba(0,0,0,0.5); border: none; border-radius: 50%; user-select: none; z-index: 10001; }
 .lightbox-prev { left: 20px; }
-    .lightbox-next { right: 20px; }
+.lightbox-next { right: 20px; }
 .lightbox-counter { position: absolute; top: 25px; left: 30px; color: white; font-size: 16px; font-weight: bold; z-index: 10001; letter-spacing: 2px; }
 
 @media (max-width: 1024px) {
