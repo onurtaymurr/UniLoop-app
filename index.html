@@ -53,11 +53,11 @@ AUTH PAGES
 ═══════════════════════════ */
 .auth-page {
 position:fixed; inset:0; z-index:100;
-display:flex; flex-direction:column; align-items:center; justify-content:center;
+flex-direction:column; align-items:center; justify-content:center;
 padding:24px; background:var(–bg);
 animation:fadeIn .35s ease both;
+/* display yönetimi JS’deki show() fonksiyonu tarafından yapılır */
 }
-.auth-page.hidden { display:none; }
 
 @keyframes fadeIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
 @keyframes fadeOut { to{opacity:0;transform:translateY(-12px)} }
@@ -647,7 +647,7 @@ width:100%; text-align:center;
 
 <!-- ═══ AUTH ═══ -->
 
-<div class="auth-page" id="pgAuth">
+<div class="auth-page" id="pgAuth" style="display:flex;">
   <div class="auth-brand">
     <h1>UniMatch</h1>
     <p>Kampüste gerçek bağlantılar kur</p>
@@ -1053,22 +1053,50 @@ var BOTS = ['Harika! 😊','Anlat bakalım!','Kesinlikle! 🌟','Haha 😄','Bu 
 auth.onAuthStateChanged(function(u){
   if(u){
     ME = u;
+    // Butonu sıfırla (eğer login ile gelindiyse)
+    setLoad('btnLogin',false,'Giriş Yap');
     db.collection('users').doc(u.uid).get()
       .then(function(s){
-        if(s.exists){ PROF=s.data(); PROF.avatar?launch():show('pgSetup'); }
-        else{ PROF={name:u.displayName||'',email:u.email||''}; db.collection('users').doc(u.uid).set({name:PROF.name,email:PROF.email,createdAt:FS.serverTimestamp()},{merge:true}); show('pgSetup'); }
+        if(s.exists){
+          PROF = s.data();
+          if(PROF.avatar){ launch(); } else { show('pgSetup'); }
+        } else {
+          PROF = {name: u.displayName||'', email: u.email||''};
+          db.collection('users').doc(u.uid).set({
+            name: PROF.name, email: PROF.email, createdAt: FS.serverTimestamp()
+          },{merge:true}).catch(function(){});
+          show('pgSetup');
+        }
       })
-      .catch(function(){ PROF={name:u.displayName||'',email:u.email||''}; show('pgSetup'); });
-  } else { ME=null; PROF=null; show('pgAuth'); }
+      .catch(function(e){
+        console.error('Firestore okuma hatası:', e);
+        // Firestore erişim yoksa yine de setup'a gönder
+        PROF = {name: u.displayName||'', email: u.email||''};
+        show('pgSetup');
+      });
+  } else {
+    ME = null; PROF = null;
+    setLoad('btnLogin',false,'Giriş Yap');
+    show('pgAuth');
+  }
 });
 
 function show(id){
-  document.getElementById('pgAuth').classList.remove('show');
-  document.getElementById('pgSetup').classList.remove('show');
-  document.getElementById('app').classList.remove('show');
-  if(id==='pgAuth'){ var el=document.getElementById('pgAuth'); el.classList.remove('hidden'); el.style.animation='none'; el.offsetHeight; el.style.animation=''; }
-  else if(id==='pgSetup'){ document.getElementById('pgSetup').classList.add('show'); }
-  else if(id==='app'){ document.getElementById('app').classList.add('show'); document.getElementById('pgAuth').classList.add('hidden'); }
+  // Hepsini gizle
+  var pgAuth   = document.getElementById('pgAuth');
+  var pgSetup  = document.getElementById('pgSetup');
+  var pgApp    = document.getElementById('app');
+  pgAuth.style.display  = 'none';
+  pgSetup.classList.remove('show');
+  pgApp.classList.remove('show');
+
+  if(id === 'pgAuth'){
+    pgAuth.style.display = 'flex';
+  } else if(id === 'pgSetup'){
+    pgSetup.classList.add('show');
+  } else if(id === 'app'){
+    pgApp.classList.add('show');
+  }
 }
 
 /* ─── AUTH ─── */
@@ -1081,8 +1109,16 @@ function authTab(t){
 function doLogin(){
   var e=gv('lEmail'),p=gv('lPass'),err=document.getElementById('lErr');
   if(!e||!p){showErr(err,'E-posta ve şifre zorunlu');return;}
+  err.classList.remove('show');
   setLoad('btnLogin',true,'Giriş yapılıyor...');
-  auth.signInWithEmailAndPassword(e,p).catch(function(x){showErr(err,terr(x.code));}).finally(function(){setLoad('btnLogin',false,'Giriş Yap');});
+  auth.signInWithEmailAndPassword(e,p)
+    .then(function(){
+      // onAuthStateChanged otomatik devralır, butonu sıfırlamaya gerek yok
+    })
+    .catch(function(x){
+      showErr(err,terr(x.code));
+      setLoad('btnLogin',false,'Giriş Yap');
+    });
 }
 function doGoogle(){
   auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(x){showErr(document.getElementById('lErr'),terr(x.code));});
@@ -1097,8 +1133,15 @@ function doRegister(){
   if(!emailRegex.test(email)){showErr(err,'Geçerli bir e-posta adresi girin');return;}
   setLoad('btnReg',true,'Hesap oluşturuluyor...');
   auth.createUserWithEmailAndPassword(email,pass)
-    .then(function(c){ return c.user.updateProfile({displayName:name}).then(function(){ return db.collection('users').doc(c.user.uid).set({name,email,uni,dept,year,createdAt:FS.serverTimestamp()}); }); })
-    .catch(function(x){showErr(err,terr(x.code));}).finally(function(){setLoad('btnReg',false,'Hesap Oluştur');});
+    .then(function(c){
+      return c.user.updateProfile({displayName:name}).then(function(){
+        return db.collection('users').doc(c.user.uid).set({name:name,email:email,uni:uni,dept:dept,year:year,createdAt:FS.serverTimestamp()});
+      });
+    })
+    .catch(function(x){
+      showErr(err,terr(x.code));
+      setLoad('btnReg',false,'Hesap Oluştur');
+    });
 }
 function doLogout(){ auth.signOut(); toast('Çıkış yapıldı','info'); }
 
