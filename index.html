@@ -1,877 +1,131 @@
 <!DOCTYPE html>
-
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>uniloop</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; font-family:'Inter',sans-serif; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UniLoop - Global Campus Network</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        #main-content { padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
 
-body { background:#1a0050; min-height:100vh; overflow:hidden; }
+        body.no-scroll-messages #main-content {
+            position: fixed !important;
+            top: 50px !important; 
+            bottom: calc(65px + env(safe-area-inset-bottom)) !important; 
+            left: 0 !important;
+            right: 0 !important;
+            padding-bottom: 0 !important; 
+            height: auto !important;
+            overflow: hidden !important; 
+            z-index: 40;
+        }
 
-/* ── SCREENS ── */
-.screen { display:none; position:fixed; inset:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
-.screen.active { display:flex; flex-direction:column; }
-
-/* ── AUTH BG ── */
-.auth-wrap {
-min-height:100vh;
-background: radial-gradient(ellipse at 30% 0%, #3b1a8a 0%, #1a0050 40%, #0d0030 100%);
-display:flex; align-items:center; justify-content:center;
-padding:24px; position:relative; overflow:hidden;
-}
-.auth-blob {
-position:absolute; border-radius:50%; pointer-events:none;
-animation: blob 8s ease-in-out infinite;
-}
-.auth-blob-1 { width:300px; height:300px; background:rgba(120,50,220,0.3); top:-80px; left:-80px; animation-delay:0s; }
-.auth-blob-2 { width:250px; height:250px; background:rgba(80,30,180,0.25); bottom:-60px; right:-60px; animation-delay:-4s; }
-@keyframes blob { 0%,100%{transform:scale(1) translate(0,0)} 50%{transform:scale(1.08) translate(10px,-10px)} }
-
-.auth-card {
-width:100%; max-width:380px; position:relative; z-index:2;
-background:rgba(255,255,255,0.07);
-border:1px solid rgba(255,255,255,0.12);
-border-radius:22px; padding:32px 26px;
-backdrop-filter:blur(16px);
-animation: cardPop 0.5s cubic-bezier(0.34,1.4,0.64,1) both;
-}
-@keyframes cardPop { from{opacity:0;transform:scale(0.92) translateY(16px)} to{opacity:1;transform:scale(1) translateY(0)} }
-
-.logo { font-size:28px; font-weight:800; color:#fff; letter-spacing:-0.5px; margin-bottom:4px; }
-.logo span { color:#f5c518; }
-.logo-sub { font-size:13px; color:rgba(255,255,255,0.6); margin-bottom:24px; }
-
-.step-progress { height:3px; background:rgba(255,255,255,0.1); border-radius:2px; margin-bottom:22px; overflow:hidden; }
-.step-fill { height:100%; background:#f5c518; border-radius:2px; transition:width 0.4s ease; }
-
-.step-title { font-size:20px; font-weight:700; color:#fff; margin-bottom:18px; }
-
-.field { margin-bottom:12px; }
-.inp {
-width:100%; padding:14px 16px;
-background:rgba(255,255,255,0.09);
-border:1px solid rgba(255,255,255,0.15);
-border-radius:12px; font-size:15px; color:#fff; outline:none;
-transition:border-color 0.2s;
-}
-.inp:focus { border-color:#f5c518; }
-.inp::placeholder { color:rgba(255,255,255,0.38); }
-.inp option { background:#1a0050; }
-select.inp { -webkit-appearance:none; appearance:none; }
-
-.btn-yellow {
-width:100%; padding:15px;
-background:#f5c518; color:#1a0050;
-border:none; border-radius:12px;
-font-size:16px; font-weight:700; cursor:pointer;
-transition:background 0.15s, transform 0.1s;
-margin-top:4px;
-}
-.btn-yellow:hover { background:#e6b800; }
-.btn-yellow:active { transform:scale(0.98); }
-
-.btn-ghost {
-flex:1; padding:13px;
-background:transparent;
-border:1px solid rgba(255,255,255,0.2);
-border-radius:12px; color:rgba(255,255,255,0.8);
-font-size:14px; font-weight:500; cursor:pointer;
-transition:background 0.15s;
-}
-.btn-ghost:hover { background:rgba(255,255,255,0.08); }
-
-.btn-row { display:flex; gap:10px; margin-top:6px; }
-
-.link-row { text-align:center; margin-top:14px; font-size:13px; color:rgba(255,255,255,0.65); }
-.link-row a { color:#f5c518; font-weight:600; cursor:pointer; text-decoration:none; }
-
-.err { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3);
-border-radius:10px; padding:10px 14px; font-size:13px; color:#fca5a5;
-margin-bottom:12px; display:none; }
-.err.show { display:block; animation:shake 0.3s; }
-@keyframes shake { 0%,100%{transform:translateX(0)} 30%{transform:translateX(-5px)} 70%{transform:translateX(5px)} }
-
-/* hobbies */
-.hobby-wrap { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 16px; }
-.hchip {
-padding:7px 14px; border-radius:100px;
-border:1px solid rgba(255,255,255,0.2);
-color:rgba(255,255,255,0.75); font-size:13px; cursor:pointer;
-transition:all 0.15s; background:transparent;
-}
-.hchip.on { background:#f5c518; color:#1a0050; border-color:#f5c518; font-weight:600; }
-
-/* ── MAIN APP ── */
-#screen-main { background:#f1f0f6; }
-
-.app-header {
-background:#fff; padding:14px 18px;
-display:flex; align-items:center; justify-content:space-between;
-border-bottom:1px solid #e5e7eb; flex-shrink:0;
-position:sticky; top:0; z-index:10;
-}
-.app-logo { font-size:20px; font-weight:800; color:#5b21b6; letter-spacing:-0.3px; }
-.hdr-right { display:flex; align-items:center; gap:10px; }
-.crown { width:36px; height:36px; background:#f5c518; border-radius:50%;
-display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; }
-.bell { width:36px; height:36px; background:#f1f0f6; border-radius:50%;
-display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; }
-
-.tab-content { flex:1; overflow-y:auto; padding:14px; -webkit-overflow-scrolling:touch; }
-.tab-content::-webkit-scrollbar { display:none; }
-
-/* bottom nav */
-.bnav {
-background:#fff; border-top:1px solid #e5e7eb;
-display:flex; padding:10px 0 20px; flex-shrink:0;
-position:sticky; bottom:0; z-index:10;
-}
-.bitem { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; transition:transform 0.15s; }
-.bitem:active { transform:scale(0.92); }
-.bico { font-size:20px; }
-.blbl { font-size:10px; color:#9ca3af; font-weight:500; }
-.bitem.on .blbl { color:#5b21b6; font-weight:700; }
-.bitem.on .bico { filter:drop-shadow(0 0 4px rgba(91,33,182,0.4)); }
-
-/* ── KEŞFET ── */
-.dcard {
-background:linear-gradient(145deg,#5b21b6,#7c3aed);
-border-radius:20px; overflow:hidden; position:relative;
-height:420px; margin-bottom:14px;
-animation:slideUp 0.4s ease both;
-box-shadow:0 8px 32px rgba(91,33,182,0.3);
-}
-.dcard-initials {
-position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-font-size:90px; font-weight:800; color:rgba(255,255,255,0.25); letter-spacing:-2px;
-}
-.dcard-info {
-position:absolute; bottom:0; left:0; right:0; padding:20px;
-background:linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);
-}
-.dcard-name { font-size:24px; font-weight:700; color:#fff; }
-.dcard-dept { font-size:13px; color:rgba(255,255,255,0.8); margin:4px 0 8px; }
-.dcard-chip {
-display:inline-block; padding:5px 12px;
-background:rgba(255,255,255,0.18); border-radius:100px;
-font-size:12px; color:#fff;
-}
-.action-row { display:flex; justify-content:center; gap:20px; margin-top:4px; }
-.abtn {
-width:60px; height:60px; border-radius:50%;
-background:#fff; border:none; cursor:pointer; font-size:22px;
-display:flex; align-items:center; justify-content:center;
-box-shadow:0 4px 16px rgba(0,0,0,0.12);
-transition:transform 0.15s, box-shadow 0.15s;
-}
-.abtn:hover { transform:scale(1.08); box-shadow:0 6px 24px rgba(0,0,0,0.18); }
-.abtn:active { transform:scale(0.94); }
-
-/* swipe anim */
-.swl { animation:swLeft 0.32s ease forwards; }
-.swr { animation:swRight 0.32s ease forwards; }
-@keyframes swLeft { to{transform:translateX(-110%) rotate(-12deg);opacity:0} }
-@keyframes swRight { to{transform:translateX(110%) rotate(12deg);opacity:0} }
-
-/* ── MESAJLAR ── */
-.chat-item {
-background:#fff; border-radius:14px; padding:14px 16px;
-display:flex; align-items:center; gap:14px;
-margin-bottom:10px; cursor:pointer;
-transition:transform 0.12s, box-shadow 0.12s;
-animation:slideUp 0.35s ease both;
-}
-.chat-item:active { transform:scale(0.98); }
-.chat-ava {
-width:44px; height:44px; border-radius:50%;
-background:#e5e7eb; display:flex; align-items:center; justify-content:center;
-font-size:14px; font-weight:700; color:#374151; flex-shrink:0;
-}
-.chat-name { font-size:15px; font-weight:700; color:#111827; }
-.chat-prev { font-size:12px; color:#9ca3af; margin-top:2px; }
-
-.section-h { font-size:18px; font-weight:800; color:#111827; margin-bottom:12px; }
-
-/* ── TURNUVA ── */
-.locked-box {
-background:linear-gradient(135deg,#1e1b4b,#312e81);
-border-radius:18px; padding:28px 20px; text-align:center; margin-bottom:18px;
-animation:slideUp 0.35s ease both;
-}
-.locked-ico { font-size:44px; margin-bottom:10px; }
-.locked-t { font-size:17px; font-weight:700; color:#fff; }
-.locked-sub { font-size:13px; color:rgba(255,255,255,0.7); margin-top:4px; }
-.locked-time { font-size:30px; font-weight:800; color:#f5c518; margin:8px 0; }
-
-.pop-grid { display:flex; gap:10px; flex-wrap:wrap; }
-.pop-item {
-background:#fff; border-radius:14px; padding:14px 12px; text-align:center;
-min-width:80px; animation:slideUp 0.4s ease both;
-}
-.pop-ava { width:48px; height:48px; border-radius:12px; background:#e5e7eb;
-display:flex; align-items:center; justify-content:center;
-font-size:14px; font-weight:700; color:#374151; margin:0 auto 6px; }
-.pop-n { font-size:12px; font-weight:600; color:#111827; }
-
-/* ── PROFIL ── */
-.prof-card {
-background:#fff; border-radius:18px; padding:18px;
-display:flex; align-items:center; gap:14px; margin-bottom:14px;
-animation:slideUp 0.35s ease both;
-}
-.prof-ava {
-width:68px; height:68px; border-radius:14px; background:#5b21b6;
-display:flex; align-items:center; justify-content:center;
-font-size:22px; font-weight:800; color:#fff; flex-shrink:0;
-}
-.prof-name { font-size:19px; font-weight:800; color:#111827; }
-.prof-age { font-size:13px; font-weight:600; color:#5b21b6; margin:2px 0; }
-.prof-meta { font-size:12px; color:#6b7280; }
-
-.stat-row { display:flex; gap:12px; margin-bottom:14px; }
-.stat-box { flex:1; background:#fff; border-radius:14px; padding:16px; text-align:center; animation:slideUp 0.4s ease both; }
-.stat-n { font-size:26px; font-weight:800; color:#5b21b6; }
-.stat-n.g { color:#16a34a; }
-.stat-l { font-size:12px; color:#6b7280; margin-top:2px; }
-
-.hob-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
-.hob-tag { padding:7px 14px; background:rgba(91,33,182,0.1); border-radius:100px;
-font-size:12px; color:#5b21b6; border:1px solid rgba(91,33,182,0.15); font-weight:500; }
-
-.logout-btn {
-width:100%; padding:14px; background:transparent;
-border:1.5px solid #ef4444; color:#ef4444; border-radius:12px;
-font-size:14px; font-weight:600; cursor:pointer; margin-bottom:20px;
-transition:background 0.15s;
-}
-.logout-btn:hover { background:rgba(239,68,68,0.07); }
-
-/* ── CHAT SCREEN ── */
-#screen-chat { background:#f1f0f6; }
-.chat-hdr {
-background:#fff; padding:14px 16px;
-display:flex; align-items:center; gap:12px;
-border-bottom:1px solid #e5e7eb; flex-shrink:0;
-}
-.back-btn { background:none; border:none; font-size:20px; cursor:pointer; color:#111827; }
-.chat-hdr-name { font-size:16px; font-weight:700; }
-
-.msgs { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:8px; -webkit-overflow-scrolling:touch; }
-.msgs::-webkit-scrollbar { display:none; }
-
-.mbub { max-width:72%; padding:11px 14px; border-radius:16px; font-size:14px; line-height:1.5;
-animation:msgIn 0.2s ease both; }
-@keyframes msgIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-.mbub.me { background:#5b21b6; color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
-.mbub.them { background:#fff; color:#111827; align-self:flex-start; border-bottom-left-radius:4px; }
-
-.msg-inp-row { display:flex; gap:8px; padding:10px 14px 24px; background:#fff;
-border-top:1px solid #e5e7eb; flex-shrink:0; }
-.msg-inp { flex:1; background:#f1f0f6; border:none; border-radius:100px;
-padding:11px 16px; font-size:14px; outline:none; color:#111827; }
-.msg-inp::placeholder { color:#9ca3af; }
-.msg-send { width:42px; height:42px; border-radius:50%; background:#5b21b6;
-border:none; color:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-.msg-send:active { background:#4c1d95; }
-
-/* ── VERIFY ── */
-.verify-ico { font-size:56px; margin-bottom:16px; }
-.verify-t { font-size:20px; font-weight:800; color:#fff; margin-bottom:8px; }
-.verify-sub { font-size:13px; color:rgba(255,255,255,0.7); line-height:1.6; margin-bottom:20px; }
-
-/* ── TOAST ── */
-#toast {
-position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(8px);
-background:rgba(17,24,39,0.9); color:#fff; padding:10px 18px;
-border-radius:100px; font-size:13px; font-weight:500;
-pointer-events:none; opacity:0; transition:all 0.25s; z-index:999; white-space:nowrap;
-}
-#toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
-
-/* ── utils ── */
-@keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-.empty { text-align:center; padding:48px 20px; color:#9ca3af; font-size:14px; }
-.empty-ico { font-size:40px; margin-bottom:10px; }
-</style>
-
+        .bottom-nav {
+            align-items: flex-end !important; 
+            padding-bottom: calc(env(safe-area-inset-bottom) + 8px) !important;
+            padding-top: 5px !important;
+            z-index: 99999 !important; 
+        }
+        .bottom-nav-item { justify-content: flex-end !important; gap: 2px !important; }
+        .bottom-nav-icon { margin-bottom: 2px !important; margin-top: 4px !important; }
+        
+        .premium-glow { animation: glowPulse 2s infinite alternate; }
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 5px rgba(17, 24, 39, 0.2); }
+            100% { box-shadow: 0 0 15px rgba(17, 24, 39, 0.4); }
+        }
+    </style>
 </head>
 <body>
 
-<div id="toast"></div>
+<div id="auth-screen">
+    <div class="auth-card" id="login-card">
+        <div class="auth-logo" style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <img src="uniloop-logo.png" alt="UniLoop" style="width: 100%; max-width: 240px; height: auto; object-fit: contain; display: block;">
+        </div>
 
-<!-- ══ LOGIN ══════════════════════════════════ -->
-
-<div class="screen" id="screen-login">
-  <div class="auth-wrap">
-    <div class="auth-blob auth-blob-1"></div>
-    <div class="auth-blob auth-blob-2"></div>
-    <div class="auth-card">
-      <div class="logo">uniloop<span>.</span></div>
-      <div class="logo-sub">Kampüsün Ritmi</div>
-      <div class="err" id="lerr"></div>
-      <div class="field"><input class="inp" type="email" id="lemail" placeholder="E-posta adresi"></div>
-      <div class="field"><input class="inp" type="password" id="lpass" placeholder="Şifre" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <button class="btn-yellow" onclick="doLogin()">Giriş Yap</button>
-      <div class="link-row">Hesabın yok mu? <a onclick="show('screen-reg1')">Oluştur</a></div>
+        <p class="auth-subtitle">Kampüs ağına giriş yap, döngüde kal.</p>
+        
+        <div class="form-group">
+            <input type="email" id="login-email" placeholder="E-posta Adresiniz">
+        </div>
+        <div class="form-group" style="margin-bottom: 8px;">
+            <input type="password" id="login-password" placeholder="Şifren">
+        </div>
+        
+        <div style="text-align: right; margin-bottom: 20px;">
+            <span id="forgot-password-btn" style="font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 600;">Şifremi Unuttum</span>
+        </div>
+        
+        <button class="btn-primary" id="login-btn" style="margin-bottom: 10px; padding: 12px; font-size: 16px;">Giriş Yap</button>
+        <button class="action-btn" id="show-register-btn" style="padding: 12px; font-size: 16px;">Yeni Hesap Oluştur</button>
+        
+        <p style="font-size: 12px; color: var(--text-gray); margin-top: 20px;">Sisteme giriş için e-posta onayı gereklidir.</p>
     </div>
-  </div>
+
+    <div id="register-card" style="display: none;"></div>
+    <div id="verify-card" style="display: none;"></div>
 </div>
 
-<!-- ══ REGISTER 1 ══════════════════════════════ -->
+<div id="app-screen" style="display: none;">
+    <header id="app-header">
+        <div class="logo-area">
+            <div id="mobile-menu-btn" style="display: none;">☰</div>
+            <div class="logo" id="logo-btn" onclick="window.loadPage('home')" style="cursor:pointer; display:flex; align-items:center;">
+                <img src="uniloop-logo.png" alt="UniLoop" style="height: 36px; width: auto; object-fit: contain;">
+            </div>
+        </div>
+        <div class="header-right-menu" style="display: flex; align-items: center; gap: 10px; height: 100%;"></div>
+    </header>
 
-<div class="screen" id="screen-reg1">
-  <div class="auth-wrap">
-    <div class="auth-blob auth-blob-1"></div>
-    <div class="auth-blob auth-blob-2"></div>
-    <div class="auth-card">
-      <div class="step-progress"><div class="step-fill" style="width:33%"></div></div>
-      <div class="step-title">Kimsin Sen?</div>
-      <div class="err" id="r1err"></div>
-      <div class="field"><input class="inp" type="email" id="remail" placeholder="E-posta"></div>
-      <div class="field"><input class="inp" type="password" id="rpass" placeholder="Şifre (en az 6 karakter)"></div>
-      <div class="field"><input class="inp" type="text" id="rname" placeholder="Ad Soyad"></div>
-      <div class="btn-row">
-        <button class="btn-ghost" onclick="show('screen-login')">Geri</button>
-        <button class="btn-yellow" style="flex:2" onclick="r1next()">İleri</button>
-      </div>
+    <div class="container" id="main-content-container">
+        <aside class="sidebar" id="sidebar" style="display: none;">
+            <div class="sidebar-top">
+                <h3>Navigasyon</h3>
+                <div class="menu-item active" data-target="home">🏠 Ana Sayfa</div>
+                <div class="menu-item" data-target="loopmap">📍 LoopMap</div>
+                <div class="menu-item" data-target="voice">🎙️ Kampüs Frekansı</div>
+                <div class="menu-item" data-target="popularity">🔥 Popülerlik Savaşı</div>
+                <div class="menu-item" data-target="qa">❓ Soru & Cevap</div>
+                <br>
+                <h3>Bana Özel</h3>
+                <div class="menu-item" id="nav-messages-btn" data-target="messages">💬 Mesajlarım <span id="msg-badge" class="badge" style="display:none;">0</span></div>
+                <div id="sidebar-networks-container"></div>
+            </div>
+            <div class="sidebar-bottom">
+                <div class="menu-item" data-target="settings">⚙️ Ayarlar</div>
+            </div>
+        </aside>
+
+        <main class="main-feed" id="main-content"></main>
+
+        <aside class="right-panel" style="display:none;">
+            <div class="card sticky-card" style="padding: 15px;">
+                <div id="right-networks-container"></div>
+            </div>
+        </aside>
     </div>
-  </div>
 </div>
 
-<!-- ══ REGISTER 2 ══════════════════════════════ -->
-
-<div class="screen" id="screen-reg2">
-  <div class="auth-wrap">
-    <div class="auth-blob auth-blob-1"></div>
-    <div class="auth-blob auth-blob-2"></div>
-    <div class="auth-card">
-      <div class="step-progress"><div class="step-fill" style="width:66%"></div></div>
-      <div class="step-title">Eğitim ve Yaş</div>
-      <div class="err" id="r2err"></div>
-      <div class="field"><input class="inp" type="number" id="rage" placeholder="Yaşın" min="16" max="50"></div>
-      <div class="field">
-        <select class="inp" id="rfac">
-          <option value="">Fakülte Seçin</option>
-          <option>Mühendislik Fakültesi</option>
-          <option>Güzel Sanatlar</option>
-          <option>Tıp Fakültesi</option>
-          <option>Hukuk Fakültesi</option>
-          <option>İktisadi ve İdari Bilimler</option>
-          <option>Eğitim Fakültesi</option>
-          <option>Fen-Edebiyat Fakültesi</option>
-          <option>İletişim Fakültesi</option>
-          <option>Diğer</option>
-        </select>
-      </div>
-      <div class="field">
-        <select class="inp" id="rgrade">
-          <option value="">Sınıfın</option>
-          <option>1. Sınıf</option><option>2. Sınıf</option>
-          <option>3. Sınıf</option><option>4. Sınıf</option>
-          <option>Yüksek Lisans</option><option>Doktora</option>
-        </select>
-      </div>
-      <div class="btn-row">
-        <button class="btn-ghost" onclick="show('screen-reg1')">Geri</button>
-        <button class="btn-yellow" style="flex:2" onclick="r2next()">İleri</button>
-      </div>
+<div id="app-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">Başlık</h3>
+            <span class="close-btn" id="modal-close">&times;</span>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
     </div>
-  </div>
 </div>
 
-<!-- ══ REGISTER 3 ══════════════════════════════ -->
-
-<div class="screen" id="screen-reg3">
-  <div class="auth-wrap">
-    <div class="auth-blob auth-blob-1"></div>
-    <div class="auth-blob auth-blob-2"></div>
-    <div class="auth-card">
-      <div class="step-progress"><div class="step-fill" style="width:100%"></div></div>
-      <div class="step-title">Amaç ve Hobiler</div>
-      <div class="field">
-        <select class="inp" id="rgoal">
-          <option>Arkadaş Edinmek</option>
-          <option>Ders Çalışma Arkadaşı</option>
-          <option>Sosyalleşmek</option>
-          <option>Proje Ortağı</option>
-          <option>Kulüp Arkadaşı</option>
-        </select>
-      </div>
-      <div class="hobby-wrap">
-        <div class="hchip" onclick="togH(this)">Müzik</div>
-        <div class="hchip" onclick="togH(this)">Spor</div>
-        <div class="hchip" onclick="togH(this)">Yazılım</div>
-        <div class="hchip" onclick="togH(this)">Oyun</div>
-        <div class="hchip" onclick="togH(this)">Sinema</div>
-        <div class="hchip" onclick="togH(this)">Kitap</div>
-        <div class="hchip" onclick="togH(this)">Girişim</div>
-        <div class="hchip" onclick="togH(this)">Kahve</div>
-        <div class="hchip" onclick="togH(this)">Fotoğraf</div>
-        <div class="hchip" onclick="togH(this)">Eğlence</div>
-      </div>
-      <div class="err" id="r3err"></div>
-      <div class="btn-row">
-        <button class="btn-ghost" onclick="show('screen-reg2')">Geri</button>
-        <button class="btn-yellow" style="flex:2" onclick="doRegister()">Kayıt Ol</button>
-      </div>
-    </div>
-  </div>
+<div id="lightbox" class="lightbox">
+    <span class="lightbox-close" onclick="window.closeLightbox()">&times;</span>
+    <span class="lightbox-counter" id="lightbox-counter">1/3</span>
+    <button class="lightbox-prev" onclick="window.changeLightboxImage(-1)">&#10094;</button>
+    <img class="lightbox-content" id="lightbox-img" src="">
+    <button class="lightbox-next" onclick="window.changeLightboxImage(1)">&#10095;</button>
 </div>
 
-<!-- ══ VERIFY ══════════════════════════════════ -->
-
-<div class="screen" id="screen-verify">
-  <div class="auth-wrap">
-    <div class="auth-blob auth-blob-1"></div>
-    <div class="auth-blob auth-blob-2"></div>
-    <div class="auth-card" style="text-align:center">
-      <div class="verify-ico">📬</div>
-      <div class="verify-t">E-postanı Doğrula</div>
-      <div class="verify-sub">
-        <span id="vEmail"></span> adresine doğrulama linki gönderdik.<br>
-        Gelen kutunu kontrol et ve linke tıkla.
-      </div>
-      <button class="btn-yellow" onclick="checkVerified()" style="margin-bottom:10px">Doğruladım →</button>
-      <button class="btn-ghost" style="width:100%;padding:12px;border-radius:12px" onclick="resendVerify()">Tekrar Gönder</button>
-      <div class="link-row" style="margin-top:12px"><a onclick="show('screen-login')">← Giriş ekranına dön</a></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MAIN APP ══════════════════════════════════ -->
-
-<div class="screen" id="screen-main">
-  <div class="app-header">
-    <div class="app-logo">uniloop</div>
-    <div class="hdr-right">
-      <div class="crown">👑</div>
-      <div class="bell">🔔</div>
-    </div>
-  </div>
-
-  <!-- Tab: Keşfet -->
-
-  <div class="tab-content" id="t-kesifet" style="display:block">
-    <div id="discover-area"></div>
-  </div>
-
-  <!-- Tab: BlindTalk -->
-
-  <div class="tab-content" id="t-blindtalk" style="display:none;align-items:center;justify-content:center;text-align:center;flex:1">
-    <div>
-      <div style="font-size:72px;margin-bottom:18px;animation:blob 2s ease-in-out infinite">🎭</div>
-      <div style="font-size:22px;font-weight:800;color:#111827;margin-bottom:10px">BlindTalk Odası</div>
-      <div style="font-size:14px;color:#6b7280;margin-bottom:28px;line-height:1.6">Dış görünüş yok, sadece sesin var.<br>Rastgele biriyle sesli bağlan!</div>
-      <button onclick="toast('🎙️ Bağlanıyor...')" style="padding:16px 36px;background:#5b21b6;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(91,33,182,0.35)">Rastgele Bağlan</button>
-    </div>
-  </div>
-
-  <!-- Tab: Turnuva -->
-
-  <div class="tab-content" id="t-turnuva" style="display:none">
-    <div class="locked-box">
-      <div class="locked-ico">⏰</div>
-      <div class="locked-t">Oylama Kilitli</div>
-      <div class="locked-sub">Günde 2 kez oylama yapabilirsin.</div>
-      <div class="locked-time">11 Saat</div>
-      <div class="locked-sub">sonra tekrar gel!</div>
-    </div>
-    <div class="section-h" style="display:flex;align-items:center;gap:6px">Haftanın Popülerleri 🔥</div>
-    <div class="pop-grid" id="pop-grid"></div>
-  </div>
-
-  <!-- Tab: Mesajlar -->
-
-  <div class="tab-content" id="t-mesajlar" style="display:none">
-    <div class="section-h">Sohbetler</div>
-    <div id="chat-list"></div>
-  </div>
-
-  <!-- Tab: Profil -->
-
-  <div class="tab-content" id="t-profil" style="display:none">
-    <div id="prof-content"></div>
-  </div>
-
-  <div class="bnav">
-    <div class="bitem on" onclick="tab('kesifet',this)" id="bn-kesifet">
-      <div class="bico">🗂️</div><div class="blbl">Keşfet</div>
-    </div>
-    <div class="bitem" onclick="tab('blindtalk',this)" id="bn-blindtalk">
-      <div class="bico">🎧</div><div class="blbl">BlindTalk</div>
-    </div>
-    <div class="bitem" onclick="tab('turnuva',this)" id="bn-turnuva">
-      <div class="bico">🏆</div><div class="blbl">Turnuva</div>
-    </div>
-    <div class="bitem" onclick="tab('mesajlar',this)" id="bn-mesajlar">
-      <div class="bico">💬</div><div class="blbl">Mesajlar</div>
-    </div>
-    <div class="bitem" onclick="tab('profil',this)" id="bn-profil">
-      <div class="bico">👤</div><div class="blbl">Profil</div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ CHAT ══════════════════════════════════════ -->
-
-<div class="screen" id="screen-chat">
-  <div class="chat-hdr">
-    <button class="back-btn" onclick="backChat()">←</button>
-    <div class="chat-hdr-name" id="chatName"></div>
-  </div>
-  <div class="msgs" id="msgs">
-    <div class="mbub them">Merhaba! 👋</div>
-    <div class="mbub them">Nasılsın?</div>
-  </div>
-  <div class="msg-inp-row">
-    <input class="msg-inp" id="minp" placeholder="Mesaj yaz..." onkeydown="if(event.key==='Enter')sendMsg()">
-    <button class="msg-send" onclick="sendMsg()">➤</button>
-  </div>
-</div>
-
-<!-- ══ FIREBASE ══════════════════════════════════ -->
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  sendEmailVerification, signOut, onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore, doc, setDoc, getDoc,
-  collection, getDocs, query, limit
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const FB = initializeApp({
-  apiKey:"AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
-  authDomain:"uniloop-app.firebaseapp.com",
-  projectId:"uniloop-app",
-  storageBucket:"uniloop-app.firebasestorage.app",
-  messagingSenderId:"272654005890",
-  appId:"1:272654005890:web:0b1dd388364e86d22f269b"
-});
-const auth = getAuth(FB);
-const db   = getFirestore(FB);
-
-// expose to global scope
-window.FB_auth = auth;
-window.FB_db   = db;
-window.FB_ops  = { signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  sendEmailVerification, signOut, doc, setDoc, getDoc, collection, getDocs, query, limit };
-
-// ── AUTH OBSERVER ──
-onAuthStateChanged(auth, async user => {
-  if (user) {
-    window.CU = user;
-    const snap = await getDoc(doc(db,'users',user.uid));
-    window.UD  = snap.exists() ? snap.data() : null;
-    if (!user.emailVerified) {
-      document.getElementById('vEmail').textContent = user.email;
-      show('screen-verify');
-    } else {
-      await loadApp();
-      show('screen-main');
-    }
-  } else {
-    window.CU = null;
-    window.UD = null;
-    show('screen-login');
-  }
-});
-
-async function loadApp() {
-  try {
-    const q = query(collection(db,'users'), limit(20));
-    const snap = await getDocs(q);
-    window.USERS = [];
-    snap.forEach(d => { if(d.id!==window.CU?.uid) window.USERS.push({id:d.id,...d.data()}); });
-  } catch(e) { window.USERS = []; }
-  window.DIDX = 0;
-  renderDiscover();
-  renderChats();
-  renderPop();
-  renderProfile();
-}
-window.loadApp = loadApp;
-</script>
-
-<script>
-// ── State ──
-window.CU    = null;   // current firebase user
-window.UD    = null;   // firestore user doc
-window.USERS = [];     // other users
-window.DIDX  = 0;      // discover index
-window.REG   = {};     // temp register data
-window.PREV_TAB = null;
-
-// ── Navigation ──
-function show(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-function tab(name, el) {
-  ['kesifet','blindtalk','turnuva','mesajlar','profil'].forEach(t => {
-    const tc = document.getElementById('t-'+t);
-    if (tc) tc.style.display = 'none';
-  });
-  const target = document.getElementById('t-'+name);
-  if (target) {
-    target.style.display = (name==='blindtalk') ? 'flex' : 'block';
-  }
-  document.querySelectorAll('.bitem').forEach(b => b.classList.remove('on'));
-  el.classList.add('on');
-  window.PREV_TAB = name;
-}
-
-function toast(msg, ms=2400) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('on');
-  setTimeout(() => t.classList.remove('on'), ms);
-}
-
-function err(id, msg) {
-  const el = document.getElementById(id);
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 4000);
-}
-
-// ── AUTH ──
-async function doLogin() {
-  const email = document.getElementById('lemail').value.trim();
-  const pass  = document.getElementById('lpass').value;
-  if (!email || !pass) { err('lerr','E-posta ve şifre gerekli.'); return; }
-  try {
-    await window.FB_ops.signInWithEmailAndPassword(window.FB_auth, email, pass);
-  } catch(e) {
-    const map = {
-      'auth/user-not-found':'Kullanıcı bulunamadı.',
-      'auth/wrong-password':'Hatalı şifre.',
-      'auth/invalid-credential':'E-posta veya şifre hatalı.',
-      'auth/invalid-email':'Geçersiz e-posta.',
-      'auth/too-many-requests':'Çok fazla deneme, lütfen bekle.'
-    };
-    err('lerr', map[e.code] || 'Giriş başarısız.');
-  }
-}
-
-function r1next() {
-  const email = document.getElementById('remail').value.trim();
-  const pass  = document.getElementById('rpass').value;
-  const name  = document.getElementById('rname').value.trim();
-  if (!email)       { err('r1err','E-posta gerekli.'); return; }
-  if (pass.length<6){ err('r1err','Şifre en az 6 karakter.'); return; }
-  if (!name)        { err('r1err','Ad soyad gerekli.'); return; }
-  window.REG = { email, pass, name };
-  show('screen-reg2');
-}
-
-function r2next() {
-  const age   = document.getElementById('rage').value;
-  const fac   = document.getElementById('rfac').value;
-  const grade = document.getElementById('rgrade').value;
-  if (!age||age<16||age>60){ err('r2err','Geçerli bir yaş gir.'); return; }
-  if (!fac)  { err('r2err','Fakülte seç.'); return; }
-  if (!grade){ err('r2err','Sınıf seç.'); return; }
-  Object.assign(window.REG, { age:parseInt(age), fac, grade });
-  show('screen-reg3');
-}
-
-function togH(el) { el.classList.toggle('on'); }
-
-async function doRegister() {
-  const goal    = document.getElementById('rgoal').value;
-  const hobbies = [...document.querySelectorAll('.hchip.on')].map(c=>c.textContent);
-  const { email, pass, name, age, fac, grade } = window.REG;
-  try {
-    const cred = await window.FB_ops.createUserWithEmailAndPassword(window.FB_auth, email, pass);
-    const uid  = cred.user.uid;
-    const ini  = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-    await window.FB_ops.setDoc(window.FB_ops.doc(window.FB_db,'users',uid), {
-      name, email, age, faculty:fac, grade, goal, hobbies,
-      initials:ini, popularity:1000, friends:[], createdAt:new Date().toISOString()
-    });
-    await window.FB_ops.sendEmailVerification(cred.user);
-    document.getElementById('vEmail').textContent = email;
-    show('screen-verify');
-  } catch(e) {
-    const map = {
-      'auth/email-already-in-use':'Bu e-posta zaten kayıtlı.',
-      'auth/invalid-email':'Geçersiz e-posta.'
-    };
-    err('r3err', map[e.code] || 'Kayıt başarısız.');
-  }
-}
-
-async function checkVerified() {
-  if (!window.FB_auth.currentUser) { show('screen-login'); return; }
-  await window.FB_auth.currentUser.reload();
-  if (window.FB_auth.currentUser.emailVerified) {
-    const snap = await window.FB_ops.getDoc(window.FB_ops.doc(window.FB_db,'users',window.FB_auth.currentUser.uid));
-    window.UD = snap.exists() ? snap.data() : null;
-    await window.loadApp();
-    show('screen-main');
-  } else {
-    toast('⚠️ Henüz doğrulanmadı. E-postanı kontrol et.');
-  }
-}
-
-async function resendVerify() {
-  if (window.FB_auth.currentUser) {
-    await window.FB_ops.sendEmailVerification(window.FB_auth.currentUser);
-    toast('📨 Tekrar gönderildi!');
-  }
-}
-
-async function doLogout() {
-  await window.FB_ops.signOut(window.FB_auth);
-  show('screen-login');
-}
-
-// ── KEŞFET ──
-function renderDiscover() {
-  const area = document.getElementById('discover-area');
-  const users = window.USERS || [];
-  const idx   = window.DIDX;
-
-  if (!users.length || idx >= users.length) {
-    area.innerHTML = `<div class="empty"><div class="empty-ico">🌟</div>Hepsi bu kadar!<br>Daha sonra tekrar bak.</div>`;
-    return;
-  }
-
-  const u = users[idx];
-  const bgs = [
-    'linear-gradient(145deg,#4f46e5,#7c3aed)',
-    'linear-gradient(145deg,#7c3aed,#a855f7)',
-    'linear-gradient(145deg,#2563eb,#4f46e5)',
-    'linear-gradient(145deg,#db2777,#7c3aed)'
-  ];
-  const bg = bgs[idx % bgs.length];
-  const chips = (u.hobbies||[]).slice(0,2).map(h=>`<span class="dcard-chip">${h}</span>`).join(' ');
-
-  area.innerHTML = `
-    <div class="dcard" id="dcard" style="background:${bg}">
-      <div class="dcard-initials">${u.initials||'??'}</div>
-      <div class="dcard-info">
-        <div class="dcard-name">${u.name||'İsimsiz'}, ${u.age||'?'}</div>
-        <div class="dcard-dept">🎓 ${u.faculty||''}</div>
-        <div>${chips}</div>
-      </div>
-    </div>
-    <div class="action-row">
-      <button class="abtn" onclick="swipe(false)" title="Geç">❌</button>
-      <button class="abtn" onclick="swipe(true)"  title="Beğen">💚</button>
-    </div>`;
-}
-
-function swipe(liked) {
-  const card = document.getElementById('dcard');
-  if (!card) return;
-  card.classList.add(liked ? 'swr' : 'swl');
-  if (liked) toast('💚 Beğenildi!');
-  setTimeout(() => {
-    window.DIDX++;
-    renderDiscover();
-  }, 320);
-}
-
-// ── MESAJLAR ──
-function renderChats() {
-  const list  = document.getElementById('chat-list');
-  const users = window.USERS || [];
-  if (!users.length) {
-    list.innerHTML = `<div class="empty"><div class="empty-ico">💬</div>Henüz eşleşme yok.</div>`;
-    return;
-  }
-  list.innerHTML = users.slice(0,8).map((u,i) => `
-    <div class="chat-item" style="animation-delay:${i*0.06}s" onclick="openChat('${(u.name||'İsimsiz').replace(/'/g,"\\'")}','${u.initials||'??'}')">
-      <div class="chat-ava">${u.initials||'??'}</div>
-      <div>
-        <div class="chat-name">${u.name||'İsimsiz'}</div>
-        <div class="chat-prev">Sohbete başlamak için dokun...</div>
-      </div>
-    </div>`).join('');
-}
-
-function openChat(name, initials) {
-  document.getElementById('chatName').textContent = name;
-  document.getElementById('msgs').innerHTML = `
-    <div class="mbub them">Merhaba! 👋</div>
-    <div class="mbub them">Nasılsın?</div>`;
-  show('screen-chat');
-}
-
-function backChat() {
-  show('screen-main');
-  tab('mesajlar', document.getElementById('bn-mesajlar'));
-}
-
-function sendMsg() {
-  const inp  = document.getElementById('minp');
-  const text = inp.value.trim();
-  if (!text) return;
-  const area = document.getElementById('msgs');
-  const b    = document.createElement('div');
-  b.className = 'mbub me';
-  b.textContent = text;
-  area.appendChild(b);
-  inp.value = '';
-  area.scrollTop = area.scrollHeight;
-  setTimeout(() => {
-    const replies = ['Harika! 😊','Anladım 👍','Tabii ki!','Haha 😄','Ne zaman uygun olursun?'];
-    const r = document.createElement('div');
-    r.className = 'mbub them';
-    r.textContent = replies[Math.floor(Math.random()*replies.length)];
-    area.appendChild(r);
-    area.scrollTop = area.scrollHeight;
-  }, 900 + Math.random()*800);
-}
-
-// ── TURNUVA ──
-function renderPop() {
-  const users = window.USERS || [];
-  const grid  = document.getElementById('pop-grid');
-  if (!grid) return;
-  grid.innerHTML = users.slice(0,4).map(u=>`
-    <div class="pop-item">
-      <div class="pop-ava">${u.initials||'??'}</div>
-      <div class="pop-n">${(u.name||'İsimsiz').split(' ')[0]}</div>
-    </div>`).join('');
-}
-
-// ── PROFİL ──
-function renderProfile() {
-  const cont = document.getElementById('prof-content');
-  const ud   = window.UD;
-  if (!ud) {
-    cont.innerHTML = `<div class="empty">Profil yüklenemedi.</div>`;
-    return;
-  }
-  const hobs = (ud.hobbies||[]).map(h=>`<div class="hob-tag">${h}</div>`).join('');
-  cont.innerHTML = `
-    <div class="prof-card">
-      <div class="prof-ava">${ud.initials||'??'}</div>
-      <div>
-        <div class="prof-name">${ud.name||'Kullanıcı'}</div>
-        <div class="prof-age">${ud.age||'-'} Yaş</div>
-        <div class="prof-meta">🎓 ${ud.faculty||''}</div>
-        <div class="prof-meta">🎯 ${ud.goal||''}</div>
-      </div>
-    </div>
-    <div style="font-size:14px;font-weight:700;color:#111827;margin-bottom:8px;padding:0 2px">Hobilerin</div>
-    <div class="hob-row">${hobs||'<div class="hob-tag" style="opacity:.5">Hobi eklenmedi</div>'}</div>
-    <div class="stat-row">
-      <div class="stat-box"><div class="stat-n">1000</div><div class="stat-l">Popülerlik</div></div>
-      <div class="stat-box"><div class="stat-n g">0</div><div class="stat-l">Arkadaşlarım</div></div>
-    </div>
-    <button class="logout-btn" onclick="doLogout()">→ Çıkış Yap</button>`;
-}
-</script>
-
+<script type="module" src="app.js"></script>
 </body>
 </html>
