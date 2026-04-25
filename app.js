@@ -1,6 +1,6 @@
 // ============================================================================
 // 🌟 UNILOOP - GLOBAL CAMPUS NETWORK | CORE ENGINE (FIREBASE) 🌟
-// 🌟 EKSİKSİZ VE HATASIZ JS KODU - BÖLÜM 1 🌟
+// 🌟 EKSİKSİZ VE GÜNCEL JS KODU - BÖLÜM 1 🌟
 // ============================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -61,9 +61,7 @@ window.userProfile = {
     uid: "", name: "", surname: "", username: "", email: "", university: "", avatar: "👨‍🎓", faculty: "", avatarUrl: "", age: "", gender: "", isPremium: false, grade: "", interests: [], purpose: "", joinedClassRoom: null, fastMatchCount: 0, fastMatchDate: "", lockedArchiveFaculty: "", lockedArchiveGrade: "", lastArchiveResetYear: 0, blockedUsers: [], popularity: 0, lastTournamentDate: 0
 };
 
-// GLOBAL ARAYÜZ VE VERİTABANI DEĞİŞKENLERİ
-let marketDB = [];
-let confessionsDB = [];
+// GLOBAL ARAYÜZ VE VERİTABANI DEĞİŞKENLERİ (Market ve Gönderi silindi)
 let chatsDB = [];
 let currentChatId = null;
 
@@ -136,148 +134,6 @@ function initializeUniLoop() {
     const cropperJs = document.createElement('script');
     cropperJs.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js';
     document.head.appendChild(cropperJs);
-
-    const styleFix = document.createElement('style');
-    styleFix.innerHTML = `
-        html, body { scroll-behavior: smooth !important; -webkit-overflow-scrolling: touch; background-color: #f3f4f6; color: #111827; }
-        header, #app-header { height: 50px !important; box-sizing: border-box; }
-
-        .edit-profile-icon { font-size: 14px; background: #EEF2FF; color: var(--primary); padding: 5px 10px; border-radius: 8px; border: 1px solid #C7D2FE; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 700; transition: 0.2s; }
-        .edit-profile-icon:hover { background: #DBEAFE; }
-
-        body.no-scroll-messages, body.no-scroll-home { overflow: hidden !important; position: fixed; width: 100%; height: 100%; }
-        
-        #main-content { padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important; }
-
-        .no-scroll-messages #main-content, .no-scroll-home #main-content { 
-            position: fixed !important;
-            top: 50px !important;
-            bottom: calc(75px + env(safe-area-inset-bottom)) !important; 
-            left: 0 !important;
-            right: 0 !important;
-            padding: 0 !important; 
-            margin: 0 !important; 
-            height: auto !important;
-            overflow: hidden !important; 
-            display: flex !important;
-            flex-direction: column !important;
-            z-index: 40;
-        }
-
-        .hidden { display: none !important; }
-
-        #chat-layout-container { position: relative !important; width: 100% !important; height: 100% !important; display: flex; flex-direction: row; background: #fff; flex: 1; overflow: hidden; }
-        .chat-main { height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1; background: #f9fafb; position:relative; }
-        #chat-messages-scroll { flex: 1 1 auto !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding: 15px; display:flex; flex-direction:column; }
-        .chat-input-area { flex: 0 0 auto !important; background: white; border-top: 1px solid #E5E7EB; padding: 10px 15px !important; z-index: 50; position: relative; }
-
-        #app-modal:not(.active), #lightbox:not(.active), .modal:not(.active) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -999 !important; transition: opacity 0.3s ease; }
-        #app-modal.active, #lightbox.active, .modal.active { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; z-index: 99999 !important; transition: opacity 0.3s ease;}
-        #auth-screen { position: relative; z-index: 1000 !important; display: none; }
-        #auth-screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        #auth-screen button, #auth-screen a, #auth-screen input, #auth-screen select { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 1001 !important; }
-        button, .menu-item, .chat-contact, .action-btn, .btn-primary, .btn-danger { cursor: pointer !important; position: relative; pointer-events: auto !important; z-index: 10; }
-        
-        #sidebar, #mobile-menu-btn { display: none !important; }
-
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #ffffff; border-top: 1px solid #f1f1f1; display: flex; justify-content: space-around; align-items: center; height: calc(60px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; z-index: 99999; box-shadow: 0 -2px 10px rgba(0,0,0,0.02); }
-        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8E8E93; font-size: 10px; text-decoration: none; cursor: pointer; transition: 0.2s; flex: 1; background: transparent !important; border: none !important; font-weight: 500; -webkit-tap-highlight-color: transparent; height: 60px; padding: 0; }
-        .bottom-nav-item.active { color: #6366f1 !important; font-weight: 600; }
-        .bottom-nav-icon { width: 22px; height: 22px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; }
-        .bottom-nav-icon svg { width: 100%; height: 100%; transition: 0.2s; }
-        .bottom-nav-item.active .bottom-nav-icon svg.fill-active { fill: currentColor; }
-        .bottom-nav-item.active .bottom-nav-icon svg { stroke-width: 2.2; }
-
-        .white-flame-icon { filter: grayscale(100%) brightness(200%); text-shadow: 0 0 8px rgba(255,255,255,0.8); cursor:pointer; font-size:24px; transition: 0.2s; display:inline-block; }
-        .white-flame-icon:hover { transform: scale(1.15) rotate(5deg); }
-        
-        .tour-grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width:100%; max-width:400px; margin: 0 auto; }
-        .tour-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width:100%; max-width:400px; align-items:center; margin: 0 auto; padding-top:20px; }
-        
-        .tour-card { background: #fff; border-radius:16px; overflow:hidden; position:relative; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.08); transition:all 0.15s ease-out; aspect-ratio: 1; display:flex; flex-direction:column; border:3px solid transparent; -webkit-tap-highlight-color: transparent; }
-        .tour-card:active { transform: scale(0.95) !important; border-color: #6366f1 !important; box-shadow:0 8px 20px rgba(99, 102, 241, 0.3) !important; }
-        
-        .tour-card-img { width: 100%; height: 100%; object-fit: cover; }
-        .tour-card-name { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.4), transparent); color:white; padding: 30px 10px 10px 10px; font-size:14px; font-weight:800; text-align:center; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;}
-
-        .stepper-container { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 400px; margin: 0 auto; width: 100%; animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .step-header { font-size: 14px; font-weight: bold; color: var(--primary); text-align: center; margin-bottom: 15px; }
-        .step-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 20px; color: #111827; }
-        .grade-btn, .interest-btn, .purpose-btn { background: #F3F4F6; border: 1px solid #E5E7EB; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; margin: 5px; display: inline-block; color: var(--text-dark); }
-        .grade-btn.active, .interest-btn.active, .purpose-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
-        
-        .id-card { background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); width: 100%; max-width: 100%; box-sizing: border-box; margin: 0 auto 20px auto; position: relative; overflow: hidden; }
-        .id-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--primary), #818cf8); }
-        .id-card-left { flex-shrink: 0; position:relative; }
-        .id-card-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e5e7eb; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow:hidden; }
-        .id-card-right { flex: 1; text-align: left; }
-        .id-card-name { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
-        .id-card-faculty { font-size: 13px; color: var(--primary); font-weight: 700; margin-bottom: 8px; }
-        .id-card-details { font-size: 12px; color: #64748b; margin-bottom: 10px; font-weight: 500; display:flex; flex-direction:column; gap:3px;}
-        .id-card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
-        .id-tag { font-size: 10px; background: #e0e7ff; color: var(--primary); padding: 4px 8px; border-radius: 8px; font-weight: 700; }
-
-        .notif-compact-panel { max-height: 400px; overflow-y: auto; padding-right: 5px; scroll-behavior: smooth; }
-        .notif-compact-item { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 12px; border-radius: 16px; border: 1px solid #f1f5f9; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); flex-wrap: wrap; gap: 10px; transition: transform 0.2s; }
-        .notif-compact-item:hover { transform: translateY(-2px); border-color: #e2e8f0; }
-
-        .cropper-modal-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999999; display: none; flex-direction: column; pointer-events: auto !important;}
-        .cropper-modal-container.active { display: flex; }
-        .cropper-view-box, .cropper-face { border-radius: 50%; }
-        .cropper-view-box { outline: 0; box-shadow: 0 0 0 1px #39f; }
-
-        .chat-sidebar { width: 320px; overflow-y: auto !important; height: 100% !important; -webkit-overflow-scrolling: touch !important; flex-shrink: 0; border-right: 1px solid #e5e7eb; }
-        .chat-contact.active { background: #EEF2FF; border-left: 4px solid var(--primary); }
-        .chat-contact:hover { background: #F9FAFB; }
-        
-        .bubble { position: relative; max-width: 75%; padding: 10px 14px; border-radius: 16px; margin-bottom: 8px; font-size: 15px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); width: fit-content; }
-        .bubble.sent { align-self: flex-end; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border-bottom-right-radius: 4px; }
-        .bubble.received { align-self: flex-start; background: #ffffff; color: #111827; border: 1px solid #e5e7eb; border-bottom-left-radius: 4px; }
-        .bubble.sent .msg-time { color: rgba(255,255,255,0.8) !important; }
-        .bubble.received .msg-time { color: #6b7280 !important; }
-        .bubble.sent .msg-text { color: white !important; }
-
-        #listings-grid-container { max-height: calc(100vh - 200px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; }
-        .answers-container { max-height: 250px !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; padding-right: 8px; scroll-behavior: smooth; }
-        .feed-layout-container { height: auto !important; display: flex; flex-direction: column; overflow: hidden; margin: -20px; background: #F3F4F6; }
-        #conf-feed { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; max-width: 600px !important; margin: 0 auto !important; width: 100%;}
-        .feed-post { background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 16px; margin-bottom: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
-        .feed-post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .feed-post-avatar { font-size: 24px; width: 44px; height: 44px; background: #F3F4F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0; border: 1px solid #E5E7EB; overflow: hidden;}
-        .feed-post-meta { display: flex; flex-direction: column; }
-        .feed-post-author { font-weight: 800; font-size: 15px; color: #111827; display:flex; align-items:center; }
-        .feed-post-time { font-size: 12px; color: #6B7280; margin-top: 2px; }
-        .feed-post-text { font-size: 15px; margin-bottom: 12px; line-height: 1.5; color: #374151; word-break: break-word; }
-        .feed-post-img { width: 100%; border-radius: 12px; margin-bottom: 12px; max-height: 450px; object-fit: cover; cursor: pointer; border: 1px solid #E5E7EB; }
-        .feed-post-actions { display: flex; border-top: 1px solid #E5E7EB; padding-top: 12px; gap: 20px; }
-        .feed-action-btn { background: none; border: none; color: #6B7280; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; padding: 5px; outline: none; transition: 0.2s; border-radius: 8px; z-index: 10; }
-        .feed-action-btn:hover { color: var(--primary); background: #EEF2FF; }
-        
-        #app-header, header { display: flex !important; align-items: center !important; justify-content: space-between !important; flex-wrap: nowrap !important; white-space: nowrap !important; overflow: hidden !important; padding: 5px 15px !important; }
-        #app-header > :first-child, .logo, .logo-title, #logo-btn { flex-shrink: 0 !important; }
-        #app-header > :last-child, .header-right-menu { display: flex !important; align-items: center !important; justify-content: flex-end !important; flex-wrap: nowrap !important; gap: 10px; height: 100% !important; }
-        
-        #notif-btn-top { position: relative; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; transition: 0.2s; }
-        #notif-btn-top:hover { background: #E5E7EB; }
-        
-        .premium-card-bw::before { background: #111827 !important; }
-
-        @media (max-width: 1024px) {
-            .chat-sidebar { width: 100%; display: block; border-right: none; }
-            .chat-active .chat-sidebar { display: none !important; }
-            .chat-main { display: none !important; }
-            .chat-active .chat-main { display: flex !important; }
-        }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(107, 114, 128, 0.8); }
-
-        .home-slider::-webkit-scrollbar { display: none; }
-        .home-slider { -ms-overflow-style: none; scrollbar-width: none; }
-    `;
-    document.head.appendChild(styleFix);
 
     const cropperModalHtml = `
         <div id="cropper-modal" class="cropper-modal-container">
@@ -457,14 +313,15 @@ function initializeUniLoop() {
             html = `
                 <div class="step-header">Adım 4 / 6</div>
                 <div class="step-title">İlgi Alanların Neler? 🎯</div>
-                <p style="text-align:center; font-size:13px; color:#ef4444; font-weight:bold; margin-bottom:15px;">Tam olarak 3 tane seçmelisin.</p>
+                <p style="text-align:center; font-size:13px; color:#6b7280; margin-bottom:15px;">Kendini en iyi anlatanları seç (En fazla 3 adet)</p>
                 <div style="text-align:center; margin-bottom: 20px;">
                     ${interests.map(i => `<button class="interest-btn" onclick="window.toggleInterest(this, '${i}')">${i}</button>`).join('')}
                 </div>
                 <button class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:12px;" onclick="window.processStep(4)">Devam Et →</button>
             `;
         } else if (step === 5) {
-            const purposes = ['👋 Sosyalleşmek İstiyorum', '👥 Yeni Arkadaşlar Arıyorum', '📚 Ders Çalışma Arkadaşı', '❤️ Belki Bir Randevu', '🛒 Sadece Market & İlanlar'];
+            // Market seçeneği kaldırıldı
+            const purposes = ['👋 Sosyalleşmek İstiyorum', '👥 Yeni Arkadaşlar Arıyorum', '📚 Ders Çalışma Arkadaşı', '❤️ Belki Bir Randevu'];
             html = `
                 <div class="step-header">Adım 5 / 6</div>
                 <div class="step-title">Buradaki Amacın Ne? 🚀</div>
@@ -497,10 +354,13 @@ function initializeUniLoop() {
         window.registrationData.grade = grade;
     };
 
+    // 🌟 GÜNCELLEME: Hobi seçimi 3 adetle sınırlandırıldı
     window.toggleInterest = function(btn, interest) {
         if (!btn.classList.contains('active') && window.registrationData.interests.length >= 3) {
-            return alert("Sadece 3 ilgi alanı seçebilirsiniz!");
+            alert("En fazla 3 adet ilgi alanı seçebilirsiniz. 🎯");
+            return;
         }
+
         btn.classList.toggle('active');
         if (btn.classList.contains('active')) {
             if(!window.registrationData.interests.includes(interest)) window.registrationData.interests.push(interest);
@@ -644,7 +504,8 @@ function initializeUniLoop() {
             window.registrationData = { ...window.registrationData, username: finalUsername, name: n, surname: s, age: a, faculty: f, gender: g };
             window.renderStep(4);
         } else if (step === 4) {
-            if(window.registrationData.interests.length !== 3) return alert("Lütfen tam olarak 3 ilgi alanı seçin!");
+            // Hobi sayısını minimum 1'e düşürdük, çünkü maksimum 3 dedik
+            if(window.registrationData.interests.length < 1) return alert("Lütfen en az 1 ilgi alanı seçin.");
             window.renderStep(5);
         } else if (step === 5) {
             if(!window.registrationData.purpose) return alert("Lütfen uygulamadaki amacınızı seçin.");
@@ -711,6 +572,7 @@ function initializeUniLoop() {
         }
     };
 
+    // 🌟 GÜNCELLEME: Team Mesajı artık okunabilir (read-only)
     window.ensureWelcomeMessage = async function(user, userName) {
         if(!user) return;
         try {
@@ -721,16 +583,16 @@ function initializeUniLoop() {
             if (!chatSnap.exists()) {
                 const systemMessageText = `
                     Merhaba ${userName}! Dünyanın en yenilikçi kampüs ağı UniLoop'a hoş geldin. 🎓✨<br><br>
-                    Burası senin alanın. Hemen insanlarla tanışmaya başla!
+                    Burası senin alanın. Frekansı yakalamaya ve popülerlik savaşına katılmaya hazır mısın?
                 `;
                 await setDoc(chatRef, {
                     participants: [user.uid, "system"],
                     participantNames: { [user.uid]: userName, "system": "UniLoop Team" },
-                    participantAvatars: { [user.uid]: "👨‍🎓", "system": "👤" }, 
+                    participantAvatars: { [user.uid]: "👨‍🎓", "system": "🤖" }, 
                     lastUpdated: serverTimestamp(),
                     status: 'accepted',
                     initiator: 'system',
-                    isMarketChat: false,
+                    isSystemChat: true, // Inputu gizlemek için eklenen flag
                     messages: [{
                         senderId: "system", 
                         text: systemMessageText, 
@@ -788,6 +650,7 @@ function initializeUniLoop() {
         }
     };
 
+    // Akademik yıl modal kodları aynen korunmuştur...
     window.showAcademicYearUpdateModal = function(activeYear) {
         let facOptions = allFaculties.map(f => `<option value="${f}" ${window.userProfile.faculty === f ? 'selected' : ''}>${f}</option>`).join('');
         
@@ -841,15 +704,9 @@ function initializeUniLoop() {
             window.userProfile.lockedArchiveGrade = "";
             
             alert("Harika! Yeni yıl profilin güncellendi ve arşiv kilidin sıfırlandı.");
-            
-            const closeBtn = document.querySelector('#app-modal .close-btn') || document.getElementById('modal-close');
-            if(closeBtn) closeBtn.style.display = 'block';
-            
             window.closeModal();
             window.renderProfile(); 
-        } catch(e) {
-            alert("Hata oluştu: " + e.message);
-        }
+        } catch(e) { alert("Hata oluştu: " + e.message); }
     };
 
     onAuthStateChanged(auth, async (user) => {
@@ -873,18 +730,7 @@ function initializeUniLoop() {
 
                 window.userProfile = docSnap.data();
                 if(window.userProfile.isPremium === undefined) window.userProfile.isPremium = false;
-                if(window.userProfile.age === undefined) window.userProfile.age = "";
-                if(window.userProfile.gender === undefined) window.userProfile.gender = "";
-                if(window.userProfile.avatarUrl === undefined) window.userProfile.avatarUrl = "";
-                if(window.userProfile.joinedClassRoom === undefined) window.userProfile.joinedClassRoom = null;
-                if(window.userProfile.profileViewers === undefined) window.userProfile.profileViewers = [];
-                if(window.userProfile.lockedArchiveFaculty === undefined) window.userProfile.lockedArchiveFaculty = "";
-                if(window.userProfile.lockedArchiveGrade === undefined) window.userProfile.lockedArchiveGrade = "";
-                if(window.userProfile.lastArchiveResetYear === undefined) window.userProfile.lastArchiveResetYear = 2023;
-                if(window.userProfile.blockedUsers === undefined) window.userProfile.blockedUsers = [];
-                if(window.userProfile.popularity === undefined) window.userProfile.popularity = 0; 
-                if(window.userProfile.lastTournamentDate === undefined) window.userProfile.lastTournamentDate = 0; 
-
+                
                 await window.ensureWelcomeMessage(user, window.userProfile.name);
                 await updateDoc(userDocRef, { isOnline: true });
 
@@ -909,15 +755,16 @@ function initializeUniLoop() {
                     headerRightMenu.insertAdjacentHTML('beforeend', `<div id="notif-btn-top" onclick="window.renderNotifications()" title="Bildirimler" style="background:white; border:1px solid #111827; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer; box-sizing:border-box; margin:0;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#111827" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> <span id="notif-badge-top" style="display:none; position:absolute; top:-4px; right:-4px; background:#EF4444; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; align-items:center; justify-content:center; font-weight:bold; border:2px solid white;">0</span></div>`);
                 }
 
+                // 🌟 GÜNCELLEME: Alt menüden Market ve Keşfet kaldırıldı.
                 if (!document.getElementById('uniloop-bottom-nav')) {
                     const bottomNav = document.createElement('div');
                     bottomNav.id = 'uniloop-bottom-nav';
                     bottomNav.className = 'bottom-nav';
                     bottomNav.innerHTML = `
                         <div class="menu-item bottom-nav-item active" data-target="home" onclick="window.loadPage('home')"><div class="bottom-nav-icon"><svg class="fill-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div><span>Ana Sayfa</span></div>
-                        <div class="menu-item bottom-nav-item" data-target="voice" onclick="window.loadPage('voice')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></div><span>Frekans</span></div>
-                        <div class="menu-item bottom-nav-item" data-target="popularity" onclick="window.loadPage('popularity')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg></div><span>Savaş</span></div>
+                        
                         <div class="menu-item bottom-nav-item" data-target="messages" onclick="window.loadPage('messages')"><div class="bottom-nav-icon" style="position:relative;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-6px; background:#EF4444; color:white; border-radius:50%; width:14px; height:14px; font-size:9px; align-items:center; justify-content:center; font-weight:bold; border: 2px solid white;">0</span></div><span>Mesajlar</span></div>
+                        
                         <div class="menu-item bottom-nav-item" data-target="profile" onclick="window.loadPage('profile')"><div class="bottom-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><span>Profil</span></div>
                     `;
                     if (appScreen) appScreen.appendChild(bottomNav);
@@ -931,7 +778,9 @@ function initializeUniLoop() {
             if(appScreen) appScreen.style.display = 'none';
             if(authScreen) { authScreen.style.display = 'flex'; authScreen.classList.add('active'); }
             const logCard = document.getElementById('login-card');
+            const regCard = document.getElementById('register-card');
             if(logCard) logCard.style.display = 'block';
+            if(regCard) regCard.style.display = 'none';
         }
     });
 
@@ -947,9 +796,8 @@ function initializeUniLoop() {
         } catch(e) { console.error(e); }
     };
     
+    // 🌟 GÜNCELLEME: Sadece chatler dinleniyor. Market ve İtiraf dinleyicileri silindi.
     function initRealtimeListeners(currentUid) {
-        const safeSortTime = (item) => item.createdAt && item.createdAt.seconds ? item.createdAt.seconds : 0;
-
         onSnapshot(query(collection(db, "chats"), where("participants", "array-contains", currentUid)), (snapshot) => {
             chatsDB = [];
             let pendingRequestsCount = 0;
@@ -971,13 +819,12 @@ function initializeUniLoop() {
                         id: doc.id, otherUid: otherUid, name: otherName, avatar: otherAvatar, 
                         messages: data.messages || [], status: data.status || 'accepted', 
                         initiator: data.initiator || null, lastUpdatedTS: safeTimestamp,
-                        isMarketChat: data.isMarketChat || false,
-                        listingIds: data.listingIds || (data.listingId ? [data.listingId] : []) 
+                        isSystemChat: data.isSystemChat || false
                     };
                     chatsDB.push(chatItem);
 
                     if (chatItem.status === 'pending' && chatItem.initiator !== currentUid) { pendingRequestsCount++; } 
-                    else if (chatItem.status === 'accepted' || chatItem.isMarketChat) {
+                    else if (chatItem.status === 'accepted') {
                         if (chatItem.messages && chatItem.messages.length > 0) {
                             const lastMsg = chatItem.messages[chatItem.messages.length - 1];
                             if (lastMsg.senderId !== currentUid && lastMsg.read === false) unreadMessagesCount++;
@@ -1021,10 +868,10 @@ function initializeUniLoop() {
 // 🌟 BÖLÜM 1 SONU 🌟
 // ============================================================================
 // ============================================================================
-// 🌟 GÜNCELLENMİŞ EKSİKSİZ JS KODU - BÖLÜM 2 🌟
+// 🌟 MEDYA YÜKLEME, POPÜLERLİK SAVAŞI, HIZLI EŞLEŞME VE FREKANS (BÖLÜM 2) 🌟
 // ============================================================================
 
-    window.uploadChatMedia = async function(event, targetId) {
+    window.uploadChatMedia = async function(event, targetId, chatType) {
         const file = event.target.files[0];
         if(!file) return;
 
@@ -1061,44 +908,223 @@ function initializeUniLoop() {
         }
     };
 
-    // PREMIUM İŞLEMLERİ
     window.openPremiumModal = function() {
         const fac = window.userProfile.faculty || "Fakültenizin";
         const grade = window.userProfile.grade ? window.userProfile.grade + ". Sınıf" : "";
+        
         window.openModal('🌟 UniLoop Premium', `
             <div style="text-align:center; padding: 10px;">
                 <div style="font-size: 48px; margin-bottom: 10px;">👑</div>
                 <h3 style="color:#111827; margin-bottom: 10px; font-size: 22px;">Kampüsün Zirvesine Çık!</h3>
-                <p style="margin-bottom:20px; font-size:15px; color:var(--text-gray);">UniLoop Premium ile sınırları kaldır ve kampüsün en popüler ağına dahil ol.</p>
-                <div style="font-size:32px; font-weight:800; margin-bottom:20px; color:var(--text-dark);">79.99 ₺ <span style="font-size:14px; color:var(--text-gray); font-weight:normal;">/ aylık</span></div>
+                <p style="margin-bottom:20px; font-size:15px; color:var(--text-gray);">
+                    UniLoop Premium ile sınırları kaldır ve kampüsün en donanımlı ağına dahil ol.
+                </p>
+                <div style="font-size:32px; font-weight:800; margin-bottom:20px; color:var(--text-dark);">
+                    79.99 ₺ <span style="font-size:14px; color:var(--text-gray); font-weight:normal;">/ aylık</span>
+                </div>
                 <ul style="text-align:left; font-size:14px; margin-bottom:20px; line-height:1.6; color:var(--text-dark); background:#F9FAFB; padding:15px 15px 15px 35px; border-radius:12px; border:1px solid #111827;">
-                    <li>👀 <b>Detaylı profilleri görüntüleme hakkı!</b> Blurları kaldır.</li>
+                    <li>👀 <b>Diğer kullanıcıların detaylı profillerini görüntüleme hakkı!</b> Blurları kaldır.</li>
+                    <li>📚 <b>${fac} ${grade}</b> çıkmış sorularına anında erişim!</li>
                     <li>🎙️ <b>Kampüs Frekansı</b> sohbetlerinde 30 Dakika konuşma süresi!</li>
-                    <li>🔥 <b>Günlük 30 Adet</b> Hızlı Eşleşme (Swipe) hakkı.</li>
+                    <li>🔥 <b>Günlük 30 Adet</b> Hızlı Eşleşme hakkı. (Daha Fazla Eşleşme)</li>
                     <li>🕵️ <b>Kimler Profilime Baktı?</b> Seni görüntüleyen gizli hayranlarını gör.</li>
                 </ul>
-                <button id="buy-premium-btn" onclick="window.upgradeToPremium()" style="width:100%; justify-content:center; padding: 16px; font-size: 16px; background:linear-gradient(135deg, #111827, #374151); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; box-shadow:0 4px 6px rgba(0,0,0,0.3); transition:0.2s;" class="premium-glow">💳 Güvenli Ödeme İle Satın Al</button>
+                <button id="buy-premium-btn" onclick="window.upgradeToPremium()" style="width:100%; justify-content:center; padding: 16px; font-size: 16px; background:linear-gradient(135deg, #111827, #374151); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; box-shadow:0 4px 6px rgba(0,0,0,0.3); transition:0.2s;" class="premium-glow">
+                    💳 Güvenli Ödeme İle Satın Al
+                </button>
+                <p style="font-size:11px; color:#9CA3AF; margin-top:10px;">*İstediğin zaman iptal edebilirsin.</p>
             </div>
         `);
     };
 
+    window.openModal = function(title, contentHTML) { 
+        document.getElementById('modal-title').innerText = title; 
+        document.getElementById('modal-body').innerHTML = contentHTML; 
+        modal.classList.add('active'); 
+        if(!document.body.classList.contains('no-scroll-home')) {
+            document.body.style.overflow = 'hidden'; 
+        }
+    };
+
+    window.closeModal = function() { 
+        modal.classList.remove('active'); 
+        document.getElementById('modal-body').innerHTML = ''; 
+        if (!document.getElementById('lightbox').classList.contains('active') && !document.body.classList.contains('no-scroll-messages') && !document.body.classList.contains('no-scroll-home')) {
+            document.body.style.overflow = 'auto'; 
+        }
+    };
+
     window.upgradeToPremium = async function() {
-        const btn = document.getElementById('buy-premium-btn'); btn.innerText = '⏳ Ödeme İşleniyor...'; btn.disabled = true;
+        const btn = document.getElementById('buy-premium-btn');
+        btn.innerText = '⏳ Ödeme İşleniyor... Lütfen bekleyin.';
+        btn.disabled = true;
+        
         setTimeout(async () => {
             try {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: true });
-                window.userProfile.isPremium = true; window.closeModal();
-                alert("🎉 Tebrikler! UniLoop Premium ayrıcalıklarına sahipsiniz!"); window.loadPage('home'); 
-            } catch(e) { alert("Hata oluştu."); btn.innerText = 'Güvenli Ödeme İle Satın Al'; btn.disabled = false; }
-        }, 2000);
+                window.userProfile.isPremium = true;
+                
+                const navBtn = document.getElementById('nav-premium-action');
+                if(navBtn) {
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="height:36px; display:inline-flex; align-items:center; justify-content:center; background:white; color:#111827; border:1px solid #111827; padding:0 16px; border-radius:18px; font-weight:700; font-size:13px; cursor:pointer; box-sizing:border-box; margin:0;" onclick="window.openPremiumFeaturesModal()">☆ Ayrıcalıklar</div>`;
+                }
+                
+                window.closeModal();
+                alert("🎉 Tebrikler! Ödemeniz başarıyla alındı. UniLoop Premium ayrıcalıklarına artık sahipsiniz!");
+                window.loadPage('home'); 
+            } catch(e) {
+                alert("Hata oluştu: Lütfen internet bağlantınızı kontrol edin.");
+                btn.innerText = '💳 Güvenli Ödeme İle Satın Al';
+                btn.disabled = false;
+            }
+        }, 3000);
     };
 
     window.cancelPremium = async function() {
-        if(confirm("Premium üyeliğinizi iptal etmek istediğinize emin misiniz?")) {
+        if(confirm("Premium üyeliğinizi iptal etmek istediğinize emin misiniz? Gelecek ay aboneliğiniz yenilenmeyecektir.")) {
             try {
                 await updateDoc(doc(db, "users", window.userProfile.uid), { isPremium: false });
-                window.userProfile.isPremium = false; alert("İptal edildi."); window.closeModal(); window.renderSettings();
-            } catch(e) { alert("Hata oluştu."); }
+                window.userProfile.isPremium = false;
+                
+                const navBtn = document.getElementById('nav-premium-action');
+                if(navBtn) {
+                    navBtn.outerHTML = `<div class="menu-item premium-glow" id="nav-premium-action" style="height:36px; display:inline-flex; align-items:center; justify-content:center; background:white; color:#111827; border:1px solid #111827; padding:0 16px; border-radius:18px; font-weight:700; font-size:13px; cursor:pointer; box-sizing:border-box; margin:0;" onclick="window.openPremiumModal()">☆ Premium</div>`;
+                }
+
+                alert("Premium üyeliğiniz başarıyla iptal edildi.");
+                window.closeModal();
+                window.renderSettings();
+            } catch(e) {
+                alert("Hata oluştu: " + e.message);
+            }
+        }
+    };
+
+    window.uploadArchiveFile = async function() {
+        const facBtn = document.getElementById('admin-archive-faculty');
+        const grBtn = document.getElementById('admin-archive-grade');
+        const fileInput = document.getElementById('admin-archive-file');
+        
+        if(!fileInput || !fileInput.files.length) return alert("Lütfen yüklenecek bir PDF seçin.");
+        
+        const fac = facBtn.value.trim();
+        const gr = grBtn.value.trim();
+        const file = fileInput.files[0];
+        
+        const uploadBtn = document.getElementById('upload-archive-btn');
+        const originalText = uploadBtn.innerText;
+        uploadBtn.innerText = "Yükleniyor... Lütfen bekleyin ⏳";
+        uploadBtn.disabled = true;
+
+        try {
+            const cleanName = file.name.replace(/[^a-zA-Z0-9.\-]/g, "_");
+            const storagePath = `archives/${fac}/${gr}/${Date.now()}_${cleanName}`;
+            const storageRef = ref(storage, storagePath);
+            
+            await uploadBytes(storageRef, file);
+            const downloadUrl = await getDownloadURL(storageRef);
+
+            await addDoc(collection(db, "archives"), {
+                faculty: fac,
+                grade: gr,
+                fileName: file.name,
+                fileUrl: downloadUrl,
+                uploadedBy: window.userProfile.uid,
+                createdAt: serverTimestamp()
+            });
+
+            alert(`✅ Başarılı! ${fac} - ${gr} için çıkmış sorular sisteme eklendi.`);
+            fileInput.value = '';
+            window.closeModal();
+        } catch(e) {
+            console.error("Yükleme Hatası:", e);
+            alert("Dosya yüklenirken hata oluştu: " + e.message);
+        } finally {
+            if(uploadBtn) { uploadBtn.innerText = originalText; uploadBtn.disabled = false; }
+        }
+    };
+
+    window.viewArchive = async function() {
+        const u = window.userProfile;
+        
+        if (!u.lockedArchiveFaculty || !u.lockedArchiveGrade) {
+            if (!u.faculty || !u.grade) {
+                alert("Profilinizde fakülte veya sınıf bilginiz eksik. Lütfen ayarlardan profilinizi güncelleyin.");
+                return;
+            }
+            
+            let currentGradeFormatted = u.grade.toString().includes("Sınıf") ? u.grade.toString().trim() : u.grade.toString().trim() + ". Sınıf";
+            
+            if(confirm(`⚠️ DİKKAT: Arşiv hakkınız tüm eğitim yılı boyunca [${u.faculty} - ${currentGradeFormatted}] olarak sabitlenecektir. \n\nDaha sonra profilinizden sınıf veya fakülte değiştirseniz bile diğer arşivleri GÖREMEZSİNİZ.\n\nOnaylıyor musunuz?`)) {
+                try {
+                    await updateDoc(doc(db, "users", u.uid), {
+                        lockedArchiveFaculty: u.faculty.trim(),
+                        lockedArchiveGrade: currentGradeFormatted
+                    });
+                    u.lockedArchiveFaculty = u.faculty.trim();
+                    u.lockedArchiveGrade = currentGradeFormatted;
+                    alert("✅ Arşiviniz başarıyla kilitlendi. Yıl boyunca bu bölümün sorularına erişebileceksiniz.");
+                } catch(e) {
+                    alert("Kilitlenme sırasında bir hata oluştu: " + e.message);
+                    return;
+                }
+            } else {
+                return; 
+            }
+        }
+
+        const fac = u.lockedArchiveFaculty;
+        const gr = u.lockedArchiveGrade;
+
+        window.openModal(`📚 ${fac} - ${gr} Arşivi`, `<div style="text-align:center; padding:20px; color:var(--text-gray);">Arşiv güvenli bir şekilde taranıyor... ⏳</div>`);
+
+        try {
+            const q = query(collection(db, "archives"), where("faculty", "==", fac));
+            const snap = await getDocs(q);
+
+            let matchedDocs = [];
+            snap.forEach(doc => {
+                if (doc.data().grade === gr) {
+                    matchedDocs.push(doc.data());
+                }
+            });
+
+            let html = '<div style="max-height: 400px; overflow-y: auto; padding-right: 5px;">';
+            
+            if(matchedDocs.length === 0) {
+                html += `
+                <div style="text-align:center; padding:30px 10px;">
+                    <div style="font-size:40px; margin-bottom:10px;">📭</div>
+                    <div style="font-size:14px; color:var(--text-gray); line-height:1.5;">Henüz kilitlendiğiniz bölüm <b>(${fac})</b> ve sınıfa <b>(${gr})</b> ait bir arşiv bulunamadı. Admin'in dosyaları yüklemesini bekleyin.</div>
+                </div>`;
+            } else {
+                html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
+                matchedDocs.forEach(data => {
+                    html += `
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:15px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:12px;">
+                            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                                <div style="font-size:24px;">📄</div>
+                                <div style="flex:1; min-width:0;">
+                                    <div style="font-weight:700; font-size:14px; color:var(--text-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${data.fileName}</div>
+                                    <div style="font-size:11px; color:var(--text-gray);">Çıkmış Sorular / Ders Notu</div>
+                                </div>
+                            </div>
+                            <a href="${data.fileUrl}" target="_blank" style="background:#111827; color:white; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:bold; flex-shrink:0; box-shadow:0 2px 4px rgba(0,0,0,0.3);">İndir / Aç</a>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            html += '</div>';
+            document.getElementById('modal-body').innerHTML = html;
+
+        } catch(e) {
+            console.error("Arşiv Çekme Hatası:", e);
+            document.getElementById('modal-body').innerHTML = `
+                <div style="color:#EF4444; text-align:center; padding:20px;">
+                    <strong>Bağlantı Hatası</strong><br><br>
+                    Arşiv yüklenirken bir hata oluştu: ${e.message}
+                </div>`;
         }
     };
 
@@ -1106,282 +1132,481 @@ function initializeUniLoop() {
         try {
             const userDoc = await getDoc(doc(db, "users", window.userProfile.uid));
             const viewers = userDoc.exists() ? (userDoc.data().profileViewers || []) : [];
+            const isAsude = window.userProfile.username === '#asude';
+            
             let viewersHtml = '';
             if(viewers.length > 0) {
-                const uniqueViewers = []; const seen = new Set();
-                for(let i = viewers.length - 1; i >= 0; i--){ if(!seen.has(viewers[i].uid)){ seen.add(viewers[i].uid); uniqueViewers.push(viewers[i]); } }
+                const uniqueViewers = [];
+                const seen = new Set();
+                for(let i = viewers.length - 1; i >= 0; i--){
+                    if(!seen.has(viewers[i].uid)){
+                        seen.add(viewers[i].uid);
+                        uniqueViewers.push(viewers[i]);
+                    }
+                }
                 viewersHtml = uniqueViewers.map(v => `
                     <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; background:#fff; border-radius:10px; margin-bottom:8px; border:1px solid #E5E7EB; cursor:pointer;" onclick="window.viewUserProfile('${v.uid}')">
-                        <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:20px;">👀</span><span style="font-weight:bold; font-size:14px; color:var(--text-dark);">${v.name}</span></div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:20px;">👀</span>
+                            <span style="font-weight:bold; font-size:14px; color:var(--text-dark);">${v.name}</span>
+                        </div>
                         <div style="font-size:11px; color:var(--text-gray);">${v.time}</div>
                     </div>
                 `).join('');
-            } else { viewersHtml = '<div style="font-size:13px; color:var(--text-gray); text-align:center; padding:10px;">Henüz kimse profilinize bakmadı.</div>'; }
+            } else {
+                viewersHtml = '<div style="font-size:13px; color:var(--text-gray); text-align:center; padding:10px;">Henüz kimse profilinize bakmadı.</div>';
+            }
+
+            const fac = window.userProfile.faculty || "Fakülte";
+            const grade = window.userProfile.grade ? window.userProfile.grade + ". Sınıf" : "";
+
+            let archiveSectionHtml = '';
+            
+            if (isAsude) {
+                let facOptions = allFaculties.map(f => `<option value="${f}">${f}</option>`).join('');
+                let gradeOptions = [1, 2, 3, 4, 5, 6].map(g => `<option value="${g}. Sınıf">${g}. Sınıf</option>`).join('');
+                
+                archiveSectionHtml = `
+                    <div class="card" style="background:linear-gradient(135deg, #F3F4F6, #E5E7EB); border:1px solid #111827; padding:20px; border-radius:12px;">
+                        <div style="font-size:30px; margin-bottom:10px; text-align:center;">👑</div>
+                        <h4 style="color:#111827; margin-bottom:8px; font-size:16px; text-align:center;">Admin Paneli: Arşive Dosya Ekle</h4>
+                        <p style="font-size:12px; color:#374151; text-align:center; margin-bottom:15px; font-weight:bold;">Fakülte ve sınıf seçip PDF yükleyin.</p>
+                        
+                        <select id="admin-archive-faculty" style="width:100%; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #111827; outline:none; font-size:13px;">
+                            ${facOptions}
+                        </select>
+                        <select id="admin-archive-grade" style="width:100%; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #111827; outline:none; font-size:13px;">
+                            ${gradeOptions}
+                        </select>
+                        <input type="file" id="admin-archive-file" accept="application/pdf" style="margin-bottom:15px; width:100%; font-size:12px;">
+                        
+                        <button id="upload-archive-btn" class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#111827; border:none;" onclick="window.uploadArchiveFile()">
+                            PDF'i Arşive Ekle ➡️
+                        </button>
+                    </div>
+                `;
+            } else {
+                archiveSectionHtml = `
+                    <div class="card" style="background:linear-gradient(135deg, #F9FAFB, #F3F4F6); border:1px solid #111827; padding:20px; border-radius:12px;">
+                        <div style="font-size:30px; margin-bottom:10px; text-align:center;">📚</div>
+                        <h4 style="color:#111827; margin-bottom:8px; font-size:16px; text-align:center;">Çıkmış Sorular Arşivi</h4>
+                        <p style="font-size:13px; color:#374151; text-align:center; margin-bottom:15px; font-weight:bold;">Tüm Yıl Boyunca Sabit Erişim</p>
+                        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; border-radius:10px; background:#111827; border:none;" onclick="window.viewArchive()">
+                            Arşive Git ➡️
+                        </button>
+                    </div>
+                `;
+            }
 
             window.openModal('🌟 Premium Özellikler Merkezi', `
                 <div style="display:flex; flex-direction:column; gap:15px;">
+                    ${archiveSectionHtml}
+                    
                     <div class="card" style="background:#F9FAFB; border:1px solid #111827; padding:20px; border-radius:12px;">
-                        <h4 style="color:#111827; margin-bottom:12px; font-size:15px; display:flex; align-items:center; gap:5px;"><span>🕵️</span> Kimler Profilime Baktı?</h4>
-                        <div style="max-height:200px; overflow-y:auto; padding-right:5px;">${viewersHtml}</div>
+                        <h4 style="color:#111827; margin-bottom:12px; font-size:15px; display:flex; align-items:center; gap:5px;">
+                            <span>🕵️</span> Kimler Profilime Baktı?
+                        </h4>
+                        <div style="max-height:200px; overflow-y:auto; padding-right:5px;">
+                            ${viewersHtml}
+                        </div>
                     </div>
                 </div>
             `);
-        } catch(e) { console.error(e); }
-    };
-
-    // =========================================================================
-    // 🌟 ANA SAYFA & 12 SAATLİK SAYAÇLI HIZLI EŞLEŞME 🌟
-    // =========================================================================
-
-    window.toggleHomeSearch = function() {
-        const searchContainer = document.getElementById('home-search-container');
-        const defaultView = document.getElementById('home-default-view');
-        const inputField = document.getElementById('home-friend-search-input');
-
-        if(searchContainer.classList.contains('hidden')) {
-            searchContainer.classList.remove('hidden');
-            if(defaultView) defaultView.style.opacity = '0'; 
-            if(inputField) { inputField.style.display = 'block'; setTimeout(() => inputField.focus(), 100); }
-        } else {
-            searchContainer.classList.add('hidden');
-            if(defaultView) defaultView.style.opacity = '1';
-            if(inputField) inputField.blur();
+        } catch(e) {
+            console.error("Premium özellikler yüklenirken hata oluştu:", e);
         }
     };
 
-    window.renderHome = async function() {
-        document.body.classList.add('no-scroll-home');
-        if(window.freqTimerInterval) clearInterval(window.freqTimerInterval);
-        window.endWebRTCCall();
+    window.goToMessages = function() {
+        document.querySelectorAll('.bottom-nav-item').forEach(m => m.classList.remove('active'));
+        const msgTab = document.querySelector('.bottom-nav-item[data-target="messages"]');
+        if(msgTab) { msgTab.classList.add('active'); window.loadPage('messages'); }
+    };
 
-        let usernameWarning = '';
-        if (!window.userProfile.username) {
-            usernameWarning = `<div style="background: #FEF2F2; color: #DC2626; padding: 12px; border-radius: 12px; border: 1px solid #FCA5A5; margin-bottom: 6px; font-weight: bold; text-align: center; cursor:pointer; flex-shrink:0;" onclick="window.loadPage('profile')">⚠️ Lütfen profilinden bir kullanıcı adı belirle!</div>`;
-        }
-
-        const slides = [
-            `
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; position:relative;">
-                <div id="home-default-view" style="display:flex; justify-content:space-between; align-items:center; width:100%; transition: opacity 0.2s;">
-                    <div>
-                        <h2 style="font-size:18px; margin-bottom:4px; margin-top:0;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
-                        <p style="opacity:0.9; font-size:12px; margin:0;"><strong style="color:#D9FDD3;">${window.userProfile.university}</strong></p>
-                    </div>
-                    <div id="home-icons-container" style="display:flex; gap:15px; align-items:center;">
-                        <div style="font-size:24px; cursor:pointer;" onclick="window.toggleHomeSearch()" title="Arkadaşını Bul">🔍</div>
-                    </div>
-                </div>
-                <div id="home-search-container" class="hidden" style="position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:20; display:flex; align-items:center; background:white; border-radius:20px; padding:5px 12px; width:100%; box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
-                        <span style="color:var(--primary); font-weight:800; font-size:14px; margin-right:5px;">#</span>
-                        <input type="text" id="home-friend-search-input" style="border:none; background:transparent; width:100%; outline:none; font-size:13px; color:black;" placeholder="Kullanıcı adı..." onkeypress="if(event.key==='Enter') window.searchAndAddFriendHome()">
-                        <button onclick="window.searchAndAddFriendHome()" style="background:transparent; border:none; font-size:16px; cursor:pointer;">➡️</button>
-                        <button onclick="window.toggleHomeSearch()" style="background:transparent; border:none; font-size:16px; cursor:pointer; color:#EF4444; margin-left:5px;">✖</button>
-                </div>
-            </div>
-            `,
-            `
-            <div>
-                <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">🎙️ Kampüs Frekansı</h2>
-                <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">Yeni sekmede tamamen anonim sesli görüşmeler yap ve maskeni indir!</p>
-            </div>
-            `,
-            `
-            <div>
-                <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">🔥 Popülerlik Savaşı</h2>
-                <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">Turnuva alanına geç ve kampüsün en popüler kişilerini oylamaya başla.</p>
-            </div>
-            `
-        ];
-
-        let html = `
-            <div style="display:flex; flex-direction:column; height:100%; overflow:hidden;">
-                ${usernameWarning}
-                
-                <div style="position:relative; margin: 10px; border-radius:16px; flex-shrink:0; box-shadow:0 6px 15px rgba(0,0,0,0.1); background:#1F2937;">
-                    <div id="home-slider-container" class="home-slider" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; width:100%; scroll-behavior:smooth;">
-                        ${slides.map(slide => `
-                            <div style="flex: 0 0 100%; scroll-snap-align: center; padding: 15px; box-sizing:border-box; display:flex; justify-content:flex-start; align-items:center; color:white; min-height:80px;">
-                                ${slide}
+    window.showLeaderboard = async function() {
+        window.openModal('🔥 Popülerlik Sıralaması', `<div style="text-align:center; padding:30px;"><div style="font-size:30px; animation: glowPulse 1.5s infinite alternate;">🔥</div><p style="color:var(--text-gray); margin-top:10px;">Sıralama yükleniyor...</p></div>`);
+        try {
+            const q = query(collection(db, "users"), orderBy("popularity", "desc"), limit(15));
+            const snap = await getDocs(q);
+            
+            let html = '<div style="display:flex; flex-direction:column; gap:8px; max-height: 350px; overflow-y: auto; padding-right: 5px; margin-bottom: 15px;">';
+            let rank = 1;
+            snap.forEach(doc => {
+                const u = doc.data();
+                if(u.popularity > 0) {
+                    let medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+                    html += `
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#F9FAFB; border-radius:12px; border:1px solid #E5E7EB; cursor:pointer; transition:0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'" onclick="window.closeModal(); window.viewUserProfile('${u.uid}')">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="font-size:18px; font-weight:800; width:25px; text-align:center;">${medal}</div>
+                                <div style="width:40px; height:40px; border-radius:50%; overflow:hidden; background:#E5E7EB; border:1px solid #111827;">
+                                    ${u.avatarUrl ? `<img src="${u.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="font-size:20px; text-align:center; line-height:40px;">${u.avatar || '👤'}</div>`}
+                                </div>
+                                <span style="font-weight:700; font-size:14px;">${u.name} ${u.surname ? u.surname.charAt(0)+'.' : ''}</span>
                             </div>
-                        `).join('')}
-                    </div>
-                    <div style="position:absolute; bottom:5px; left:0; right:0; display:flex; justify-content:center; gap:5px; pointer-events:none;">
-                        ${slides.map((_, i) => `<div class="slider-dot" id="slider-dot-${i}" style="width:6px; height:6px; border-radius:50%; background:${i===0 ? 'white' : 'rgba(255,255,255,0.3)'};"></div>`).join('')}
-                    </div>
-                </div>
+                            <div style="font-weight:800; color:#111827; font-size:14px; background:white; padding:4px 10px; border-radius:12px; border:1px solid #111827;">${u.popularity} 🔥</div>
+                        </div>
+                    `;
+                    rank++;
+                }
+            });
+            if(rank === 1) html += '<p style="text-align:center; color:var(--text-gray); padding:20px;">Henüz popülerlik puanı kazanan kimse yok. İlk sen ol!</p>';
+            
+            let btnHtml = `<button id="join-tour-btn-modal" class="btn-primary" style="width:100%; padding:14px; border-radius:12px; background:#111827; border:none; font-weight:bold;" onclick="window.closeModal(); window.startPopularityTournament();">Savaşa Katıl ⚔️</button>`;
+            
+            html += `</div>${btnHtml}`;
+            document.getElementById('modal-body').innerHTML = html;
+        } catch(e) {
+            document.getElementById('modal-body').innerHTML = '<p style="color:red; text-align:center;">Sıralama yüklenirken hata oluştu.</p>';
+        }
+    };
 
-                <div id="embedded-fast-match-container" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:5px 10px 10px 10px; overflow:hidden;"></div>
+    window.startPopularityTournament = async function() {
+        const container = document.getElementById('embedded-fast-match-container');
+        if(!container) return;
+        
+        container.innerHTML = `
+            <div style="text-align:center; padding:20px;">
+                <div style="font-size:50px; animation: glowPulse 1.5s infinite alternate;" class="white-flame-icon">🔥</div>
+                <h3 style="color:var(--text-dark); margin-bottom:10px;">Adaylar Toplanıyor...</h3>
+                <p style="color:var(--text-gray); font-size:13px;">Tarafını seçmeye hazırlan!</p>
             </div>
         `;
         
-        mainContent.innerHTML = html;
-
-        const sliderContainer = document.getElementById('home-slider-container');
-        if (sliderContainer) {
-            let currentIndex = 0; const totalSlides = slides.length;
-            sliderContainer.addEventListener('scroll', () => {
-                currentIndex = Math.round(sliderContainer.scrollLeft / sliderContainer.clientWidth);
-                for(let i=0; i<totalSlides; i++){
-                    const dot = document.getElementById(`slider-dot-${i}`);
-                    if(dot) dot.style.background = (i === currentIndex) ? 'white' : 'rgba(255,255,255,0.3)';
-                }
+        try {
+            const qSnap = await getDocs(query(collection(db, "users"), limit(100)));
+            let allUsers = [];
+            qSnap.forEach(doc => { 
+                const d = doc.data();
+                if(d.uid !== window.userProfile.uid) allUsers.push(d); 
             });
-            if(window.homeSliderInterval) clearInterval(window.homeSliderInterval);
-            window.homeSliderInterval = setInterval(() => {
-                currentIndex++; if(currentIndex >= totalSlides) currentIndex = 0;
-                sliderContainer.scrollTo({ left: currentIndex * sliderContainer.clientWidth, behavior: 'smooth' });
-            }, 10000);
-        }
-        window.initEmbeddedFastMatch();
-    };
-
-    window.searchAndAddFriendHome = async function() {
-        const input = document.getElementById('home-friend-search-input');
-        if(input) {
-            const val = input.value;
-            const fakeInput = document.createElement('input'); fakeInput.id = 'friend-search-input'; fakeInput.value = val;
-            document.body.appendChild(fakeInput);
-            await window.searchAndAddFriend();
-            fakeInput.remove(); input.value = ''; window.toggleHomeSearch();
-        }
-    };
-
-    window.searchAndAddFriend = async function() {
-        try {
-            const searchInput = document.getElementById('friend-search-input');
-            if(!searchInput) return;
-            let rawSearch = searchInput.value.trim().toLowerCase();
-            if(!rawSearch) return alert("Lütfen bir kullanıcı adı yazın.");
-            if (!window.userProfile.username) return alert("Önce profilinizden kullanıcı adı belirleyin!");
-
-            rawSearch = rawSearch.replace(/^#/, '');
-            const searchVal = '#' + rawSearch;
-            if(searchVal === window.userProfile.username) return alert("Kendinize istek gönderemezsiniz :)");
-
-            const q = query(collection(db, "users"), where("username", "==", searchVal));
-            const snapshot = await getDocs(q);
             
-            if(snapshot.empty) { alert("Bu kullanıcı adına sahip kimse bulunamadı!"); } 
-            else {
-                const targetUser = snapshot.docs[0].data();
-                const premiumIcon = targetUser.isPremium ? '<span style="font-size:18px; margin-left:5px;" title="Premium Üye">👑</span>' : '';
-                window.openModal('🔍 Kullanıcı Bulundu', `
-                    <div style="text-align:center; padding:10px;">
-                        <div style="width:80px; height:80px; border-radius:50%; margin:0 auto 10px auto; overflow:hidden; border:2px solid ${targetUser.isPremium ? '#111827' : '#E5E7EB'}; display:flex; align-items:center; justify-content:center; background:#F3F4F6; font-size:32px;">
-                            ${targetUser.avatarUrl ? `<img src="${targetUser.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (targetUser.avatar || '👤')}
-                        </div>
-                        <h3 style="margin-bottom:5px; color:var(--text-dark); display:flex; align-items:center; justify-content:center;">${targetUser.name} ${targetUser.surname.charAt(0)}. ${premiumIcon}</h3>
-                        <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px;">${targetUser.faculty || 'Kampüs Öğrencisi'}</p>
-                        <button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px;" onclick="window.sendFriendRequest('${targetUser.uid}', '${targetUser.name} ${targetUser.surname}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>
-                    </div>
-                `);
-            }
-            searchInput.value = ''; 
-        } catch (error) { alert("Arama sırasında hata oluştu: " + error.message); }
-    };
-
-    window.sendFriendRequest = async function(targetUserId, targetUserName, isFastMatch = false) {
-        try {
-            const myUid = window.userProfile.uid;
-            const q = query(collection(db, "chats"), where("participants", "array-contains", myUid));
-            const snap = await getDocs(q);
+            allUsers = allUsers.sort(() => 0.5 - Math.random()).slice(0, 32);
             
-            let existingChat = null;
-            snap.forEach(doc => { if (doc.data().participants && doc.data().participants.includes(targetUserId)) { existingChat = { id: doc.id, ...doc.data() }; } });
-
-            if(!existingChat) {
-                await addDoc(collection(db, "chats"), {
-                    participants: [myUid, targetUserId],
-                    participantNames: { [myUid]: window.userProfile.name, [targetUserId]: targetUserName },
-                    participantAvatars: { [myUid]: window.userProfile.avatarUrl || window.userProfile.avatar || "👨‍🎓", [targetUserId]: "👤" },
-                    lastUpdated: serverTimestamp(), status: 'pending', initiator: myUid, messages: [] 
+            while(allUsers.length < 32) {
+                allUsers.push({ 
+                    uid: "bot_" + Math.random().toString(36).substr(2, 9), 
+                    name: "Sistem Botu 🤖", 
+                    age: "?",
+                    faculty: "UniLoop",
+                    avatar: "🤖",
+                    isClone: true 
                 });
-                if(!isFastMatch) alert("✅ Arkadaşlık isteği başarıyla gönderildi!");
-            } else {
-                if(!isFastMatch) {
-                    if(existingChat.status === 'pending') alert("Zaten bir arkadaşlık isteği mevcut.");
-                    else alert("Bu kişiyle zaten arkadaşsınız.");
-                }
             }
-        } catch (error) { if(!isFastMatch) alert("Hata oluştu."); }
+            
+            window.tData = { bracket: allUsers, winners: [], currentMatch: 0, stage: 'groups', semiLosers: [], finalists: [], finalWinner: null, secondPlace: null, thirdPlace: null };
+            window.renderTournamentRound();
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = '<p style="color:red; text-align:center;">Turnuva başlatılamadı.</p>';
+        }
     };
 
-    // 12 SAATLİK SAYACA SAHİP HIZLI EŞLEŞME
+    window.tourSelect = function(index) {
+        const selectedUser = window.tData.bracket[index];
+        window.tData.winners.push(selectedUser);
+
+        if(window.tData.stage === 'semis') {
+            const loserIndex = index % 2 === 0 ? index + 1 : index - 1;
+            window.tData.semiLosers.push(window.tData.bracket[loserIndex]);
+        }
+        
+        if (window.tData.stage === 'thirdPlace') {
+            window.tData.thirdPlace = selectedUser;
+        }
+
+        if (window.tData.stage === 'final') {
+            window.tData.finalWinner = selectedUser;
+            const loserIndex = index % 2 === 0 ? index + 1 : index - 1;
+            window.tData.secondPlace = window.tData.bracket[loserIndex];
+        }
+
+        window.tData.currentMatch++;
+        window.renderTournamentRound();
+    };
+
+    window.renderTournamentRound = function() {
+        const container = document.getElementById('embedded-fast-match-container');
+        if(!container) return;
+        const t = window.tData;
+
+        let totalMatchesInStage = 0;
+        if(t.stage === 'groups') totalMatchesInStage = 8;
+        if(t.stage === 'quarters') totalMatchesInStage = 4;
+        if(t.stage === 'semis') totalMatchesInStage = 2;
+        if(t.stage === 'thirdPlace') totalMatchesInStage = 1;
+        if(t.stage === 'final') totalMatchesInStage = 1;
+
+        if (t.currentMatch >= totalMatchesInStage) {
+            if (t.stage === 'groups') { t.stage = 'quarters'; t.bracket = [...t.winners]; }
+            else if (t.stage === 'quarters') { t.stage = 'semis'; t.bracket = [...t.winners]; }
+            else if (t.stage === 'semis') { 
+                t.stage = 'thirdPlace'; 
+                t.finalists = [...t.winners];
+                t.bracket = [...t.semiLosers]; 
+            }
+            else if (t.stage === 'thirdPlace') { 
+                t.stage = 'final'; 
+                t.bracket = [...t.finalists]; 
+            } 
+            else if (t.stage === 'final') { window.finishTournament(); return; }
+            
+            t.winners = [];
+            t.currentMatch = 0;
+            window.renderTournamentRound();
+            return;
+        }
+
+        let stageTitle = '';
+        if(t.stage === 'groups') stageTitle = `🔥 Grup Aşaması (${t.currentMatch+1}/8)`;
+        if(t.stage === 'quarters') stageTitle = `⚡ Çeyrek Final (${t.currentMatch+1}/4)`;
+        if(t.stage === 'semis') stageTitle = `⚔️ Yarı Final (${t.currentMatch+1}/2)`;
+        if(t.stage === 'thirdPlace') stageTitle = `🥉 3. lük Maçı`;
+        if(t.stage === 'final') stageTitle = `🏆 BÜYÜK FİNAL`;
+
+        if (t.stage === 'groups') {
+            const baseIdx = t.currentMatch * 4;
+            const users = [t.bracket[baseIdx], t.bracket[baseIdx+1], t.bracket[baseIdx+2], t.bracket[baseIdx+3]];
+            container.innerHTML = `
+                <div style="text-align:center; margin-bottom:10px; width:100%;">
+                    <h3 style="margin:0; color:#111827; font-size:18px;">${stageTitle}</h3>
+                    <p style="font-size:12px; color:var(--text-gray); margin:5px 0 0 0;">En favori profilini seç!</p>
+                </div>
+                <div class="tour-grid-4">
+                    ${users.map((u, i) => `
+                        <div class="tour-card" onclick="this.style.transform='scale(0.95)'; setTimeout(() => window.tourSelect(${baseIdx+i}), 150);">
+                            ${u.avatarUrl ? `<img src="${u.avatarUrl}" class="tour-card-img">` : `<div style="width:100%;height:100%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:40px;">${u.avatar||'👤'}</div>`}
+                            <div class="tour-card-name" style="padding-top:40px;">
+                                <span style="font-size:10px; color:#D1D5DB; display:block; margin-bottom:2px; font-weight:normal;">${u.age ? u.age : '?'} Yaş • ${u.faculty ? u.faculty : 'Belirtilmemiş'}</span>
+                                ${u.name}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            const baseIdx = t.currentMatch * 2;
+            const u1 = t.bracket[baseIdx];
+            const u2 = t.bracket[baseIdx+1];
+            container.innerHTML = `
+                <div style="text-align:center; margin-bottom:10px; width:100%;">
+                    <h3 style="margin:0; color:#111827; font-size:20px;">${stageTitle}</h3>
+                    <p style="font-size:12px; color:var(--text-gray); margin:5px 0 0 0;">Kazanması gerekeni seç!</p>
+                </div>
+                <div class="tour-grid-2">
+                    <div class="tour-card" onclick="this.style.transform='scale(0.95)'; setTimeout(() => window.tourSelect(${baseIdx}), 150);" style="aspect-ratio: 0.8;">
+                        ${u1.avatarUrl ? `<img src="${u1.avatarUrl}" class="tour-card-img">` : `<div style="width:100%;height:100%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:50px;">${u1.avatar||'👤'}</div>`}
+                        <div class="tour-card-name" style="font-size:16px; padding-top:40px;">
+                            <span style="font-size:11px; color:#D1D5DB; display:block; margin-bottom:4px; font-weight:normal;">${u1.age ? u1.age : '?'} Yaş • ${u1.faculty ? u1.faculty : 'Belirtilmemiş'}</span>
+                            ${u1.name}
+                        </div>
+                    </div>
+                    <div class="tour-card" onclick="this.style.transform='scale(0.95)'; setTimeout(() => window.tourSelect(${baseIdx+1}), 150);" style="aspect-ratio: 0.8;">
+                        ${u2.avatarUrl ? `<img src="${u2.avatarUrl}" class="tour-card-img">` : `<div style="width:100%;height:100%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:50px;">${u2.avatar||'👤'}</div>`}
+                        <div class="tour-card-name" style="font-size:16px; padding-top:40px;">
+                            <span style="font-size:11px; color:#D1D5DB; display:block; margin-bottom:4px; font-weight:normal;">${u2.age ? u2.age : '?'} Yaş • ${u2.faculty ? u2.faculty : 'Belirtilmemiş'}</span>
+                            ${u2.name}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    };
+
+    // 🌟 GÜNCELLEME: Bot çökmelerini engellemek için Try-Catch izolasyonu uygulandı.
+    window.finishTournament = async function() {
+        const container = document.getElementById('embedded-fast-match-container');
+        if(!container) return;
+        const t = window.tData;
+
+        container.innerHTML = `<div style="text-align:center; padding:30px;"><div style="font-size:40px; animation: glowPulse 1s infinite alternate;">⏳</div><h3 style="color:var(--text-dark);">Sonuçlar Kaydediliyor...</h3></div>`;
+
+        try {
+            const nowTs = Date.now();
+            await updateDoc(doc(db, "users", window.userProfile.uid), { lastTournamentDate: nowTs });
+            window.userProfile.lastTournamentDate = nowTs;
+
+            const addPopularityPoints = async (userObj, points) => {
+                if(userObj && !userObj.isClone) {
+                    try {
+                        const uDocRef = doc(db, "users", userObj.uid);
+                        const uDoc = await getDoc(uDocRef);
+                        if(uDoc.exists()) {
+                            await updateDoc(uDocRef, { popularity: (uDoc.data().popularity || 0) + points });
+                        }
+                    } catch(err) {
+                        console.warn(`${userObj.name} için puan ekleme hatası (Atlandı):`, err);
+                    }
+                }
+            };
+
+            await addPopularityPoints(t.finalWinner, 3);
+            await addPopularityPoints(t.secondPlace, 2);
+            await addPopularityPoints(t.thirdPlace, 1);
+
+            container.innerHTML = `
+                <div style="position:relative; text-align:center; padding:20px; background:white; border-radius:16px; box-shadow:0 4px 10px rgba(0,0,0,0.05); width:100%; max-width:350px;">
+                    <button onclick="window.loadPage('home')" style="position:absolute; top:10px; right:10px; background:transparent; border:none; font-size:24px; color:#9CA3AF; cursor:pointer; font-weight:bold; transition:0.2s;" onmouseover="this.style.color='#EF4444'" onmouseout="this.style.color='#9CA3AF'">✖</button>
+                    <div style="font-size:50px; margin-bottom:10px; margin-top:10px;">🎉</div>
+                    <h3 style="color:#111827; margin-bottom:20px;">Savaş Sona Erdi!</h3>
+                    
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px; text-align:left;">
+                        <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:10px; border-radius:10px; border:1px solid #E5E7EB;">
+                            <span style="font-size:24px;">🥇</span> 
+                            <span style="font-weight:800; flex:1; color:#111827;">${t.finalWinner.name}</span> 
+                            <span style="font-weight:bold; color:var(--text-gray);">${t.finalWinner.isClone ? 'BOT' : '+3 🔥'}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:10px; border-radius:10px; border:1px solid #E5E7EB;">
+                            <span style="font-size:24px;">🥈</span> 
+                            <span style="font-weight:800; flex:1; color:#111827;">${t.secondPlace.name}</span> 
+                            <span style="font-weight:bold; color:var(--text-gray);">${t.secondPlace.isClone ? 'BOT' : '+2 🔥'}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:10px; border-radius:10px; border:1px solid #E5E7EB;">
+                            <span style="font-size:24px;">🥉</span> 
+                            <span style="font-weight:800; flex:1; color:#111827;">${t.thirdPlace.name}</span> 
+                            <span style="font-weight:bold; color:var(--text-gray);">${t.thirdPlace.isClone ? 'BOT' : '+1 🔥'}</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-primary" style="width:100%; justify-content:center; padding:12px; border-radius:12px; font-weight:800;" onclick="window.showLeaderboard()">Liderlik Tablosunu Gör</button>
+                </div>
+            `;
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = '<p style="color:red;">Sonuçlar kaydedilirken genel bir hata oluştu.</p>';
+        }
+    };
+
+    // 🌟 GÜNCELLEME: Turnuva zaman sınırı kaldırıldı, sınırsız girilebilir.
     window.initEmbeddedFastMatch = async function() {
+        let count = window.userProfile.fastMatchCount || 0;
+        let today = new Date().toLocaleDateString();
+        
+        if (window.userProfile.fastMatchDate !== today) {
+            count = 0;
+            window.userProfile.fastMatchCount = 0;
+            window.userProfile.fastMatchDate = today;
+            await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchCount: 0, fastMatchDate: today });
+        }
+
         const container = document.getElementById('embedded-fast-match-container');
         if(!container) return;
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
-        let count = window.userProfile.fastMatchCount || 0;
-        let resetTime = window.userProfile.fastMatchResetTime || 0;
-        const now = Date.now();
-
+        
         if (count >= maxSwipes) {
-            if (resetTime > 0 && now >= resetTime) {
-                count = 0;
-                window.userProfile.fastMatchCount = 0;
-                window.userProfile.fastMatchResetTime = 0;
-                await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchCount: 0, fastMatchResetTime: 0 });
-            } else {
-                if (resetTime === 0) {
-                    resetTime = now + (12 * 60 * 60 * 1000); 
-                    window.userProfile.fastMatchResetTime = resetTime;
-                    await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchResetTime: resetTime });
-                }
+            const isPremium = window.userProfile.isPremium;
+            
+            let top3 = [];
+            try {
+                const q = query(collection(db, "users"), orderBy("popularity", "desc"), limit(3));
+                const snap = await getDocs(q);
+                snap.forEach(doc => top3.push(doc.data()));
+            } catch(e) { console.error("Kürsü yüklenemedi", e); }
 
-                container.innerHTML = `
-                    <div style="background:white; border-radius:24px; padding:40px 20px; text-align:center; width:100%; max-width:320px; box-shadow:0 10px 30px rgba(0,0,0,0.05); border: 1px solid var(--border-color);">
-                        <div style="font-size:60px; margin-bottom:20px; filter: grayscale(100%); opacity: 0.7;">⏳</div>
-                        <h2 style="color:var(--text-dark); margin-bottom:10px; font-size:22px;">Hakkın Doldu!</h2>
-                        <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px; line-height: 1.5;">Kampüste kaydıracak kimse kalmadı veya limitine ulaştın. Yeni eşleşmeler için biraz beklemen gerekiyor.</p>
-                        
-                        <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:16px; padding:15px; margin-bottom:20px;">
-                            <span style="font-size:12px; color:var(--text-gray); text-transform:uppercase; font-weight:bold; letter-spacing:1px; display:block; margin-bottom:5px;">Yenilenme Süresi</span>
-                            <div id="fast-match-countdown" style="font-size:24px; font-weight:900; color:var(--primary); font-family:monospace;">--:--:--</div>
-                        </div>
-                        
-                        ${!window.userProfile.isPremium ? `<button onclick="window.openPremiumModal()" style="background:linear-gradient(135deg, #111827, #374151); color:white; border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:bold; width:100%; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.2);">👑 Premium ile Limiti Artır</button>` : ''}
+            let podiumHtml = `
+                <div style="margin-top:20px; width:100%; display:flex; justify-content:center; align-items:flex-end; gap:10px; height:150px; padding:0 15px; box-sizing:border-box;">
+                    ${top3[1] ? `
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center;" onclick="window.viewUserProfile('${top3[1].uid}')">
+                        <img src="${top3[1].avatarUrl || ''}" style="width:45px; height:45px; border-radius:50%; border:3px solid #C0C0C0; object-fit:cover; background:#1F2937; margin-bottom:5px;">
+                        <span style="font-size:11px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${top3[1].name}</span>
+                        <div style="width:100%; background:linear-gradient(to top, #e2e8f0, #f8fafc); height:50px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-weight:900; color:#64748b; border:1px solid #cbd5e1; border-bottom:none; box-shadow:0 -2px 10px rgba(0,0,0,0.05);">2.</div>
                     </div>
-                `;
+                    ` : '<div style="flex:1;"></div>'}
+                    ${top3[0] ? `
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center;" onclick="window.viewUserProfile('${top3[0].uid}')">
+                        <img src="${top3[0].avatarUrl || ''}" style="width:55px; height:55px; border-radius:50%; border:3px solid #FBBF24; object-fit:cover; background:#1F2937; z-index:5; margin-bottom:5px;">
+                        <span style="font-size:12px; font-weight:900; color:var(--text-dark); margin-bottom:5px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${top3[0].name}</span>
+                        <div style="width:100%; background:linear-gradient(to top, #fef3c7, #fffbeb); height:80px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-weight:900; color:#b45309; border:1px solid #fde68a; border-bottom:none; box-shadow:0 -4px 15px rgba(251,191,36,0.3);">1.</div>
+                    </div>
+                    ` : '<div style="flex:1;"></div>'}
+                    ${top3[2] ? `
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center;" onclick="window.viewUserProfile('${top3[2].uid}')">
+                        <img src="${top3[2].avatarUrl || ''}" style="width:45px; height:45px; border-radius:50%; border:3px solid #CD7F32; object-fit:cover; background:#1F2937; margin-bottom:5px;">
+                        <span style="font-size:11px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${top3[2].name}</span>
+                        <div style="width:100%; background:linear-gradient(to top, #ffedd5, #fffbeb); height:40px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-weight:900; color:#b45309; border:1px solid #fde047; border-bottom:none; box-shadow:0 -2px 10px rgba(0,0,0,0.05);">3.</div>
+                    </div>
+                    ` : '<div style="flex:1;"></div>'}
+                </div>
+            `;
 
-                if (window.fastMatchTimerInterval) clearInterval(window.fastMatchTimerInterval);
-                window.fastMatchTimerInterval = setInterval(() => {
-                    const timerEl = document.getElementById('fast-match-countdown');
-                    if (timerEl) {
-                        let diff = resetTime - Date.now();
-                        if (diff <= 0) {
-                            clearInterval(window.fastMatchTimerInterval);
-                            window.initEmbeddedFastMatch();
-                        } else {
-                            const h = Math.floor(diff / (1000 * 60 * 60)).toString().padStart(2, '0');
-                            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
-                            const s = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
-                            timerEl.innerText = `${h}:${m}:${s}`;
-                        }
-                    }
-                }, 1000);
-                return;
-            }
+            container.innerHTML = `
+                <div style="width:100%; max-width:380px; display:flex; flex-direction:row; gap:12px; padding:10px;">
+                    
+                    <div style="flex:1; background:#1F2937; border-radius:16px; padding:15px 10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; box-shadow:0 4px 10px rgba(0,0,0,0.15); aspect-ratio:1/1.15; border:1px solid #374151;">
+                        <div style="font-size:24px; margin-bottom:5px;">⚡</div>
+                        <h4 style="margin:0 0 5px 0; color:white; font-size:13px; text-align:center;">Hızlı Eşleşme</h4>
+                        
+                        ${isPremium ? `
+                            <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 10px 0; line-height:1.4;">Bugünlük hakkın doldu, yarın bir daha gel!</p>
+                            <div style="background:#374151; padding:8px 5px; border-radius:8px; font-weight:800; color:white; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Bekleniyor...</div>
+                        ` : `
+                            <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 5px 0; line-height:1.4;">Daha fazla eşleşme için</p>
+                            <button onclick="window.openPremiumModal()" style="background:white; color:#111827; border:1px solid #D1D5DB; border-radius:8px; padding:6px; font-size:10px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:8px; transition:0.2s;">Premium Ol ☆</button>
+                            <div style="background:#374151; padding:6px 5px; border-radius:8px; font-weight:800; color:white; font-size:12px; width:100%; box-sizing:border-box; text-align:center;" id="fast-match-timer">⏳ Bekleniyor...</div>
+                        `}
+                    </div>
+
+                    <div style="flex:1; background:#1F2937; border-radius:16px; padding:15px 10px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; box-shadow:0 4px 10px rgba(0,0,0,0.15); aspect-ratio:1/1.15; border:1px solid #374151;">
+                        <div style="font-size:24px; margin-bottom:5px;" class="white-flame-icon">🔥</div>
+                        <h4 style="margin:0 0 5px 0; color:white; font-size:13px; text-align:center;">Popülerlik Savaşı</h4>
+                        <p style="font-size:11px; color:#9CA3AF; text-align:center; margin:0 0 10px 0; line-height:1.4;">Kampüsün en popülerlerini seç veya seçil! 👑</p>
+                        
+                        <button onclick="window.startPopularityTournament()" style="background:white; color:#111827; border:none; border-radius:8px; padding:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%; transition:0.2s;">Savaşa Katıl ⚔️</button>
+                    </div>
+                </div>
+                
+                <div style="flex:1; width:100%; min-height:50px; display:flex; flex-direction:column; justify-content:flex-end;">
+                    ${top3.length > 0 ? podiumHtml : '<p style="text-align:center; color:#9CA3AF; font-size:12px;">Henüz kürsüye çıkan kimse yok!</p>'}
+                </div>
+            `;
+
+            if (window.fastMatchTimerInterval) clearInterval(window.fastMatchTimerInterval);
+            window.fastMatchTimerInterval = setInterval(() => {
+                const timerEl = document.getElementById('fast-match-timer');
+                if(timerEl) {
+                    const now = new Date();
+                    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    const diff = tomorrow - now;
+                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                    const s = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+                    timerEl.innerText = `⏳ ${h}:${m}:${s}`;
+                }
+            }, 1000);
+
+            return; 
         }
 
-        container.innerHTML = `<div style="text-align:center; padding:10px;"><div style="font-size:40px; animation: glowPulse 1.5s infinite alternate; margin-bottom:15px;">🔍</div><h3 style="color:var(--text-gray);">Kampüste birileri aranıyor...</h3></div>`;
+        container.innerHTML = `
+            <div style="text-align:center; padding:10px; display:flex; flex-direction:column; align-items:center;">
+                <div style="font-size:40px; animation: glowPulse 1.5s infinite alternate; margin-bottom:15px;">🔍</div>
+                <h3 style="color:var(--text-gray);">Kampüste birileri aranıyor...</h3>
+            </div>
+        `;
 
         try {
             const querySnapshot = await getDocs(query(collection(db, "users"), limit(50)));
-            const interactedUids = chatsDB.map(c => c.otherUid);
+            const interactedUids = chatsDB
+                .filter(c => c.status === 'accepted' || c.status === 'blocked')
+                .map(c => c.otherUid);
+                
             window.fastMatchUsers = [];
 
             querySnapshot.forEach((doc) => {
                 const u = doc.data();
-                if(u.uid !== window.userProfile.uid && !interactedUids.includes(u.uid)) window.fastMatchUsers.push(u);
+                if(u.uid !== window.userProfile.uid && !interactedUids.includes(u.uid)) {
+                    window.fastMatchUsers.push(u);
+                }
             });
 
             if(window.fastMatchUsers.length === 0) {
                  container.innerHTML = `
-                    <div style="padding:40px 20px; text-align:center; background:white; border-radius:24px; width:100%; max-width:320px; box-shadow:0 10px 30px rgba(0,0,0,0.05); border:1px solid var(--border-color);">
+                    <div style="padding:40px 10px; text-align:center; background:white; border-radius:16px; width:100%; max-width:320px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
                         <div style="font-size:50px; margin-bottom:15px;">🌟</div>
                         <h3 style="color:var(--text-dark); margin-bottom:10px;">Şu an kimse yok!</h3>
-                        <p style="color:var(--text-gray); font-size:14px;">Ağda karşılaşacak kimse kalmadı. Lütfen daha sonra tekrar kontrol et.</p>
+                        <p style="color:var(--text-gray); font-size:13px; margin-bottom:15px;">Ağda karşılaşacak kimse kalmadı. Lütfen daha sonra tekrar kontrol et.</p>
+                        <button id="join-tour-btn-empty" class="btn-primary" style="width:100%; justify-content:center; padding:12px; background:#111827; border:none; border-radius:12px;" onclick="window.startPopularityTournament()">Savaşa Katıl ⚔️</button>
                     </div>
                 `;
                 return;
@@ -1389,8 +1614,12 @@ function initializeUniLoop() {
 
             window.fastMatchUsers = window.fastMatchUsers.sort(() => 0.5 - Math.random());
             window.fastMatchCurrentIndex = 0;
+            
             window.renderEmbeddedFastMatchCard();
-        } catch(e) { container.innerHTML = '<p style="color:red;">Hata oluştu.</p>'; }
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = '<p style="color:red;">Kullanıcılar yüklenirken hata oluştu.</p>';
+        }
     };
 
     window.renderEmbeddedFastMatchCard = function() {
@@ -1398,172 +1627,156 @@ function initializeUniLoop() {
         if(!container) return;
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
-        if(window.fastMatchCurrentIndex >= window.fastMatchUsers.length) { window.fastMatchUsers = window.fastMatchUsers.sort(() => 0.5 - Math.random()); window.fastMatchCurrentIndex = 0; }
+
+        if(window.fastMatchCurrentIndex >= window.fastMatchUsers.length) {
+            window.fastMatchUsers = window.fastMatchUsers.sort(() => 0.5 - Math.random());
+            window.fastMatchCurrentIndex = 0;
+        }
 
         const u = window.fastMatchUsers[window.fastMatchCurrentIndex];
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
-        const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:6px; text-shadow:0 1px 2px rgba(0,0,0,0.5);">👑</span>' : '';
+        const premiumIcon = u.isPremium ? '<span style="font-size:18px; margin-left:6px; text-shadow:0 1px 2px rgba(0,0,0,0.5);" title="Premium Üye">👑</span>' : '';
         
-        let avatarHtml = u.avatarUrl ? `<img src="${u.avatarUrl}" style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;">` : `<div style="width:100%; height:100%; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:80px; pointer-events:none;">${u.avatar || '👤'}</div>`;
+        let avatarHtml = u.avatarUrl 
+            ? `<img src="${u.avatarUrl}" style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;">` 
+            : `<div style="width:100%; height:100%; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); display:flex; align-items:center; justify-content:center; font-size:80px; pointer-events:none;">${u.avatar || '👤'}</div>`;
+
         let tagsHtml = '';
-        if(u.interests && Array.isArray(u.interests)) { tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:11px; background:rgba(255,255,255,0.25); color:white; padding:4px 10px; border-radius:12px; font-weight:700; margin-right:4px; margin-bottom:4px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join(''); }
+        if(u.interests && Array.isArray(u.interests)) {
+            tagsHtml = u.interests.slice(0, 3).map(tag => `<span style="font-size:11px; background:rgba(255,255,255,0.25); color:white; padding:4px 10px; border-radius:12px; font-weight:700; margin-right:4px; margin-bottom:4px; backdrop-filter:blur(5px); display:inline-block; border:1px solid rgba(255,255,255,0.3);">${tag}</span>`).join('');
+        }
 
         let remaining = maxSwipes - window.userProfile.fastMatchCount;
-        let headerText = window.userProfile.isPremium ? `<span style="color:#111827; font-size:12px; font-weight:bold; background:white; padding:6px 14px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #111827; box-shadow:0 2px 4px rgba(0,0,0,0.05);">Kalan Hakkın: ${remaining} / 30 (Premium)</span>` : `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:6px 14px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #FCA5A5;">Kalan Hakkın: ${remaining} / 10</span>`;
+        
+        let headerText = window.userProfile.isPremium ? 
+            `<span style="color:#111827; font-size:12px; font-weight:bold; background:white; padding:4px 12px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #111827; box-shadow:0 2px 4px rgba(0,0,0,0.05);">Kalan Hakkın: ${remaining} / 30 (Premium)</span>` : 
+            `<span style="color:#EF4444; font-size:12px; font-weight:bold; background:#FEF2F2; padding:4px 12px; border-radius:12px; margin-bottom:10px; display:inline-block; border:1px solid #FCA5A5;">Kalan Hakkın: ${remaining} / 10</span>`;
 
         container.innerHTML = `
             ${headerText}
             <div id="swipe-card" class="swipe-card">
-                <div class="swipe-card-img-wrapper">${avatarHtml}</div>
+                <div class="swipe-card-img-wrapper">
+                    ${avatarHtml}
+                </div>
+                
                 <div style="position:absolute; bottom:0; left:0; right:0; padding:40px 15px 45px 15px; background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%); z-index:2; text-align:left; border-bottom-left-radius:20px; border-bottom-right-radius:20px; pointer-events:none;">
                     <h2 style="margin:0 0 6px 0; color:white; font-size:22px; display:flex; align-items:center; text-shadow:0 2px 4px rgba(0,0,0,0.6);">${u.name} ${initial} ${u.age ? `<span style="font-weight:normal; margin-left:8px; font-size:18px; opacity:0.9;">${u.age}</span>` : ''} ${premiumIcon}</h2>
                     <div style="font-size:13px; color:#e2e8f0; font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:4px; text-shadow:0 1px 2px rgba(0,0,0,0.5);"><span style="font-size:15px;">🏛️</span> ${u.faculty || 'Kampüs Öğrencisi'}</div>
                     <div style="display:flex; flex-wrap:wrap; margin-bottom:0;">${tagsHtml}</div>
                 </div>
+                
                 <div style="position:absolute; bottom:-28px; left:0; right:0; display:flex; justify-content:center; gap:25px; z-index:10;">
-                    <button onclick="window.handleSwipe('left')" style="width:60px; height:60px; border-radius:50%; background:white; border:none; color:#EF4444; font-size:26px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(239,68,68,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)';" onmouseout="this.style.transform='scale(1)';">✖</button>
-                    <button onclick="window.handleSwipe('right')" style="width:60px; height:60px; border-radius:50%; background:white; border:none; color:#10B981; font-size:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(16,185,129,0.3); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)';" onmouseout="this.style.transform='scale(1)';">❤</button>
+                    <button onclick="window.handleSwipe('left')" style="width:60px; height:60px; border-radius:50%; background:white; border:none; color:#EF4444; font-size:26px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(239,68,68,0.3); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 12px 25px rgba(239,68,68,0.5)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px rgba(239,68,68,0.3)';">✖</button>
+                    <button onclick="window.handleSwipe('right')" style="width:60px; height:60px; border-radius:50%; background:white; border:none; color:#10B981; font-size:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(16,185,129,0.3); transition:transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 12px 25px rgba(16,185,129,0.5)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 20px rgba(16,185,129,0.3)';">❤</button>
                 </div>
             </div>
+            <div style="height:35px;"></div>
         `;
     };
 
+    // 🌟 GÜNCELLEME: Sağa kaydırıldığında kullanıcıya +1 puan sessizce eklenir.
     window.handleSwipe = async function(direction) {
         const card = document.getElementById('swipe-card');
         if(!card) return;
 
         window.userProfile.fastMatchCount += 1;
-        try { await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchCount: window.userProfile.fastMatchCount }); } catch(e) {}
+        try {
+            await updateDoc(doc(db, "users", window.userProfile.uid), { fastMatchCount: window.userProfile.fastMatchCount });
+        } catch(e) { console.warn("Sayaç güncellenemedi:", e); }
 
         let maxSwipes = window.userProfile.isPremium ? 30 : 10;
 
         if(direction === 'left') {
-            card.style.transform = 'translateX(-200px) rotate(-20deg)'; card.style.opacity = '0';
+            card.style.transform = 'translateX(-200px) rotate(-20deg)';
+            card.style.opacity = '0';
             setTimeout(() => {
                 window.fastMatchCurrentIndex++;
-                if (window.userProfile.fastMatchCount >= maxSwipes) { window.initEmbeddedFastMatch(); } else { window.renderEmbeddedFastMatchCard(); }
+                if (window.userProfile.fastMatchCount >= maxSwipes) {
+                    window.initEmbeddedFastMatch(); 
+                } else {
+                    window.renderEmbeddedFastMatchCard();
+                }
             }, 300);
         } else if (direction === 'right') {
-            card.style.transform = 'translateX(200px) rotate(20deg)'; card.style.opacity = '0';
-            const u = window.fastMatchUsers[window.fastMatchCurrentIndex];
+            card.style.transform = 'translateX(200px) rotate(20deg)';
+            card.style.opacity = '0';
             
-            // 🔥 SAĞA KAYDIRILAN KİŞİYE OTOMATİK +1 POPÜLERLİK PUANI EKLENİR
-            try {
-                const targetDocRef = doc(db, "users", u.uid);
-                const targetDocSnap = await getDoc(targetDocRef);
-                if (targetDocSnap.exists()) {
-                    await updateDoc(targetDocRef, { popularity: (targetDocSnap.data().popularity || 0) + 1 });
-                }
-            } catch(err) { console.warn("Puan güncellenemedi.", err); }
-
+            const u = window.fastMatchUsers[window.fastMatchCurrentIndex];
             window.sendFriendRequest(u.uid, `${u.name} ${u.surname ? u.surname : ''}`, true);
+            
+            try {
+                const targetRef = doc(db, "users", u.uid);
+                const targetDoc = await getDoc(targetRef);
+                if(targetDoc.exists()) {
+                    await updateDoc(targetRef, { popularity: (targetDoc.data().popularity || 0) + 1 });
+                }
+            } catch(err) { console.warn("Puan eklenemedi:", err); }
             
             setTimeout(() => {
                 window.fastMatchCurrentIndex++;
-                if (window.userProfile.fastMatchCount >= maxSwipes) { window.initEmbeddedFastMatch(); } else { window.renderEmbeddedFastMatchCard(); }
+                if (window.userProfile.fastMatchCount >= maxSwipes) {
+                    window.initEmbeddedFastMatch(); 
+                } else {
+                    window.renderEmbeddedFastMatchCard();
+                }
             }, 300);
         }
     };
 
 
-    // =========================================================================
-    // 🌟 KAMPÜS FREKANSI (SESLİ SOHBET) SEKMESİ (PROFESYONEL UI) 🌟
-    // =========================================================================
+    /* ========================================================================= */
+    /* 🎙️ GERÇEK ZAMANLI 1v1 EŞLEŞME & MASKE (RIZA) MOTORU                     */
+    /* ========================================================================= */
     let voiceSearchTimeout = null;
     let voiceQueueUnsubscribe = null;
     window.callRole = null; 
 
-    const rtcConfig = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }] };
+    const rtcConfig = {
+        iceServers: [
+            { urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302', 'stun:stun3.l.google.com:19302', 'stun:stun4.l.google.com:19302'] }
+        ]
+    };
 
-    window.renderVoice = function() {
-        document.body.classList.add('no-scroll-home');
+    window.openFrequency = function() {
+        const freqChat = document.getElementById('embedded-voice-chat');
+        const mainContent = document.getElementById('main-content');
+        if(freqChat) {
+            freqChat.style.display = 'flex';
+            freqChat.classList.add('active');
+            if(mainContent) { mainContent.style.visibility = 'hidden'; mainContent.style.height = '0'; }
+            document.body.style.backgroundColor = "#FFFFFF";
+            window.scrollTo(0, 0);
+        }
+        window.lastMatchedUid = null; 
+        
         if(!document.getElementById('remote-audio-node')) {
             const audioNode = document.createElement('audio');
-            audioNode.id = 'remote-audio-node'; audioNode.autoplay = true; document.body.appendChild(audioNode);
+            audioNode.id = 'remote-audio-node';
+            audioNode.autoplay = true;
+            document.body.appendChild(audioNode);
         }
-
-        mainContent.innerHTML = `
-            <div id="embedded-voice-chat" class="active">
-                <div class="voice-chat-card" style="background: linear-gradient(135deg, #1f2937, #0f172a); border: 2px solid rgba(255,255,255,0.1); position:relative; overflow:hidden;">
-                    
-                    <div style="position:absolute; top:-50px; left:-50px; width:150px; height:150px; background:rgba(139,92,246,0.3); border-radius:50%; filter:blur(50px); z-index:0; pointer-events:none;"></div>
-                    <div style="position:absolute; bottom:-50px; right:-50px; width:150px; height:150px; background:rgba(16,185,129,0.2); border-radius:50%; filter:blur(50px); z-index:0; pointer-events:none;"></div>
-
-                    <div id="state-start" class="screen active" style="z-index:10;">
-                        <div style="font-size: 70px; margin-bottom: 20px; text-shadow: 0 10px 20px rgba(0,0,0,0.5);">🎙️</div>
-                        <h2 style="color: white; margin-bottom: 12px; font-weight:900; letter-spacing:1px; font-size:24px;">Kampüs Frekansı</h2>
-                        <p style="color: #9ca3af; font-size: 14px; margin-bottom: 35px; line-height:1.6; padding: 0 15px;">Tamamen anonim bir şekilde sohbete başla. Uyum yakaladığını hissedersen maskeni indir ve kimliğini göster!</p>
-                        <button class="btn-maske" style="width: 100%; padding: 18px; border-radius: 16px; font-weight: 800; border: none; cursor: pointer; font-size: 16px; background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4); text-transform:uppercase; letter-spacing:1px; transition:0.3s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'" onclick="window.startFrequencySearch()">Sohbet Aramaya Başla</button>
-                    </div>
-
-                    <div id="state-search" class="screen" style="z-index:10;">
-                        <div class="radar-container" style="border-color: rgba(139, 92, 246, 0.5); box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);"><div class="radar-sweep" style="background: linear-gradient(90deg, rgba(139,92,246,0.6) 0%, transparent 100%);"></div><div style="font-size: 35px; z-index: 10;">📡</div></div>
-                        <h3 style="color: #c4b5fd; font-weight:800; font-size:20px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Frekans Taranıyor...</h3>
-                        <p style="color: #94a3b8; font-size: 13px; margin-bottom: 25px;">Ağdaki biriyle eşleştiriliyorsun, lütfen bekle.</p>
-                        <button class="btn-kapat" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; background:rgba(239, 68, 68, 0.1); color:#ef4444; border:1px solid rgba(239, 68, 68, 0.3);" onclick="window.closeFrequency()">İptal Et ✖</button>
-                    </div>
-
-                    <div id="state-timeout" class="screen" style="z-index:10;">
-                        <div style="font-size: 60px; margin-bottom: 15px; opacity:0.8;">🏜️</div>
-                        <h3 style="color: #fca5a5; font-size:22px; font-weight:800;">Frekans Boş!</h3>
-                        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 25px; line-height:1.5;">Şu an ağda eşleşecek kimse bulunamadı. Belki de herkes derstedir?</p>
-                        <button class="btn-maske" style="width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; margin-bottom:12px; background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);" onclick="window.startFrequencySearch()">Tekrar Ara 🔄</button>
-                        <button class="btn-kapat" style="width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; background:rgba(255,255,255,0.05); color:#94a3b8;" onclick="window.closeFrequency()">Kapat ✖</button>
-                    </div>
-
-                    <div id="state-chat" class="screen" style="z-index:10;">
-                        <h4 style="color: #10b981; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 3px; font-size:12px; font-weight:900; text-shadow:0 0 10px rgba(16,185,129,0.5);">🟢 Bağlantı Kuruldu</h4>
-                        <p id="chat-timer" style="color: #fcd34d; font-family: monospace; font-size: 18px; font-weight:bold; margin-top: 0; margin-bottom: 25px; background: rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); padding: 6px 18px; border-radius: 20px;">Kalan Süre: 10:00</p>
-                        
-                        <div class="blurred-avatar" id="anon-avatar" style="border: 3px solid rgba(255,255,255,0.2); width:110px; height:110px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);"></div>
-                        
-                        <div class="visualizer" style="background:rgba(0,0,0,0.2); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.05);">
-                            <div class="bar" id="bar-1"></div><div class="bar" id="bar-2"></div><div class="bar" id="bar-3"></div><div class="bar" id="bar-4"></div><div class="bar" id="bar-5"></div><div class="bar" id="bar-6"></div><div class="bar" id="bar-7"></div>
-                        </div>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
-                            <div style="display: flex; gap: 10px;">
-                                <button class="btn-gec" id="skip-btn" onclick="window.skipFrequencyUser()" style="flex:1; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; background:rgba(255,255,255,0.1); color:white;">Geç ⏭</button>
-                                <button class="btn-maske" id="reveal-btn" onclick="window.requestReveal()" style="flex:2; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; background:linear-gradient(135deg, #10b981, #059669); box-shadow:0 4px 15px rgba(16,185,129,0.3);">Maskeyi İndir 🎭</button>
-                            </div>
-                            <button class="btn-kapat" onclick="window.closeFrequency()" style="width: 100%; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; background:transparent; color:#ef4444; border:1px solid rgba(239,68,68,0.3);">Görüşmeyi Sonlandır</button>
-                        </div>
-                        <p id="reveal-status" style="background:rgba(245, 158, 11, 0.1); border:1px solid rgba(245, 158, 11, 0.3); color: #fcd34d; font-size: 13px; margin-top: 15px; padding:8px 15px; border-radius:12px; display: none; font-weight:bold;">Onay bekleniyor ⏳</p>
-                    </div>
-
-                    <div id="state-revealed" class="screen" style="z-index:10; background:rgba(255,255,255,0.05); padding:20px; border-radius:24px; border:1px solid rgba(255,255,255,0.1); backdrop-filter:blur(10px);">
-                        <div style="font-size:50px; margin-bottom:10px; text-shadow:0 0 20px rgba(16,185,129,0.8); animation: fadeInUp 0.5s ease;">✨</div>
-                        <h3 style="color: #10b981; margin-bottom: 20px; font-size:24px; font-weight:900;">Eşleşme Başarılı!</h3>
-                        
-                        <div style="position:relative; width:100px; height:100px; margin:0 auto 15px auto;">
-                            <img id="reveal-avatar" src="" class="real-avatar" alt="Avatar" style="width:100%; height:100%; margin:0; border:4px solid #10b981; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-                            <div style="position:absolute; bottom:-5px; right:-5px; background:#10b981; color:white; border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-size:14px; border:2px solid #1f2937;">✔️</div>
-                        </div>
-                        
-                        <h2 id="reveal-name" style="margin: 0 0 5px 0; color:white; font-weight:800; font-size:20px;">İsim, Yaş</h2>
-                        <p id="reveal-faculty" style="color: #a78bfa; font-size: 13px; font-weight: bold; margin: 0 0 25px 0; background:rgba(139,92,246,0.1); padding:4px 10px; border-radius:10px; display:inline-block;">Fakülte</p>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
-                            <button id="add-friend-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 800; cursor: pointer; font-size:15px; box-shadow:0 4px 15px rgba(16,185,129,0.4); text-transform:uppercase; letter-spacing:1px;" onclick="window.addRevealedFriend()">Bağlantı Ekle ➕</button>
-                            <div style="display: flex; gap: 10px;">
-                                <button class="btn-gec" onclick="window.skipFrequencyUser()" style="flex:1; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; background:rgba(255,255,255,0.1); color:white;">Sıradakine Geç</button>
-                                <button class="btn-kapat" onclick="window.closeFrequency()" style="flex:1; padding: 14px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; background:transparent; color:#9ca3af; border:1px solid rgba(255,255,255,0.1);">Kapat ✖</button>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        `;
+        
+        window.startFrequencySearch();
     };
 
     window.closeFrequency = async function() {
+        const freqChat = document.getElementById('embedded-voice-chat');
+        const mainContent = document.getElementById('main-content');
+        if(freqChat) {
+            freqChat.style.display = 'none';
+            freqChat.classList.remove('active');
+            if(mainContent) { mainContent.style.visibility = 'visible'; mainContent.style.height = 'auto'; }
+        }
+        
         clearTimeout(voiceSearchTimeout);
         if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
         clearInterval(window.freqTimerInterval);
+        
         window.endWebRTCCall(); 
+        
         try { await deleteDoc(doc(db, "voice_queue", window.userProfile.uid)); } catch(e) {}
-        window.switchFrequencyState('state-start'); 
+        
+        window.switchFrequencyState('state-search'); 
     };
 
     window.switchFrequencyState = function(stateId) {
@@ -1575,11 +1788,14 @@ function initializeUniLoop() {
     window.setupLocalAudio = async function() {
         try {
             window.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            
             window.freqAudioContext = new (window.AudioContext || window.webkitAudioContext)();
             const source = window.freqAudioContext.createMediaStreamSource(window.localStream);
             const analyser = window.freqAudioContext.createAnalyser();
-            analyser.fftSize = 32; source.connect(analyser);
+            analyser.fftSize = 32;
+            source.connect(analyser);
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
             const bars = [document.getElementById('bar-1'), document.getElementById('bar-2'), document.getElementById('bar-3'), document.getElementById('bar-4'), document.getElementById('bar-5'), document.getElementById('bar-6'), document.getElementById('bar-7')];
             
             function animateBars() {
@@ -1589,22 +1805,38 @@ function initializeUniLoop() {
                 for(let i = 0; i < 7; i++) {
                     let val = dataArray[i + 2] || 0; 
                     let height = Math.max(10, (val / 255) * 50); 
-                    if(bars[i]) { bars[i].style.height = `${height}px`; bars[i].style.background = height > 20 ? '#34d399' : '#059669'; }
+                    if(bars[i]) {
+                        bars[i].style.height = `${height}px`;
+                        bars[i].style.background = height > 20 ? '#34d399' : '#059669';
+                    }
                 }
             }
-            animateBars(); return true;
-        } catch(err) { alert("Mikrofon izni alınamadı!"); return false; }
+            animateBars();
+            return true;
+        } catch(err) {
+            alert("Mikrofon izni alınamadı! Konuşabilmek için cihaz ayarlarından izin verin.");
+            return false;
+        }
     };
 
     window.endWebRTCCall = function() {
         if(window.callUnsubscribe) { window.callUnsubscribe(); window.callUnsubscribe = null; }
         if(window.iceUnsubscribe) { window.iceUnsubscribe(); window.iceUnsubscribe = null; }
+        
         if(window.peerConnection) { window.peerConnection.close(); window.peerConnection = null; }
         if(window.localStream) { window.localStream.getTracks().forEach(t => t.stop()); window.localStream = null; }
         if(window.freqAudioContext) { window.freqAudioContext.close(); window.freqAudioContext = null; }
+        
         const remoteAudio = document.getElementById('remote-audio-node');
-        if(remoteAudio) { remoteAudio.pause(); remoteAudio.srcObject = null; }
-        if(window.callDocId) { deleteDoc(doc(db, "calls", window.callDocId)).catch(e=>{}); window.callDocId = null; }
+        if(remoteAudio) {
+            remoteAudio.pause();
+            remoteAudio.srcObject = null;
+        }
+
+        if(window.callDocId) {
+             deleteDoc(doc(db, "calls", window.callDocId)).catch(e=>{});
+             window.callDocId = null;
+        }
     };
 
     window.createWebRTCCall = async function(calleeUid) {
@@ -1618,36 +1850,70 @@ function initializeUniLoop() {
 
         window.peerConnection.ontrack = (event) => {
             const remoteAudio = document.getElementById('remote-audio-node');
-            if(remoteAudio) { remoteAudio.srcObject = event.streams[0]; remoteAudio.play().catch(e => console.log(e)); }
+            if(remoteAudio) {
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.play().catch(e => console.log("Ses oynatma engellendi: ", e));
+            }
         };
 
-        window.peerConnection.onicecandidate = event => { if (event.candidate) { addDoc(offerCandidates, event.candidate.toJSON()); } };
-        window.peerConnection.onconnectionstatechange = () => { if (window.peerConnection.connectionState === 'disconnected' || window.peerConnection.connectionState === 'failed') { window.startFrequencySearch(); } };
+        window.peerConnection.onicecandidate = event => {
+            if (event.candidate) { addDoc(offerCandidates, event.candidate.toJSON()); }
+        };
+
+        window.peerConnection.onconnectionstatechange = () => {
+            if (window.peerConnection.connectionState === 'disconnected' || window.peerConnection.connectionState === 'failed') {
+                window.startFrequencySearch();
+            }
+        };
 
         const offerDescription = await window.peerConnection.createOffer();
         await window.peerConnection.setLocalDescription(offerDescription);
-        await setDoc(callDoc, { offer: { sdp: offerDescription.sdp, type: offerDescription.type }, reveal_caller: false, reveal_callee: false });
+
+        const offer = { sdp: offerDescription.sdp, type: offerDescription.type };
+        await setDoc(callDoc, { offer, reveal_caller: false, reveal_callee: false });
 
         let remoteCandidatesBuffer = [];
+
         window.callUnsubscribe = onSnapshot(callDoc, async (snapshot) => {
-            if (!snapshot.exists()) { if(window.peerConnection) window.startFrequencySearch(); return; }
+            if (!snapshot.exists()) {
+                if(window.peerConnection) window.startFrequencySearch();
+                return;
+            }
             const data = snapshot.data();
+            
             if (!window.peerConnection.currentRemoteDescription && data?.answer) {
-                await window.peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-                remoteCandidatesBuffer.forEach(c => window.peerConnection.addIceCandidate(c)); remoteCandidatesBuffer = [];
+                const answerDescription = new RTCSessionDescription(data.answer);
+                await window.peerConnection.setRemoteDescription(answerDescription);
+                remoteCandidatesBuffer.forEach(c => window.peerConnection.addIceCandidate(c));
+                remoteCandidatesBuffer = [];
             }
-            if (data.reveal_callee && !data.reveal_caller) {
+            
+            let myReveal = data.reveal_caller;
+            let otherReveal = data.reveal_callee;
+            
+            if (otherReveal && !myReveal) {
                 const statusEl = document.getElementById('reveal-status');
-                if(statusEl && document.getElementById('reveal-btn').style.display !== 'none') { statusEl.style.display = 'block'; statusEl.style.color = '#10b981'; statusEl.style.background = 'rgba(16,185,129,0.1)'; statusEl.style.border = '1px solid rgba(16,185,129,0.3)'; statusEl.innerText = 'Karşı taraf maskesini indirdi! Görmek için sen de indir.'; }
+                const revealBtn = document.getElementById('reveal-btn');
+                if(statusEl && revealBtn && revealBtn.style.display !== 'none') {
+                    statusEl.style.display = 'block';
+                    statusEl.style.color = '#10b981';
+                    statusEl.innerText = 'Karşı taraf maskesini indirdi! Görmek için sen de indirmelisin.';
+                }
             }
-            if (data.reveal_caller && data.reveal_callee) { window.executeMutualReveal(); }
+            if (myReveal && otherReveal) {
+                window.executeMutualReveal();
+            }
         });
 
         window.iceUnsubscribe = onSnapshot(answerCandidates, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added") {
                     const candidate = new RTCIceCandidate(change.doc.data());
-                    if (window.peerConnection.remoteDescription) { window.peerConnection.addIceCandidate(candidate); } else { remoteCandidatesBuffer.push(candidate); }
+                    if (window.peerConnection.remoteDescription) {
+                        window.peerConnection.addIceCandidate(candidate);
+                    } else {
+                        remoteCandidatesBuffer.push(candidate);
+                    }
                 }
             });
         });
@@ -1664,35 +1930,71 @@ function initializeUniLoop() {
 
         window.peerConnection.ontrack = (event) => {
             const remoteAudio = document.getElementById('remote-audio-node');
-            if(remoteAudio) { remoteAudio.srcObject = event.streams[0]; remoteAudio.play().catch(e => console.log(e)); }
+            if(remoteAudio) {
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.play().catch(e => console.log("Ses oynatma engellendi: ", e));
+            }
         };
 
-        window.peerConnection.onicecandidate = event => { if (event.candidate) { addDoc(answerCandidates, event.candidate.toJSON()); } };
-        window.peerConnection.onconnectionstatechange = () => { if (window.peerConnection.connectionState === 'disconnected' || window.peerConnection.connectionState === 'failed') { window.startFrequencySearch(); } };
+        window.peerConnection.onicecandidate = event => {
+            if (event.candidate) { addDoc(answerCandidates, event.candidate.toJSON()); }
+        };
+
+        window.peerConnection.onconnectionstatechange = () => {
+            if (window.peerConnection.connectionState === 'disconnected' || window.peerConnection.connectionState === 'failed') {
+                window.startFrequencySearch();
+            }
+        };
 
         let remoteCandidatesBuffer = [];
+
         window.callUnsubscribe = onSnapshot(callDoc, async (snapshot) => {
-            if (!snapshot.exists()) { if(window.peerConnection) window.startFrequencySearch(); return; }
+            if (!snapshot.exists()) {
+                if(window.peerConnection) window.startFrequencySearch();
+                return;
+            }
             const data = snapshot.data();
+            
             if (data?.offer && !window.peerConnection.currentRemoteDescription) {
-                await window.peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const offerDescription = new RTCSessionDescription(data.offer);
+                await window.peerConnection.setRemoteDescription(offerDescription);
+
                 const answerDescription = await window.peerConnection.createAnswer();
                 await window.peerConnection.setLocalDescription(answerDescription);
-                await updateDoc(callDoc, { answer: { type: answerDescription.type, sdp: answerDescription.sdp } });
-                remoteCandidatesBuffer.forEach(c => window.peerConnection.addIceCandidate(c)); remoteCandidatesBuffer = [];
+
+                const answer = { type: answerDescription.type, sdp: answerDescription.sdp };
+                await updateDoc(callDoc, { answer });
+                
+                remoteCandidatesBuffer.forEach(c => window.peerConnection.addIceCandidate(c));
+                remoteCandidatesBuffer = [];
             }
-            if (data.reveal_caller && !data.reveal_callee) {
+
+            let myReveal = data.reveal_callee;
+            let otherReveal = data.reveal_caller;
+            
+            if (otherReveal && !myReveal) {
                 const statusEl = document.getElementById('reveal-status');
-                if(statusEl && document.getElementById('reveal-btn').style.display !== 'none') { statusEl.style.display = 'block'; statusEl.style.color = '#10b981'; statusEl.style.background = 'rgba(16,185,129,0.1)'; statusEl.style.border = '1px solid rgba(16,185,129,0.3)'; statusEl.innerText = 'Karşı taraf maskesini indirdi! Görmek için sen de indir.'; }
+                const revealBtn = document.getElementById('reveal-btn');
+                if(statusEl && revealBtn && revealBtn.style.display !== 'none') {
+                    statusEl.style.display = 'block';
+                    statusEl.style.color = '#10b981';
+                    statusEl.innerText = 'Karşı taraf maskesini indirdi! Görmek için sen de indirmelisin.';
+                }
             }
-            if (data.reveal_callee && data.reveal_caller) { window.executeMutualReveal(); }
+            if (myReveal && otherReveal) {
+                window.executeMutualReveal();
+            }
         });
 
         window.iceUnsubscribe = onSnapshot(offerCandidates, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added") {
                     const candidate = new RTCIceCandidate(change.doc.data());
-                    if (window.peerConnection.remoteDescription) { window.peerConnection.addIceCandidate(candidate); } else { remoteCandidatesBuffer.push(candidate); }
+                    if (window.peerConnection.remoteDescription) {
+                        window.peerConnection.addIceCandidate(candidate);
+                    } else {
+                        remoteCandidatesBuffer.push(candidate);
+                    }
                 }
             });
         });
@@ -1705,6 +2007,7 @@ function initializeUniLoop() {
         if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
 
         const myUid = window.userProfile.uid;
+
         clearTimeout(voiceSearchTimeout);
         voiceSearchTimeout = setTimeout(async () => {
             if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
@@ -1715,73 +2018,128 @@ function initializeUniLoop() {
         try {
             const q = query(collection(db, "voice_queue"), where("status", "==", "waiting"), limit(5));
             const snap = await getDocs(q);
+            
             let partnerFound = null;
             snap.forEach(docSnap => { 
                 const d = docSnap.data();
-                if(docSnap.id !== myUid && docSnap.id !== window.lastMatchedUid) { partnerFound = { uid: docSnap.id, ...d }; }
+                if(docSnap.id !== myUid && docSnap.id !== window.lastMatchedUid) {
+                    partnerFound = { uid: docSnap.id, ...d };
+                }
             });
 
             if(partnerFound) {
                 clearTimeout(voiceSearchTimeout);
-                await updateDoc(doc(db, "voice_queue", partnerFound.uid), { status: "matched", matchedWith: myUid });
+                await updateDoc(doc(db, "voice_queue", partnerFound.uid), {
+                    status: "matched",
+                    matchedWith: myUid
+                });
+                
                 const micReady = await window.setupLocalAudio();
                 if(!micReady) { window.closeFrequency(); return; }
-                window.callRole = 'caller'; await window.createWebRTCCall(partnerFound.uid);
+
+                window.callRole = 'caller';
+                await window.createWebRTCCall(partnerFound.uid);
+
                 const pDoc = await getDoc(doc(db, "users", partnerFound.uid));
                 window.currentVoiceMatch = pDoc.exists() ? pDoc.data() : { uid: partnerFound.uid, name: "Kampüs Öğrencisi", faculty: "Gizli", avatar: "🕵️" };
-                window.lastMatchedUid = partnerFound.uid; window.connectFrequencyChat();
+                window.lastMatchedUid = partnerFound.uid; 
+                
+                window.connectFrequencyChat();
+
             } else {
-                await setDoc(doc(db, "voice_queue", myUid), { uid: myUid, status: "waiting", matchedWith: null, timestamp: serverTimestamp() });
+                await setDoc(doc(db, "voice_queue", myUid), { 
+                    uid: myUid, 
+                    status: "waiting",
+                    matchedWith: null,
+                    timestamp: serverTimestamp() 
+                });
+
                 voiceQueueUnsubscribe = onSnapshot(doc(db, "voice_queue", myUid), async (docSnap) => {
                     if(docSnap.exists() && docSnap.data().status === "matched") {
-                        clearTimeout(voiceSearchTimeout); if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
+                        clearTimeout(voiceSearchTimeout);
+                        if(voiceQueueUnsubscribe) voiceQueueUnsubscribe();
+                        
                         const matchedUid = docSnap.data().matchedWith;
                         try { await deleteDoc(doc(db, "voice_queue", myUid)); } catch(e) {}
+
                         const micReady = await window.setupLocalAudio();
                         if(!micReady) { window.closeFrequency(); return; }
-                        window.callRole = 'callee'; await window.answerWebRTCCall(matchedUid);
+
+                        window.callRole = 'callee'; 
+                        await window.answerWebRTCCall(matchedUid);
+
                         const pDoc = await getDoc(doc(db, "users", matchedUid));
                         window.currentVoiceMatch = pDoc.exists() ? pDoc.data() : { uid: matchedUid, name: "Kampüs Öğrencisi", faculty: "Gizli", avatar: "🕵️" };
-                        window.lastMatchedUid = matchedUid; window.connectFrequencyChat();
+                        window.lastMatchedUid = matchedUid; 
+                        
+                        window.connectFrequencyChat();
                     }
                 });
             }
-        } catch(e) { console.error(e); }
+        } catch(e) {
+            console.error("Eşleşme hatası:", e);
+        }
     };
 
-    window.skipFrequencyUser = function() { window.startFrequencySearch(); };
+    window.skipFrequencyUser = function() {
+        window.startFrequencySearch(); 
+    };
 
     window.connectFrequencyChat = function() {
         window.switchFrequencyState('state-chat');
         window.startFrequencyTimer();
+        
         document.getElementById('reveal-btn').style.display = 'block';
         document.getElementById('skip-btn').style.display = 'block';
         document.getElementById('reveal-status').style.display = 'none';
         document.getElementById('reveal-status').innerText = 'Karşı tarafın onayı bekleniyor ⏳';
-        document.getElementById('reveal-status').style.color = '#fcd34d';
-        document.getElementById('reveal-status').style.background = 'rgba(252, 211, 77, 0.1)';
-        document.getElementById('reveal-status').style.border = '1px solid rgba(252, 211, 77, 0.3)';
+        document.getElementById('reveal-status').style.color = '#f59e0b';
     };
 
     window.startFrequencyTimer = function() {
-        let maxSeconds = (window.userProfile.isPremium ? 30 : 10) * 60; 
+        let isPremium = window.userProfile && window.userProfile.isPremium;
+        let maxSeconds = (isPremium ? 30 : 10) * 60; 
+        
         clearInterval(window.freqTimerInterval);
+        
         window.freqTimerInterval = setInterval(() => {
             maxSeconds--;
             const m = Math.floor(maxSeconds / 60).toString().padStart(2, '0');
             const s = (maxSeconds % 60).toString().padStart(2, '0');
+            
             const timerEl = document.getElementById('chat-timer');
-            if(timerEl) { timerEl.innerText = `Kalan Süre: ${m}:${s}`; timerEl.style.color = maxSeconds <= 60 ? '#ef4444' : '#fcd34d'; }
-            if (maxSeconds <= 0) { clearInterval(window.freqTimerInterval); alert("Süre bitti!"); window.startFrequencySearch(); }
+            if(timerEl) {
+                timerEl.innerText = `Kalan Süre: ${m}:${s}`;
+                timerEl.style.color = maxSeconds <= 60 ? '#ef4444' : '#fcd34d'; 
+            }
+
+            if (maxSeconds <= 0) {
+                clearInterval(window.freqTimerInterval);
+                alert("Süre sınırına ulaştınız! Başka birine bağlanıyorsunuz.");
+                window.startFrequencySearch(); 
+            }
         }, 1000);
     };
 
     window.requestReveal = async function() {
         document.getElementById('reveal-btn').style.display = 'none';
+        
         const statusEl = document.getElementById('reveal-status');
-        if (statusEl.innerText.includes('Karşı taraf maskesini indirdi')) { statusEl.innerText = 'Eşleşme onaylanıyor...'; } 
-        else { statusEl.style.display = 'block'; }
-        if (window.callDocId && window.callRole) { try { await updateDoc(doc(db, "calls", window.callDocId), { ['reveal_' + window.callRole]: true }); } catch(e) {} }
+        if (statusEl.innerText.includes('Karşı taraf maskesini indirdi')) {
+            statusEl.innerText = 'Eşleşme onaylanıyor...';
+        } else {
+            statusEl.style.display = 'block';
+            statusEl.style.color = '#f59e0b';
+            statusEl.innerText = 'Karşı tarafın onayı bekleniyor ⏳';
+        }
+        
+        if (window.callDocId && window.callRole) {
+            try {
+                await updateDoc(doc(db, "calls", window.callDocId), {
+                    ['reveal_' + window.callRole]: true
+                });
+            } catch(e) { console.error(e); }
+        }
     };
 
     window.executeMutualReveal = function() {
@@ -1789,264 +2147,455 @@ function initializeUniLoop() {
         if(matchUser) {
             const avImg = document.getElementById('reveal-avatar');
             if(avImg) avImg.src = matchUser.avatarUrl || "https://i.pravatar.cc/150?img=" + Math.floor(Math.random() * 70);
+            
             const nameEl = document.getElementById('reveal-name');
             if(nameEl) nameEl.innerText = matchUser.name + (matchUser.age ? ", " + matchUser.age : "");
+            
             const facEl = document.getElementById('reveal-faculty');
             if(facEl) facEl.innerText = matchUser.faculty || "Kampüs Öğrencisi";
         }
+        
         window.switchFrequencyState('state-revealed');
     };
 
     window.addRevealedFriend = function() {
-        if(window.currentVoiceMatch && window.currentVoiceMatch.uid) {
+        if(window.currentVoiceMatch && window.currentVoiceMatch.uid && window.currentVoiceMatch.uid !== "anon") {
             window.sendFriendRequest(window.currentVoiceMatch.uid, window.currentVoiceMatch.name);
             const btn = document.getElementById('add-friend-btn');
-            if (btn) { btn.innerText = "İstek Gönderildi ✔️"; btn.style.background = "#4b5563"; btn.disabled = true; }
+            if (btn) {
+                btn.innerText = "İstek Gönderildi ✔️";
+                btn.style.background = "#4b5563";
+                btn.disabled = true;
+            }
+        } else {
+            alert("Bilinmeyen bir kullanıcıya istek gönderilemez.");
         }
     };
 
+    /* ========================================================================= */
 
-    // =========================================================================
-    // 🌟 POPÜLERLİK SAVAŞI (TURNUVA) - SINIRSIZ & HATASIZ 🌟
-    // =========================================================================
+    window.toggleHomeSearch = function() {
+        const searchContainer = document.getElementById('home-search-container');
+        const defaultView = document.getElementById('home-default-view');
+        const inputField = document.getElementById('home-friend-search-input');
 
-    window.renderPopularity = async function() {
+        if(searchContainer.classList.contains('hidden')) {
+            searchContainer.classList.remove('hidden');
+            if(defaultView) defaultView.style.opacity = '0'; 
+            
+            if(inputField) {
+                inputField.style.display = 'block';
+                setTimeout(() => inputField.focus(), 100); 
+            }
+        } else {
+            searchContainer.classList.add('hidden');
+            if(defaultView) defaultView.style.opacity = '1';
+            if(inputField) inputField.blur();
+        }
+    };
+
+    window.renderHome = async function() {
         document.body.classList.add('no-scroll-home');
-        if(window.freqTimerInterval) clearInterval(window.freqTimerInterval);
-        window.endWebRTCCall();
 
-        mainContent.innerHTML = `
-            <div style="display:flex; flex-direction:column; height:100%; overflow:hidden; padding: 15px;">
-                <div style="background: linear-gradient(135deg, #111827, #374151); color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex-shrink:0; display: flex; align-items: center; justify-content: center; gap: 15px;">
-                    <div style="font-size: 32px;" class="white-flame-icon">🔥</div>
-                    <div style="text-align: left;">
-                        <h2 style="margin: 0 0 2px 0; font-size: 18px;">Popülerlik Savaşı</h2>
-                        <p style="font-size: 12px; color: #9CA3AF; margin: 0;">Kampüsün en popülerlerini seç veya sıralamaya gir!</p>
+        let usernameWarning = '';
+        if (!window.userProfile.username) {
+            usernameWarning = `
+                <div style="background: #FEF2F2; color: #DC2626; padding: 12px; border-radius: 12px; border: 1px solid #FCA5A5; margin-bottom: 6px; font-weight: bold; text-align: center; cursor:pointer; flex-shrink:0;" onclick="window.loadPage('profile')">
+                    ⚠️ Lütfen profilinden bir kullanıcı adı belirle!
+                </div>
+            `;
+        }
+
+        const slides = [
+            `
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; position:relative;">
+                <div id="home-default-view" style="display:flex; justify-content:space-between; align-items:center; width:100%; transition: opacity 0.2s;">
+                    <div>
+                        <h2 style="font-size:18px; margin-bottom:4px; margin-top:0;">Hoş Geldin, ${window.userProfile.name}! 👋</h2>
+                        <p style="opacity:0.9; font-size:12px; margin:0;"><strong style="color:#D9FDD3;">${window.userProfile.university}</strong></p>
+                    </div>
+                    <div id="home-icons-container" style="display:flex; gap:15px; align-items:center;">
+                        <div class="white-flame-icon" onclick="window.showLeaderboard()" title="Popülerlik Savaşı Sıralaması">🔥</div>
+                        <div style="font-size:24px; cursor:pointer;" onclick="window.openFrequency()" title="Kampüs Frekansı">🎙️</div>
+                        <div style="font-size:24px; cursor:pointer;" onclick="window.toggleHomeSearch()" title="Arkadaşını Bul">🔍</div>
                     </div>
                 </div>
-                <div id="popularity-main-container" style="flex:1; display:flex; flex-direction:column; overflow:hidden; background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 15px;">
-                    <div style="text-align:center; padding:30px;"><div style="font-size:30px; animation: glowPulse 1.5s infinite alternate;">🔥</div><p style="color:var(--text-gray); margin-top:10px;">Liderlik tablosu yükleniyor...</p></div>
+                <div id="home-search-container" class="hidden" style="position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:20; display:flex; align-items:center; background:white; border-radius:20px; padding:5px 12px; width:100%; box-sizing:border-box; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+                        <span style="color:var(--primary); font-weight:800; font-size:14px; margin-right:5px;">#</span>
+                        <input type="text" id="home-friend-search-input" style="border:none; background:transparent; width:100%; outline:none; font-size:13px; color:black;" placeholder="Kullanıcı adı..." onkeypress="if(event.key==='Enter') window.searchAndAddFriendHome()">
+                        <button onclick="window.searchAndAddFriendHome()" style="background:transparent; border:none; font-size:16px; cursor:pointer;">➡️</button>
+                        <button onclick="window.toggleHomeSearch()" style="background:transparent; border:none; font-size:16px; cursor:pointer; color:#EF4444; margin-left:5px;">✖</button>
+                </div>
+            </div>
+            `,
+            `
+            <div>
+                <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">🎙️ Anonim Sesli Sohbet</h2>
+                <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">Üniversiteden insanlarla anonim bir şekilde konuş, yeni bağlantılar kur ve frekansı yakala!</p>
+            </div>
+            `,
+            `
+            <div>
+                <h2 style="font-size:18px; margin-bottom:4px; margin-top:0; color:#FBBF24;">🌟 Premium Ayrıcalıkları</h2>
+                <p style="opacity:0.9; font-size:12px; margin:0; line-height:1.4;">Profiline kim baktı öğrenmek için hemen Premium'a geçiş yap.</p>
+            </div>
+            `
+        ];
+
+        let html = `
+            <div style="display:flex; flex-direction:column; height:100%; overflow:hidden;">
+                ${usernameWarning}
+                
+                <div style="position:relative; margin: 10px; border-radius:16px; flex-shrink:0; box-shadow:0 6px 15px rgba(0,0,0,0.1); background:#1F2937;">
+                    <div id="home-slider-container" class="home-slider" style="display:flex; overflow-x:auto; scroll-snap-type: x mandatory; width:100%; scroll-behavior:smooth;">
+                        ${slides.map(slide => `
+                            <div style="flex: 0 0 100%; scroll-snap-align: center; padding: 15px; box-sizing:border-box; display:flex; justify-content:flex-start; align-items:center; color:white; min-height:80px;">
+                                ${slide}
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="position:absolute; bottom:5px; left:0; right:0; display:flex; justify-content:center; gap:5px; pointer-events:none;">
+                        ${slides.map((_, i) => `<div class="slider-dot" id="slider-dot-${i}" style="width:6px; height:6px; border-radius:50%; background:${i===0 ? 'white' : 'rgba(255,255,255,0.3)'};"></div>`).join('')}
+                    </div>
+                </div>
+
+                <div id="embedded-fast-match-container" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:5px 10px 10px 10px; overflow:hidden;">
                 </div>
             </div>
         `;
-        window.showLeaderboardInTab();
-    };
+        
+        mainContent.innerHTML = html;
 
-    window.showLeaderboardInTab = async function() {
-        const container = document.getElementById('popularity-main-container');
-        if(!container) return;
-
-        try {
-            const q = query(collection(db, "users"), orderBy("popularity", "desc"), limit(10));
-            const snap = await getDocs(q);
+        const sliderContainer = document.getElementById('home-slider-container');
+        if (sliderContainer) {
+            let currentIndex = 0;
+            const totalSlides = slides.length;
             
-            let html = '<h3 style="margin-top:0; margin-bottom:15px; color:#111827; text-align:center;">🏆 Liderlik Tablosu</h3><div style="display:flex; flex-direction:column; gap:8px; flex:1; overflow-y: auto; padding-right: 5px; margin-bottom: 15px;">';
-            let rank = 1;
-            snap.forEach(doc => {
-                const u = doc.data();
-                if(u.popularity > 0) {
-                    let medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
-                    html += `
-                        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#F9FAFB; border-radius:12px; border:1px solid #E5E7EB; cursor:pointer; transition:0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#E5E7EB'" onclick="window.viewUserProfile('${u.uid}')">
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <div style="font-size:18px; font-weight:800; width:25px; text-align:center;">${medal}</div>
-                                <div style="width:40px; height:40px; border-radius:50%; overflow:hidden; background:#E5E7EB; border:1px solid #111827;">
-                                    ${u.avatarUrl ? `<img src="${u.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="font-size:20px; text-align:center; line-height:40px;">${u.avatar || '👤'}</div>`}
-                                </div>
-                                <span style="font-weight:700; font-size:14px; color:#111827;">${u.name} ${u.surname ? u.surname.charAt(0)+'.' : ''}</span>
-                            </div>
-                            <div style="font-weight:800; color:#111827; font-size:14px; background:white; padding:4px 10px; border-radius:12px; border:1px solid #111827;">${u.popularity} 🔥</div>
-                        </div>
-                    `;
-                    rank++;
+            sliderContainer.addEventListener('scroll', () => {
+                const scrollLeft = sliderContainer.scrollLeft;
+                const clientWidth = sliderContainer.clientWidth;
+                currentIndex = Math.round(scrollLeft / clientWidth);
+                for(let i=0; i<totalSlides; i++){
+                    const dot = document.getElementById(`slider-dot-${i}`);
+                    if(dot) dot.style.background = (i === currentIndex) ? 'white' : 'rgba(255,255,255,0.3)';
                 }
             });
-            if(rank === 1) html += '<p style="text-align:center; color:var(--text-gray); padding:20px;">Henüz popülerlik puanı kazanan kimse yok. Savaşı başlat!</p>';
-            
-            // Savaş için süre sınırı tamamen kaldırıldı. Her zaman girilebilir.
-            let btnHtml = `<button class="btn-primary" style="width:100%; padding:14px; border-radius:12px; background:linear-gradient(135deg, #111827, #374151); border:none; font-weight:bold; font-size:16px; flex-shrink:0; box-shadow:0 4px 10px rgba(0,0,0,0.2);" onclick="window.startPopularityTournament()">Savaşa Katıl ⚔️</button>`;
-            
-            html += `</div>${btnHtml}`;
-            container.innerHTML = html;
-        } catch(e) { container.innerHTML = '<p style="color:red; text-align:center;">Sıralama yüklenirken hata oluştu.</p>'; }
+
+            if(window.homeSliderInterval) clearInterval(window.homeSliderInterval);
+            window.homeSliderInterval = setInterval(() => {
+                currentIndex++;
+                if(currentIndex >= totalSlides) currentIndex = 0;
+                sliderContainer.scrollTo({
+                    left: currentIndex * sliderContainer.clientWidth,
+                    behavior: 'smooth'
+                });
+            }, 15000);
+        }
+
+        window.initEmbeddedFastMatch();
     };
 
-    window.startPopularityTournament = async function() {
-        const container = document.getElementById('popularity-main-container');
-        if(!container) return;
-        
-        container.innerHTML = `
-            <div style="text-align:center; padding:40px 20px;">
-                <div style="font-size:50px; animation: glowPulse 1.5s infinite alternate; margin-bottom:15px;">🔥</div>
-                <h3 style="color:var(--text-dark); margin-bottom:10px;">Adaylar Toplanıyor...</h3>
-                <p style="color:var(--text-gray); font-size:13px;">Tarafını seçmeye hazırlan!</p>
-            </div>
-        `;
-        
+    window.searchAndAddFriendHome = async function() {
+        const input = document.getElementById('home-friend-search-input');
+        if(input) {
+            const val = input.value;
+            const fakeInput = document.createElement('input');
+            fakeInput.id = 'friend-search-input';
+            fakeInput.value = val;
+            document.body.appendChild(fakeInput);
+            
+            await window.searchAndAddFriend();
+            
+            fakeInput.remove();
+            input.value = '';
+            window.toggleHomeSearch();
+        }
+    };
+
+    window.searchAndAddFriend = async function() {
         try {
-            const qSnap = await getDocs(query(collection(db, "users"), limit(100)));
-            let allUsers = [];
-            qSnap.forEach(doc => { 
-                const d = doc.data();
-                if(d.uid !== window.userProfile.uid) allUsers.push(d); 
+            const searchInput = document.getElementById('friend-search-input');
+            if(!searchInput) return;
+            
+            let rawSearch = searchInput.value.trim().toLowerCase();
+            if(!rawSearch) { alert("Lütfen bir kullanıcı adı yazın."); return; }
+            if (!window.userProfile.username) { alert("Bağlantı kurmadan önce lütfen profilinizden bir kullanıcı adı belirleyin!"); return; }
+
+            rawSearch = rawSearch.replace(/^#/, '');
+            const searchVal = '#' + rawSearch;
+            
+            if(searchVal === window.userProfile.username) { alert("Kendinize istek gönderemezsiniz :)"); return; }
+
+            const q = query(collection(db, "users"), where("username", "==", searchVal));
+            const snapshot = await getDocs(q);
+            
+            if(snapshot.empty) {
+                alert("Bu kullanıcı adına sahip kimse bulunamadı!");
+            } else {
+                const targetUser = snapshot.docs[0].data();
+                
+                const premiumIcon = targetUser.isPremium ? '<span style="font-size:18px; margin-left:5px;" title="Premium Üye">👑</span>' : '';
+                window.openModal('🔍 Kullanıcı Bulundu', `
+                    <div style="text-align:center; padding:10px;">
+                        <div style="width:80px; height:80px; border-radius:50%; margin:0 auto 10px auto; overflow:hidden; border:2px solid ${targetUser.isPremium ? '#111827' : '#E5E7EB'}; display:flex; align-items:center; justify-content:center; background:#F3F4F6; font-size:32px;">
+                            ${targetUser.avatarUrl ? `<img src="${targetUser.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">` : (targetUser.avatar || '👤')}
+                        </div>
+                        <h3 style="margin-bottom:5px; color:var(--text-dark); display:flex; align-items:center; justify-content:center;">${targetUser.name} ${targetUser.surname.charAt(0)}. ${premiumIcon}</h3>
+                        <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px;">${targetUser.faculty || 'Kampüs Öğrencisi'}</p>
+                        <button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px;" onclick="window.sendFriendRequest('${targetUser.uid}', '${targetUser.name} ${targetUser.surname}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>
+                    </div>
+                `);
+            }
+            searchInput.value = ''; 
+        } catch (error) {
+            console.error(error);
+            alert("Arama sırasında hata oluştu: " + error.message);
+        }
+    };
+
+    window.sendFriendRequest = async function(targetUserId, targetUserName, isFastMatch = false) {
+        try {
+            const myUid = window.userProfile.uid;
+            const q = query(collection(db, "chats"), where("participants", "array-contains", myUid));
+            const snap = await getDocs(q);
+            
+            let existingChat = null;
+            snap.forEach(doc => {
+                if (doc.data().participants && doc.data().participants.includes(targetUserId)) {
+                    existingChat = { id: doc.id, ...doc.data() };
+                }
             });
-            allUsers = allUsers.sort(() => 0.5 - Math.random()).slice(0, 32);
-            while(allUsers.length < 32) {
-                allUsers.push({ uid: "bot_" + Math.random().toString(36).substr(2, 9), name: "Sistem Botu 🤖", age: "?", faculty: "UniLoop", avatar: "🤖", isClone: true });
+
+            if(!existingChat) {
+                await addDoc(collection(db, "chats"), {
+                    participants: [myUid, targetUserId],
+                    participantNames: { [myUid]: window.userProfile.name, [targetUserId]: targetUserName },
+                    participantAvatars: { [myUid]: window.userProfile.avatarUrl || window.userProfile.avatar || "👨‍🎓", [targetUserId]: "👤" },
+                    lastUpdated: serverTimestamp(), 
+                    status: 'pending', 
+                    initiator: myUid, 
+                    messages: [] 
+                });
+                if(!isFastMatch) alert("✅ Arkadaşlık isteği başarıyla gönderildi! Karşı taraf onayladığında arkadaş listenizde görünecektir.");
+            } else {
+                if(!isFastMatch) {
+                    if(existingChat.status === 'pending') {
+                        alert("Bu kişiye zaten bir arkadaşlık isteği gönderilmiş veya ondan size istek gelmiş.");
+                    } else {
+                        alert("Bu kişiyle zaten arkadaşsınız.");
+                    }
+                }
             }
-            window.tData = { bracket: allUsers, winners: [], currentMatch: 0, stage: 'groups', semiLosers: [], finalists: [], finalWinner: null, secondPlace: null, thirdPlace: null };
-            window.renderTournamentRound();
-        } catch(e) { container.innerHTML = '<p style="color:red; text-align:center;">Turnuva başlatılamadı.</p>'; }
-    };
-
-    window.tourSelect = function(index) {
-        const selectedUser = window.tData.bracket[index];
-        window.tData.winners.push(selectedUser);
-        if(window.tData.stage === 'semis') {
-            const loserIndex = index % 2 === 0 ? index + 1 : index - 1;
-            window.tData.semiLosers.push(window.tData.bracket[loserIndex]);
-        }
-        if (window.tData.stage === 'thirdPlace') { window.tData.thirdPlace = selectedUser; }
-        if (window.tData.stage === 'final') {
-            window.tData.finalWinner = selectedUser;
-            const loserIndex = index % 2 === 0 ? index + 1 : index - 1;
-            window.tData.secondPlace = window.tData.bracket[loserIndex];
-        }
-        window.tData.currentMatch++;
-        window.renderTournamentRound();
-    };
-
-    window.renderTournamentRound = function() {
-        const container = document.getElementById('popularity-main-container');
-        if(!container) return;
-        const t = window.tData;
-
-        let totalMatchesInStage = 0;
-        if(t.stage === 'groups') totalMatchesInStage = 8;
-        if(t.stage === 'quarters') totalMatchesInStage = 4;
-        if(t.stage === 'semis') totalMatchesInStage = 2;
-        if(t.stage === 'thirdPlace') totalMatchesInStage = 1;
-        if(t.stage === 'final') totalMatchesInStage = 1;
-
-        if (t.currentMatch >= totalMatchesInStage) {
-            if (t.stage === 'groups') { t.stage = 'quarters'; t.bracket = [...t.winners]; }
-            else if (t.stage === 'quarters') { t.stage = 'semis'; t.bracket = [...t.winners]; }
-            else if (t.stage === 'semis') { t.stage = 'thirdPlace'; t.finalists = [...t.winners]; t.bracket = [...t.semiLosers]; }
-            else if (t.stage === 'thirdPlace') { t.stage = 'final'; t.bracket = [...t.finalists]; } 
-            else if (t.stage === 'final') { window.finishTournament(); return; }
-            t.winners = []; t.currentMatch = 0; window.renderTournamentRound(); return;
-        }
-
-        let stageTitle = '';
-        if(t.stage === 'groups') stageTitle = `🔥 Grup Aşaması (${t.currentMatch+1}/8)`;
-        if(t.stage === 'quarters') stageTitle = `⚡ Çeyrek Final (${t.currentMatch+1}/4)`;
-        if(t.stage === 'semis') stageTitle = `⚔️ Yarı Final (${t.currentMatch+1}/2)`;
-        if(t.stage === 'thirdPlace') stageTitle = `🥉 3. lük Maçı`;
-        if(t.stage === 'final') stageTitle = `🏆 BÜYÜK FİNAL`;
-
-        if (t.stage === 'groups') {
-            const baseIdx = t.currentMatch * 4;
-            const users = [t.bracket[baseIdx], t.bracket[baseIdx+1], t.bracket[baseIdx+2], t.bracket[baseIdx+3]];
-            container.innerHTML = `
-                <div style="text-align:center; margin-bottom:15px; width:100%;">
-                    <h3 style="margin:0; color:#111827; font-size:18px;">${stageTitle}</h3>
-                    <p style="font-size:12px; color:var(--text-gray); margin:5px 0 0 0;">En favori profilini seç!</p>
-                </div>
-                <div class="tour-grid-4">
-                    ${users.map((u, i) => `
-                        <div class="tour-card" onclick="this.style.transform='scale(0.95)'; setTimeout(() => window.tourSelect(${baseIdx+i}), 150);">
-                            ${u.avatarUrl ? `<img src="${u.avatarUrl}" class="tour-card-img">` : `<div style="width:100%;height:100%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:40px;">${u.avatar||'👤'}</div>`}
-                            <div class="tour-card-name" style="padding-top:40px;">
-                                <span style="font-size:10px; color:#D1D5DB; display:block; margin-bottom:2px; font-weight:normal;">${u.age ? u.age : '?'} Yaş • ${u.faculty ? u.faculty : 'Kampüs'}</span>
-                                ${u.name}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        } else {
-            const baseIdx = t.currentMatch * 2;
-            const u1 = t.bracket[baseIdx]; const u2 = t.bracket[baseIdx+1];
-            container.innerHTML = `
-                <div style="text-align:center; margin-bottom:15px; width:100%;">
-                    <h3 style="margin:0; color:#111827; font-size:20px;">${stageTitle}</h3>
-                    <p style="font-size:12px; color:var(--text-gray); margin:5px 0 0 0;">Kazanması gerekeni seç!</p>
-                </div>
-                <div class="tour-grid-2">
-                    <div class="tour-card" onclick="this.style.transform='scale(0.95)'; setTimeout(() => window.tourSelect(${baseIdx}), 150);" style="aspect-ratio: 0.8;">
-                        ${u1.avatarUrl ? `<img src="${u1.avatarUrl}" class="tour-card-img">` : `<div style="width:100%;height:100%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:50px;">${u1.avatar||'👤'}</div>`}
-                        <div class="tour-card-name" style="font-size:16px; padding-top:40px;">
-                            <span style="font-size:11px; color:#D1D5DB; display:block; margin-bottom:4px; font-weight:normal;">${u1.age ? u1.age : '?'} Yaş • ${u1.faculty ? u1.faculty : 'Kampüs'}</span>
-                            ${u1.name}
-                        </div>
-                    </div>
-                    <div class="tour-card" onclick="this.style.transform='scale(0.95)'; setTimeout(() => window.tourSelect(${baseIdx+1}), 150);" style="aspect-ratio: 0.8;">
-                        ${u2.avatarUrl ? `<img src="${u2.avatarUrl}" class="tour-card-img">` : `<div style="width:100%;height:100%;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:50px;">${u2.avatar||'👤'}</div>`}
-                        <div class="tour-card-name" style="font-size:16px; padding-top:40px;">
-                            <span style="font-size:11px; color:#D1D5DB; display:block; margin-bottom:4px; font-weight:normal;">${u2.age ? u2.age : '?'} Yaş • ${u2.faculty ? u2.faculty : 'Kampüs'}</span>
-                            ${u2.name}
-                        </div>
-                    </div>
-                </div>
-            `;
+        } catch (error) {
+            if(!isFastMatch) alert("İstek gönderilirken hata oluştu: " + error.message);
         }
     };
 
-    window.finishTournament = async function() {
-        const container = document.getElementById('popularity-main-container');
-        if(!container) return;
-        const t = window.tData;
+    window.viewUserProfile = async function(targetUid) {
+        if (!targetUid) {
+            alert("Kullanıcı verisi eksik!");
+            return;
+        }
 
-        container.innerHTML = `<div style="text-align:center; padding:40px 20px;"><div style="font-size:40px; animation: glowPulse 1s infinite alternate;">⏳</div><h3 style="color:var(--text-dark);">Sonuçlar Kaydediliyor...</h3></div>`;
+        if(targetUid === window.userProfile.uid) { 
+            window.loadPage('profile'); 
+            return; 
+        }
 
+        const isFriend = chatsDB.some(c => c.otherUid === targetUid && c.status === 'accepted');
+
+        if (!window.userProfile.isPremium && !isFriend) {
+            window.openModal('🔒 Detaylı Profil Kilitli', `
+                <div style="text-align:center; padding:20px;">
+                    <div style="font-size:50px; margin-bottom:15px; filter: blur(2px);">👀</div>
+                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Gizli Profil!</h3>
+                    <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px; line-height:1.5;">Detaylı profile bakabilmek için Premium üye ol. Tüm blurları kaldır ve kampüstekileri yakından tanı!</p>
+                    <button style="width:100%; justify-content:center; padding: 16px; font-size: 16px; background:white; color:#111827; border:1px solid #111827; border-radius:12px; cursor:pointer; font-weight:bold;" onclick="window.openPremiumModal()">☆ Premium'a Yükselt</button>
+                </div>
+            `);
+            return;
+        }
+        
         try {
-            // Güvenli Try-Catch bloklarıyla bot hataları tamamen engellendi
-            if(t.finalWinner && !t.finalWinner.isClone) {
+            const docSnap = await getDoc(doc(db, "users", targetUid));
+            if (docSnap.exists()) {
+                const u = docSnap.data();
+                
                 try {
-                    const uDoc = await getDoc(doc(db, "users", t.finalWinner.uid));
-                    if(uDoc.exists()) await updateDoc(doc(db, "users", t.finalWinner.uid), { popularity: (uDoc.data().popularity || 0) + 3 });
-                } catch(e) { console.warn("1. Bot", e); }
-            }
-            if(t.secondPlace && !t.secondPlace.isClone) {
-                try {
-                    const uDoc = await getDoc(doc(db, "users", t.secondPlace.uid));
-                    if(uDoc.exists()) await updateDoc(doc(db, "users", t.secondPlace.uid), { popularity: (uDoc.data().popularity || 0) + 2 });
-                } catch(e) { console.warn("2. Bot", e); }
-            }
-            if(t.thirdPlace && !t.thirdPlace.isClone) {
-                try {
-                    const uDoc = await getDoc(doc(db, "users", t.thirdPlace.uid));
-                    if(uDoc.exists()) await updateDoc(doc(db, "users", t.thirdPlace.uid), { popularity: (uDoc.data().popularity || 0) + 1 });
-                } catch(e) { console.warn("3. Bot", e); }
-            }
+                    const viewRecord = {
+                        uid: window.userProfile.uid,
+                        name: window.userProfile.name,
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + " - " + new Date().toLocaleDateString()
+                    };
+                    await updateDoc(doc(db, "users", targetUid), {
+                        profileViewers: arrayUnion(viewRecord)
+                    });
 
-            container.innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; height:100%;">
-                    <div style="font-size:50px; margin-bottom:10px;">🎉</div>
-                    <h3 style="color:#111827; margin-bottom:20px; font-size:22px;">Savaş Sona Erdi!</h3>
-                    
-                    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:25px; width:100%; max-width:300px; text-align:left;">
-                        <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:12px; border-radius:12px; border:1px solid #E5E7EB;">
-                            <span style="font-size:24px;">🥇</span><span style="font-weight:800; flex:1; color:#111827;">${t.finalWinner.name}</span><span style="font-weight:bold; color:var(--text-gray);">${t.finalWinner.isClone ? 'BOT' : '+3 🔥'}</span>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:12px; border-radius:12px; border:1px solid #E5E7EB;">
-                            <span style="font-size:24px;">🥈</span><span style="font-weight:800; flex:1; color:#111827;">${t.secondPlace.name}</span><span style="font-weight:bold; color:var(--text-gray);">${t.secondPlace.isClone ? 'BOT' : '+2 🔥'}</span>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:10px; background:#F9FAFB; padding:12px; border-radius:12px; border:1px solid #E5E7EB;">
-                            <span style="font-size:24px;">🥉</span><span style="font-weight:800; flex:1; color:#111827;">${t.thirdPlace.name}</span><span style="font-weight:bold; color:var(--text-gray);">${t.thirdPlace.isClone ? 'BOT' : '+1 🔥'}</span>
-                        </div>
+                    if (u.isPremium) {
+                        window.sendSystemNotification(targetUid, `👀 <strong>${window.userProfile.name}</strong> profilini inceledi! (Premium Özelliği)`);
+                    }
+                } catch(err) {
+                    console.warn("Görüntülenme kaydedilemedi, ancak profil açılıyor.");
+                }
+
+                const initial = u.surname ? u.surname.charAt(0) + '.' : '';
+                const isPremium = u.isPremium;
+
+                let avatarHtml = u.avatarUrl 
+                    ? `<img src="${u.avatarUrl}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid ${isPremium ? '#111827' : '#E5E7EB'};">` 
+                    : `<div style="width:100px; height:100px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:40px; border:3px solid ${isPremium ? '#111827' : '#E5E7EB'}; margin:0 auto;">${u.avatar || '👤'}</div>`;
+                
+                const ageText = u.age ? u.age + " yaşında" : "Yaş belirtilmemiş";
+                const facText = u.faculty ? u.faculty : "Fakülte belirtilmemiş";
+                const gradeText = u.grade ? u.grade + ". Sınıf" : "";
+                const premiumBadge = isPremium ? `<div style="margin-top:8px; display:inline-block; background:#111827; color:white; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:12px; border:1px solid #111827; box-shadow:0 2px 4px rgba(0,0,0,0.1);">☆ Premium Üye</div>` : '';
+
+                const existingChat = chatsDB.find(c => c.otherUid === u.uid);
+                let actionBtnHtml = '';
+                
+                if (existingChat && existingChat.status === 'accepted') {
+                    actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">💬 Mesaj Gönder</button>`;
+                } else if (existingChat && existingChat.status === 'pending') {
+                    actionBtnHtml = `<button class="btn-primary" disabled style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:#9CA3AF; box-shadow:none;">⏳ İstek Bekleniyor</button>`;
+                } else {
+                    actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendFriendRequest('${u.uid}', '${u.name} ${initial}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>`;
+                }
+
+                window.openModal('Kullanıcı Profili', `
+                    <div style="text-align:center;">
+                        ${avatarHtml}
+                        <h3 style="margin: 10px 0 5px 0; font-size:18px; color:var(--text-dark); display:flex; align-items:center; justify-content:center; gap:5px;">
+                            ${u.name} ${initial} ${isPremium ? '<span style="font-size:18px;">👑</span>' : ''}
+                        </h3>
+                        <p style="color:#111827; font-size:14px; margin-bottom: 5px; font-weight:bold;">${facText} ${gradeText ? ' - ' + gradeText : ''}</p>
+                        <p style="color:var(--text-gray); font-size:13px; margin-bottom: 5px;">${ageText}</p>
+                        ${premiumBadge}
+                        <div style="margin-top:20px;">${actionBtnHtml}</div>
                     </div>
-                    
-                    <button class="btn-primary" style="width:100%; max-width:300px; padding:16px; border-radius:12px; font-weight:800; font-size:15px; background:linear-gradient(135deg, #111827, #374151);" onclick="window.showLeaderboardInTab()">Tabloya Dön</button>
-                </div>
-            `;
-        } catch(e) { container.innerHTML = '<p style="color:red; text-align:center;">Sonuçlar gösterilirken bir hata oluştu.</p>'; }
+                `);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Profil yüklenirken hata oluştu.");
+        }
     };
 
+    window.openProfileEditModal = function() {
+        const u = window.userProfile;
+        const uNameStr = u.username ? u.username.replace('#', '') : '';
+        
+        let facOptions = allFaculties.map(f => `<option value="${f}" ${u.faculty === f ? 'selected' : ''}>${f}</option>`).join('');
+        
+        window.openModal('✏️ Profilini Düzenle', `
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Kullanıcı Adı</label>
+                    <div style="display:flex; align-items:center; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px; padding:0 10px;">
+                        <span style="color:var(--primary); font-weight:bold; font-size:14px;">#</span>
+                        <input type="text" id="edit-username" value="${uNameStr}" style="border:none; background:transparent; width:100%; padding:12px 5px; outline:none; font-size:14px;">
+                    </div>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Yaş</label>
+                    <input type="number" id="edit-age" value="${u.age || ''}" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white;">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Fakülte</label>
+                    <select id="edit-faculty" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white;">
+                        <option value="">Fakülte Seçiniz</option>
+                        ${facOptions}
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Kaçıncı Sınıf</label>
+                    <select id="edit-grade" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white;">
+                        <option value="1" ${u.grade == '1' ? 'selected' : ''}>1. Sınıf</option>
+                        <option value="2" ${u.grade == '2' ? 'selected' : ''}>2. Sınıf</option>
+                        <option value="3" ${u.grade == '3' ? 'selected' : ''}>3. Sınıf</option>
+                        <option value="4" ${u.grade == '4' ? 'selected' : ''}>4. Sınıf</option>
+                        <option value="5" ${u.grade == '5' ? 'selected' : ''}>5. Sınıf</option>
+                        <option value="6" ${u.grade == '6' ? 'selected' : ''}>6. Sınıf</option>
+                    </select>
+                </div>
+                <button class="btn-primary" style="width:100%; padding:14px; border-radius:10px; font-size:15px; font-weight:bold; margin-top:10px;" onclick="window.saveProfileEdits()">Değişiklikleri Kaydet</button>
+            </div>
+        `);
+    };
 
-    // =========================================================================
-    // 🌟 MESAJLAR VE SOHBET (DM) İŞLEMLERİ 🌟
-    // =========================================================================
+    window.saveProfileEdits = async function() {
+        const usernameInput = document.getElementById('edit-username').value.trim().toLowerCase().replace(/\s+/g, '');
+        const newAge = document.getElementById('edit-age').value.trim();
+        const newFaculty = document.getElementById('edit-faculty').value;
+        const newGrade = document.getElementById('edit-grade').value;
+
+        if(!usernameInput || !newAge || !newFaculty) return alert("Lütfen tüm alanları eksiksiz doldurun.");
+
+        const finalUsername = '#' + usernameInput;
+        
+        try {
+            if (finalUsername !== window.userProfile.username) {
+                const qU = query(collection(db, "users"), where("username", "==", finalUsername));
+                const snap = await getDocs(qU);
+                if(!snap.empty) {
+                    alert("Bu kullanıcı adı alınmış. Lütfen başka bir tane seçin.");
+                    return;
+                }
+            }
+
+            await updateDoc(doc(db, "users", window.userProfile.uid), {
+                username: finalUsername,
+                age: newAge,
+                faculty: newFaculty,
+                grade: newGrade
+            });
+
+            window.userProfile.username = finalUsername;
+            window.userProfile.age = newAge;
+            window.userProfile.faculty = newFaculty;
+            window.userProfile.grade = newGrade;
+
+            alert("Profil bilgileriniz başarıyla güncellendi!");
+            window.closeModal();
+            window.renderProfile();
+
+        } catch(e) {
+            console.error(e);
+            alert("Güncellenirken hata oluştu.");
+        }
+    };
+
+    window.currentLightboxImages = [];
+    window.currentLightboxIndex = 0;
+
+    window.openLightbox = function(imagesJsonStr, index) {
+        window.currentLightboxImages = JSON.parse(decodeURIComponent(imagesJsonStr));
+        window.currentLightboxIndex = index;
+        window.updateLightboxView();
+        document.getElementById('lightbox').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeLightbox = function() {
+        document.getElementById('lightbox').classList.remove('active');
+        if(!document.getElementById('app-modal').classList.contains('active') && !document.body.classList.contains('no-scroll-messages') && !document.body.classList.contains('no-scroll-home')) document.body.style.overflow = 'auto';
+    };
+
+    window.changeLightboxImage = function(step) {
+        window.currentLightboxIndex += step;
+        if(window.currentLightboxIndex < 0) window.currentLightboxIndex = window.currentLightboxImages.length - 1;
+        if(window.currentLightboxIndex >= window.currentLightboxImages.length) window.currentLightboxIndex = 0;
+        window.updateLightboxView();
+    };
+
+    window.updateLightboxView = function() {
+        const imgEl = document.getElementById('lightbox-img');
+        const counterEl = document.getElementById('lightbox-counter');
+        if(imgEl && counterEl) {
+            imgEl.src = window.currentLightboxImages[window.currentLightboxIndex];
+            counterEl.innerText = (window.currentLightboxIndex + 1) + " / " + window.currentLightboxImages.length;
+        }
+    };
 
     window.renderMessagesSidebarOnly = function() {
         const sb = document.getElementById('chat-sidebar-list');
@@ -2054,6 +2603,8 @@ function initializeUniLoop() {
 
         let sbHtml = '';
         chatsDB.forEach(chat => {
+            if (chat.status === 'pending' && !chat.isSystemChat) return;
+
             const lastMsgObj = chat.messages && chat.messages.length > 0 ? chat.messages[chat.messages.length - 1] : {text: 'Yeni bağlantı'};
             let lastMsg = lastMsgObj.text || (lastMsgObj.mediaUrl ? (lastMsgObj.mediaType === 'pdf' ? '📄 PDF Belgesi' : '📷 Fotoğraf') : '');
             const msgTime = lastMsgObj.time || '';
@@ -2074,7 +2625,9 @@ function initializeUniLoop() {
 
             sbHtml += `
                 <div class="chat-contact ${activeClass}" onclick="window.openChatView('${chat.id}')" style="display:flex; align-items:center; padding:15px; border-bottom:1px solid #f1f5f9; cursor:pointer; gap:12px; transition:background 0.2s;">
-                    <div style="position:relative; flex-shrink:0;">${avatarHtml}</div>
+                    <div style="position:relative; flex-shrink:0;">
+                        ${avatarHtml}
+                    </div>
                     <div style="flex:1; min-width:0;">
                         <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
                             <span style="font-weight:800; font-size:15px; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${chat.name}${statusBadge}</span>
@@ -2089,20 +2642,25 @@ function initializeUniLoop() {
             `;
         });
         
-        sb.innerHTML = sbHtml || `<div style="padding:40px 20px; text-align:center; color:#9CA3AF;"><div style="font-size:40px; margin-bottom:10px;">💬</div><div style="font-size:14px; font-weight:500;">Mesajınız yok.</div></div>`;
+        sb.innerHTML = sbHtml || `
+            <div style="padding:40px 20px; text-align:center; color:#9CA3AF;">
+                <div style="font-size:40px; margin-bottom:10px;">💬</div>
+                <div style="font-size:14px; font-weight:500;">Mesajınız yok.</div>
+            </div>
+        `;
     };
 
     window.renderMessages = function() {
         document.body.classList.add('no-scroll-messages');
-        if(window.freqTimerInterval) clearInterval(window.freqTimerInterval);
-        window.endWebRTCCall();
 
         let unreadCount = 0;
         chatsDB.forEach(chat => {
             if (chat.status === 'accepted') {
                 if (chat.messages && chat.messages.length > 0) {
                     const lastMsg = chat.messages[chat.messages.length - 1];
-                    if (lastMsg.senderId !== window.userProfile.uid && lastMsg.read === false) unreadCount++;
+                    if (lastMsg.senderId !== window.userProfile.uid && lastMsg.read === false) {
+                        unreadCount++;
+                    }
                 }
             }
         });
@@ -2117,33 +2675,54 @@ function initializeUniLoop() {
                     </div>
                     <div id="chat-sidebar-list" style="padding-bottom:20px;"></div>
                 </div>
-                <div class="chat-main" id="chat-main-area" style="display:none; flex-direction:column; height:100%; position:relative; background:#f9fafb; flex:1;"></div>
+                <div class="chat-main" id="chat-main-area" style="display:none; flex-direction:column; height:100%; position:relative; background:#f9fafb; flex:1;">
+                </div>
             </div>
         `;
         mainContent.innerHTML = html;
         window.renderMessagesSidebarOnly();
         
-        if (currentChatId) { window.openChatView(currentChatId); } 
-        else if (window.innerWidth > 1024 && chatsDB.length > 0) { window.openChatView(chatsDB[0].id); }
+        if (currentChatId) {
+            window.openChatView(currentChatId);
+        } else if (window.innerWidth > 1024 && chatsDB.length > 0) {
+            window.openChatView(chatsDB[0].id);
+        }
     };
 
-    window.openChatViewDirect = function(chatId) { window.loadPage('messages'); setTimeout(() => { window.openChatView(chatId); }, 100); };
+    window.openChatViewDirect = function(chatId) {
+        window.goToMessages();
+        setTimeout(() => { window.openChatView(chatId); }, 100);
+    };
 
     window.clearChatHistory = async function(chatId) {
-        if(confirm("Geçmişi silmek istediğinize emin misiniz?")) {
-            try { await updateDoc(doc(db, "chats", chatId), { messages: [], lastUpdated: serverTimestamp() }); alert("Temizlendi."); window.updateChatMessagesOnly(chatId); } 
-            catch(e) { alert("Hata."); }
+        if(confirm("Bu kişiyle olan tüm mesaj geçmişini silmek istediğinize emin misiniz?")) {
+            try {
+                await updateDoc(doc(db, "chats", chatId), { messages: [], lastUpdated: serverTimestamp() });
+                alert("Mesaj geçmişi başarıyla temizlendi.");
+                window.updateChatMessagesOnly(chatId);
+            } catch(e) { alert("Hata: " + e.message); }
         }
     };
 
     window.blockUser = async function(otherUid, chatId, name) {
-        if(confirm(`${name} engellensin mi?`)) {
+        if(confirm(`${name} adlı kullanıcıyı engellemek istediğinize emin misiniz? Artık ondan mesaj alamayacaksınız.`)) {
             try {
-                await updateDoc(doc(db, "users", window.userProfile.uid), { blockedUsers: arrayUnion(otherUid) });
-                if (!window.userProfile.blockedUsers) window.userProfile.blockedUsers = []; window.userProfile.blockedUsers.push(otherUid);
-                await updateDoc(doc(db, "chats", chatId), { status: 'blocked', blockedBy: window.userProfile.uid, lastUpdated: serverTimestamp() });
-                alert(`${name} engellendi.`); window.closeChatView(); window.renderMessagesSidebarOnly();
-            } catch(e) { alert("Hata."); }
+                await updateDoc(doc(db, "users", window.userProfile.uid), {
+                    blockedUsers: arrayUnion(otherUid)
+                });
+                if (!window.userProfile.blockedUsers) window.userProfile.blockedUsers = [];
+                window.userProfile.blockedUsers.push(otherUid);
+
+                await updateDoc(doc(db, "chats", chatId), {
+                    status: 'blocked',
+                    blockedBy: window.userProfile.uid,
+                    lastUpdated: serverTimestamp()
+                });
+
+                alert(`${name} başarıyla engellendi.`);
+                window.closeChatView();
+                window.renderMessagesSidebarOnly();
+            } catch(e) { alert("Engelleme işlemi sırasında hata oluştu: " + e.message); }
         }
     };
 
@@ -2170,14 +2749,14 @@ function initializeUniLoop() {
                 ${avatarHtml}
                 <div style="flex:1;">
                     <div style="font-weight:800; font-size:16px; color:#0f172a; cursor:pointer;" onclick="window.viewUserProfile('${chat.otherUid}')">${chat.name}</div>
-                    <div style="font-size:12px; color:#10B981; font-weight:600; display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; background:#10B981; border-radius:50%;"></div> Kampüs İçi Bağlantı</div>
+                    <div style="font-size:12px; color:#10B981; font-weight:600; display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; background:#10B981; border-radius:50%;"></div> Kampüs İçi</div>
                 </div>
                 
                 <div style="position:relative;">
                     <button onclick="document.getElementById('chat-options-menu').classList.toggle('hidden'); event.stopPropagation();" style="background:none; border:none; font-size:20px; color:var(--text-gray); cursor:pointer;" id="chat-options-dropdown-wrapper">⋮</button>
                     <div id="chat-options-menu" class="hidden" style="position:absolute; right:0; top:35px; background:white; box-shadow:0 10px 25px rgba(0,0,0,0.1); border-radius:12px; overflow:hidden; z-index:100; min-width:180px; border:1px solid #E5E7EB;">
-                        <div onclick="window.clearChatHistory('${chat.id}')" style="padding:14px 15px; font-size:13px; font-weight:600; color:var(--text-dark); cursor:pointer; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:10px;">🗑️ Geçmişi Sil</div>
-                        <div onclick="window.blockUser('${chat.otherUid}', '${chat.id}', '${chat.name}')" style="padding:14px 15px; font-size:13px; font-weight:600; color:#EF4444; cursor:pointer; display:flex; align-items:center; gap:10px;">🚫 Kişiyi Engelle</div>
+                        <div onclick="window.clearChatHistory('${chat.id}')" style="padding:14px 15px; font-size:13px; font-weight:600; color:var(--text-dark); cursor:pointer; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:10px; transition:0.2s;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='white'">🗑️ Geçmişi Sil</div>
+                        ${chat.isSystemChat ? '' : `<div onclick="window.blockUser('${chat.otherUid}', '${chat.id}', '${chat.name}')" style="padding:14px 15px; font-size:13px; font-weight:600; color:#EF4444; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.2s;" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='white'">🚫 Kişiyi Engelle</div>`}
                     </div>
                 </div>
             </div>
@@ -2202,27 +2781,21 @@ function initializeUniLoop() {
         let mainHtml = `
             ${headerHtml}
             ${statusAreaHtml}
-            <div id="chat-messages-scroll" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; background:#f9fafb;"></div>
+            <div id="chat-messages-scroll" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; background:#f9fafb;">
+                <div style="text-align:center; padding:20px; color:#9CA3AF; font-size:14px;">Mesajlar yükleniyor...</div>
+            </div>
         `;
 
-        if (chat.status === 'accepted') {
-            // 🌟 UNILOOP TEAM SİSTEM MESAJI KONTROLÜ (READ-ONLY) 🌟
-            if (chat.otherUid === "system") {
-                mainHtml += `
-                    <div style="padding:15px; text-align:center; background:#F3F4F6; color:#6B7280; font-size:13px; border-top:1px solid #E5E7EB; flex-shrink:0; font-weight:600;">
-                        🔒 Bu, sistem tarafından gönderilen otomatik bir mesajdır. Cevap yazılamaz.
-                    </div>
-                `;
-            } else {
-                mainHtml += `
-                    <div class="chat-input-area" style="padding:15px 20px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:12px; align-items:center; flex-shrink:0;">
-                        <input type="file" id="dm-chat-media" accept="image/*, application/pdf" style="display:none;" onchange="window.uploadChatMedia(event, '${chat.id}')">
-                        <button onclick="document.getElementById('dm-chat-media').click()" style="background:transparent; color:#6B7280; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
-                        <input type="text" id="chat-input-field" placeholder="Mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:25px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:15px; color:var(--text-dark);">
-                        <button onclick="window.sendDirectMessage('${chat.id}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(79,70,229,0.3); flex-shrink:0; transition: transform 0.2s;">➤</button>
-                    </div>
-                `;
-            }
+        // 🌟 GÜNCELLEME: Team mesajı Read-only yapıldı (Input alanı kaldırıldı).
+        if (chat.status === 'accepted' && !chat.isSystemChat) {
+            mainHtml += `
+                <div class="chat-input-area" style="padding:15px 20px; background:white; border-top:1px solid #E5E7EB; display:flex; gap:12px; align-items:center; flex-shrink:0;">
+                    <input type="file" id="dm-chat-media" accept="image/*, application/pdf" style="display:none;" onchange="window.uploadChatMedia(event, '${chat.id}', 'dm')">
+                    <button onclick="document.getElementById('dm-chat-media').click()" style="background:transparent; color:#6B7280; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📎</button>
+                    <input type="text" id="chat-input-field" placeholder="Mesaj yaz..." style="flex:1; padding:14px 20px; border-radius:25px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:15px; color:var(--text-dark);">
+                    <button onclick="window.sendDirectMessage('${chat.id}', '${chat.otherUid}')" style="background:var(--primary); color:white; border:none; border-radius:50%; width:48px; height:48px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(79,70,229,0.3); flex-shrink:0; transition: transform 0.2s;">➤</button>
+                </div>
+            `;
         }
 
         mainArea.innerHTML = mainHtml;
@@ -2230,14 +2803,19 @@ function initializeUniLoop() {
 
         const inputField = document.getElementById('chat-input-field');
         if (inputField) {
-            inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') window.sendDirectMessage(chat.id); });
+            inputField.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') window.sendDirectMessage(chat.id, chat.otherUid);
+            });
             if(window.innerWidth > 1024) setTimeout(() => inputField.focus(), 100);
         }
         
         if (chat.messages && chat.messages.length > 0) {
             const lastMsg = chat.messages[chat.messages.length - 1];
             if (lastMsg.senderId !== window.userProfile.uid && lastMsg.read === false) {
-                const updatedMessages = chat.messages.map(m => { if(m.senderId !== window.userProfile.uid) m.read = true; return m; });
+                const updatedMessages = chat.messages.map(m => {
+                    if(m.senderId !== window.userProfile.uid) m.read = true;
+                    return m;
+                });
                 updateDoc(doc(db, "chats", chatId), { messages: updatedMessages }).catch(err => console.error(err));
             }
         }
@@ -2261,24 +2839,34 @@ function initializeUniLoop() {
         let chatHTML = '';
         const msgs = chat.messages || [];
         
-        if (msgs.length === 0) { chatHTML = `<div style="text-align:center; padding:20px; color:#9CA3AF; font-size:14px;">Henüz mesaj yok. İlk mesajı sen gönder!</div>`; } 
-        else {
-            msgs.forEach((msg) => {
+        if (msgs.length === 0) {
+            chatHTML = `<div style="text-align:center; padding:20px; color:#9CA3AF; font-size:14px;">Henüz mesaj yok. İlk mesajı sen gönder!</div>`;
+        } else {
+            let lastDate = null;
+            msgs.forEach((msg, index) => {
                 const isMe = msg.senderId === window.userProfile.uid;
                 const type = isMe ? 'sent' : 'received';
+                const msgTime = msg.time || '';
                 const isRead = msg.read ? '✓✓' : '✓';
                 
                 let mediaHtml = '';
                 if (msg.mediaUrl) {
-                    if (msg.mediaType === 'pdf') { mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:5px; background:rgba(0,0,0,0.05); padding:10px; border-radius:8px; margin-bottom:5px; text-decoration:none; color:#EF4444; font-weight:bold; font-size:13px;"><span>📄</span> PDF İndir/Aç</a>`; } 
-                    else { mediaHtml = `<img src="${msg.mediaUrl}" style="width:100%; max-width:250px; border-radius:8px; margin-bottom:5px; cursor:pointer;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([msg.mediaUrl]))}', 0)">`; }
+                    if (msg.mediaType === 'pdf') {
+                        mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:5px; background:rgba(0,0,0,0.05); padding:10px; border-radius:8px; margin-bottom:5px; text-decoration:none; color:#EF4444; font-weight:bold; font-size:13px;"><span>📄</span> PDF İndir/Aç</a>`;
+                    } else {
+                        mediaHtml = `<img src="${msg.mediaUrl}" style="width:100%; max-width:250px; border-radius:8px; margin-bottom:5px; cursor:pointer;" onclick="window.openLightbox('${encodeURIComponent(JSON.stringify([msg.mediaUrl]))}', 0)">`;
+                    }
                 }
 
                 const textHtml = msg.text ? `<div class="msg-text" style="word-break: break-word;">${msg.text}</div>` : '';
+
                 chatHTML += `
                     <div class="bubble ${type}" style="display:flex; flex-direction:column; position:relative;">
-                        ${mediaHtml}${textHtml}
-                        <div class="msg-time" style="align-self:flex-end; font-size:10px; opacity:0.7; margin-top:4px; display:flex; align-items:center; gap:4px;">${msg.time || ''} ${isMe ? `<span style="font-weight:bold;">${isRead}</span>` : ''}</div>
+                        ${mediaHtml}
+                        ${textHtml}
+                        <div class="msg-time" style="align-self:flex-end; font-size:10px; opacity:0.7; margin-top:4px; display:flex; align-items:center; gap:4px;">
+                            ${msgTime} ${isMe ? `<span style="font-weight:bold;">${isRead}</span>` : ''}
+                        </div>
                     </div>
                 `;
             });
@@ -2286,170 +2874,151 @@ function initializeUniLoop() {
 
         const isScrolledToBottom = scrollBox.scrollHeight - scrollBox.clientHeight <= scrollBox.scrollTop + 50;
         scrollBox.innerHTML = chatHTML;
-        if(isScrolledToBottom || msgs.length <= 1) scrollBox.scrollTop = scrollBox.scrollHeight;
+        if(isScrolledToBottom || msgs.length <= 1) {
+            scrollBox.scrollTop = scrollBox.scrollHeight;
+        }
     };
 
-    window.sendDirectMessage = async function(chatId) {
+    window.sendDirectMessage = async function(chatId, otherUid) {
         const input = document.getElementById('chat-input-field');
         if(input && input.value.trim() !== '') {
-            const text = input.value.trim(); input.value = '';
-            const newMsg = { senderId: window.userProfile.uid, text: text, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), read: false };
-            try { await updateDoc(doc(db, "chats", chatId), { messages: arrayUnion(newMsg), lastUpdated: serverTimestamp() }); } 
-            catch(error) { alert("Mesaj gönderilemedi."); }
+            const text = input.value.trim();
+            input.value = '';
+            const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const newMsg = {
+                senderId: window.userProfile.uid,
+                text: text,
+                time: timeStr,
+                read: false
+            };
+
+            const chatRef = doc(db, "chats", chatId);
+            try {
+                await updateDoc(chatRef, {
+                    messages: arrayUnion(newMsg),
+                    lastUpdated: serverTimestamp()
+                });
+            } catch(error) {
+                console.error("Mesaj gönderilemedi:", error);
+                alert("Mesaj gönderilirken bir hata oluştu.");
+            }
         }
     };
 
     window.acceptChatRequest = async function(chatId) {
-        try { await updateDoc(doc(db, "chats", chatId), { status: 'accepted', lastUpdated: serverTimestamp() }); window.openChatView(chatId); } 
-        catch(error) { alert("Onaylanırken hata oluştu."); }
+        try {
+            await updateDoc(doc(db, "chats", chatId), {
+                status: 'accepted',
+                lastUpdated: serverTimestamp()
+            });
+            window.openChatView(chatId);
+        } catch(error) {
+            alert("İstek onaylanırken hata oluştu.");
+        }
     };
 
     window.rejectChatRequest = async function(chatId) {
-        if(confirm("Reddetmek istediğinize emin misiniz?")) {
-            try { await deleteDoc(doc(db, "chats", chatId)); window.closeChatView(); } 
-            catch(error) { alert("Hata oluştu."); }
-        }
-    };
-
-    // =========================================================================
-    // 🌟 PROFIL & AYARLAR & BİLDİRİMLER İŞLEMLERİ (YENİ ALEVLİ UI) 🌟
-    // =========================================================================
-
-    window.viewUserProfile = async function(targetUid) {
-        if (!targetUid) return;
-        if(targetUid === window.userProfile.uid) { window.loadPage('profile'); return; }
-
-        const isFriend = chatsDB.some(c => c.otherUid === targetUid && c.status === 'accepted');
-
-        if (!window.userProfile.isPremium && !isFriend) {
-            window.openModal('🔒 Detaylı Profil Kilitli', `
-                <div style="text-align:center; padding:20px;">
-                    <div style="font-size:50px; margin-bottom:15px; filter: blur(2px);">👀</div>
-                    <h3 style="color:var(--text-dark); margin-bottom:10px;">Gizli Profil!</h3>
-                    <p style="color:var(--text-gray); font-size:14px; margin-bottom:20px; line-height:1.5;">Detaylı profile bakabilmek için Premium üye ol.</p>
-                    <button style="width:100%; justify-content:center; padding: 16px; font-size: 16px; background:white; color:#111827; border:1px solid #111827; border-radius:12px; cursor:pointer; font-weight:bold;" onclick="window.openPremiumModal()">☆ Premium'a Yükselt</button>
-                </div>
-            `);
-            return;
-        }
-        
-        try {
-            const docSnap = await getDoc(doc(db, "users", targetUid));
-            if (docSnap.exists()) {
-                const u = docSnap.data();
-                try {
-                    const viewRecord = { uid: window.userProfile.uid, name: window.userProfile.name, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + " - " + new Date().toLocaleDateString() };
-                    await updateDoc(doc(db, "users", targetUid), { profileViewers: arrayUnion(viewRecord) });
-                } catch(err) {}
-
-                const initial = u.surname ? u.surname.charAt(0) + '.' : '';
-                const isPremium = u.isPremium;
-
-                let avatarHtml = u.avatarUrl 
-                    ? `<img src="${u.avatarUrl}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid ${isPremium ? '#111827' : '#E5E7EB'};">` 
-                    : `<div style="width:100px; height:100px; border-radius:50%; background:#F3F4F6; display:flex; align-items:center; justify-content:center; font-size:40px; border:3px solid ${isPremium ? '#111827' : '#E5E7EB'}; margin:0 auto;">${u.avatar || '👤'}</div>`;
-                
-                const premiumBadge = isPremium ? `<div style="margin-top:8px; display:inline-block; background:#111827; color:white; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:12px; border:1px solid #111827; box-shadow:0 2px 4px rgba(0,0,0,0.1);">☆ Premium Üye</div>` : '';
-
-                const existingChat = chatsDB.find(c => c.otherUid === u.uid);
-                let actionBtnHtml = '';
-                
-                if (existingChat && existingChat.status === 'accepted') { actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.openChatViewDirect('${existingChat.id}'); window.closeModal();">💬 Mesaj Gönder</button>`; } 
-                else if (existingChat && existingChat.status === 'pending') { actionBtnHtml = `<button class="btn-primary" disabled style="width:100%; padding:12px; font-size:15px; border-radius:12px; background:#9CA3AF; box-shadow:none;">⏳ İstek Bekleniyor</button>`; } 
-                else { actionBtnHtml = `<button class="btn-primary" style="width:100%; padding:12px; font-size:15px; border-radius:12px; box-shadow:0 4px 6px rgba(79,70,229,0.3);" onclick="window.sendFriendRequest('${u.uid}', '${u.name} ${initial}'); window.closeModal();">➕ Arkadaş Olarak Ekle</button>`; }
-
-                window.openModal('Kullanıcı Profili', `
-                    <div style="text-align:center;">
-                        ${avatarHtml}
-                        <h3 style="margin: 10px 0 5px 0; font-size:18px; color:var(--text-dark); display:flex; align-items:center; justify-content:center; gap:5px;">${u.name} ${initial} ${isPremium ? '<span style="font-size:18px;">👑</span>' : ''}</h3>
-                        <p style="color:#111827; font-size:14px; margin-bottom: 5px; font-weight:bold;">${u.faculty || 'Belirtilmemiş'} ${u.grade ? ' - ' + u.grade + '. Sınıf' : ''}</p>
-                        <p style="color:var(--text-gray); font-size:13px; margin-bottom: 5px;">${u.age ? u.age + " yaşında" : "Yaş belirtilmemiş"}</p>
-                        <div style="margin-top:5px; font-size:14px; font-weight:800; color:#111827;">🔥 Popülerlik Puanı: ${u.popularity || 0}</div>
-                        ${premiumBadge}
-                        <div style="margin-top:20px;">${actionBtnHtml}</div>
-                    </div>
-                `);
+        if(confirm("Bu bağlantı isteğini reddetmek ve silmek istediğinize emin misiniz?")) {
+            try {
+                await deleteDoc(doc(db, "chats", chatId));
+                window.closeChatView();
+            } catch(error) {
+                alert("İstek silinirken hata oluştu.");
             }
-        } catch (e) { alert("Profil yüklenirken hata oluştu."); }
+        }
     };
 
+    // 🌟 GÜNCELLEME: Profil istatistikleri silindi, yerine Popülerlik ve Arkadaşlarım şık kutuları geldi.
     window.renderProfile = function() {
-        document.body.classList.add('no-scroll-home');
-        if(window.freqTimerInterval) clearInterval(window.freqTimerInterval);
-        window.endWebRTCCall();
-
         const u = window.userProfile;
         const initial = u.surname ? u.surname.charAt(0) + '.' : '';
         const isPremium = u.isPremium;
         
         let avatarHtml = u.avatarUrl 
-            ? `<div style="position:relative; cursor:pointer;" onclick="document.getElementById('profile-avatar-upload').click()"><img src="${u.avatarUrl}" class="id-card-avatar" style="${isPremium ? 'border-color:#111827;' : ''}"><div style="position:absolute; bottom:0; right:0; background:white; color:#111827; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid #111827;">📷</div></div>` 
-            : `<div style="position:relative; cursor:pointer;" onclick="document.getElementById('profile-avatar-upload').click()"><div class="id-card-avatar" style="${isPremium ? 'border-color:#111827;' : ''}">${u.avatar || '👤'}</div><div style="position:absolute; bottom:0; right:0; background:white; color:#111827; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid #111827;">📷</div></div>`;
+            ? `<div style="position:relative; cursor:pointer;" onclick="document.getElementById('profile-avatar-upload').click()">
+                 <img src="${u.avatarUrl}" class="id-card-avatar" style="${isPremium ? 'border-color:#111827;' : ''}">
+                 <div style="position:absolute; bottom:0; right:0; background:white; color:#111827; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid #111827; box-shadow:0 2px 4px rgba(0,0,0,0.2);">📷</div>
+               </div>` 
+            : `<div style="position:relative; cursor:pointer;" onclick="document.getElementById('profile-avatar-upload').click()">
+                 <div class="id-card-avatar" style="${isPremium ? 'border-color:#111827;' : ''}">${u.avatar || '👤'}</div>
+                 <div style="position:absolute; bottom:0; right:0; background:white; color:#111827; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid #111827; box-shadow:0 2px 4px rgba(0,0,0,0.2);">📷</div>
+               </div>`;
 
         let tagsHtml = '';
         if(u.interests && Array.isArray(u.interests)) {
             tagsHtml = u.interests.map(tag => `<span class="id-tag" style="background:white; color:#111827; border:1px solid #111827;">${tag}</span>`).join('');
         }
 
-        const premiumBadgeHtml = isPremium ? `<div style="background:white; color:#111827; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:12px; border:1px solid #111827; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-top:5px;">☆ Premium Üye</div>` : ``;
-        const friendsCount = chatsDB.filter(c => c.status === 'accepted' && c.otherUid !== 'system').length;
+        const premiumBadgeHtml = isPremium 
+            ? `<div style="background:white; color:#111827; font-size:10px; font-weight:bold; padding:4px 8px; border-radius:12px; border:1px solid #111827; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 4px rgba(0,0,0,0.1); margin-top:5px;">☆ Premium Üye</div>` 
+            : ``;
+
+        const friendsCount = chatsDB.filter(c => c.status === 'accepted').length;
 
         let html = `
-            <div style="padding: 15px; display:flex; flex-direction:column; height:100%; overflow-y:auto;">
-                <input type="file" id="profile-avatar-upload" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
-                <div class="id-card ${isPremium ? 'premium-card-bw' : ''}" style="width:100%; box-sizing:border-box; margin-top:10px; margin-bottom:15px; position:relative; ${isPremium ? 'border-color:#111827;' : ''}">
-                    <button class="edit-profile-icon" style="position:absolute; top:15px; right:15px; background:white; color:#111827; border:1px solid #111827;" onclick="window.openProfileEditModal()">✏️ Düzenle</button>
-                    <div class="id-card-left">${avatarHtml}</div>
-                    <div class="id-card-right">
-                        <div class="id-card-name" style="color:#111827;">${u.name} ${initial}</div>
-                        <div style="font-size:12px; color:#111827; margin-bottom:4px; font-weight:600;">${u.username ? u.username : '@kullanici_adi'}</div>
-                        <div class="id-card-faculty" style="color:#111827;">${u.faculty || 'Bölüm belirtilmemiş'} ${u.grade ? ' - ' + u.grade + '. Sınıf' : ''}</div>
-                        <div class="id-card-details">
-                            <span style="color:#111827;">🏫 ${u.university || 'UniLoop'}</span>
-                            <span style="color:#111827;">🎂 ${u.age ? u.age + ' Yaşında' : 'Yaş belirtilmemiş'}</span>
-                            ${premiumBadgeHtml}
-                        </div>
-                        <div class="id-card-tags">${tagsHtml}</div>
-                    </div>
-                </div>
+            <input type="file" id="profile-avatar-upload" accept="image/*" style="display:none;" onchange="window.openCropper(event, 'profile')">
 
-                <div style="display:flex; justify-content:center; gap:15px; margin-bottom:20px;">
-                    <div style="flex:1; max-width:140px; background:linear-gradient(135deg, #FF7E5F, #FEB47B); border-radius:16px; padding:15px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; box-shadow:0 4px 10px rgba(255,126,95,0.3);">
-                        <div style="font-size:28px; margin-bottom:5px; text-shadow:0 2px 4px rgba(0,0,0,0.2);">🔥</div>
-                        <div style="font-size:24px; font-weight:900;">${u.popularity || 0}</div>
-                        <div style="font-size:11px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-top:2px;">Popülerlik</div>
+            <div class="id-card ${isPremium ? 'premium-card-bw' : ''}" style="width:100%; max-width:100%; box-sizing:border-box; margin-top:10px; margin-bottom:15px; position:relative; ${isPremium ? 'border-color:#111827;' : ''}">
+                <button class="edit-profile-icon" style="position:absolute; top:15px; right:15px; background:white; color:#111827; border:1px solid #111827;" onclick="window.openProfileEditModal()">✏️ Düzenle</button>
+                <div class="id-card-left">${avatarHtml}</div>
+                <div class="id-card-right">
+                    <div class="id-card-name" style="color:#111827;">${u.name} ${initial}</div>
+                    <div style="font-size:12px; color:#111827; margin-bottom:4px; font-weight:600;">${u.username ? u.username : '@kullanici_adi'}</div>
+                    <div class="id-card-faculty" style="color:#111827;">${u.faculty || 'Bölüm belirtilmemiş'} ${u.grade ? ' - ' + u.grade + '. Sınıf' : ''}</div>
+                    <div class="id-card-details">
+                        <span style="color:#111827;">🏫 ${u.university || 'UniLoop'}</span>
+                        <span style="color:#111827;">🎂 ${u.age ? u.age + ' Yaşında' : 'Yaş belirtilmemiş'}</span>
+                        ${premiumBadgeHtml}
                     </div>
-                    <button style="flex:1; max-width:140px; background:white; border:1px solid #111827; border-radius:16px; padding:15px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#111827; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.05); transition:transform 0.2s;" onclick="window.openFriendsList()">
-                        <div style="font-size:28px; margin-bottom:5px;">👥</div>
-                        <div style="font-size:24px; font-weight:900;">${friendsCount}</div>
-                        <div style="font-size:11px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-top:2px;">Arkadaşlarım</div>
-                    </button>
+                    <div class="id-card-tags">${tagsHtml}</div>
                 </div>
-                
-                ${!isPremium ? `
-                <div class="card premium-glow" style="margin-bottom:15px; background:white; border:1px solid #111827; cursor:pointer; padding:15px;" onclick="window.openPremiumModal()">
-                    <div style="display:flex; align-items:center; justify-content:space-between;">
-                        <div>
-                            <div style="font-weight:800; color:#111827; font-size:16px; margin-bottom:4px;">🌟 UniLoop Premium'a Geç</div>
-                            <div style="font-size:12px; color:#111827; font-weight:bold;">Kampüsün en popüler kişisi ol, sınırları kaldır!</div>
-                        </div>
-                        <div style="font-size:24px;">👑</div>
-                    </div>
-                </div>
-                ` : ''}
-
-                <button class="card" style="width:100%; padding:16px; margin-bottom:20px; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:10px; background:#fff; border:1px solid #111827; cursor:pointer; color:#111827; font-weight:bold; transition:transform 0.2s;" onclick="window.renderSettings()">
-                    <span style="font-size:20px;">⚙️</span> <strong style="font-size:15px;">Hesap Ayarları</strong>
-                </button>
             </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <div class="card premium-glow" style="flex:1; padding:15px; border-radius:16px; border:1px solid #111827; background:white; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:0.2s;" onclick="window.showLeaderboard()">
+                    <div style="font-size:28px; margin-bottom:5px;">🔥</div>
+                    <div style="font-size:18px; font-weight:800; color:#111827;">${u.popularity || 0}</div>
+                    <div style="font-size:12px; font-weight:bold; color:var(--text-gray);">Popülerlik</div>
+                </div>
+                <div class="card premium-glow" style="flex:1; padding:15px; border-radius:16px; border:1px solid #111827; background:white; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:0.2s;" onclick="window.openFriendsList()">
+                    <div style="font-size:28px; margin-bottom:5px;">👥</div>
+                    <div style="font-size:18px; font-weight:800; color:#111827;">${friendsCount}</div>
+                    <div style="font-size:12px; font-weight:bold; color:var(--text-gray);">Arkadaşlarım</div>
+                </div>
+            </div>
+            
+            ${!isPremium ? `
+            <div class="card premium-glow" style="margin-bottom:15px; background:white; border:1px solid #111827; cursor:pointer;" onclick="window.openPremiumModal()">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <div style="font-weight:800; color:#111827; font-size:16px; margin-bottom:4px;">🌟 UniLoop Premium'a Geç</div>
+                        <div style="font-size:12px; color:#111827; font-weight:bold;">Kampüsün en popüler kişisi ol, sınırları kaldır!</div>
+                    </div>
+                    <div style="font-size:24px;">👑</div>
+                </div>
+            </div>
+            ` : ''}
+
+            <button class="card" style="width:100%; padding:16px; margin-bottom:20px; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:10px; background:#fff; border:1px solid #111827; cursor:pointer; color:#111827; font-weight:bold; transition:transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onclick="window.renderSettings()">
+                <span style="font-size:20px;">⚙️</span> <strong style="font-size:15px;">Hesap Ayarları</strong>
+            </button>
         `;
         mainContent.innerHTML = html;
     };
 
     window.openFriendsList = function() {
-        const friends = chatsDB.filter(c => c.status === 'accepted' && c.otherUid !== 'system');
+        const friends = chatsDB.filter(c => c.status === 'accepted' && !c.isSystemChat);
+        
         if (friends.length === 0) {
-            window.openModal('👥 Arkadaşlarım', `<div style="text-align:center; padding:30px 10px; color:var(--text-gray);"><div style="font-size:40px; margin-bottom:10px;">🤷‍♂️</div><div style="font-size:14px;">Henüz bağlantı kurduğunuz bir arkadaşınız yok.</div></div>`); return;
+            window.openModal('👥 Arkadaşlarım', `
+                <div style="text-align:center; padding:30px 10px; color:var(--text-gray);">
+                    <div style="font-size:40px; margin-bottom:10px;">🤷‍♂️</div>
+                    <div style="font-size:14px;">Henüz bağlantı kurduğunuz bir arkadaşınız yok.</div>
+                    <button class="btn-primary" style="margin-top:15px; padding:10px 20px; border-radius:10px; font-size:13px; background:white; color:#111827; border:1px solid #111827;" onclick="window.closeModal(); window.loadPage('home')">Keşfetmeye Başla</button>
+                </div>
+            `);
+            return;
         }
 
         let listHtml = `<div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px;">`;
@@ -2457,91 +3026,76 @@ function initializeUniLoop() {
             let avatarHtml = f.avatar && f.avatar.startsWith('http') 
                 ? `<img src="${f.avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid #111827;">`
                 : `<div style="width:40px; height:40px; border-radius:50%; background:white; color:#111827; display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid #111827;">${f.avatar || '👤'}</div>`;
+
             listHtml += `
                 <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; background:white; border:1px solid #111827; border-radius:12px;">
-                    <div style="display:flex; align-items:center; gap:10px; flex:1; cursor:pointer;" onclick="window.viewUserProfile('${f.otherUid}')">${avatarHtml}<span style="font-weight:700; font-size:14px; color:#111827;">${f.name}</span></div>
-                    <div style="display:flex; gap:6px;"><button class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:8px; background:white; color:#111827; border:1px solid #111827;" onclick="window.openChatViewDirect('${f.id}'); window.closeModal();">💬 Mesaj</button></div>
+                    <div style="display:flex; align-items:center; gap:10px; flex:1; cursor:pointer;" onclick="window.viewUserProfile('${f.otherUid}')">
+                        ${avatarHtml}
+                        <span style="font-weight:700; font-size:14px; color:#111827;">${f.name}</span>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:8px; box-shadow:none; background:white; color:#111827; border:1px solid #111827;" onclick="window.openChatViewDirect('${f.id}'); window.closeModal();">💬 Mesaj</button>
+                    </div>
                 </div>
             `;
         });
-        window.openModal(`👥 Arkadaşlarım (${friends.length})`, listHtml + `</div>`);
-    };
-
-    window.openProfileEditModal = function() {
-        const u = window.userProfile;
-        const uNameStr = u.username ? u.username.replace('#', '') : '';
-        let facOptions = allFaculties.map(f => `<option value="${f}" ${u.faculty === f ? 'selected' : ''}>${f}</option>`).join('');
+        listHtml += `</div>`;
         
-        window.openModal('✏️ Profilini Düzenle', `
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <div><label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Kullanıcı Adı</label><div style="display:flex; align-items:center; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px; padding:0 10px;"><span style="color:var(--primary); font-weight:bold; font-size:14px;">#</span><input type="text" id="edit-username" value="${uNameStr}" style="border:none; background:transparent; width:100%; padding:12px 5px; outline:none; font-size:14px;"></div></div>
-                <div><label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Yaş</label><input type="number" id="edit-age" value="${u.age || ''}" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white;"></div>
-                <div><label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Fakülte</label><select id="edit-faculty" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white;"><option value="">Fakülte Seçiniz</option>${facOptions}</select></div>
-                <div><label style="font-size:12px; font-weight:bold; color:var(--text-gray); margin-bottom:4px; display:block;">Kaçıncı Sınıf</label><select id="edit-grade" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; font-size:14px; box-sizing:border-box; background:white;"><option value="1" ${u.grade == '1' ? 'selected' : ''}>1. Sınıf</option><option value="2" ${u.grade == '2' ? 'selected' : ''}>2. Sınıf</option><option value="3" ${u.grade == '3' ? 'selected' : ''}>3. Sınıf</option><option value="4" ${u.grade == '4' ? 'selected' : ''}>4. Sınıf</option><option value="5" ${u.grade == '5' ? 'selected' : ''}>5. Sınıf</option><option value="6" ${u.grade == '6' ? 'selected' : ''}>6. Sınıf</option></select></div>
-                <button class="btn-primary" style="width:100%; padding:14px; border-radius:10px; font-size:15px; font-weight:bold; margin-top:10px;" onclick="window.saveProfileEdits()">Değişiklikleri Kaydet</button>
-            </div>
-        `);
-    };
-
-    window.saveProfileEdits = async function() {
-        const usernameInput = document.getElementById('edit-username').value.trim().toLowerCase().replace(/\s+/g, '');
-        const newAge = document.getElementById('edit-age').value.trim();
-        const newFaculty = document.getElementById('edit-faculty').value;
-        const newGrade = document.getElementById('edit-grade').value;
-
-        if(!usernameInput || !newAge || !newFaculty) return alert("Lütfen tüm alanları eksiksiz doldurun.");
-
-        const finalUsername = '#' + usernameInput;
-        try {
-            if (finalUsername !== window.userProfile.username) {
-                const qU = query(collection(db, "users"), where("username", "==", finalUsername));
-                const snap = await getDocs(qU);
-                if(!snap.empty) { alert("Bu kullanıcı adı alınmış."); return; }
-            }
-            await updateDoc(doc(db, "users", window.userProfile.uid), { username: finalUsername, age: newAge, faculty: newFaculty, grade: newGrade });
-            window.userProfile.username = finalUsername; window.userProfile.age = newAge; window.userProfile.faculty = newFaculty; window.userProfile.grade = newGrade;
-            alert("Profil güncellendi!"); window.closeModal(); window.renderProfile();
-        } catch(e) { alert("Hata oluştu."); }
+        window.openModal(`👥 Arkadaşlarım (${friends.length})`, listHtml);
     };
 
     window.renderSettings = function() {
         const currentLang = localStorage.getItem('uniloop_lang') || 'tr';
+        
         let premiumCancelHtml = window.userProfile.isPremium ? `<a href="#" onclick="event.preventDefault(); window.cancelPremium()" style="display:block; text-align:center; font-size:12px; color:#111827; font-weight:bold; text-decoration:underline; margin-bottom:15px;">Premium Üyeliğimi İptal Et</a>` : '';
 
         window.openModal('⚙️ Ayarlar', `
             <div style="display:flex; flex-direction:column; gap:15px;">
-                <div class="form-group" style="margin:0;"><label style="font-size:13px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; display:block;">Dil Seçimi</label><select onchange="window.setLanguage(this.value)" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; background:#F9FAFB;"><option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>🇹🇷 Türkçe</option><option value="en" ${currentLang === 'en' ? 'selected' : ''}>🇬🇧 English</option></select></div>
+                <div class="form-group" style="margin:0;">
+                    <label style="font-size:13px; font-weight:bold; color:var(--text-dark); margin-bottom:5px; display:block;">Dil Seçimi</label>
+                    <select onchange="window.setLanguage(this.value)" style="width:100%; padding:12px; border-radius:10px; border:1px solid #E5E7EB; outline:none; background:#F9FAFB;">
+                        <option value="tr" ${currentLang === 'tr' ? 'selected' : ''}>🇹🇷 Türkçe</option>
+                        <option value="en" ${currentLang === 'en' ? 'selected' : ''}>🇬🇧 English</option>
+                    </select>
+                </div>
+                
                 <div style="border-top:1px solid #E5E7EB; margin:10px 0;"></div>
-                <button class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:10px; background:#4B5563; border-color:#4B5563;" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
+                
+                <button class="btn-primary" style="width:100%; padding:14px; font-weight:bold; font-size:15px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; background:#4B5563; border-color:#4B5563;" onclick="window.logout()">🚪 Güvenli Çıkış Yap</button>
+                
                 <div style="border-top:1px solid #E5E7EB; margin:10px 0;"></div>
+                
                 <a href="#" onclick="event.preventDefault(); window.deleteAccount()" style="display:block; text-align:center; font-size:12px; color:#EF4444; text-decoration:underline; margin-bottom:5px;">Hesabımı Sil</a>
+                
                 ${premiumCancelHtml}
+                
                 <a href="#" onclick="event.preventDefault(); window.openLegalModal()" style="display:block; text-align:center; font-size:12px; color:var(--primary); text-decoration:underline;">Kullanıcı Sözleşmesi ve Hakları</a>
-                <div style="text-align:center; font-size:11px; color:#9CA3AF; margin-top:5px;">UniLoop v3.2.0 Pro<br>Made with ❤️ for Students</div>
+                
+                <div style="text-align:center; font-size:11px; color:#9CA3AF; margin-top:5px;">
+                    UniLoop v3.2.0 Pro<br>Made with ❤️ for Students
+                </div>
             </div>
         `);
-    };
-
-    window.logout = async function() {
-        try {
-            if(window.userProfile && window.userProfile.uid) { await updateDoc(doc(db, "users", window.userProfile.uid), { isOnline: false }); }
-            await signOut(auth);
-            if(authScreen && appScreen) { appScreen.style.display = 'none'; authScreen.style.display = 'flex'; authScreen.classList.add('active'); document.getElementById('login-card').style.display = 'block'; }
-            window.location.reload();
-        } catch(error) {}
-    };
-
-    window.deleteAccount = async function() {
-        if(confirm("Tüm verilerin silinecek. Emin misin?")) {
-            try { const user = auth.currentUser; if(user) { await deleteDoc(doc(db, "users", user.uid)); await deleteUser(user); alert("Silindi."); window.location.reload(); } } 
-            catch(e) { alert("Güvenlik nedeniyle tekrar giriş yapmalısınız."); }
-        }
     };
 
     window.openLegalModal = function() {
         window.openModal('⚖️ Kullanıcı Sözleşmesi ve Hakları', `
             <div style="max-height: 400px; overflow-y: auto; font-size: 13px; color: var(--text-dark); line-height: 1.6; padding-right: 5px; text-align:left;">
-                <h4 style="margin-top:0; color:var(--primary);">1. Taraflar ve Kapsam</h4><p>Bu sözleşme, UniLoop platformunu kullanan üyeler için geçerlidir...</p>
+                <h4 style="margin-top:0; color:var(--primary);">1. Taraflar ve Kapsam</h4>
+                <p>Bu sözleşme, UniLoop platformunu ("Sistem") kullanan tüm üyeler için geçerlidir. Platform, KKTC (Kuzey Kıbrıs Türk Cumhuriyeti) ve Türkiye Cumhuriyeti kanunlarına tabidir ve hizmetler bu yasal çerçevede sunulmaktadır.</p>
+                
+                <h4 style="color:var(--primary);">2. Kullanım Şartları</h4>
+                <p>Kullanıcılar yasadışı, hakaret içeren, tehditkar, müstehcen veya başkalarının telif haklarını/kişisel haklarını ihlal eden içerikler paylaşamazlar. Kullanıcıların platform üzerinde gerçekleştirdiği tüm eylemler kendi sorumluluğundadır. Sistem sahibi veya yöneticileri bu ihlallerden hiçbir suretle hukuki veya cezai olarak sorumlu tutulamaz.</p>
+                
+                <h4 style="color:var(--primary);">3. Gizlilik Politikası</h4>
+                <p>Kullanıcı verileri (e-posta, isim, vb.) güvenli sunucularda saklanır. Bu veriler, yasal zorunluluklar veya yetkili makamların resmi talepleri dışında kesinlikle 3. şahıslarla veya kurumlarla paylaşılmaz.</p>
+                
+                <h4 style="color:var(--primary);">4. İhlal ve Fesih Politikası</h4>
+                <p>Yukarıda belirtilen kurallara uymayan hesaplar, sistem yöneticileri tarafından önceden haber verilmeksizin kalıcı olarak askıya alınabilir veya silinebilir. Sistem, ihlal durumunda yasal mercilerle işbirliği yapma hakkını saklı tutar.</p>
+                
+                <div style="margin-top:20px; font-weight:bold; text-align:center; font-size:12px; color:var(--text-gray);">
+                    Sisteme kayıt olan her kullanıcı, bu şartları okumuş ve kabul etmiş sayılır.
+                </div>
             </div>
             <button class="btn-primary" style="width:100%; margin-top:15px; padding:12px; border-radius:10px;" onclick="window.closeModal(); window.renderSettings();">Geri Dön</button>
         `);
@@ -2559,8 +3113,17 @@ function initializeUniLoop() {
                 hasNotif = true;
                 html += `
                     <div class="notif-compact-item" style="border-left: 4px solid var(--primary);">
-                        <div style="display:flex; align-items:center; gap:10px; flex:1;"><div style="font-size:24px;">👋</div><div><div style="font-weight:800; font-size:14px; color:var(--text-dark);">${chat.name}</div><div style="font-size:12px; color:var(--text-gray);">Bağlantı kurmak istiyor.</div></div></div>
-                        <div style="display:flex; gap:5px;"><button class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:8px; background:#10B981; border-color:#10B981; box-shadow:none;" onclick="window.acceptChatRequest('${chat.id}')">Kabul</button><button class="btn-danger" style="padding:6px 12px; font-size:12px; border-radius:8px; box-shadow:none;" onclick="window.rejectChatRequest('${chat.id}')">Red</button></div>
+                        <div style="display:flex; align-items:center; gap:10px; flex:1;">
+                            <div style="font-size:24px;">👋</div>
+                            <div>
+                                <div style="font-weight:800; font-size:14px; color:var(--text-dark);">${chat.name}</div>
+                                <div style="font-size:12px; color:var(--text-gray);">Seninle bağlantı kurmak istiyor.</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn-primary" style="padding:6px 12px; font-size:12px; border-radius:8px; background:#10B981; border-color:#10B981; box-shadow:none;" onclick="window.acceptChatRequest('${chat.id}')">Kabul</button>
+                            <button class="btn-danger" style="padding:6px 12px; font-size:12px; border-radius:8px; box-shadow:none;" onclick="window.rejectChatRequest('${chat.id}')">Red</button>
+                        </div>
                     </div>
                 `;
             }
@@ -2572,10 +3135,19 @@ function initializeUniLoop() {
                     const lastMsg = chat.messages[chat.messages.length - 1];
                     if (lastMsg.senderId !== window.userProfile.uid && lastMsg.read === false) {
                         hasNotif = true;
-                        let msgPreview = lastMsg.text || 'Yeni Medya';
+                        
+                        let msgPreview = lastMsg.text;
+                        if(lastMsg.isSystem) msgPreview = lastMsg.text; 
+                        
                         html += `
                             <div class="notif-compact-item" style="cursor:pointer;" onclick="window.openChatViewDirect('${chat.id}'); window.closeModal();">
-                                <div style="display:flex; align-items:center; gap:10px; flex:1;"><div style="font-size:24px;">💬</div><div style="flex:1; min-width:0;"><div style="font-weight:800; font-size:14px; color:var(--text-dark);">${chat.name}</div><div style="font-size:12px; color:var(--primary); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Yeni: ${msgPreview}</div></div></div>
+                                <div style="display:flex; align-items:center; gap:10px; flex:1;">
+                                    <div style="font-size:24px;">${lastMsg.isSystem ? '🔔' : '💬'}</div>
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="font-weight:800; font-size:14px; color:var(--text-dark);">${chat.name}</div>
+                                        <div style="font-size:12px; color:var(--primary); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Yeni: ${msgPreview}</div>
+                                    </div>
+                                </div>
                             </div>
                         `;
                     }
@@ -2583,8 +3155,17 @@ function initializeUniLoop() {
             }
         });
 
-        if (!hasNotif) { html += `<div style="text-align:center; padding:30px 10px; color:var(--text-gray);"><div style="font-size:40px; margin-bottom:10px;">🔔</div><div style="font-size:14px;">Şu an için yeni bir bildiriminiz yok.</div></div>`; }
-        html += '</div>'; window.openModal('🔔 Bildirimler', html);
+        if (!hasNotif) {
+            html += `
+                <div style="text-align:center; padding:30px 10px; color:var(--text-gray);">
+                    <div style="font-size:40px; margin-bottom:10px;">🔔</div>
+                    <div style="font-size:14px;">Şu an için yeni bir bildiriminiz yok.</div>
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+        window.openModal('🔔 Bildirimler', html);
     };
 
     window.loadPage = function(page) {
@@ -2596,10 +3177,10 @@ function initializeUniLoop() {
         document.body.classList.remove('no-scroll-messages');
         document.body.classList.remove('no-scroll-home');
         
+        window.closeFrequency(); 
+
         switch(page) {
             case 'home': window.renderHome(); break;
-            case 'voice': window.renderVoice(); break; 
-            case 'popularity': window.renderPopularity(); break; 
             case 'messages': window.renderMessages(); break;
             case 'profile': window.renderProfile(); break;
             default: window.renderHome();
@@ -2612,7 +3193,3 @@ if (document.readyState === 'loading') {
 } else {
     initializeUniLoop();
 }
-
-// ============================================================================
-// 🌟 JS BÖLÜM 2 SONU 🌟
-// ============================================================================
