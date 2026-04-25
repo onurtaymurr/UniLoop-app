@@ -7,88 +7,60 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
-    <div id="login-screen" class="active">
-        <div class="login-container">
-            <h1 class="brand-title" style="color: white;">uniloop</h1>
-            <p style="color: #e0e0e0; margin-bottom: 20px;">Üniversitene Özel Ağ</p>
-            <form id="login-form">
-                <input type="email" placeholder="Üniversite E-postası (@edu.tr)" required>
-                <input type="password" placeholder="Şifre" required>
-                <button type="submit" class="btn-primary">Sisteme Gir</button>
-            </form>
-            <p class="signup-text" style="color: white;">Hesabın yok mu? <span onclick="startRegistration()" style="color: #FFD700;">Hemen Oluştur</span></p>
+    <div id="auth-screen" class="active">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        
+        <div class="glass-card" id="login-block">
+            <h1 class="brand-title">uniloop<span style="color: #FFD700;">.</span></h1>
+            <p style="color: rgba(255,255,255,0.8); margin-bottom: 30px;">Kampüsün yeni nesil ağı</p>
+            <input type="email" id="login-email" class="glass-input" placeholder="Üniversite E-postası (@edu.tr)">
+            <input type="password" id="login-pass" class="glass-input" placeholder="Şifre">
+            <button class="btn-glass" onclick="enterApp()">Giriş Yap</button>
+            <p style="color: white; margin-top: 20px;">Hesabın yok mu? <span onclick="toggleReg()" style="color: #FFD700; font-weight: bold; cursor: pointer;">Hemen Oluştur</span></p>
         </div>
-    </div>
 
-    <div id="register-screen">
-        <div class="register-container">
-            <div class="progress-bar"><div class="progress-fill" id="reg-progress"></div></div>
+        <div class="glass-card" id="reg-block" style="display: none;">
+            <div class="progress-bar"><div class="progress-fill" id="reg-prog"></div></div>
             
             <div class="reg-step active" id="step-1">
-                <h3>Kimsin Sen?</h3>
-                <input type="text" id="reg-name" placeholder="Ad Soyad" required>
-                <input type="number" id="reg-age" placeholder="Yaş" required>
-                <input type="text" id="reg-faculty" placeholder="Fakülte / Bölüm" required>
-                <select id="reg-year">
-                    <option value="">Kaçıncı Sınıfsın?</option>
-                    <option value="Hazırlık">Hazırlık</option>
-                    <option value="1. Sınıf">1. Sınıf</option>
-                    <option value="2. Sınıf">2. Sınıf</option>
-                    <option value="3. Sınıf">3. Sınıf</option>
-                    <option value="4. Sınıf">4. Sınıf</option>
-                </select>
-                <button class="btn-primary mt-15" onclick="nextStep(2)">İleri <i class="fa-solid fa-arrow-right"></i></button>
+                <h3 style="color:white; margin-bottom: 20px;">Kimsin Sen?</h3>
+                <input type="text" class="glass-input" id="r-name" placeholder="Ad Soyad">
+                <input type="number" class="glass-input" id="r-age" placeholder="Yaş">
+                <input type="text" class="glass-input" id="r-dept" placeholder="Bölüm / Fakülte">
+                <button class="btn-glass" onclick="nextStep(2)">İleri</button>
             </div>
-
+            
             <div class="reg-step" id="step-2">
-                <h3>Nelerden Hoşlanırsın?</h3>
-                <p style="font-size: 12px; color: #666; margin-bottom: 15px;">En az 3 tane seç</p>
-                <div class="hobbies-grid" id="hobbies-container">
-                    <div class="hobi-tag" onclick="toggleHobi(this)">Müzik</div>
-                    <div class="hobi-tag" onclick="toggleHobi(this)">Spor</div>
-                    <div class="hobi-tag" onclick="toggleHobi(this)">Yazılım</div>
-                    <div class="hobi-tag" onclick="toggleHobi(this)">Sinema</div>
-                    <div class="hobi-tag" onclick="toggleHobi(this)">Kitap</div>
-                    <div class="hobi-tag" onclick="toggleHobi(this)">Girişimcilik</div>
-                    <div class="hobi-tag" onclick="toggleHobi(this)">Oyun</div>
-                    <div class="hobi-tag" onclick="toggleHobi(this)">Seyahat</div>
+                <h3 style="color:white; margin-bottom: 15px;">Nelerden Hoşlanırsın?</h3>
+                <p style="color:#ccc; font-size:12px; margin-bottom:15px;">En az 3 hobi seç</p>
+                <div id="hobbies-list" style="margin-bottom: 20px;">
+                    <span class="hobi-tag" onclick="this.classList.toggle('selected')">Müzik</span>
+                    <span class="hobi-tag" onclick="this.classList.toggle('selected')">Spor</span>
+                    <span class="hobi-tag" onclick="this.classList.toggle('selected')">Yazılım</span>
+                    <span class="hobi-tag" onclick="this.classList.toggle('selected')">Oyun</span>
+                    <span class="hobi-tag" onclick="this.classList.toggle('selected')">Sinema</span>
+                    <span class="hobi-tag" onclick="this.classList.toggle('selected')">Girişimcilik</span>
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button class="btn-outline" onclick="prevStep(1)">Geri</button>
-                    <button class="btn-primary" style="flex: 1;" onclick="nextStep(3)">İleri</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-glass" style="background: transparent; border: 1px solid white; color: white;" onclick="nextStep(1)">Geri</button>
+                    <button class="btn-glass" onclick="nextStep(3)">İleri</button>
                 </div>
             </div>
-
+            
             <div class="reg-step" id="step-3">
-                <h3>Burada Ne Arıyorsun?</h3>
-                <select id="reg-purpose" style="width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 15px;">
+                <h3 style="color:white; margin-bottom: 20px;">Amacın Ne?</h3>
+                <select class="glass-input" id="r-purpose" style="background: rgba(255,255,255,0.2); color: #333;">
                     <option value="Arkadaş Edinmek">Arkadaş Edinmek</option>
                     <option value="Network / Kariyer">Network / Kariyer</option>
-                    <option value="Sadece Eğlence">Sadece Eğlence</option>
                     <option value="Sevgili Bulmak">Sevgili Bulmak</option>
+                    <option value="Sadece Eğlence">Sadece Eğlence</option>
                 </select>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-outline" onclick="prevStep(2)">Geri</button>
-                    <button class="btn-primary" style="flex: 1;" onclick="nextStep(4)">İleri</button>
-                </div>
-            </div>
-
-            <div class="reg-step" id="step-4">
-                <h3>Harika Görünüyorsun!</h3>
-                <div class="photo-upload-area" id="photo-upload" onclick="document.getElementById('file-input').click()">
-                    <i class="fa-solid fa-camera" style="font-size: 30px; color: #4A00E0;"></i>
-                    <p style="margin-top: 10px; color: #666;">Profil Fotoğrafı Seç</p>
-                </div>
-                <input type="file" id="file-input" style="display: none;" accept="image/*" onchange="previewPhoto(event)">
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button class="btn-outline" onclick="prevStep(3)">Geri</button>
-                    <button class="btn-primary" style="flex: 1;" onclick="finishRegistration()">Kaydı Tamamla</button>
-                </div>
+                <button class="btn-glass" onclick="finishReg()">Kaydı Tamamla</button>
             </div>
         </div>
     </div>
@@ -97,19 +69,22 @@
         <header id="top-header">
             <h2 class="brand-title-small">uniloop</h2>
             <div class="header-actions">
-                <button id="btn-premium" class="btn-premium">Premium</button>
-                <i id="btn-notifications" class="fa-regular fa-bell btn-icon"></i>
+                <button class="btn-premium"><i class="fa-solid fa-crown"></i> Premium</button>
+                <div class="notification-icon-wrapper">
+                    <i class="fa-regular fa-bell btn-icon"></i>
+                    <span class="badge">2</span>
+                </div>
             </div>
         </header>
 
         <main id="app-content"></main>
 
         <nav id="bottom-nav">
-            <button class="nav-btn active" data-page="discover"><i class="fa-solid fa-layer-group"></i><span>Keşfet</span></button>
-            <button class="nav-btn" data-page="voice"><i class="fa-solid fa-headset"></i><span>BlindTalk</span></button>
-            <button class="nav-btn" data-page="tournament"><i class="fa-solid fa-trophy"></i><span>Turnuva</span></button>
-            <button class="nav-btn" data-page="messages"><i class="fa-regular fa-comment-dots"></i><span>Mesajlar</span></button>
-            <button class="nav-btn" data-page="profile"><i class="fa-regular fa-user"></i><span>Profil</span></button>
+            <button class="nav-btn active" onclick="nav('discover', this)"><i class="fa-solid fa-layer-group"></i><span>Keşfet</span></button>
+            <button class="nav-btn" onclick="nav('voice', this)"><i class="fa-solid fa-headset"></i><span>BlindTalk</span></button>
+            <button class="nav-btn" onclick="nav('tournament', this)"><i class="fa-solid fa-trophy"></i><span>Turnuva</span></button>
+            <button class="nav-btn" onclick="nav('messages', this)"><i class="fa-regular fa-comment-dots"></i><span>Mesajlar</span></button>
+            <button class="nav-btn" onclick="nav('profile', this)"><i class="fa-regular fa-user"></i><span>Profil</span></button>
         </nav>
     </div>
 
