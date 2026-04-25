@@ -3,30 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Uniloop</title>
+    <title>Uniloop - Üniversitenin Ritmi</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
     <div id="login-screen" class="active">
         <div class="login-container">
-            <img src="uniloop_logo.png" alt="Uniloop" class="login-logo" onerror="this.src='https://via.placeholder.com/150x50?text=Uniloop'">
-            <h2>Üniversitenin Ritmini Yakala</h2>
+            <h1 class="brand-title">uniloop</h1>
+            <p style="color: #666; margin-bottom: 20px;">Üniversitene Özel Ağ</p>
             <form id="login-form">
-                <input type="email" placeholder="Üniversite E-postası" required>
-                <input type="password" placeholder="Şifre" required>
-                <button type="submit" class="btn-primary">Giriş Yap</button>
+                <input type="email" id="email-input" placeholder="Üniversite E-postası (@edu.tr)" required>
+                <input type="password" id="password-input" placeholder="Şifre" required>
+                <button type="submit" class="btn-primary">Sisteme Gir</button>
             </form>
-            <p class="signup-text">Hesabın yok mu? <span>Hemen Oluştur</span></p>
+            <p class="signup-text">Hesabın yok mu? <span onclick="alert('Kayıt ekranı eklenecek')">Hemen Oluştur</span></p>
         </div>
     </div>
 
     <div id="app-container">
         <header id="top-header">
-            <div class="logo">
-                <img src="uniloop_logo.png" alt="Uniloop" onerror="this.src='https://via.placeholder.com/100x30?text=Uniloop'">
-            </div>
+            <h2 class="brand-title-small">uniloop</h2>
             <div class="header-actions">
                 <button id="btn-premium" class="btn-premium">Premium</button>
                 <i id="btn-notifications" class="fa-regular fa-bell btn-icon"></i>
@@ -48,17 +49,17 @@
     
     <div id="premium-modal" class="modal">
         <h3>Uniloop Premium <i class="fa-solid fa-crown" style="color: gold;"></i></h3>
-        <p>Sınırsız kaydırma, profilini kimlerin gördüğünü öğrenme ve turnuvada 2x görünürlük kazan!</p>
-        <button class="btn-primary mt-15" onclick="closeModals()">Yükselt</button>
+        <p style="margin-top: 10px; color: #555;">Sınırsız kaydırma ve turnuvada x2 görünürlük!</p>
+        <button class="btn-primary" style="margin-top: 15px;" onclick="closeModals()">Hemen Al</button>
     </div>
 
     <div id="notifications-modal" class="modal">
         <h3>Bildirimler</h3>
-        <ul style="text-align: left; margin-top: 15px; list-style: none;">
-            <li style="padding: 10px; border-bottom: 1px solid #eee;">🔥 Turnuvada Liderlik Tablosuna girdin!</li>
-            <li style="padding: 10px; border-bottom: 1px solid #eee;">💬 Yeni bir eşleşmen var!</li>
+        <ul style="text-align: left; margin-top: 15px; list-style: none; padding: 0;">
+            <li style="padding: 10px 0; border-bottom: 1px solid #eee;">🔥 Aylin seni turnuvada oyladı!</li>
+            <li style="padding: 10px 0; border-bottom: 1px solid #eee;">💬 Yeni eşleşme: Berk!</li>
         </ul>
-        <button class="btn-outline mt-15" onclick="closeModals()">Kapat</button>
+        <button class="btn-outline" style="margin-top: 15px; width: 100%;" onclick="closeModals()">Kapat</button>
     </div>
 
     <script src="app.js"></script>
