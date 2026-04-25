@@ -21,11 +21,11 @@
         
         <div class="glass-card" id="login-block">
             <h1 class="brand-title">uniloop<span style="color: #FFD700;">.</span></h1>
-            <p style="color: rgba(255,255,255,0.8); margin-bottom: 25px;">Kampüsün yeni nesil ağı</p>
+            <p style="color: rgba(255,255,255,0.8); margin-bottom: 25px;">Kampüsün Ritmi</p>
             <input type="email" id="login-email" class="glass-input" placeholder="Üniversite E-postası (@edu.tr)">
             <input type="password" id="login-pass" class="glass-input" placeholder="Şifre">
             <button class="btn-glass" onclick="loginUser()">Giriş Yap</button>
-            <p style="color: white; margin-top: 20px; font-size: 14px;">Hesabın yok mu? <span onclick="toggleReg()" style="color: #FFD700; font-weight: bold; cursor: pointer;">Hemen Oluştur</span></p>
+            <p style="color: white; margin-top: 20px; font-size: 14px;">Hesabın yok mu? <span onclick="toggleReg()" style="color: #FFD700; font-weight: bold; cursor: pointer;">Oluştur</span></p>
         </div>
 
         <div class="glass-card" id="reg-block" style="display: none;">
@@ -48,17 +48,17 @@
                     <option value="Tıp">Tıp Fakültesi</option>
                     <option value="Diş Hekimliği">Diş Hekimliği Fakültesi</option>
                     <option value="Hukuk">Hukuk Fakültesi</option>
-                    <option value="Mimarlık">Mimarlık ve Tasarım Fak.</option>
-                    <option value="İşletme">İşletme / İktisat Fak.</option>
+                    <option value="Mimarlık">Mimarlık ve Tasarım</option>
+                    <option value="İşletme">İşletme / İktisat</option>
                     <option value="Eğitim">Eğitim Fakültesi</option>
                     <option value="İletişim">İletişim Fakültesi</option>
-                    <option value="Fen-Edebiyat">Fen-Edebiyat Fakültesi</option>
-                    <option value="Sağlık Bilimleri">Sağlık Bilimleri Fakültesi</option>
-                    <option value="Güzel Sanatlar">Güzel Sanatlar Fakültesi</option>
+                    <option value="Fen-Edebiyat">Fen-Edebiyat</option>
+                    <option value="Sağlık Bilimleri">Sağlık Bilimleri</option>
+                    <option value="Güzel Sanatlar">Güzel Sanatlar</option>
                     <option value="İlahiyat">İlahiyat Fakültesi</option>
                 </select>
                 <select class="glass-input select-dark" id="r-class">
-                    <option value="" disabled selected>Kaçıncı Sınıfsın?</option>
+                    <option value="" disabled selected>Sınıfın</option>
                     <option value="Hazırlık">Hazırlık</option>
                     <option value="1. Sınıf">1. Sınıf</option>
                     <option value="2. Sınıf">2. Sınıf</option>
@@ -79,10 +79,8 @@
                     <option value="Arkadaş Edinmek">Arkadaş Edinmek</option>
                     <option value="Network / Kariyer">Network / Kariyer</option>
                     <option value="Sevgili Bulmak">Sevgili Bulmak</option>
-                    <option value="Sadece Eğlence">Sadece Eğlence</option>
                 </select>
                 
-                <p style="color:#ccc; font-size:12px; margin-bottom:10px; text-align:left;">En az 3 hobi seç:</p>
                 <div id="hobbies-list" class="hobbies-grid" style="margin-bottom: 15px;">
                     <span class="hobi-tag" onclick="this.classList.toggle('selected')">Müzik</span>
                     <span class="hobi-tag" onclick="this.classList.toggle('selected')">Spor</span>
@@ -90,15 +88,13 @@
                     <span class="hobi-tag" onclick="this.classList.toggle('selected')">Oyun</span>
                     <span class="hobi-tag" onclick="this.classList.toggle('selected')">Sinema</span>
                     <span class="hobi-tag" onclick="this.classList.toggle('selected')">Kitap</span>
-                    <span class="hobi-tag" onclick="this.classList.toggle('selected')">Girişimcilik</span>
+                    <span class="hobi-tag" onclick="this.classList.toggle('selected')">Girişim</span>
                     <span class="hobi-tag" onclick="this.classList.toggle('selected')">Kahve</span>
-                    <span class="hobi-tag" onclick="this.classList.toggle('selected')">Seyahat</span>
-                    <span class="hobi-tag" onclick="this.classList.toggle('selected')">Fotoğraf</span>
                 </div>
                 
                 <input type="file" id="r-photo" accept="image/*" style="display: none;" onchange="previewImage(event)">
                 <div class="glass-input photo-upload" id="photo-preview" onclick="document.getElementById('r-photo').click()">
-                    <i class="fa-solid fa-camera" style="margin-right: 10px;"></i> Profil Fotoğrafı Seç
+                    <i class="fa-solid fa-camera" style="margin-right: 10px;"></i> Fotoğraf Ekle
                 </div>
                 
                 <div style="display: flex; gap: 10px;">
