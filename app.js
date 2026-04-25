@@ -1,23 +1,24 @@
 // ==========================================
 // 1. FİREBASE GERÇEK YAPILANDIRMASI
 // ==========================================
-// LÜTFEN KENDİ FİREBASE BİLGİLERİNİ BURAYA GİR, YOKSA ÇALIŞMAZ!
 const firebaseConfig = {
-    apiKey: "API_KEY_GIR",
-    authDomain: "DOMAIN_GIR",
-    projectId: "PROJECT_ID_GIR",
-    storageBucket: "BUCKET_GIR",
-    messagingSenderId: "SENDER_GIR",
-    appId: "APP_ID_GIR"
+  apiKey: "AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
+  authDomain: "uniloop-app.firebaseapp.com",
+  projectId: "uniloop-app",
+  storageBucket: "uniloop-app.firebasestorage.app",
+  messagingSenderId: "272654005890",
+  appId: "1:272654005890:web:0b1dd388364e86d22f269b",
+  measurementId: "G-PJ0XE1PXH5"
 };
 
-// Yalnızca config girdiğinde başlatır. Girmezsen app çöker (Simülasyon iptal edildiği için).
+// Firebase Başlatılıyor
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 const storage = firebase.storage();
+const analytics = firebase.analytics();
 
-let currentUserData = null; // Sistemdeki giriş yapmış kullanıcı
+let currentUserData = null; 
 
 // ==========================================
 // 2. KİMLİK DOĞRULAMA, KAYIT VE MAİL ONAYI
@@ -33,7 +34,6 @@ function nextStep(step) {
     document.getElementById('reg-prog').style.width = (step * 33.3) + '%'; 
 }
 
-// Fotoğraf seçilince input'un arka planı değişir
 let selectedFile = null;
 function previewImage(event) {
     selectedFile = event.target.files[0];
@@ -56,31 +56,39 @@ async function registerUserToFirebase() {
     const dept = document.getElementById('r-dept').value;
     const classLevel = document.getElementById('r-class').value;
     const purpose = document.getElementById('r-purpose').value;
-    const hobbies = document.getElementById('r-hobbies').value.split(',').map(h => h.trim());
+    
+    // Sadece seçili hobileri al
+    const hobbies = [];
+    document.querySelectorAll('.hobi-tag.selected').forEach(tag => {
+        hobbies.push(tag.innerText);
+    });
 
-    if(!email || !pass || !name || !age || !dept) {
+    if(!email || !pass || !name || !age || !dept || !classLevel) {
         alert("Lütfen tüm alanları doldurun!"); return;
+    }
+    if(hobbies.length < 3) {
+        alert("Lütfen en az 3 hobi seçin!"); return;
     }
 
     document.getElementById('btn-register').innerText = "Kaydediliyor... (Lütfen bekleyin)";
 
     try {
-        // 1. Firebase Auth ile kullanıcı oluştur
+        // 1. Firebase Auth Oluştur
         const userCred = await auth.createUserWithEmailAndPassword(email, pass);
         const user = userCred.user;
 
-        // 2. E-posta doğrulama linki gönder
+        // 2. E-posta Doğrulama Gönder
         await user.sendEmailVerification();
 
-        // 3. Fotoğrafı Firebase Storage'a yükle (Eğer seçildiyse)
-        let photoUrl = ""; // Fotoğraf yoksa boş kalır, aşağıda default ikon atanacak
+        // 3. Fotoğrafı Storage'a Yükle
+        let photoUrl = ""; 
         if(selectedFile) {
             const ref = storage.ref(`profile_images/${user.uid}`);
             await ref.put(selectedFile);
             photoUrl = await ref.getDownloadURL();
         }
 
-        // 4. Firestore'a veriyi kaydet (Turnuvaya otomatik katılım için elo eklendi)
+        // 4. Firestore'a Veriyi Yaz
         await db.collection('users').doc(user.uid).set({
             uid: user.uid,
             name: name,
@@ -89,13 +97,13 @@ async function registerUserToFirebase() {
             classLevel: classLevel,
             purpose: purpose,
             hobbies: hobbies,
-            photoUrl: photoUrl, // Gerçek link
-            elo: 1000, // Turnuva başlangıç puanı
-            lastVoteTime: null // 12 saat kilit sistemi için
+            photoUrl: photoUrl,
+            elo: 1000, 
+            lastVoteTime: null 
         });
 
         alert("Kayıt başarılı! Lütfen e-postanıza gelen doğrulama linkine tıklayın ve ardından giriş yapın.");
-        toggleReg(); // Giriş ekranına dön
+        toggleReg(); 
 
     } catch(err) {
         alert("Kayıt Hatası: " + err.message);
@@ -115,7 +123,6 @@ async function loginUser() {
             return;
         }
         
-        // Kullanıcı verisini çek
         const doc = await db.collection('users').doc(userCred.user.uid).get();
         currentUserData = doc.data();
         
@@ -133,7 +140,7 @@ function enterApp() {
 const appContent = document.getElementById('app-content');
 
 function nav(page, btn) {
-    closeChat(); // Geri çıkma hatasını önlemek için sekme değiştiğinde chat kapanır
+    closeChat(); 
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); 
     btn.classList.add('active');
     
@@ -141,6 +148,7 @@ function nav(page, btn) {
     if(page === 'tournament') renderTournament();
     if(page === 'messages') renderMessagesList();
     if(page === 'profile') renderProfile();
+    if(page === 'voice') renderVoiceHome();
 }
 
 // --- 4. GERÇEK VERİLİ KEŞFET (SWIPE) ---
@@ -148,9 +156,7 @@ async function renderDiscover() {
     appContent.innerHTML = `<h3 style="text-align:center; margin-top:50px;">Kullanıcılar Yükleniyor...</h3>`;
     
     try {
-        // Firebase'den kendimiz hariç diğer kullanıcıları çekiyoruz
         const snapshot = await db.collection('users').where('uid', '!=', auth.currentUser.uid).get();
-        let usersHtml = "";
         let zIndex = snapshot.docs.length;
 
         appContent.innerHTML = `
@@ -165,9 +171,13 @@ async function renderDiscover() {
         
         const container = document.getElementById('cards-container');
 
+        if(snapshot.empty) {
+            container.innerHTML = `<h3 style="text-align:center; padding-top:40%;">Şu an yeni kullanıcı yok.</h3>`;
+            return;
+        }
+
         snapshot.forEach(doc => {
             const u = doc.data();
-            // Eğer fotoğrafı yoksa, isim baş harfine göre default emoji/avatar atama
             let displayImg = u.photoUrl ? u.photoUrl : `https://ui-avatars.com/api/?name=${u.name}&background=4A00E0&color=fff&size=512`;
             
             const card = document.createElement('div');
@@ -198,7 +208,6 @@ function attachDrag(card) {
     const move = e => {
         if(!drag) return; 
         cX = (e.pageX||e.touches[0].pageX)-sX; 
-        // Yavaş, tok swipe fiziği (rotate faktörü düşürüldü)
         card.style.transform=`translateX(${cX}px) rotate(${cX*0.05}deg)`;
         if(cX>0){ card.querySelector('.stamp-like').style.opacity=cX/100; card.querySelector('.stamp-nope').style.opacity=0; }
         else { card.querySelector('.stamp-nope').style.opacity=Math.abs(cX)/100; card.querySelector('.stamp-like').style.opacity=0; }
@@ -214,12 +223,10 @@ function attachDrag(card) {
 }
 
 function sOut(c, d) { 
-    // Daha yavaş kaybolma animasyonu
     c.style.transition = '0.8s cubic-bezier(0.2,0.8,0.2,1)'; 
     c.style.transform = `translateX(${d*1000}px) rotate(${d*30}deg)`; 
     setTimeout(()=>c.remove(), 800); 
     
-    // Gerçek Swipe veritabanı kaydı
     const targetUid = c.dataset.uid;
     const type = d === 1 ? 'like' : 'pass';
     db.collection('swipes').add({
@@ -235,14 +242,12 @@ function forceSwipe(d) { const c = document.querySelectorAll('.user-card'); if(c
 async function renderTournament() {
     appContent.innerHTML = `<h3 style="text-align:center; margin-top:50px;">Turnuva Yükleniyor...</h3>`;
     
-    // Zaman kontrolü
     const now = new Date().getTime();
     if(currentUserData.lastVoteTime) {
-        const lastVote = currentUserData.lastVoteTime.toMillis();
+        const lastVote = currentUserData.lastVoteTime.toMillis ? currentUserData.lastVoteTime.toMillis() : currentUserData.lastVoteTime;
         const diffHours = (now - lastVote) / (1000 * 60 * 60);
         
         if(diffHours < 12) {
-            // 12 Saat dolmamış, Sayaç göster
             const remainingHours = Math.floor(12 - diffHours);
             appContent.innerHTML = `
                 <div style="display:flex; justify-content:center; padding:20px;">
@@ -260,7 +265,6 @@ async function renderTournament() {
         }
     }
 
-    // Oylama Açık: Rastgele 2 kişi getir (Kendisi hariç)
     try {
         const snapshot = await db.collection('users').where('uid', '!=', auth.currentUser.uid).limit(10).get();
         const users = [];
@@ -272,7 +276,7 @@ async function renderTournament() {
         }
 
         const u1 = users[0];
-        const u2 = users[1]; // Gerçekte rastgele algoritması eklenebilir
+        const u2 = users[1]; 
 
         appContent.innerHTML = `
             <div class="tourney-container">
@@ -295,7 +299,6 @@ async function renderTournament() {
 }
 
 async function renderPopularsHtml() {
-    // En yüksek elo'ya sahip 4 kişiyi getir
     const popSnap = await db.collection('users').orderBy('elo', 'desc').limit(4).get();
     let popHtml = `<div class="popular-row-title">Haftanın Popülerleri <i class="fa-solid fa-fire" style="color:#EF4444;"></i></div><div class="popular-row">`;
     popSnap.forEach(doc => {
@@ -313,30 +316,26 @@ async function renderPopularsHtml() {
 
 async function castVote(winnerUid) {
     try {
-        // Kazananın elo puanını artır
         await db.collection('users').doc(winnerUid).update({
             elo: firebase.firestore.FieldValue.increment(25)
         });
         
-        // Oylama süresini kilitle
         await db.collection('users').doc(auth.currentUser.uid).update({
             lastVoteTime: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // Kendi lokal verimizi de güncelle ki sayfa yenilenmeden kilit devreye girsin
-        currentUserData.lastVoteTime = { toMillis: () => new Date().getTime() };
-        
-        renderTournament(); // Yeniden yükle (kilitli ekranı gösterecek)
+        currentUserData.lastVoteTime = new Date().getTime();
+        renderTournament(); 
     } catch(err) { alert("Hata: " + err.message); }
 }
 
-// --- 6. GERÇEK MESAJLAŞMA (DİNLİYİCİLİ VE GERİ DÖNÜŞLÜ) ---
+// --- 6. GERÇEK MESAJLAŞMA ---
 let currentChatUnsubscribe = null;
 
 async function renderMessagesList() {
     appContent.innerHTML = `<h3 style="text-align:center; margin-top:30px;">Mesajlar Yükleniyor...</h3>`;
     
-    // Gerçekte Matches koleksiyonundan eşleşmeler çekilir. Örnek olarak herkesi listeliyoruz.
+    // Gerçekte Matches tablosundan çekilir, simülasyon için rastgele 5 kullanıcı
     const snapshot = await db.collection('users').where('uid', '!=', auth.currentUser.uid).limit(5).get();
     
     let html = `<div style="padding: 15px;"><h2 style="color: #1e293b; margin-bottom: 15px;">Sohbetler</h2>`;
@@ -365,8 +364,7 @@ function openChat(targetUid, targetName, targetImg) {
                 <img src="${targetImg}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; margin-right: 15px;">
                 <h3 style="color: #1e293b; font-size: 18px;">${targetName}</h3>
             </div>
-            <div class="chat-messages" id="chat-msgs">
-                </div>
+            <div class="chat-messages" id="chat-msgs"></div>
             <div class="chat-input-area">
                 <input type="text" id="chat-input" style="flex: 1; padding: 15px; border: 1px solid #eee; border-radius: 25px; outline: none;" placeholder="Mesaj yaz..." onkeypress="if(event.key === 'Enter') sendMsg('${targetUid}')">
                 <button onclick="sendMsg('${targetUid}')" style="background: #4A00E0; color: white; border: none; width: 50px; height: 50px; border-radius: 50%;"><i class="fa-solid fa-paper-plane"></i></button>
@@ -375,8 +373,7 @@ function openChat(targetUid, targetName, targetImg) {
     `;
     document.getElementById('app-container').insertAdjacentHTML('beforeend', html);
 
-    // Mesajları Dinle (Gerçek Zamanlı)
-    const chatId = [auth.currentUser.uid, targetUid].sort().join('_'); // Benzersiz oda ID
+    const chatId = [auth.currentUser.uid, targetUid].sort().join('_'); 
     currentChatUnsubscribe = db.collection('messages').doc(chatId).collection('chats').orderBy('timestamp')
         .onSnapshot(snapshot => {
             const container = document.getElementById('chat-msgs');
@@ -392,7 +389,7 @@ function openChat(targetUid, targetName, targetImg) {
 }
 
 function closeChat() {
-    if(currentChatUnsubscribe) currentChatUnsubscribe(); // Dinlemeyi durdur
+    if(currentChatUnsubscribe) currentChatUnsubscribe(); 
     const chat = document.getElementById('active-chat');
     if(chat) chat.remove();
 }
@@ -411,14 +408,13 @@ async function sendMsg(targetUid) {
     });
 }
 
-// --- 7. DİKDÖRTGEN PROFİL (DÜZENLENDİ) ---
+// --- 7. DİKDÖRTGEN PROFİL ---
 function renderProfile() {
     const img = currentUserData.photoUrl || `https://ui-avatars.com/api/?name=${currentUserData.name}`;
     const tagsHtml = (currentUserData.hobbies || []).map(t => `<span style="background: rgba(74,0,224,0.1); color: #4A00E0; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; margin-right:5px; display:inline-block; margin-bottom:5px;">${t}</span>`).join('');
     
     appContent.innerHTML = `
         <div style="padding: 20px; display: flex; flex-direction: column; align-items: center;">
-            
             <div class="profile-rect-header">
                 <img src="${img}">
                 <div class="profile-info">
@@ -448,4 +444,53 @@ function renderProfile() {
             <button onclick="auth.signOut(); location.reload();" style="width: 90%; max-width: 400px; padding: 15px; background: transparent; border: 2px solid #EF4444; color: #EF4444; border-radius: 15px; font-weight: bold; cursor: pointer;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Çıkış Yap</button>
         </div>
     `;
+}
+
+// --- 8. GERÇEK MİKROFONLU BLINDTALK ---
+function renderVoiceHome() {
+    appContent.innerHTML = `
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center; padding: 20px;">
+            <i class="fa-solid fa-mask" style="font-size: 80px; color: #4A00E0; margin-bottom: 20px;"></i>
+            <h2 style="color: #1e293b; font-size: 28px;">BlindTalk Odası</h2>
+            <p style="color: #64748b; margin-top: 15px; font-size: 16px; max-width: 80%;">Dış görünüş yok, sadece sesin var. Eşleştiğinde mikrofonun açılacak.</p>
+            <button onclick="requestMicAndSearch()" style="margin-top: 40px; padding: 18px 50px; background: #4A00E0; color: white; border: none; border-radius: 30px; font-weight: 900; font-size: 18px; cursor: pointer; box-shadow: 0 10px 20px rgba(74,0,224,0.3);">Rastgele Bağlan</button>
+        </div>
+    `;
+}
+
+function requestMicAndSearch() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream) {
+            showSearchingScreen();
+        })
+        .catch(function(err) {
+            alert("Mikrofon izni reddedildi! Görüşme yapabilmek için izin vermelisin.");
+        });
+    } else {
+        alert("Tarayıcın mikrofonu desteklemiyor (veya localhost/HTTPS değil).");
+        showSearchingScreen();
+    }
+}
+
+function showSearchingScreen() {
+    appContent.innerHTML = `
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+            <div class="cool-radar">
+                <div class="core"><i class="fa-solid fa-microphone"></i></div>
+                <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+            </div>
+            <h3 style="margin-top: 30px; color: #1e293b; font-size:22px;">Bağlantı Kuruluyor...</h3>
+        </div>
+    `;
+    setTimeout(() => {
+        appContent.innerHTML = `
+            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 20px; text-align: center;">
+                <h3 style="color: #4CAF50; font-size: 28px; margin-bottom: 30px;">Bağlandı!</h3>
+                <i class="fa-solid fa-wave-square" style="font-size: 60px; color: #4A00E0; margin-bottom: 40px; animation: pulse 1s infinite alternate;"></i>
+                <button onclick="alert('Maske İndirme İsteği Gönderildi. Karşı tarafın onayı bekleniyor...');" style="width: 100%; max-width: 250px; padding: 18px; background: #FFD700; color: #1e293b; border: none; border-radius: 20px; font-weight: 900; font-size: 16px; margin-bottom: 15px; cursor: pointer;"><i class="fa-solid fa-unlock"></i> Maskeyi İndir</button>
+                <button onclick="renderVoiceHome()" style="width: 100%; max-width: 250px; padding: 18px; background: transparent; border: 2px solid #EF4444; color: #EF4444; border-radius: 20px; font-weight: 900; font-size: 16px; cursor: pointer;">Görüşmeyi Bitir</button>
+            </div>
+        `;
+    }, 3000);
 }
