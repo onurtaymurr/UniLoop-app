@@ -14,14 +14,82 @@
 
     <div id="login-screen" class="active">
         <div class="login-container">
-            <h1 class="brand-title">uniloop</h1>
-            <p style="color: #666; margin-bottom: 20px;">Üniversitene Özel Ağ</p>
+            <h1 class="brand-title" style="color: white;">uniloop</h1>
+            <p style="color: #e0e0e0; margin-bottom: 20px;">Üniversitene Özel Ağ</p>
             <form id="login-form">
-                <input type="email" id="email-input" placeholder="Üniversite E-postası (@edu.tr)" required>
-                <input type="password" id="password-input" placeholder="Şifre" required>
+                <input type="email" placeholder="Üniversite E-postası (@edu.tr)" required>
+                <input type="password" placeholder="Şifre" required>
                 <button type="submit" class="btn-primary">Sisteme Gir</button>
             </form>
-            <p class="signup-text">Hesabın yok mu? <span onclick="alert('Kayıt ekranı eklenecek')">Hemen Oluştur</span></p>
+            <p class="signup-text" style="color: white;">Hesabın yok mu? <span onclick="startRegistration()" style="color: #FFD700;">Hemen Oluştur</span></p>
+        </div>
+    </div>
+
+    <div id="register-screen">
+        <div class="register-container">
+            <div class="progress-bar"><div class="progress-fill" id="reg-progress"></div></div>
+            
+            <div class="reg-step active" id="step-1">
+                <h3>Kimsin Sen?</h3>
+                <input type="text" id="reg-name" placeholder="Ad Soyad" required>
+                <input type="number" id="reg-age" placeholder="Yaş" required>
+                <input type="text" id="reg-faculty" placeholder="Fakülte / Bölüm" required>
+                <select id="reg-year">
+                    <option value="">Kaçıncı Sınıfsın?</option>
+                    <option value="Hazırlık">Hazırlık</option>
+                    <option value="1. Sınıf">1. Sınıf</option>
+                    <option value="2. Sınıf">2. Sınıf</option>
+                    <option value="3. Sınıf">3. Sınıf</option>
+                    <option value="4. Sınıf">4. Sınıf</option>
+                </select>
+                <button class="btn-primary mt-15" onclick="nextStep(2)">İleri <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+
+            <div class="reg-step" id="step-2">
+                <h3>Nelerden Hoşlanırsın?</h3>
+                <p style="font-size: 12px; color: #666; margin-bottom: 15px;">En az 3 tane seç</p>
+                <div class="hobbies-grid" id="hobbies-container">
+                    <div class="hobi-tag" onclick="toggleHobi(this)">Müzik</div>
+                    <div class="hobi-tag" onclick="toggleHobi(this)">Spor</div>
+                    <div class="hobi-tag" onclick="toggleHobi(this)">Yazılım</div>
+                    <div class="hobi-tag" onclick="toggleHobi(this)">Sinema</div>
+                    <div class="hobi-tag" onclick="toggleHobi(this)">Kitap</div>
+                    <div class="hobi-tag" onclick="toggleHobi(this)">Girişimcilik</div>
+                    <div class="hobi-tag" onclick="toggleHobi(this)">Oyun</div>
+                    <div class="hobi-tag" onclick="toggleHobi(this)">Seyahat</div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn-outline" onclick="prevStep(1)">Geri</button>
+                    <button class="btn-primary" style="flex: 1;" onclick="nextStep(3)">İleri</button>
+                </div>
+            </div>
+
+            <div class="reg-step" id="step-3">
+                <h3>Burada Ne Arıyorsun?</h3>
+                <select id="reg-purpose" style="width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 15px;">
+                    <option value="Arkadaş Edinmek">Arkadaş Edinmek</option>
+                    <option value="Network / Kariyer">Network / Kariyer</option>
+                    <option value="Sadece Eğlence">Sadece Eğlence</option>
+                    <option value="Sevgili Bulmak">Sevgili Bulmak</option>
+                </select>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-outline" onclick="prevStep(2)">Geri</button>
+                    <button class="btn-primary" style="flex: 1;" onclick="nextStep(4)">İleri</button>
+                </div>
+            </div>
+
+            <div class="reg-step" id="step-4">
+                <h3>Harika Görünüyorsun!</h3>
+                <div class="photo-upload-area" id="photo-upload" onclick="document.getElementById('file-input').click()">
+                    <i class="fa-solid fa-camera" style="font-size: 30px; color: #4A00E0;"></i>
+                    <p style="margin-top: 10px; color: #666;">Profil Fotoğrafı Seç</p>
+                </div>
+                <input type="file" id="file-input" style="display: none;" accept="image/*" onchange="previewPhoto(event)">
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn-outline" onclick="prevStep(3)">Geri</button>
+                    <button class="btn-primary" style="flex: 1;" onclick="finishRegistration()">Kaydı Tamamla</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -43,23 +111,6 @@
             <button class="nav-btn" data-page="messages"><i class="fa-regular fa-comment-dots"></i><span>Mesajlar</span></button>
             <button class="nav-btn" data-page="profile"><i class="fa-regular fa-user"></i><span>Profil</span></button>
         </nav>
-    </div>
-
-    <div id="modal-overlay" class="modal-overlay"></div>
-    
-    <div id="premium-modal" class="modal">
-        <h3>Uniloop Premium <i class="fa-solid fa-crown" style="color: gold;"></i></h3>
-        <p style="margin-top: 10px; color: #555;">Sınırsız kaydırma ve turnuvada x2 görünürlük!</p>
-        <button class="btn-primary" style="margin-top: 15px;" onclick="closeModals()">Hemen Al</button>
-    </div>
-
-    <div id="notifications-modal" class="modal">
-        <h3>Bildirimler</h3>
-        <ul style="text-align: left; margin-top: 15px; list-style: none; padding: 0;">
-            <li style="padding: 10px 0; border-bottom: 1px solid #eee;">🔥 Aylin seni turnuvada oyladı!</li>
-            <li style="padding: 10px 0; border-bottom: 1px solid #eee;">💬 Yeni eşleşme: Berk!</li>
-        </ul>
-        <button class="btn-outline" style="margin-top: 15px; width: 100%;" onclick="closeModals()">Kapat</button>
     </div>
 
     <script src="app.js"></script>
