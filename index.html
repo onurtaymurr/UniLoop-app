@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Uniloop - Üniversitenin Ritmi</title>
+    <title>Uniloop - Gerçek Sistem</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-storage-compat.js"></script>
 </head>
 <body>
 
@@ -18,9 +21,9 @@
         <div class="glass-card" id="login-block">
             <h1 class="brand-title">uniloop<span style="color: #FFD700;">.</span></h1>
             <p style="color: rgba(255,255,255,0.8); margin-bottom: 25px;">Kampüsün yeni nesil ağı</p>
-            <input type="email" class="glass-input" placeholder="Üniversite E-postası (@edu.tr)">
-            <input type="password" class="glass-input" placeholder="Şifre">
-            <button class="btn-glass" onclick="enterApp()">Giriş Yap</button>
+            <input type="email" id="login-email" class="glass-input" placeholder="Üniversite E-postası (@edu.tr)">
+            <input type="password" id="login-pass" class="glass-input" placeholder="Şifre">
+            <button class="btn-glass" onclick="loginUser()">Giriş Yap</button>
             <p style="color: white; margin-top: 20px; font-size: 14px;">Hesabın yok mu? <span onclick="toggleReg()" style="color: #FFD700; font-weight: bold; cursor: pointer;">Hemen Oluştur</span></p>
         </div>
 
@@ -29,17 +32,15 @@
             
             <div class="reg-step active" id="step-1">
                 <h3 style="color:white; margin-bottom: 15px;">Kimsin Sen?</h3>
+                <input type="email" class="glass-input" id="r-email" placeholder="E-posta">
+                <input type="password" class="glass-input" id="r-pass" placeholder="Şifre">
                 <input type="text" class="glass-input" id="r-name" placeholder="Ad Soyad">
-                <input type="number" inputmode="numeric" pattern="[0-9]*" class="glass-input" id="r-age" placeholder="Yaşın">
+                <input type="number" inputmode="numeric" class="glass-input" id="r-age" placeholder="Yaşın">
                 <select class="glass-input select-dark" id="r-dept">
                     <option value="" disabled selected>Fakülte Seçin</option>
                     <option value="Mühendislik">Mühendislik Fakültesi</option>
                     <option value="Tıp">Tıp Fakültesi</option>
                     <option value="Hukuk">Hukuk Fakültesi</option>
-                    <option value="Mimarlık">Mimarlık ve Tasarım</option>
-                    <option value="İşletme">İşletme / İktisat</option>
-                    <option value="Edebiyat">Fen Edebiyat Fakültesi</option>
-                    <option value="Eğitim">Eğitim Fakültesi</option>
                 </select>
                 <button class="btn-glass" onclick="nextStep(2)">İleri</button>
             </div>
@@ -52,48 +53,26 @@
                     <span class="hobi-tag" onclick="this.classList.toggle('selected')">Yazılım</span>
                     <span class="hobi-tag" onclick="this.classList.toggle('selected')">Oyun</span>
                     <span class="hobi-tag" onclick="this.classList.toggle('selected')">Sinema</span>
-                    <span class="hobi-tag" onclick="this.classList.toggle('selected')">Kahve</span>
-                    <span class="hobi-tag" onclick="this.classList.toggle('selected')">Sanat</span>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-glass btn-outline" onclick="nextStep(1)">Geri</button>
-                    <button class="btn-glass" onclick="nextStep(3)">İleri</button>
-                </div>
+                <button class="btn-glass" onclick="nextStep(3)">İleri</button>
             </div>
             
             <div class="reg-step" id="step-3">
-                <h3 style="color:white; margin-bottom: 15px;">Amacın Ne?</h3>
+                <h3 style="color:white; margin-bottom: 15px;">Amacın & Fotoğrafın</h3>
                 <select class="glass-input select-dark" id="r-purpose">
                     <option value="Arkadaş Edinmek">Arkadaş Edinmek</option>
                     <option value="Network">Network / Kariyer</option>
-                    <option value="Sadece Eğlence">Sadece Eğlence</option>
+                    <option value="Sevgili Bulmak">Sevgili Bulmak</option>
                 </select>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-glass btn-outline" onclick="nextStep(2)">Geri</button>
-                    <button class="btn-glass" onclick="nextStep(4)">İleri</button>
-                </div>
-            </div>
-
-            <div class="reg-step" id="step-4">
-                <h3 style="color:white; margin-bottom: 15px;">Fotoğrafın</h3>
-                <div class="photo-upload" onclick="alert('Galeri açılıyor (Simülasyon)')">
+                
+                <input type="file" id="r-photo" accept="image/*" style="display: none;" onchange="previewImage(event)">
+                <div class="photo-upload" id="photo-preview" onclick="document.getElementById('r-photo').click()">
                     <i class="fa-solid fa-camera"></i>
-                    <span>Fotoğraf Ekle</span>
+                    <span>Fotoğraf Seç</span>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-glass btn-outline" onclick="nextStep(3)">Geri</button>
-                    <button class="btn-glass" onclick="finishReg()">Profili Oluştur</button>
-                </div>
+                
+                <button class="btn-glass" onclick="registerUserToFirebase()" id="btn-register">Sisteme Kaydol</button>
             </div>
-        </div>
-    </div>
-
-    <div id="welcome-modal" class="modal-overlay">
-        <div class="card-reveal-container">
-            <h2 style="color: white; margin-bottom: 20px; font-weight: 900; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">Profilin Hazır!</h2>
-            <div id="generated-card-container" style="width: 300px; height: 450px; position: relative;">
-                </div>
-            <button class="btn-glass" style="margin-top: 20px; width: 300px;" onclick="closeWelcome()">Uniloop'a Gir</button>
         </div>
     </div>
 
