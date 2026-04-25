@@ -1,78 +1,88 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-body { background-color: #f4f7f6; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
 
-.brand-title { font-size: 36px; font-weight: 800; color: #4A00E0; letter-spacing: -1px; }
-.brand-title-small { font-size: 24px; font-weight: 800; color: #4A00E0; letter-spacing: -1px; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+body { background-color: #f2f4f8; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-/* Giriş ve Kayıt Ekranları */
-#login-screen, #register-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #4A00E0 0%, #8E2DE2 100%); display: none; justify-content: center; align-items: center; z-index: 1000; }
-#login-screen.active, #register-screen.active { display: flex; }
+/* ORTAK YAZILAR */
+.brand-title { font-size: 42px; font-weight: 900; color: white; letter-spacing: -1px; }
+.brand-title-small { font-size: 26px; font-weight: 900; color: #4A00E0; letter-spacing: -1px; }
 
-.login-container, .register-container { background: white; padding: 30px; border-radius: 20px; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 15px 30px rgba(0,0,0,0.2); overflow: hidden; position: relative; }
-.register-container { min-height: 400px; display: flex; flex-direction: column; }
+/* KİMLİK DOĞRULAMA EKRANI (GLASSMORPHISM) */
+#auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; display: none; justify-content: center; align-items: center; z-index: 1000; overflow: hidden; }
+#auth-screen.active { display: flex; }
+.blob { position: absolute; filter: blur(80px); opacity: 0.6; z-index: 1; animation: float 10s infinite alternate ease-in-out; }
+.blob-1 { width: 300px; height: 300px; background: #4A00E0; top: -50px; left: -50px; }
+.blob-2 { width: 400px; height: 400px; background: #8E2DE2; bottom: -100px; right: -50px; animation-delay: -5s; }
+@keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.2); } }
 
-input, select { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; outline: none; transition: 0.3s; }
-input:focus, select:focus { border-color: #4A00E0; box-shadow: 0 0 8px rgba(74,0,224,0.2); }
+.glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 40px 30px; border-radius: 30px; text-align: center; width: 90%; max-width: 400px; z-index: 2; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+.glass-input { width: 100%; padding: 18px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; color: white; font-size: 15px; outline: none; transition: 0.3s; }
+.glass-input::placeholder { color: rgba(255,255,255,0.5); }
+.glass-input:focus { border-color: #FFD700; background: rgba(255,255,255,0.2); }
+.btn-glass { width: 100%; padding: 18px; background: #FFD700; color: #0f172a; border: none; border-radius: 15px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+.btn-glass:active { transform: scale(0.95); }
 
-.btn-primary { padding: 15px; background: #4A00E0; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: transform 0.2s, background 0.3s; width: 100%; }
-.btn-primary:active { transform: scale(0.95); }
-.btn-outline { padding: 15px; background: transparent; color: #333; border: 1px solid #ddd; border-radius: 10px; cursor: pointer; font-weight: bold; }
-
-/* Kayıt Adımları Animasyonu */
-.progress-bar { width: 100%; height: 6px; background: #eee; border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
-.progress-fill { height: 100%; background: #4A00E0; width: 25%; transition: width 0.4s ease; }
+/* KAYIT ADIMLARI (STEPPER) */
+.progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 25px; overflow: hidden; }
+.progress-fill { height: 100%; background: #FFD700; width: 33%; transition: 0.4s ease; }
 .reg-step { display: none; animation: slideIn 0.4s forwards; }
 .reg-step.active { display: block; }
-@keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+.hobi-tag { display: inline-block; padding: 10px 15px; border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 20px; margin: 5px; cursor: pointer; transition: 0.3s; font-size: 13px; }
+.hobi-tag.selected { background: #FFD700; color: #0f172a; border-color: #FFD700; font-weight: bold; }
 
-/* Hobiler Grid */
-.hobbies-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-.hobi-tag { padding: 8px 15px; border: 1px solid #ddd; border-radius: 20px; font-size: 13px; cursor: pointer; transition: 0.3s; }
-.hobi-tag.selected { background: #4A00E0; color: white; border-color: #4A00E0; transform: scale(1.05); }
-
-/* Foto Yükleme */
-.photo-upload-area { width: 120px; height: 120px; border: 2px dashed #4A00E0; border-radius: 50%; margin: 0 auto; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; background-size: cover; background-position: center; transition: 0.3s; }
-.photo-upload-area:hover { background-color: #f4f4f4; }
-
-/* Ana Uygulama */
+/* ANA UYGULAMA YAPISI */
 #app-container { display: none; flex-direction: column; height: 100vh; width: 100%; }
-#app-container.active { display: flex; animation: fadeIn 0.5s ease; }
+#app-container.active { display: flex; animation: fadeIn 0.4s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-#top-header { height: 60px; background: white; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 100; }
-.btn-premium { background: linear-gradient(45deg, #FFD700, #FFA500); border: none; padding: 8px 15px; border-radius: 20px; color: #fff; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3); }
+#top-header { height: 70px; background: white; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-shadow: 0 2px 15px rgba(0,0,0,0.04); z-index: 100; flex-shrink: 0; }
+.header-actions { display: flex; align-items: center; gap: 20px; }
+.btn-premium { background: linear-gradient(45deg, #FFD700, #F59E0B); border: none; padding: 10px 18px; border-radius: 25px; color: #fff; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); display: flex; align-items: center; gap: 5px; }
+.notification-icon-wrapper { position: relative; }
+.btn-icon { font-size: 26px; color: #1e293b; cursor: pointer; }
+.badge { position: absolute; top: -5px; right: -5px; background: #EF4444; color: white; font-size: 10px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid white; }
 
-#app-content { flex: 1; overflow-y: auto; position: relative; display: flex; flex-direction: column; align-items: center; background: #f4f7f6; padding: 20px 0; overflow-x: hidden; }
+#app-content { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; background: #f2f4f8; }
 
-#bottom-nav { height: 70px; background: white; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 100; }
-.nav-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 5px; color: #b0b0b0; cursor: pointer; font-size: 11px; transition: 0.3s; }
+#bottom-nav { height: 85px; background: white; display: flex; justify-content: space-around; align-items: flex-start; padding-top: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.03); z-index: 100; flex-shrink: 0; border-top-left-radius: 25px; border-top-right-radius: 25px; }
+.nav-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 6px; color: #94a3b8; cursor: pointer; font-size: 12px; font-weight: 600; width: 60px; transition: 0.3s; }
+.nav-btn i { font-size: 26px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .nav-btn.active { color: #4A00E0; }
-.nav-btn.active i { transform: scale(1.2); }
+.nav-btn.active i { transform: translateY(-5px) scale(1.1); }
 
-/* Pürüzsüz Tinder Swipe */
-.tinder-cards-container { position: relative; width: 90%; max-width: 350px; height: 65vh; max-height: 550px; margin-top: 10px; perspective: 1000px; }
-.tinder-card { position: absolute; top:0; left:0; width: 100%; height: 100%; background: white; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); overflow: hidden; cursor: grab; transform-origin: 50% 100%; will-change: transform; }
+/* KEŞFET KARTLARI (TINDER SWIPE FİZİĞİ) */
+.tinder-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding-bottom: 20px; }
+.tinder-cards-container { position: relative; width: 92%; max-width: 400px; height: 65vh; max-height: 600px; margin-top: 10px; perspective: 1000px; }
+.tinder-card { position: absolute; top:0; left:0; width: 100%; height: 100%; background: white; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; cursor: grab; transform-origin: 50% 100%; will-change: transform; }
 .tinder-card.moving { transition: none; cursor: grabbing; }
-/* Pürüzsüz geri dönüş animasyonu eklendi */
-.tinder-card.resetting { transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.tinder-card.resetting { transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
 .tinder-card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-.tinder-card .info { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: white; padding: 25px 20px; pointer-events: none; }
-.tinder-card .tags span { background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 15px; font-size: 12px; backdrop-filter: blur(5px); display: inline-block; margin-right: 5px; margin-bottom: 5px;}
-.swipe-stamp { position: absolute; top: 40px; padding: 10px; border: 4px solid; border-radius: 10px; font-size: 32px; font-weight: bold; opacity: 0; z-index: 10; }
+.tinder-card .info { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.95)); color: white; padding: 40px 25px 25px 25px; pointer-events: none; }
+.tinder-card .info h3 { font-size: 28px; font-weight: 800; margin-bottom: 5px; }
+.tinder-card .tags span { background: rgba(255,255,255,0.25); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; display: inline-block; margin-right: 8px; margin-bottom: 8px;}
+.swipe-stamp { position: absolute; top: 50px; padding: 10px 20px; border: 5px solid; border-radius: 15px; font-size: 36px; font-weight: 900; opacity: 0; z-index: 10; letter-spacing: 2px; }
 .stamp-like { right: 30px; color: #4CAF50; border-color: #4CAF50; transform: rotate(15deg); }
-.stamp-nope { left: 30px; color: #F44336; border-color: #F44336; transform: rotate(-15deg); }
+.stamp-nope { left: 30px; color: #EF4444; border-color: #EF4444; transform: rotate(-15deg); }
 
-/* Turnuva Seçim Animasyonları */
-.tournament-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-.tournament-card:hover { transform: translateY(-10px); box-shadow: 0 15px 25px rgba(74,0,224,0.3) !important; }
-.tournament-winner { animation: winnerScale 1s forwards; z-index: 10; position: relative; }
-.tournament-loser { animation: loserFade 0.5s forwards; }
-@keyframes winnerScale { 0% { transform: scale(1); } 50% { transform: scale(1.15) rotate(5deg); box-shadow: 0 0 30px #FFD700; } 100% { transform: scale(1); opacity: 0; } }
-@keyframes loserFade { to { opacity: 0; transform: scale(0.8) translateY(20px); filter: grayscale(100%); } }
+/* TURNUVA KARTLARI (AĞAÇ SİSTEMİ) */
+.tourney-stage { text-align: center; font-size: 20px; font-weight: 900; color: #4A00E0; margin: 25px 0 15px 0; text-transform: uppercase; }
+.t-card-wrap { position: relative; width: 90%; max-width: 400px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+.t-card { height: 220px; border-radius: 20px; overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.t-card:active { transform: scale(0.96); box-shadow: 0 5px 10px rgba(0,0,0,0.1); }
+.t-card img { width: 100%; height: 100%; object-fit: cover; }
+.t-card-name { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: white; padding: 20px; font-size: 22px; font-weight: bold; text-align: center; }
+.vs-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e293b; color: white; font-weight: 900; padding: 12px; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; z-index: 5; border: 4px solid #f2f4f8; }
 
-/* BlindTalk Radar Animasyonu */
-.radar { width: 150px; height: 150px; border-radius: 50%; background: rgba(74,0,224,0.1); position: relative; display: flex; justify-content: center; align-items: center; }
+/* MESAJLAR & SOHBET EKRANI */
+.chat-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f2f4f8; z-index: 50; display: flex; flex-direction: column; }
+.chat-header { height: 70px; background: white; display: flex; align-items: center; padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+.chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+.bubble { max-width: 75%; padding: 15px; border-radius: 20px; font-size: 15px; line-height: 1.4; }
+.bubble.received { background: white; align-self: flex-start; border-bottom-left-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.bubble.sent { background: #4A00E0; color: white; align-self: flex-end; border-bottom-right-radius: 5px; box-shadow: 0 2px 5px rgba(74,0,224,0.2); }
+
+/* BLINDTALK RADAR */
+.radar { width: 150px; height: 150px; border-radius: 50%; background: rgba(74,0,224,0.1); position: relative; display: flex; justify-content: center; align-items: center; margin: 0 auto; }
 .radar::before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid #4A00E0; animation: radarPulse 2s infinite linear; }
-.radar::after { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid #8E2DE2; animation: radarPulse 2s infinite linear; animation-delay: 1s; }
 @keyframes radarPulse { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
