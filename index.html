@@ -1,2107 +1,825 @@
-<!DOCTYPE html>
+import { useState, useEffect, useRef } from “react”;
 
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>UniMatch</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet">
-<style>
-/* ─────────────────────────────────────────
-   TOKENS — warm premium palette
-───────────────────────────────────────── */
-:root {
-  /* Backgrounds — warm off-white / cream */
-  --bg:   #faf7f2;
-  --bg2:  #f4f0e8;
-  --bg3:  #ede8de;
-  --bg4:  #e4ddd0;
-  --bg5:  #d8d0c0;
+const COLORS = {
+bg: “#0A0A0F”,
+card: “#13131A”,
+cardLight: “#1C1C28”,
+accent: “#7C5CFC”,
+accentGlow: “#9B7FFF”,
+pink: “#FF4F91”,
+gold: “#FFD166”,
+teal: “#06D6A0”,
+text: “#F0EEFF”,
+muted: “#7A7A9D”,
+border: “#2A2A3E”,
+};
 
-/* Text */
-–ink:  #1a1510;
-–ink2: #4a3f30;
-–ink3: #8a7a68;
-–ink4: #b5a898;
+const HOBBIES = [
+“🎵 Müzik”,“🎮 Oyun”,“📚 Kitap”,“🎨 Sanat”,“⚽ Futbol”,“🏋️ Spor”,
+“🧠 Felsefe”,“💻 Teknoloji”,“🎬 Film”,“✈️ Seyahat”,“🍕 Yemek”,“📸 Fotoğraf”,
+];
 
-/* Borders */
-–br:  rgba(26,21,16,0.09);
-–br2: rgba(26,21,16,0.15);
-–br3: rgba(26,21,16,0.22);
+const GOALS = [
+{ icon: “💬”, label: “Sosyalleşmek” },
+{ icon: “🤝”, label: “Networking” },
+{ icon: “📖”, label: “Ders odaklı” },
+{ icon: “❤️”, label: “Yeni arkadaşlar” },
+];
 
-/* Accent — terracotta / burnt orange */
-–accent:  #e8521a;
-–accent2: #f0703e;
-–accent3: #f8906a;
+const MOCK_USERS = [
+{ id: 1, name: “Ayşe K.”, age: 21, uni: “İTÜ Bilgisayar Müh.”, bio: “Kod yazmayı ve kahve içmeyi seviyorum ☕”, hobbies: [“💻 Teknoloji”,“📚 Kitap”,“🎵 Müzik”], photo: “AK”, color: “#FF4F91” },
+{ id: 2, name: “Mert D.”, age: 22, uni: “Boğaziçi Psikoloji”, bio: “Hayatı anlamlandırmaya çalışıyorum 🧠”, hobbies: [“🧠 Felsefe”,“🎬 Film”,“✈️ Seyahat”], photo: “MD”, color: “#06D6A0” },
+{ id: 3, name: “Elif Ş.”, age: 20, uni: “ODTÜ Mimarlık”, bio: “Şehirleri tasarlamak istiyorum 🏙️”, hobbies: [“🎨 Sanat”,“📸 Fotoğraf”,“🍕 Yemek”], photo: “EŞ”, color: “#7C5CFC” },
+{ id: 4, name: “Can B.”, age: 23, uni: “Hacettepe Tıp”, bio: “İnsan vücudu bir mucize 🩺”, hobbies: [“🏋️ Spor”,“📚 Kitap”,“🎮 Oyun”], photo: “CB”, color: “#FFD166” },
+{ id: 5, name: “Zeynep A.”, age: 21, uni: “Koç Ekonomi”, bio: “Fintech ve kripto tutkunu 📈”, hobbies: [“💻 Teknoloji”,“✈️ Seyahat”,“🎵 Müzik”], photo: “ZA”, color: “#FF6B35” },
+];
 
-/* Secondary accents */
-–sage:   #5a7a5a;
-–sage2:  #7a9e7a;
-–navy:   #1e3a5f;
-–navy2:  #2d5480;
-–blush:  #e8b4a0;
-–blush2: #f2cfc0;
-–gold:   #c8960a;
+const TOURNAMENT_USERS = [
+{ id: 1, name: “Ayşe K.”, votes: 847, photo: “AK”, color: “#FF4F91” },
+{ id: 2, name: “Mert D.”, votes: 623, photo: “MD”, color: “#06D6A0” },
+{ id: 3, name: “Elif Ş.”, votes: 512, photo: “EŞ”, color: “#7C5CFC” },
+{ id: 4, name: “Can B.”, votes: 398, photo: “CB”, color: “#FFD166” },
+];
 
-/* Radius */
-–r:  14px;
-–rl: 22px;
-–rx: 30px;
+const MESSAGES = [
+{ id: 1, name: “Ayşe K.”, color: “#FF4F91”, photo: “AK”, last: “Yarın kütüphanede mi?”, time: “14:32”, unread: 2 },
+{ id: 2, name: “Mert D.”, color: “#06D6A0”, photo: “MD”, last: “O kitabı okudum, harika!”, time: “11:05”, unread: 0 },
+{ id: 3, name: “Elif Ş.”, color: “#7C5CFC”, photo: “EŞ”, last: “Projeyi hallettim 🎉”, time: “Dün”, unread: 1 },
+];
 
-/* Safe area */
-–sab: env(safe-area-inset-bottom, 0px);
-–sat: env(safe-area-inset-top, 0px);
-}
+// ─── Reusable Components ─────────────────────────────────────────────────────
 
-/* ─────────────────────────────────────────
-RESET & BASE
-───────────────────────────────────────── */
-*, *::before, *::after {
-margin: 0; padding: 0; box-sizing: border-box;
--webkit-tap-highlight-color: transparent;
-}
-html, body { height: 100%; overflow: hidden; }
-body {
-font-family: ‘Nunito’, sans-serif;
-background: var(–bg);
-color: var(–ink);
--webkit-font-smoothing: antialiased;
-overscroll-behavior: none;
-}
-
-/* ─────────────────────────────────────────
-APP WRAPPER
-───────────────────────────────────────── */
-#app {
-width: 100%;
-max-width: 430px;
-height: 100dvh;
-margin: 0 auto;
-display: flex;
-flex-direction: column;
-overflow: hidden;
-position: relative;
-background: var(–bg);
-}
-
-/* ─────────────────────────────────────────
-SCREENS
-───────────────────────────────────────── */
-.screen {
-display: none;
-flex: 1;
-flex-direction: column;
-overflow: hidden;
-padding-top: var(–sat);
-}
-.screen.on { display: flex; }
-
-/* ─────────────────────────────────────────
-AUTH SCREEN
-───────────────────────────────────────── */
-#sAuth {
-background: var(–ink);
-align-items: stretch;
-justify-content: flex-end;
-overflow-y: auto;
-}
-
-.auth-hero {
-flex: 1;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-padding: 48px 32px 32px;
-min-height: 260px;
-}
-.auth-logo {
-font-family: ‘Playfair Display’, serif;
-font-size: 2.8rem;
-font-weight: 800;
-color: var(–bg);
-letter-spacing: -1px;
-margin-bottom: 8px;
-}
-.auth-logo span { color: var(–accent2); font-style: italic; }
-.auth-tagline {
-color: var(–ink3);
-font-size: .88rem;
-font-weight: 500;
-letter-spacing: .02em;
-}
-
-.auth-sheet {
-background: var(–bg);
-border-radius: var(–rx) var(–rx) 0 0;
-padding: 28px 24px calc(28px + var(–sab));
-box-shadow: 0 -8px 40px rgba(0,0,0,.18);
-}
-.auth-sheet-handle {
-width: 36px; height: 4px;
-background: var(–bg4); border-radius: 4px;
-margin: 0 auto 20px;
-}
-
-/* Tabs */
-.auth-tabs {
-display: flex;
-background: var(–bg2);
-border-radius: 12px;
-padding: 4px;
-gap: 3px;
-margin-bottom: 22px;
-}
-.auth-tab {
-flex: 1; padding: 10px; border: none;
-border-radius: 9px;
-font-family: ‘Nunito’, sans-serif;
-font-size: .86rem; font-weight: 700;
-cursor: pointer; transition: .2s;
-background: transparent; color: var(–ink4);
-}
-.auth-tab.on {
-background: var(–ink);
-color: var(–bg);
-box-shadow: 0 2px 8px rgba(0,0,0,.2);
-}
-
-/* Form */
-.fg { margin-bottom: 13px; }
-.fl {
-display: block;
-font-size: .72rem; font-weight: 800;
-color: var(–ink3); margin-bottom: 5px;
-letter-spacing: .06em; text-transform: uppercase;
-}
-.fi {
-width: 100%;
-padding: 13px 15px;
-background: var(–bg2);
-border: 1.5px solid var(–br2);
-border-radius: var(–r);
-color: var(–ink);
-font-family: ‘Nunito’, sans-serif;
-font-size: .92rem; font-weight: 600;
-outline: none; transition: .2s;
-appearance: none;
-}
-.fi:focus {
-border-color: var(–accent);
-background: var(–bg);
-box-shadow: 0 0 0 3px rgba(232,82,26,.12);
-}
-.fi::placeholder { color: var(–ink4); font-weight: 500; }
-select.fi option { background: var(–bg); }
-
-/* Buttons */
-.btn-main {
-width: 100%; padding: 15px;
-border: none; border-radius: var(–r);
-background: var(–ink);
-color: var(–bg);
-font-family: ‘Nunito’, sans-serif;
-font-size: .94rem; font-weight: 800;
-cursor: pointer; transition: .25s;
-display: flex; align-items: center; justify-content: center; gap: 8px;
-margin-top: 4px; letter-spacing: .01em;
-}
-.btn-main:hover { background: var(–ink2); transform: translateY(-1px); }
-.btn-main:active { transform: none; }
-.btn-main:disabled { opacity: .5; cursor: default; transform: none; }
-
-.btn-outline {
-width: 100%; padding: 13px;
-border: 1.5px solid var(–br3);
-border-radius: var(–r);
-background: transparent;
-color: var(–ink2);
-font-family: ‘Nunito’, sans-serif;
-font-size: .9rem; font-weight: 700;
-cursor: pointer; transition: .2s;
-display: flex; align-items: center; justify-content: center; gap: 10px;
-}
-.btn-outline:hover { background: var(–bg2); border-color: var(–br3); }
-
-.divrow {
-display: flex; align-items: center; gap: 12px;
-margin: 14px 0; color: var(–ink4); font-size: .78rem; font-weight: 600;
-}
-.divrow::before, .divrow::after {
-content: ‘’; flex: 1; height: 1.5px; background: var(–bg3);
-}
-
-.err-box {
-background: rgba(232,82,26,.08);
-border: 1.5px solid rgba(232,82,26,.2);
-border-radius: 10px;
-padding: 10px 14px;
-font-size: .81rem; font-weight: 600;
-color: var(–accent);
-margin-top: 12px; display: none;
-}
-.err-box.on { display: block; }
-
-/* ─────────────────────────────────────────
-SETUP SCREEN
-───────────────────────────────────────── */
-#sSetup {
-background: var(–bg);
-overflow-y: auto;
-scrollbar-width: none;
-}
-#sSetup::-webkit-scrollbar { display: none; }
-
-.setup-wrap {
-padding: 24px 20px calc(40px + var(–sab));
-max-width: 430px;
-margin: 0 auto;
-}
-.setup-title {
-font-family: ‘Playfair Display’, serif;
-font-size: 1.6rem; font-weight: 700;
-margin-bottom: 4px;
-}
-.setup-sub { color: var(–ink3); font-size: .84rem; font-weight: 500; margin-bottom: 24px; }
-
-/* Photo upload */
-.photo-upload {
-aspect-ratio: 4/3;
-border-radius: var(–rl);
-background: var(–bg2);
-border: 2px dashed var(–br3);
-display: flex; flex-direction: column;
-align-items: center; justify-content: center;
-cursor: pointer; transition: .25s;
-overflow: hidden; position: relative;
-margin-bottom: 18px;
-}
-.photo-upload:hover { border-color: var(–accent); background: var(–bg3); }
-.photo-upload img.preview {
-position: absolute; inset: 0;
-width: 100%; height: 100%; object-fit: cover;
-}
-.upload-icon {
-width: 44px; height: 44px; border-radius: 50%;
-background: var(–ink); color: var(–bg);
-display: flex; align-items: center; justify-content: center;
-font-size: 1.2rem; margin-bottom: 10px;
-}
-.upload-text { font-size: .86rem; font-weight: 700; color: var(–ink2); }
-.upload-sub { font-size: .73rem; color: var(–ink4); margin-top: 3px; font-weight: 500; }
-.upload-prog { height: 3px; border-radius: 3px; background: var(–bg3); margin-top: 10px; display: none; overflow: hidden; }
-.upload-prog.on { display: block; }
-.upload-bar { height: 100%; background: var(–accent); border-radius: 3px; width: 0; transition: width .3s; }
-
-/* Emoji selector */
-.emoji-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-.em-opt {
-width: 44px; height: 44px; border-radius: 12px;
-background: var(–bg2); border: 2px solid var(–br2);
-display: flex; align-items: center; justify-content: center;
-font-size: 1.3rem; cursor: pointer; transition: .2s;
-}
-.em-opt.on { border-color: var(–accent); background: var(–blush2); }
-
-/* Interest chips */
-.chip-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
-.chip-item {
-padding: 8px 14px; border-radius: 20px;
-font-size: .8rem; font-weight: 700;
-border: 1.5px solid var(–br2);
-background: var(–bg2);
-cursor: pointer; transition: .2s;
-color: var(–ink2);
-}
-.chip-item.on {
-background: var(–ink);
-border-color: var(–ink);
-color: var(–bg);
-}
-
-/* ─────────────────────────────────────────
-MAIN APP
-───────────────────────────────────────── */
-#sMain { background: var(–bg); }
-
-/* Top bar */
-.topbar {
-display: flex; align-items: center;
-padding: 14px 16px 10px;
-flex-shrink: 0;
-background: var(–bg);
-}
-.topbar-logo {
-font-family: ‘Playfair Display’, serif;
-font-size: 1.3rem; font-weight: 700;
-color: var(–ink); letter-spacing: -.5px;
-}
-.topbar-logo em { color: var(–accent); font-style: italic; }
-.topbar-gap { flex: 1; }
-.t-btn {
-width: 38px; height: 38px; border-radius: 12px;
-background: var(–bg2); border: 1.5px solid var(–br2);
-display: flex; align-items: center; justify-content: center;
-cursor: pointer; transition: .2s; position: relative;
-margin-left: 7px;
-}
-.t-btn:hover { background: var(–bg3); }
-.t-btn svg { width: 18px; height: 18px; stroke: var(–ink2); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.t-avi {
-width: 38px; height: 38px; border-radius: 12px;
-background: var(–bg3); border: 2px solid var(–br2);
-overflow: hidden; cursor: pointer;
-display: flex; align-items: center; justify-content: center;
-font-size: 1.1rem; margin-left: 7px;
-}
-.t-avi img { width: 100%; height: 100%; object-fit: cover; }
-.notif-dot {
-position: absolute; top: -3px; right: -3px;
-width: 9px; height: 9px; border-radius: 50%;
-background: var(–accent); border: 2px solid var(–bg);
-display: none;
-}
-.notif-dot.on { display: block; }
-
-/* Pill nav */
-.pill-nav {
-display: flex; gap: 6px;
-padding: 0 14px 12px;
-overflow-x: auto; scrollbar-width: none; flex-shrink: 0;
-}
-.pill-nav::-webkit-scrollbar { display: none; }
-.pnav {
-flex-shrink: 0;
-padding: 8px 16px; border-radius: 20px;
-border: 1.5px solid var(–br2);
-background: var(–bg2);
-color: var(–ink3);
-font-size: .8rem; font-weight: 800;
-cursor: pointer; transition: .22s;
-white-space: nowrap;
-}
-.pnav.on {
-background: var(–ink);
-color: var(–bg);
-border-color: var(–ink);
-}
-.pnav:hover:not(.on) { background: var(–bg3); color: var(–ink2); }
-
-/* Scroll body */
-.body-scroll {
-flex: 1; overflow-y: auto; scrollbar-width: none;
-padding-bottom: calc(76px + var(–sab));
-}
-.body-scroll::-webkit-scrollbar { display: none; }
-
-/* Panels */
-.panel { display: none; padding: 0 14px; animation: panelIn .25s ease both; }
-.panel.on { display: block; }
-@keyframes panelIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-
-/* ─────────────────────────────────────────
-DISCOVER / SWIPE
-───────────────────────────────────────── */
-.card-stack {
-position: relative;
-height: 450px;
-margin-bottom: 16px;
-}
-
-.scard {
-position: absolute; inset: 0;
-border-radius: var(–rl);
-overflow: hidden;
-box-shadow: 0 8px 32px rgba(26,21,16,.14), 0 2px 8px rgba(26,21,16,.08);
-cursor: grab; user-select: none; touch-action: none;
-will-change: transform;
-border: 1px solid var(–br);
-}
-.scard.b2 { transform: scale(.91) translateY(22px); z-index: 0; filter: brightness(.88); pointer-events: none; }
-.scard.b1 { transform: scale(.95) translateY(11px); z-index: 1; filter: brightness(.94); pointer-events: none; }
-.scard.f  { z-index: 2; }
-
-.scard-photo {
-width: 100%; height: 100%; object-fit: cover;
-background: var(–bg3);
-display: flex; align-items: center; justify-content: center;
-font-size: 5rem;
-}
-.scard-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.scard-grad {
-position: absolute; inset: 0;
-background: linear-gradient(
-to top,
-rgba(26,21,16,.92) 0%,
-rgba(26,21,16,.3) 50%,
-transparent 100%
+function Avatar({ initials, color, size = 48, style = {} }) {
+return (
+<div style={{
+width: size, height: size, borderRadius: “50%”,
+background: `linear-gradient(135deg, ${color}CC, ${color}55)`,
+border: `2px solid ${color}66`,
+display: “flex”, alignItems: “center”, justifyContent: “center”,
+fontFamily: “‘Outfit’, sans-serif”, fontWeight: 700,
+fontSize: size * 0.33, color: “#fff”,
+flexShrink: 0, …style,
+boxShadow: `0 0 16px ${color}44`,
+}}>
+{initials}
+</div>
 );
 }
-.scard-body { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; }
-.scard-name {
-font-family: ‘Playfair Display’, serif;
-font-size: 1.55rem; font-weight: 700;
-color: var(–bg); display: flex; align-items: baseline; gap: 8px;
-margin-bottom: 3px;
-}
-.scard-age { font-size: 1rem; font-weight: 400; opacity: .75; font-family: ‘Nunito’, sans-serif; }
-.scard-dept { font-size: .77rem; color: rgba(250,247,242,.6); margin-bottom: 8px; font-weight: 600; }
-.scard-bio { font-size: .82rem; color: rgba(250,247,242,.82); line-height: 1.55; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 500; }
-.scard-tags { display: flex; flex-wrap: wrap; gap: 5px; }
-.scard-tag {
-padding: 4px 10px; border-radius: 20px; font-size: .7rem; font-weight: 700;
-background: rgba(250,247,242,.12); backdrop-filter: blur(8px);
-border: 1px solid rgba(250,247,242,.18); color: var(–bg);
-}
-.scard-follow-wrap {
-position: absolute; top: 14px; right: 14px; z-index: 5;
-}
-.scard-follow-btn {
-padding: 7px 14px; border-radius: 20px; border: none;
-background: rgba(250,247,242,.9); backdrop-filter: blur(8px);
-color: var(–ink); font-family: ‘Nunito’, sans-serif;
-font-size: .74rem; font-weight: 800; cursor: pointer; transition: .2s;
-}
-.scard-follow-btn.on { background: var(–sage); color: #fff; }
 
-/* Stamps */
-.stamp {
-position: absolute; padding: 7px 16px; border-radius: 8px;
-font-family: ‘Playfair Display’, serif; font-size: 1.1rem; font-weight: 700;
-z-index: 10; opacity: 0; pointer-events: none; border: 3px solid;
-letter-spacing: .02em;
-}
-.stamp.lk  { top: 26px; left: 18px; color: var(–sage); border-color: var(–sage); transform: rotate(-12deg); }
-.stamp.np  { top: 26px; right: 18px; color: var(–accent); border-color: var(–accent); transform: rotate(12deg); }
-.stamp.sp  { top: 40%; left: 50%; transform: translate(-50%,-50%) rotate(-4deg); color: var(–gold); border-color: var(–gold); }
-
-.swipe-hint { text-align: center; font-size: .72rem; color: var(–ink4); margin-bottom: 12px; font-weight: 600; letter-spacing: .02em; }
-
-.act-row { display: flex; justify-content: center; gap: 14px; align-items: center; }
-.act-btn {
-border: none; cursor: pointer; border-radius: 50%;
-display: flex; align-items: center; justify-content: center;
-transition: .25s; flex-shrink: 0;
-}
-.act-btn svg { stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.act-skip {
-width: 52px; height: 52px;
-background: var(–bg); border: 1.5px solid var(–br3);
-color: var(–ink3);
-box-shadow: 0 2px 10px rgba(26,21,16,.1);
-}
-.act-skip:hover { background: var(–bg2); color: var(–accent); border-color: var(–accent2); }
-.act-like {
-width: 62px; height: 62px;
-background: var(–ink); color: var(–bg);
-box-shadow: 0 6px 20px rgba(26,21,16,.25);
-}
-.act-like:hover { transform: scale(1.08); background: var(–ink2); }
-.act-super {
-width: 52px; height: 52px;
-background: var(–accent); color: var(–bg);
-box-shadow: 0 6px 20px rgba(232,82,26,.3);
-}
-.act-super:hover { transform: scale(1.08); }
-.act-boost {
-width: 44px; height: 44px;
-background: var(–bg2); border: 1.5px solid var(–gold);
-color: var(–gold);
-}
-.act-btn:active { transform: scale(.9) !important; }
-
-.no-cards {
-display: flex; flex-direction: column; align-items: center;
-justify-content: center; height: 450px;
-color: var(–ink4); text-align: center; padding: 24px;
-}
-.no-cards h3 { font-size: 1.1rem; font-weight: 800; color: var(–ink2); margin-bottom: 6px; }
-.no-cards p { font-size: .83rem; font-weight: 500; }
-
-/* ─────────────────────────────────────────
-ANON VOICE
-───────────────────────────────────────── */
-.anon-hero {
-background: var(–ink);
-border-radius: var(–rl);
-padding: 28px 22px;
-text-align: center;
-margin-bottom: 16px;
-color: var(–bg);
-}
-.anon-hero h3 {
-font-family: ‘Playfair Display’, serif;
-font-size: 1.15rem; font-weight: 700;
-margin-bottom: 6px; font-style: italic;
-}
-.anon-hero p { font-size: .82rem; color: var(–ink4); line-height: 1.6; font-weight: 500; }
-.anon-icon-wrap {
-width: 56px; height: 56px; border-radius: 18px;
-background: var(–accent); color: var(–bg);
-display: flex; align-items: center; justify-content: center;
-margin: 0 auto 14px; font-size: 1.4rem;
-}
-.queue-btn {
-display: inline-flex; align-items: center; gap: 9px;
-margin-top: 16px; padding: 12px 26px; border-radius: 20px;
-border: none; cursor: pointer;
-background: var(–bg); color: var(–ink);
-font-family: ‘Nunito’, sans-serif; font-size: .88rem; font-weight: 800;
-transition: .25s;
-}
-.queue-btn:hover { background: var(–bg2); transform: translateY(-2px); }
-.queue-btn:disabled { opacity: .5; cursor: default; transform: none; }
-
-.sec-label {
-font-size: .72rem; font-weight: 800; color: var(–ink3);
-text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px;
-}
-
-.anon-card {
-display: flex; align-items: center; gap: 12px;
-padding: 13px 14px; background: var(–bg);
-border: 1.5px solid var(–br2); border-radius: var(–r);
-margin-bottom: 8px; cursor: pointer; transition: .2s;
-box-shadow: 0 1px 6px rgba(26,21,16,.06);
-}
-.anon-card:hover { background: var(–bg2); border-color: var(–br3); transform: translateX(3px); }
-.anon-avi {
-width: 44px; height: 44px; border-radius: 13px;
-background: var(–bg3); overflow: hidden;
-display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
-}
-.anon-avi img { width: 100%; height: 100%; object-fit: cover; }
-.anon-info { flex: 1; }
-.anon-nm { font-weight: 700; font-size: .85rem; margin-bottom: 2px; color: var(–ink); }
-.anon-sub { font-size: .73rem; color: var(–ink3); font-weight: 500; }
-.connect-btn {
-padding: 8px 15px; border-radius: 20px;
-border: 1.5px solid var(–ink); background: transparent;
-color: var(–ink); font-family: ‘Nunito’, sans-serif;
-font-size: .76rem; font-weight: 800; cursor: pointer; transition: .2s;
-}
-.connect-btn:hover { background: var(–ink); color: var(–bg); }
-
-/* ─────────────────────────────────────────
-VOICE MODAL
-───────────────────────────────────────── */
-.modal-ov {
-display: none; position: fixed; inset: 0; z-index: 600;
-background: rgba(26,21,16,.7); backdrop-filter: blur(16px);
-align-items: flex-end; justify-content: center;
-padding: 0 0 var(–sab);
-}
-.modal-ov.on { display: flex; }
-.modal-sheet {
-width: 100%; max-width: 430px;
-background: var(–bg);
-border-radius: var(–rx) var(–rx) 0 0;
-padding: 24px 24px 32px;
-animation: sheetUp .35s cubic-bezier(.25,.46,.45,.94) both;
-text-align: center;
-}
-@keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
-.modal-handle { width: 36px; height: 4px; background: var(–bg4); border-radius: 4px; margin: 0 auto 18px; }
-.modal-icon { font-size: 2.8rem; margin-bottom: 10px; display: block; }
-.modal-sheet h3 { font-family: ‘Playfair Display’, serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
-.modal-sheet > p { color: var(–ink3); font-size: .81rem; margin-bottom: 18px; line-height: 1.55; font-weight: 500; }
-
-.waveform { display: flex; gap: 3px; justify-content: center; align-items: center; height: 40px; margin-bottom: 14px; }
-.waveform span {
-width: 4px; border-radius: 4px;
-background: var(–accent); animation: wv 1.2s ease-in-out infinite;
-}
-.waveform span:nth-child(1){height:8px;animation-delay:0s}
-.waveform span:nth-child(2){height:20px;animation-delay:.08s}
-.waveform span:nth-child(3){height:32px;animation-delay:.16s}
-.waveform span:nth-child(4){height:22px;animation-delay:.24s}
-.waveform span:nth-child(5){height:36px;animation-delay:.32s}
-.waveform span:nth-child(6){height:24px;animation-delay:.4s}
-.waveform span:nth-child(7){height:12px;animation-delay:.48s}
-.waveform span:nth-child(8){height:20px;animation-delay:.56s}
-@keyframes wv { 0%,100%{transform:scaleY(.3)} 50%{transform:scaleY(1)} }
-
-.modal-timer {
-font-family: ‘Playfair Display’, serif;
-font-size: 1.5rem; font-weight: 700; color: var(–ink); margin-bottom: 18px;
-}
-.modal-acts { display: flex; flex-direction: column; gap: 9px; }
-.m-btn {
-width: 100%; padding: 13px; border-radius: var(–r); border: none;
-cursor: pointer; font-family: ‘Nunito’, sans-serif;
-font-size: .9rem; font-weight: 800; transition: .25s;
-}
-.m-btn.reveal { background: var(–ink); color: var(–bg); }
-.m-btn.reveal:hover { background: var(–accent); }
-.m-btn.mute { background: var(–bg2); border: 1.5px solid var(–br2); color: var(–ink2); }
-.m-btn.end { background: transparent; color: var(–ink4); border: 1.5px solid var(–br2); }
-.m-btn.end:hover { color: var(–accent); border-color: var(–accent2); }
-
-/* ─────────────────────────────────────────
-TOURNAMENT
-───────────────────────────────────────── */
-.t-banner {
-background: var(–ink);
-border-radius: var(–rl); padding: 16px 18px; margin-bottom: 14px;
-display: flex; align-items: center; justify-content: space-between;
-color: var(–bg);
-}
-.t-banner h3 { font-family: ‘Playfair Display’, serif; font-size: 1rem; font-weight: 700; margin-bottom: 3px; font-style: italic; }
-.t-banner p { font-size: .73rem; color: var(–ink3); font-weight: 500; }
-.t-trophy { font-size: 1.8rem; }
-
-.rnd-bar { display: flex; gap: 4px; margin-bottom: 5px; }
-.rnd-seg { flex: 1; height: 3px; border-radius: 3px; background: var(–bg3); }
-.rnd-seg.done { background: var(–ink); }
-.rnd-seg.active { background: var(–accent); }
-.rnd-labels { display: flex; justify-content: space-between; font-size: .62rem; color: var(–ink4); margin-bottom: 12px; font-weight: 600; }
-.rnd-cur { text-align: center; font-size: .72rem; color: var(–accent); font-weight: 800; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px; }
-
-.matchup {
-background: var(–bg);
-border: 1.5px solid var(–br2); border-radius: var(–r);
-padding: 14px; margin-bottom: 9px;
-box-shadow: 0 1px 6px rgba(26,21,16,.06);
-}
-.matchup-lbl { font-size: .66rem; color: var(–ink4); text-align: center; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
-.contestants { display: flex; gap: 8px; align-items: center; }
-.cont {
-flex: 1; background: var(–bg2); border: 2px solid var(–br2);
-border-radius: 12px; padding: 13px 8px; text-align: center;
-cursor: pointer; transition: .3s;
-}
-.cont:hover:not(.voted):not(.lose) { border-color: var(–accent2); background: rgba(232,82,26,.06); }
-.cont.voted { border-color: var(–sage); background: rgba(90,122,90,.07); }
-.cont.lose { opacity: .3; cursor: default; }
-.cont-photo { width: 48px; height: 48px; border-radius: 12px; margin: 0 auto 7px; overflow: hidden; background: var(–bg3); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
-.cont-photo img { width: 100%; height: 100%; object-fit: cover; }
-.cont-n { font-weight: 800; font-size: .8rem; margin-bottom: 2px; color: var(–ink); }
-.cont-d { font-size: .68rem; color: var(–ink3); font-weight: 500; }
-.cont-v { font-size: .7rem; color: var(–accent); margin-top: 4px; font-weight: 800; }
-.vs-badge {
-width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%;
-background: var(–ink); color: var(–bg);
-display: flex; align-items: center; justify-content: center;
-font-weight: 900; font-size: .58rem; letter-spacing: .05em;
-}
-.champ-box {
-background: var(–bg2); border: 1.5px solid var(–br2);
-border-radius: var(–r); padding: 14px; text-align: center; margin-top: 4px;
-}
-.champ-lbl { font-size: .7rem; color: var(–ink3); font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .06em; }
-.champ-name { font-family: ‘Playfair Display’, serif; font-size: 1rem; font-weight: 700; color: var(–ink); }
-.champ-info { font-size: .72rem; color: var(–ink4); margin-top: 3px; font-weight: 500; }
-
-/* ─────────────────────────────────────────
-MESSAGES
-───────────────────────────────────────── */
-.search-bar {
-display: flex; align-items: center; gap: 9px;
-background: var(–bg2); border: 1.5px solid var(–br2);
-border-radius: 12px; padding: 11px 14px; margin-bottom: 14px;
-}
-.search-bar svg { width: 16px; height: 16px; color: var(–ink4); stroke: currentColor; stroke-width: 2; fill: none; flex-shrink: 0; }
-.search-bar input {
-flex: 1; background: transparent; border: none; outline: none;
-color: var(–ink); font-family: ‘Nunito’, sans-serif; font-size: .87rem; font-weight: 600;
-}
-.search-bar input::placeholder { color: var(–ink4); font-weight: 500; }
-
-.bubble-strip { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 14px; padding-bottom: 4px; scrollbar-width: none; }
-.bubble-strip::-webkit-scrollbar { display: none; }
-.bbl { flex-shrink: 0; text-align: center; cursor: pointer; }
-.bbl-avi {
-width: 52px; height: 52px; border-radius: 16px;
-margin: 0 auto 4px; border: 2px solid var(–br2);
-overflow: hidden; background: var(–bg3);
-display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: .2s;
-}
-.bbl-avi img { width: 100%; height: 100%; object-fit: cover; }
-.bbl-avi.fresh { border-color: var(–accent); box-shadow: 0 0 0 3px rgba(232,82,26,.14); }
-.bbl-lbl { font-size: .62rem; color: var(–ink3); font-weight: 700; }
-
-.chat-item {
-display: flex; align-items: center; gap: 12px;
-padding: 13px 4px; border-bottom: 1.5px solid var(–bg3);
-cursor: pointer; transition: .2s;
-}
-.chat-item:hover { padding: 13px 12px; margin: 0 -12px; border-radius: var(–r); background: var(–bg2); border-bottom-color: transparent; }
-.chat-avi {
-width: 48px; height: 48px; flex-shrink: 0; border-radius: 15px;
-background: var(–bg3); overflow: hidden;
-display: flex; align-items: center; justify-content: center; font-size: 1.2rem; position: relative;
-}
-.chat-avi img { width: 100%; height: 100%; object-fit: cover; }
-.o-dot { position: absolute; bottom: -2px; right: -2px; width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(–bg); }
-.o-dot.on { background: var(–sage); }
-.o-dot.off { background: var(–bg4); }
-.chat-body { flex: 1; min-width: 0; }
-.chat-nm { font-weight: 800; font-size: .86rem; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; color: var(–ink); }
-.chat-prev { font-size: .77rem; color: var(–ink3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
-.chat-meta { text-align: right; flex-shrink: 0; }
-.chat-time { font-size: .67rem; color: var(–ink4); margin-bottom: 4px; font-weight: 600; }
-.unread-badge {
-min-width: 19px; height: 19px; border-radius: 10px;
-background: var(–accent); color: var(–bg);
-font-size: .59rem; font-weight: 800;
-display: flex; align-items: center; justify-content: center;
-margin-left: auto; padding: 0 5px;
-}
-.match-tag {
-display: inline-flex; align-items: center;
-background: var(–bg3); border-radius: 5px;
-padding: 1px 6px; font-size: .57rem; color: var(–ink3); font-weight: 700;
-}
-.empty-list { text-align: center; padding: 48px 20px; }
-.empty-list h3 { font-size: 1rem; font-weight: 800; color: var(–ink2); margin-bottom: 6px; }
-.empty-list p { font-size: .83rem; color: var(–ink3); font-weight: 500; }
-
-/* ─────────────────────────────────────────
-CHAT SCREEN
-───────────────────────────────────────── */
-#chatScreen {
-display: none; position: fixed; inset: 0; z-index: 400;
-background: var(–bg); max-width: 430px; margin: 0 auto;
-flex-direction: column; padding-top: var(–sat);
-}
-#chatScreen.on { display: flex; }
-
-.chat-topbar {
-display: flex; align-items: center; gap: 11px;
-padding: 13px 15px;
-background: var(–bg); border-bottom: 1.5px solid var(–bg3);
-flex-shrink: 0;
-}
-.back-btn {
-width: 36px; height: 36px; border-radius: 11px;
-background: var(–bg2); border: 1.5px solid var(–br2);
-cursor: pointer; color: var(–ink2);
-display: flex; align-items: center; justify-content: center; transition: .2s;
-}
-.back-btn:hover { background: var(–bg3); }
-.back-btn svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.2; fill: none; }
-.ct-avi {
-width: 38px; height: 38px; border-radius: 12px;
-background: var(–bg3); overflow: hidden;
-display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
-}
-.ct-avi img { width: 100%; height: 100%; object-fit: cover; display: none; }
-.ct-info { flex: 1; }
-.ct-name { font-weight: 800; font-size: .9rem; color: var(–ink); }
-.ct-status { font-size: .72rem; font-weight: 600; }
-.ct-btn {
-width: 36px; height: 36px; border-radius: 11px;
-background: var(–bg2); border: 1.5px solid var(–br2);
-display: flex; align-items: center; justify-content: center;
-cursor: pointer; transition: .2s;
-}
-.ct-btn svg { width: 16px; height: 16px; stroke: var(–ink2); stroke-width: 2; fill: none; }
-
-.chat-msgs {
-flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 3px;
-scrollbar-width: thin; scrollbar-color: var(–bg3) transparent;
-}
-.msg { max-width: 76%; }
-.msg.me { align-self: flex-end; }
-.msg.them { align-self: flex-start; }
-.msg-txt {
-padding: 10px 14px; border-radius: 18px;
-font-size: .87rem; line-height: 1.55; word-break: break-word; font-weight: 500;
-}
-.msg.me .msg-txt {
-background: var(–ink); color: var(–bg);
-border-bottom-right-radius: 4px;
-}
-.msg.them .msg-txt {
-background: var(–bg2); color: var(–ink);
-border: 1.5px solid var(–br2);
-border-bottom-left-radius: 4px;
-}
-.msg-ts { font-size: .62rem; color: var(–ink4); margin-top: 3px; padding: 0 4px; font-weight: 600; }
-.msg.me .msg-ts { text-align: right; }
-
-.chat-inp-row {
-display: flex; gap: 9px;
-padding: 11px 14px calc(11px + var(–sab));
-background: var(–bg); border-top: 1.5px solid var(–bg3); flex-shrink: 0;
-}
-.chat-inp {
-flex: 1; padding: 12px 16px; border-radius: 24px;
-background: var(–bg2); border: 1.5px solid var(–br2);
-color: var(–ink); font-family: ‘Nunito’, sans-serif;
-font-size: .88rem; font-weight: 600; outline: none; transition: .2s;
-}
-.chat-inp:focus { border-color: var(–accent); background: var(–bg); }
-.send-btn {
-width: 46px; height: 46px; border-radius: 50%; border: none;
-background: var(–ink); color: var(–bg);
-cursor: pointer; transition: .2s; flex-shrink: 0;
-display: flex; align-items: center; justify-content: center;
-}
-.send-btn svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.send-btn:hover { background: var(–accent); transform: scale(1.04); }
-
-/* ─────────────────────────────────────────
-PROFILE PANEL
-───────────────────────────────────────── */
-.prof-cover-wrap {
-position: relative; margin: -14px -14px 0; /* bleed to edges */
-height: 240px; overflow: hidden; background: var(–bg3); margin-bottom: 0;
-}
-.prof-cover { width: 100%; height: 100%; object-fit: cover; display: none; }
-.prof-cover-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, var(–bg3), var(–bg4)); display: flex; align-items: center; justify-content: center; }
-.prof-cover-wrap::after {
-content: ‘’;
-position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
-background: linear-gradient(to top, var(–bg), transparent);
-}
-.prof-cover-actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 2; }
-.prof-cover-btn {
-padding: 7px 14px; border-radius: 20px;
-background: rgba(250,247,242,.88); backdrop-filter: blur(8px);
-border: none; color: var(–ink);
-font-family: ‘Nunito’, sans-serif; font-size: .76rem; font-weight: 800;
-cursor: pointer; transition: .2s;
-}
-.prof-cover-btn:hover { background: var(–bg); }
-
-.prof-avi-outer {
-position: relative; margin-top: -44px; z-index: 3;
-display: inline-block; margin-left: 2px;
-}
-.prof-avi {
-width: 82px; height: 82px; border-radius: 22px;
-background: var(–bg3); border: 3px solid var(–bg);
-overflow: hidden; cursor: pointer;
-display: flex; align-items: center; justify-content: center;
-font-size: 2rem; box-shadow: 0 4px 16px rgba(26,21,16,.14);
-}
-.prof-avi img { width: 100%; height: 100%; object-fit: cover; display: none; }
-.prof-avi-edit {
-position: absolute; bottom: -4px; right: -4px;
-width: 24px; height: 24px; border-radius: 8px;
-background: var(–ink); color: var(–bg); font-size: .72rem;
-display: flex; align-items: center; justify-content: center; cursor: pointer;
-box-shadow: 0 2px 6px rgba(26,21,16,.2);
-}
-
-.prof-info-block { padding: 10px 2px 16px; }
-.prof-name { font-family: ‘Playfair Display’, serif; font-size: 1.3rem; font-weight: 700; color: var(–ink); display: flex; align-items: baseline; gap: 8px; }
-.prof-age-lbl { font-size: .95rem; font-weight: 500; color: var(–ink3); font-family: ‘Nunito’, sans-serif; }
-.prof-uni { font-size: .79rem; color: var(–accent); font-weight: 700; margin-top: 3px; margin-bottom: 7px; }
-.prof-bio-text { font-size: .84rem; color: var(–ink2); line-height: 1.6; font-weight: 500; margin-bottom: 14px; }
-.prof-stats { display: flex; gap: 22px; margin-bottom: 14px; }
-.ps { }
-.ps-val { font-family: ‘Playfair Display’, serif; font-size: 1.15rem; font-weight: 700; color: var(–ink); display: block; }
-.ps-lbl { font-size: .65rem; color: var(–ink4); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
-.prof-interests { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
-.pi-chip { padding: 6px 12px; border-radius: 18px; font-size: .77rem; font-weight: 700; background: var(–bg2); border: 1.5px solid var(–br2); color: var(–ink2); }
-
-.photo-grid-wrap { margin-bottom: 16px; }
-.photo-grid {
-display: grid; grid-template-columns: repeat(3,1fr);
-gap: 3px; border-radius: var(–r); overflow: hidden;
-}
-.photo-cell { aspect-ratio: 1; overflow: hidden; background: var(–bg3); cursor: pointer; }
-.photo-cell img { width: 100%; height: 100%; object-fit: cover; display: block; transition: .2s; }
-.photo-cell:hover img { transform: scale(1.05); }
-.photo-add { display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(–ink4); border: 2px dashed var(–br2); background: var(–bg2); }
-
-.settings-block { margin-bottom: 20px; }
-.setting-item {
-display: flex; align-items: center; gap: 13px;
-background: var(–bg); border: 1.5px solid var(–br2);
-border-radius: var(–r); padding: 14px 15px; margin-bottom: 8px;
-cursor: pointer; transition: .2s;
-box-shadow: 0 1px 4px rgba(26,21,16,.05);
-}
-.setting-item:hover { background: var(–bg2); }
-.si-ico { color: var(–ink3); flex-shrink: 0; }
-.si-ico svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.8; fill: none; }
-.si-lbl { flex: 1; font-size: .87rem; font-weight: 700; color: var(–ink); }
-.si-val { font-size: .77rem; color: var(–ink3); margin-right: 4px; font-weight: 600; }
-.si-arr { color: var(–ink4); font-size: .9rem; }
-
-/* ─────────────────────────────────────────
-USER PROFILE VIEWER
-───────────────────────────────────────── */
-#viewScreen {
-display: none; position: fixed; inset: 0; z-index: 450;
-background: var(–bg); max-width: 430px; margin: 0 auto;
-flex-direction: column; overflow-y: auto; scrollbar-width: none;
-padding-top: var(–sat);
-}
-#viewScreen::-webkit-scrollbar { display: none; }
-#viewScreen.on { display: flex; }
-.view-topbar {
-display: flex; align-items: center; gap: 11px;
-padding: 13px 15px; background: var(–bg);
-border-bottom: 1.5px solid var(–bg3); flex-shrink: 0; position: sticky; top: 0; z-index: 10;
-}
-.view-follow-btn {
-margin-left: auto; padding: 8px 18px; border-radius: 20px;
-border: 1.5px solid var(–ink); background: transparent;
-color: var(–ink); font-family: ‘Nunito’, sans-serif;
-font-size: .8rem; font-weight: 800; cursor: pointer; transition: .2s;
-}
-.view-follow-btn.on { background: var(–ink); color: var(–bg); }
-.view-follow-btn:hover { background: var(–ink); color: var(–bg); }
-
-/* ─────────────────────────────────────────
-MATCH BLAST
-───────────────────────────────────────── */
-.blast-ov {
-display: none; position: fixed; inset: 0; z-index: 700;
-background: rgba(26,21,16,.88); backdrop-filter: blur(18px);
-align-items: center; justify-content: center; padding: 24px;
-}
-.blast-ov.on { display: flex; }
-.blast-box {
-text-align: center; width: 100%; max-width: 320px;
-animation: popUp .5s cubic-bezier(.34,1.56,.64,1) both;
-}
-@keyframes popUp { from{opacity:0;transform:scale(.72) translateY(20px)} to{opacity:1;transform:none} }
-.blast-tag {
-font-size: .74rem; color: rgba(250,247,242,.6);
-letter-spacing: .14em; text-transform: uppercase; margin-bottom: 8px; font-weight: 700;
-}
-.blast-headline {
-font-family: ‘Playfair Display’, serif;
-font-size: 2.8rem; font-weight: 800; font-style: italic;
-color: var(–bg); margin-bottom: 18px; letter-spacing: -1px;
-}
-.blast-faces { display: flex; gap: 16px; justify-content: center; margin-bottom: 14px; }
-.blast-face {
-width: 74px; height: 74px; border-radius: 22px; overflow: hidden;
-border: 3px solid var(–bg); background: var(–bg3);
-display: flex; align-items: center; justify-content: center; font-size: 2rem;
-box-shadow: 0 8px 24px rgba(26,21,16,.35);
-}
-.blast-face img { width: 100%; height: 100%; object-fit: cover; display: none; }
-.blast-msg { color: rgba(250,247,242,.7); font-size: .84rem; margin-bottom: 22px; font-weight: 600; }
-.blast-cta {
-padding: 14px 32px; border-radius: 20px; border: none;
-background: var(–bg); color: var(–ink);
-font-family: ‘Nunito’, sans-serif; font-size: .92rem; font-weight: 800;
-cursor: pointer; transition: .25s;
-}
-.blast-cta:hover { background: var(–bg2); transform: translateY(-2px); }
-.blast-skip { margin-top: 14px; cursor: pointer; color: rgba(250,247,242,.4); font-size: .8rem; font-weight: 600; }
-
-/* ─────────────────────────────────────────
-BOTTOM NAV
-───────────────────────────────────────── */
-.bottom-nav {
-position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-width: 100%; max-width: 430px;
-background: var(–bg);
-border-top: 1.5px solid var(–bg3);
-display: flex;
-padding: 9px 8px calc(9px + var(–sab));
-z-index: 100;
-box-shadow: 0 -4px 20px rgba(26,21,16,.08);
-}
-.bnav {
-flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
-cursor: pointer; padding: 6px 0; border-radius: 11px; transition: .2s;
-color: var(–ink4); font-size: .57rem; font-weight: 800; position: relative;
-}
-.bnav:hover { background: var(–bg2); color: var(–ink2); }
-.bnav.on { color: var(–ink); }
-.bnav svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; transition: .25s; }
-.bnav.on svg { stroke-width: 2.4; }
-.bnav-badge {
-position: absolute; top: 3px; right: calc(50% - 16px);
-width: 14px; height: 14px; border-radius: 50%;
-background: var(–accent); color: var(–bg); font-size: .46rem; font-weight: 800;
-display: none; align-items: center; justify-content: center; border: 2px solid var(–bg);
-}
-.bnav-badge.on { display: flex; }
-
-/* ─────────────────────────────────────────
-TOASTS
-───────────────────────────────────────── */
-.toast-area {
-position: fixed; top: calc(14px + var(–sat)); left: 50%; transform: translateX(-50%);
-z-index: 800; pointer-events: none;
-display: flex; flex-direction: column; gap: 7px; align-items: center; width: 90%; max-width: 380px;
-}
-.toast {
-background: var(–ink); color: var(–bg);
-border-radius: 12px; padding: 11px 18px;
-display: flex; align-items: center; gap: 9px;
-box-shadow: 0 8px 28px rgba(26,21,16,.25);
-animation: toastIn .32s cubic-bezier(.34,1.56,.64,1) both;
-font-size: .84rem; font-weight: 700; white-space: nowrap;
-max-width: 100%;
-}
-@keyframes toastIn { from{opacity:0;transform:translateY(-14px) scale(.9)} to{opacity:1;transform:none} }
-.toast.out { animation: toastOut .24s ease forwards; }
-@keyframes toastOut { to{opacity:0;transform:translateY(-8px) scale(.96)} }
-.toast.success { background: var(–sage); }
-.toast.error   { background: var(–accent); }
-
-/* ─── SPINNER ─── */
-.spin {
-width: 16px; height: 16px; border-radius: 50%;
-border: 2.5px solid rgba(255,255,255,.28); border-top-color: #fff;
-animation: spinning .7s linear infinite; display: inline-block;
-}
-@keyframes spinning { to { transform: rotate(360deg); } }
-</style>
-
-</head>
-<body>
-
-<div class="toast-area" id="toastArea"></div>
-
-<div id="app">
-
-<!-- ═══════ AUTH ═══════ -->
-
-<div class="screen on" id="sAuth">
-  <div class="auth-hero">
-    <div class="auth-logo">Uni<em>Match</em></div>
-    <div class="auth-tagline">Kampüste anlamlı bağlantılar</div>
-  </div>
-  <div class="auth-sheet">
-    <div class="auth-sheet-handle"></div>
-    <div class="auth-tabs">
-      <button class="auth-tab on" id="tabL" onclick="authTab('login')">Giriş Yap</button>
-      <button class="auth-tab" id="tabR" onclick="authTab('reg')">Kayıt Ol</button>
-    </div>
-
-```
-<div id="fLogin">
-  <div class="fg"><label class="fl">E-posta</label><input type="email" class="fi" id="lEmail" placeholder="email@edu.tr" onkeydown="if(event.key==='Enter')doLogin()"></div>
-  <div class="fg"><label class="fl">Şifre</label><input type="password" class="fi" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-  <button class="btn-main" id="btnLogin" onclick="doLogin()">Giriş Yap</button>
-  <div class="divrow">veya</div>
-  <button class="btn-outline" onclick="doGoogle()">
-    <svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-    Google ile Devam Et
-  </button>
-  <div class="err-box" id="lErr"></div>
-</div>
-
-<div id="fReg" style="display:none">
-  <div class="fg"><label class="fl">Ad Soyad</label><input type="text" class="fi" id="rName" placeholder="Adın Soyadın"></div>
-  <div class="fg"><label class="fl">E-posta</label><input type="email" class="fi" id="rEmail" placeholder="email@edu.tr"></div>
-  <div class="fg"><label class="fl">Şifre</label><input type="password" class="fi" id="rPass" placeholder="Min. 6 karakter"></div>
-  <div class="fg"><label class="fl">Üniversite</label>
-    <select class="fi" id="rUni">
-      <option value="">Seçin...</option>
-      <option>İstanbul Teknik Üniversitesi (İTÜ)</option><option>Boğaziçi Üniversitesi</option>
-      <option>ODTÜ</option><option>Hacettepe Üniversitesi</option><option>Bilkent Üniversitesi</option>
-      <option>Koç Üniversitesi</option><option>Sabancı Üniversitesi</option>
-      <option>Marmara Üniversitesi</option><option>İstanbul Üniversitesi</option>
-      <option>Ankara Üniversitesi</option><option>Galatasaray Üniversitesi</option><option>Diğer</option>
-    </select>
-  </div>
-  <div class="fg"><label class="fl">Bölüm</label><input type="text" class="fi" id="rDept" placeholder="Bilgisayar Mühendisliği"></div>
-  <div class="fg"><label class="fl">Sınıf</label>
-    <select class="fi" id="rYear">
-      <option value="">Seçin...</option>
-      <option>1. Sınıf</option><option>2. Sınıf</option>
-      <option>3. Sınıf</option><option>4. Sınıf</option><option>Yüksek Lisans</option>
-    </select>
-  </div>
-  <button class="btn-main" id="btnReg" onclick="doRegister()">Hesap Oluştur</button>
-  <div class="err-box" id="rErr"></div>
-</div>
-```
-
-  </div>
-</div>
-
-<!-- ═══════ SETUP ═══════ -->
-
-<div class="screen" id="sSetup">
-  <div class="setup-wrap">
-    <div class="setup-title">Profilini Kur</div>
-    <p class="setup-sub">İlk izlenimi güçlü bırak. Fotoğraf ekle, kendini anlat.</p>
-
-```
-<label class="fl">Profil Fotoğrafı</label>
-<div class="photo-upload" id="photoUpload" onclick="document.getElementById('photoFileInput').click()">
-  <div class="upload-icon" id="uploadIcon">+</div>
-  <div class="upload-text" id="uploadText">Fotoğraf Ekle</div>
-  <div class="upload-sub" id="uploadSub">JPG veya PNG · Maks 5 MB</div>
-</div>
-<div class="upload-prog" id="uploadProg"><div class="upload-bar" id="uploadBar"></div></div>
-<input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="handleSetupPhoto(this)">
-
-<div class="fg" style="margin-top:16px">
-  <label class="fl">Emoji (fotoğraf yoksa)</label>
-  <div class="emoji-row">
-    <div class="em-opt on" data-e="🌿" onclick="pickEm(this)">🌿</div>
-    <div class="em-opt" data-e="🌊" onclick="pickEm(this)">🌊</div>
-    <div class="em-opt" data-e="🌙" onclick="pickEm(this)">🌙</div>
-    <div class="em-opt" data-e="🔆" onclick="pickEm(this)">🔆</div>
-    <div class="em-opt" data-e="🍂" onclick="pickEm(this)">🍂</div>
-    <div class="em-opt" data-e="🌸" onclick="pickEm(this)">🌸</div>
-    <div class="em-opt" data-e="⚡" onclick="pickEm(this)">⚡</div>
-    <div class="em-opt" data-e="🦋" onclick="pickEm(this)">🦋</div>
-  </div>
-</div>
-
-<div class="fg"><label class="fl">Bio</label><input type="text" class="fi" id="sBio" placeholder="Kısaca kendini anlat..." maxlength="100"></div>
-<div class="fg"><label class="fl">Yaş</label><input type="number" class="fi" id="sAge" placeholder="20" min="18" max="35"></div>
-
-<div class="fg">
-  <label class="fl">İlgi Alanları (en az 2)</label>
-  <div class="chip-grid">
-    <div class="chip-item" onclick="pickInt(this)">Müzik</div>
-    <div class="chip-item" onclick="pickInt(this)">Sinema</div>
-    <div class="chip-item" onclick="pickInt(this)">Edebiyat</div>
-    <div class="chip-item" onclick="pickInt(this)">Teknoloji</div>
-    <div class="chip-item" onclick="pickInt(this)">Spor</div>
-    <div class="chip-item" onclick="pickInt(this)">Sanat</div>
-    <div class="chip-item" onclick="pickInt(this)">Fotoğraf</div>
-    <div class="chip-item" onclick="pickInt(this)">Seyahat</div>
-    <div class="chip-item" onclick="pickInt(this)">Gastronomi</div>
-    <div class="chip-item" onclick="pickInt(this)">Oyun</div>
-    <div class="chip-item" onclick="pickInt(this)">Dans</div>
-    <div class="chip-item" onclick="pickInt(this)">Doğa</div>
-    <div class="chip-item" onclick="pickInt(this)">Tiyatro</div>
-    <div class="chip-item" onclick="pickInt(this)">Satranç</div>
-  </div>
-</div>
-<button class="btn-main" onclick="saveSetup()">Hadi Başlayalım</button>
-```
-
-  </div>
-</div>
-
-<!-- ═══════ MAIN APP ═══════ -->
-
-<div class="screen" id="sMain">
-  <div class="topbar">
-    <div class="topbar-logo">Uni<em style="color:var(--accent);font-style:italic;font-family:'Playfair Display',serif">Match</em></div>
-    <div class="topbar-gap"></div>
-    <div class="t-btn" id="notifBtn" onclick="goPanel('messages')">
-      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <span class="notif-dot" id="notifDot"></span>
-    </div>
-    <div class="t-avi" id="topAvi" onclick="goPanel('profile')">🌿</div>
-  </div>
-
-  <div class="pill-nav">
-    <div class="pnav on" id="pn-discover" onclick="goPanel('discover')">Keşfet</div>
-    <div class="pnav" id="pn-anon" onclick="goPanel('anon')">Anonim Ses</div>
-    <div class="pnav" id="pn-tournament" onclick="goPanel('tournament')">Turnuva</div>
-    <div class="pnav" id="pn-messages" onclick="goPanel('messages')">Mesajlar</div>
-    <div class="pnav" id="pn-profile" onclick="goPanel('profile')">Profil</div>
-  </div>
-
-  <div class="body-scroll">
-
-```
-<!-- DISCOVER -->
-<div class="panel on" id="pDiscover">
-  <div class="card-stack" id="cardStack"></div>
-  <p class="swipe-hint">Kaydır — veya butonları kullan</p>
-  <div class="act-row">
-    <button class="act-btn act-boost" onclick="toast('Boost aktif — 30 dk öne çıkıyorsun','info')" title="Boost">
-      <svg width="20" height="20" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke="var(--gold)" stroke-width="2.2" fill="none"/></svg>
-    </button>
-    <button class="act-btn act-skip" onclick="swipe('left')">
-      <svg width="22" height="22" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-    <button class="act-btn act-like" onclick="swipe('right')">
-      <svg width="26" height="26" viewBox="0 0 24 24" stroke="var(--bg)" stroke-width="2.2" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-    </button>
-    <button class="act-btn act-super" onclick="swipe('up')">
-      <svg width="20" height="20" viewBox="0 0 24 24" stroke="var(--bg)" stroke-width="2.2" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-    </button>
-  </div>
-</div>
-
-<!-- ANON -->
-<div class="panel" id="pAnon">
-  <div class="anon-hero">
-    <div class="anon-icon-wrap">
-      <svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    </div>
-    <h3>Anonim Sesli Tanışma</h3>
-    <p>Kimliğini gizle, sesini tanıt. Devam etmek istersen maskeyi kaldır.</p>
-    <button class="queue-btn" id="queueBtn" onclick="joinQueue()"><span id="queueTxt">Kuyruğa Gir</span></button>
-  </div>
-  <div class="sec-label">Kuyruktaki Kullanıcılar</div>
-  <div id="anonList"></div>
-</div>
-
-<!-- TOURNAMENT -->
-<div class="panel" id="pTournament">
-  <div class="t-banner">
-    <div><h3>Haftalık Turnuva</h3><p id="tSub">Yükleniyor...</p></div>
-    <div class="t-trophy">🏆</div>
-  </div>
-  <div class="rnd-bar"><div class="rnd-seg done"></div><div class="rnd-seg active"></div><div class="rnd-seg"></div><div class="rnd-seg"></div></div>
-  <div class="rnd-labels"><span>1/8 Final</span><span>Çeyrek</span><span>Yarı</span><span>Final</span></div>
-  <div class="rnd-cur">Çeyrek Final — Oy Kullan</div>
-  <div id="matchupList"></div>
-</div>
-
-<!-- MESSAGES -->
-<div class="panel" id="pMessages">
-  <div class="search-bar">
-    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" placeholder="Ara..." id="msgSearch" oninput="filterChats()">
-  </div>
-  <div class="bubble-strip" id="bubbleStrip"></div>
-  <div id="chatList"></div>
-</div>
-
-<!-- PROFILE -->
-<div class="panel" id="pProfile">
-  <div class="prof-cover-wrap" id="profCoverWrap">
-    <div class="prof-cover-placeholder" id="profCoverBg">
-      <img id="profCoverImg" class="prof-cover">
-    </div>
-    <div class="prof-cover-actions">
-      <button class="prof-cover-btn" onclick="g('profilePhotoIn').click()">Fotoğraf Düzenle</button>
-    </div>
-  </div>
-  <input type="file" id="profilePhotoIn" accept="image/*" style="display:none" onchange="uploadProfilePhoto(this)">
-  <input type="file" id="addPhotoIn" accept="image/*" style="display:none" onchange="addPhoto(this)">
-
-  <div style="padding:0 2px">
-    <div class="prof-avi-outer">
-      <div class="prof-avi" id="profAvi" onclick="g('profilePhotoIn').click()">
-        <span id="profAviTxt">🌿</span>
-        <img id="profAviImg">
-      </div>
-      <div class="prof-avi-edit" onclick="g('profilePhotoIn').click()">✎</div>
-    </div>
-    <div class="prof-info-block">
-      <div class="prof-name"><span id="pName">—</span><span class="prof-age-lbl" id="pAge"></span></div>
-      <div class="prof-uni" id="pUni"></div>
-      <div class="prof-bio-text" id="pBio"></div>
-      <div class="prof-stats">
-        <div class="ps"><span class="ps-val" id="stLikes">0</span><div class="ps-lbl">Beğeni</div></div>
-        <div class="ps"><span class="ps-val" id="stMatches">0</span><div class="ps-lbl">Eşleşme</div></div>
-        <div class="ps"><span class="ps-val" id="stFollowers">0</span><div class="ps-lbl">Takipçi</div></div>
-        <div class="ps"><span class="ps-val" id="stFollowing">0</span><div class="ps-lbl">Takip</div></div>
-      </div>
-      <div class="prof-interests" id="pChips"></div>
-    </div>
-
-    <div class="photo-grid-wrap">
-      <div class="sec-label" style="margin-bottom:8px">Fotoğraflar</div>
-      <div class="photo-grid" id="myGrid"></div>
-    </div>
-
-    <div class="settings-block">
-      <div class="sec-label" style="margin-bottom:10px">Ayarlar</div>
-      <div class="setting-item" onclick="editBio()">
-        <div class="si-ico"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-        <span class="si-lbl">Bio Düzenle</span><span class="si-arr">›</span>
-      </div>
-      <div class="setting-item" onclick="toast('Bildirimler açık','success')">
-        <div class="si-ico"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-        <span class="si-lbl">Bildirimler</span><span class="si-arr">›</span>
-      </div>
-      <div class="setting-item" onclick="toast('Gizlilik ayarları yakında','info')">
-        <div class="si-ico"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-        <span class="si-lbl">Gizlilik</span><span class="si-arr">›</span>
-      </div>
-      <div class="setting-item" onclick="toast('UniMatch Plus çok yakında!','info')">
-        <div class="si-ico"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-        <span class="si-lbl">UniMatch Plus</span>
-        <span class="si-val" style="color:var(--gold);font-weight:800">Premium</span><span class="si-arr">›</span>
-      </div>
-      <div class="setting-item" onclick="doLogout()">
-        <div class="si-ico"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
-        <span class="si-lbl" style="color:var(--accent)">Çıkış Yap</span><span class="si-arr">›</span>
-      </div>
-    </div>
-  </div>
-</div>
-```
-
-  </div>
-
-  <div class="bottom-nav">
-    <div class="bnav on" id="bn-discover" onclick="goPanel('discover')">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Keşfet
-    </div>
-    <div class="bnav" id="bn-anon" onclick="goPanel('anon')">
-      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Anonim
-    </div>
-    <div class="bnav" id="bn-tournament" onclick="goPanel('tournament')">
-      <svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>Turnuva
-    </div>
-    <div class="bnav" id="bn-messages" onclick="goPanel('messages')">
-      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar
-      <span class="bnav-badge" id="msgBadge"></span>
-    </div>
-    <div class="bnav" id="bn-profile" onclick="goPanel('profile')">
-      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profil
-    </div>
-  </div>
-</div>
-
-</div><!-- app -->
-
-<!-- CHAT SCREEN -->
-
-<div id="chatScreen">
-  <div class="chat-topbar">
-    <button class="back-btn" onclick="closeChat()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <div class="ct-avi" id="ctAvi"><span id="ctAviTxt">🌿</span><img id="ctAviImg"></div>
-    <div class="ct-info">
-      <div class="ct-name" id="ctName">—</div>
-      <div class="ct-status" id="ctStatus">Çevrimiçi</div>
-    </div>
-    <div class="ct-btn" onclick="openViewScreen(null)">
-      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    </div>
-  </div>
-  <div class="chat-msgs" id="chatMsgs"></div>
-  <div class="chat-inp-row">
-    <input type="text" class="chat-inp" id="chatInp" placeholder="Mesaj yaz..." onkeydown="if(event.key==='Enter')sendMsg()">
-    <button class="send-btn" onclick="sendMsg()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
-  </div>
-</div>
-
-<!-- USER VIEW SCREEN -->
-
-<div id="viewScreen">
-  <div class="view-topbar">
-    <button class="back-btn" onclick="closeViewScreen()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-    <span id="viewScreenTitle" style="font-weight:800;font-size:.9rem;color:var(--ink)">Profil</span>
-    <button class="view-follow-btn" id="viewFollowBtn" onclick="toggleFollowViewed()">Takip Et</button>
-  </div>
-  <div id="viewContent" style="padding-bottom:40px"></div>
-</div>
-
-<!-- VOICE MODAL -->
-
-<div class="modal-ov" id="voiceModal">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <span class="modal-icon">🎭</span>
-    <h3>Anonim Bağlantı Aktif</h3>
-    <p>Karşındaki kişiyle sesli bağlandın. Maskeyi kaldırırsan profiliniz birbirinize açılır.</p>
-    <div class="waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-    <div class="modal-timer" id="callTimer">00:00</div>
-    <div class="modal-acts">
-      <button class="m-btn reveal" onclick="revealId()">Maskeyi Kaldır</button>
-      <button class="m-btn mute" id="muteBtn" onclick="toggleMute()">Sesi Kapat</button>
-      <button class="m-btn end" onclick="endCall()">Bağlantıyı Kes</button>
-    </div>
-  </div>
-</div>
-
-<!-- MATCH BLAST -->
-
-<div class="blast-ov" id="matchBlast">
-  <div class="blast-box">
-    <div class="blast-tag">Tebrikler</div>
-    <div class="blast-headline">Eşleşme!</div>
-    <div class="blast-faces">
-      <div class="blast-face" id="bfMe"><span id="bfMeTxt">🌿</span><img id="bfMeImg"></div>
-      <div class="blast-face" id="bfThem"><span id="bfThemTxt">🌊</span><img id="bfThemImg"></div>
-    </div>
-    <p class="blast-msg" id="bMsg">Birbirinizi beğendiniz!</p>
-    <button class="blast-cta" onclick="startBlastChat()">Mesaj Gönder</button>
-    <div class="blast-skip" onclick="closeBlast()">Şimdi değil</div>
-  </div>
-</div>
-
-<!-- FIREBASE -->
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
-
-<script>
-'use strict';
-
-/* ── FIREBASE ── */
-firebase.initializeApp({
-  apiKey:"AIzaSyDukYf45XqFM-trtEY2MdTY8thd8iXl20I",
-  authDomain:"uniloop-app.firebaseapp.com",
-  projectId:"uniloop-app",
-  storageBucket:"uniloop-app.firebasestorage.app",
-  messagingSenderId:"272654005890",
-  appId:"1:272654005890:web:0b1dd388364e86d22f269b",
-  measurementId:"G-PJ0XE1PXH5"
-});
-var auth = firebase.auth();
-var db   = firebase.firestore();
-var stor = firebase.storage();
-try { firebase.analytics(); } catch(e) {}
-var FV = firebase.firestore.FieldValue;
-
-/* ── STATE ── */
-var ME=null, PROF=null;
-var swipePool=[], swipeIdx=0;
-var allChats=[], curChatId=null, curMatchId=null;
-var unsubMsgs=null;
-var vStream=null, vTimer=null, vSec=0, vMuted=false;
-var inQ=false, anonName='';
-var selEm='🌿', selInts=[], setupPhotoFile=null;
-var tvotes={}, blastD={};
-var viewedUserId=null, viewedUserData=null;
-
-/* ── DEMO DATA ── */
-var DEMOS=[
-  {id:'d1',name:'Zeynep Aydın',age:22,uni:'Boğaziçi Üniversitesi',dept:'Psikoloji',year:'3. Sınıf',avatar:'🌙',photoURL:null,bio:'Kitap kurdu, felsefe tartışmalarına bayılırım.',interests:['Edebiyat','Sanat','Fotoğraf'],online:true,followers:142,following:88},
-  {id:'d2',name:'Selin Kaya',age:21,uni:'Hacettepe Üniversitesi',dept:'Tıp',year:'2. Sınıf',avatar:'🌸',photoURL:null,bio:'Piyano çalan tıp öğrencisi.',interests:['Spor','Sinema','Doğa'],online:true,followers:89,following:54},
-  {id:'d3',name:'Ceren Demir',age:23,uni:'Bilkent Üniversitesi',dept:'İletişim',year:'4. Sınıf',avatar:'🌊',photoURL:null,bio:'Müzik prodüksiyonu, sanat, konsept projeler.',interests:['Müzik','Seyahat','Fotoğraf'],online:false,followers:310,following:120},
-  {id:'d4',name:'Lara Erdoğan',age:20,uni:'ODTÜ',dept:'İşletme',year:'2. Sınıf',avatar:'🔆',photoURL:null,bio:'Girişimcilik, dans, gastronomi.',interests:['Gastronomi','Dans','Teknoloji'],online:true,followers:67,following:43},
-  {id:'d5',name:'Naz Mercan',age:22,uni:'Ankara Üniversitesi',dept:'Hukuk',year:'3. Sınıf',avatar:'🍂',photoURL:null,bio:'Satranç ve hukuk felsefesi.',interests:['Edebiyat','Satranç'],online:false,followers:201,following:155},
-  {id:'d6',name:'Deniz Ak',age:21,uni:'İTÜ',dept:'Mimarlık',year:'3. Sınıf',avatar:'🌿',photoURL:null,bio:'Mekan tasarımı ve kentsel dönüşüm.',interests:['Sanat','Seyahat','Fotoğraf'],online:true,followers:178,following:92},
-  {id:'d7',name:'Elif Çelik',age:22,uni:'Koç Üniversitesi',dept:'Ekonomi',year:'4. Sınıf',avatar:'⚡',photoURL:null,bio:'Trekking, finans, kentsel yaşam.',interests:['Doğa','Teknoloji','Sinema'],online:true,followers:244,following:110},
+function BottomNav({ active, onNav }) {
+const tabs = [
+{ id: “discover”, icon: “✦”, label: “Keşfet” },
+{ id: “anon”, icon: “👤”, label: “Anonim” },
+{ id: “tournament”, icon: “🏆”, label: “Turnuva” },
+{ id: “messages”, icon: “💬”, label: “Mesajlar” },
+{ id: “profile”, icon: “◉”, label: “Profil” },
 ];
-var ANONS=[{c:'Kullanıcı #0447',y:'3. Sınıf'},{c:'Kullanıcı #0238',y:'2. Sınıf'},{c:'Kullanıcı #0891',y:'4. Sınıf'},{c:'Kullanıcı #0156',y:'1. Sınıf'}];
-var TOURNEY=[
-  {id:'t1',lbl:'Maç 1',a:{id:'ta1',n:'S. Kaya',av:'🌸',d:'Tıp',v:142},b:{id:'tb1',n:'K. Baran',av:'🌊',d:'Hukuk',v:89}},
-  {id:'t2',lbl:'Maç 2',a:{id:'ta2',n:'A. Mercan',av:'🍂',d:'İktisat',v:201},b:{id:'tb2',n:'M. Yıldız',av:'🔆',d:'Mimarlık',v:178}},
-  {id:'t3',lbl:'Maç 3',a:{id:'ta3',n:'D. Ak',av:'🌿',d:'Psikoloji',v:95},b:{id:'tb3',n:'B. Sert',av:'⚡',d:'Bil. Müh.',v:114}},
+return (
+<div style={{
+display: “flex”, justifyContent: “space-around”, alignItems: “center”,
+background: “#10101A”, borderTop: `1px solid ${COLORS.border}`,
+padding: “10px 0 16px”, position: “fixed”, bottom: 0, left: 0, right: 0,
+zIndex: 100, backdropFilter: “blur(20px)”,
+}}>
+{tabs.map(t => (
+<button key={t.id} onClick={() => onNav(t.id)} style={{
+background: “none”, border: “none”, cursor: “pointer”,
+display: “flex”, flexDirection: “column”, alignItems: “center”, gap: 4,
+padding: “4px 12px”, transition: “all 0.2s”,
+}}>
+<span style={{
+fontSize: t.id === active ? 22 : 19,
+filter: t.id === active ? `drop-shadow(0 0 8px ${COLORS.accent})` : “none”,
+transition: “all 0.25s”,
+}}>{t.icon}</span>
+<span style={{
+fontSize: 10, fontFamily: “‘Outfit’, sans-serif”, fontWeight: 600,
+color: t.id === active ? COLORS.accentGlow : COLORS.muted,
+letterSpacing: “0.5px”,
+}}>{t.label}</span>
+</button>
+))}
+</div>
+);
+}
+
+function TopBar({ title, right }) {
+return (
+<div style={{
+display: “flex”, alignItems: “center”, justifyContent: “space-between”,
+padding: “18px 20px 12px”,
+background: “linear-gradient(180deg, #0A0A0F 60%, transparent)”,
+position: “sticky”, top: 0, zIndex: 50,
+}}>
+<div style={{ display: “flex”, alignItems: “center”, gap: 10 }}>
+<span style={{
+fontFamily: “‘Clash Display’, ‘Outfit’, sans-serif”, fontWeight: 800,
+fontSize: 22, background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.pink})`,
+WebkitBackgroundClip: “text”, WebkitTextFillColor: “transparent”,
+letterSpacing: “-0.5px”,
+}}>UniLoop</span>
+{title && <span style={{ color: COLORS.muted, fontSize: 13, fontFamily: “‘Outfit’, sans-serif” }}>/ {title}</span>}
+</div>
+{right}
+</div>
+);
+}
+
+// ─── Onboarding ───────────────────────────────────────────────────────────────
+
+function Onboarding({ onDone }) {
+const [step, setStep] = useState(0);
+const [data, setData] = useState({ name: “”, surname: “”, email: “”, username: “”, bio: “”, hobbies: [], goal: “”, photo: null });
+const [anim, setAnim] = useState(true);
+
+const next = () => { setAnim(false); setTimeout(() => { setStep(s => s + 1); setAnim(true); }, 200); };
+const update = (k, v) => setData(d => ({ …d, [k]: v }));
+const toggleHobby = (h) => {
+setData(d => ({
+…d, hobbies: d.hobbies.includes(h)
+? d.hobbies.filter(x => x !== h)
+: d.hobbies.length < 3 ? […d.hobbies, h] : d.hobbies
+}));
+};
+
+const steps = [
+// Step 0: Splash
+<div style={{ display: “flex”, flexDirection: “column”, alignItems: “center”, justifyContent: “center”, height: “100%”, gap: 24, padding: 32 }}>
+<div style={{
+width: 100, height: 100, borderRadius: 30,
+background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.pink})`,
+display: “flex”, alignItems: “center”, justifyContent: “center”, fontSize: 48,
+boxShadow: `0 0 60px ${COLORS.accent}66`, animation: “pulse 2s infinite”,
+}}>🎓</div>
+<div style={{ textAlign: “center” }}>
+<div style={{ fontFamily: “‘Outfit’, sans-serif”, fontWeight: 900, fontSize: 38, lineHeight: 1.1, color: COLORS.text }}>
+Uni<span style={{ color: COLORS.accent }}>Loop</span>
+</div>
+<div style={{ color: COLORS.muted, marginTop: 10, fontSize: 15, lineHeight: 1.6 }}>Üniversite öğrencilerinin<br />buluşma noktası ✨</div>
+</div>
+<button onClick={next} style={btnStyle()}>Başla →</button>
+</div>,
+
+```
+// Step 1: Name
+<div style={formStep()}>
+  <StepHeader icon="👋" title="Merhaba!" sub="Seni tanımak istiyoruz" step={1} total={6} />
+  <Input label="Ad" value={data.name} onChange={v => update("name", v)} placeholder="Adın" />
+  <Input label="Soyad" value={data.surname} onChange={v => update("surname", v)} placeholder="Soyadın" />
+  <button onClick={next} disabled={!data.name || !data.surname} style={btnStyle(!data.name || !data.surname)}>Devam →</button>
+</div>,
+
+// Step 2: Email + Username
+<div style={formStep()}>
+  <StepHeader icon="📧" title="Hesabını oluştur" sub="Herhangi bir mail ile giriş yap" step={2} total={6} />
+  <Input label="E-posta" value={data.email} onChange={v => update("email", v)} placeholder="ornek@mail.com" type="email" />
+  <Input label="Kullanıcı adı" value={data.username} onChange={v => update("username", v.replace(/\s/g, ""))} placeholder="@kullanici_adi" />
+  <button onClick={next} disabled={!data.email || !data.username} style={btnStyle(!data.email || !data.username)}>Devam →</button>
+</div>,
+
+// Step 3: Photo + Bio
+<div style={formStep()}>
+  <StepHeader icon="📸" title="Profilini oluştur" sub="İlk izlenim çok önemli!" step={3} total={6} />
+  <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+    <div onClick={() => {}} style={{
+      width: 90, height: 90, borderRadius: "50%",
+      background: `linear-gradient(135deg, ${COLORS.accent}55, ${COLORS.pink}55)`,
+      border: `3px dashed ${COLORS.accent}`, display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center", cursor: "pointer",
+      color: COLORS.accent, fontSize: 24, gap: 4,
+    }}>
+      <span>📷</span>
+      <span style={{ fontSize: 10, fontFamily: "'Outfit', sans-serif" }}>Fotoğraf</span>
+    </div>
+  </div>
+  <div style={{ marginBottom: 12 }}>
+    <label style={labelStyle()}>Biyografi</label>
+    <textarea value={data.bio} onChange={e => update("bio", e.target.value)}
+      placeholder="Kendinden kısaca bahset..."
+      style={{ ...inputStyle(), resize: "none", height: 90, paddingTop: 12 }} />
+  </div>
+  <button onClick={next} style={btnStyle(false)}>Devam →</button>
+</div>,
+
+// Step 4: Hobbies
+<div style={formStep()}>
+  <StepHeader icon="🎯" title="İlgi alanların" sub="En fazla 3 hobi seç" step={4} total={6} />
+  <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 20 }}>
+    {HOBBIES.map(h => (
+      <button key={h} onClick={() => toggleHobby(h)} style={{
+        padding: "8px 14px", borderRadius: 20, border: `1.5px solid`,
+        borderColor: data.hobbies.includes(h) ? COLORS.accent : COLORS.border,
+        background: data.hobbies.includes(h) ? `${COLORS.accent}22` : "transparent",
+        color: data.hobbies.includes(h) ? COLORS.accentGlow : COLORS.muted,
+        fontFamily: "'Outfit', sans-serif", fontSize: 13, cursor: "pointer",
+        transition: "all 0.2s",
+      }}>{h}</button>
+    ))}
+  </div>
+  <button onClick={next} disabled={data.hobbies.length === 0} style={btnStyle(data.hobbies.length === 0)}>Devam →</button>
+</div>,
+
+// Step 5: Goal
+<div style={formStep()}>
+  <StepHeader icon="🚀" title="Hedefin ne?" sub="Uygulamayı neden kullanıyorsun?" step={5} total={6} />
+  <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+    {GOALS.map(g => (
+      <button key={g.label} onClick={() => update("goal", g.label)} style={{
+        padding: "16px 20px", borderRadius: 16, border: `1.5px solid`,
+        borderColor: data.goal === g.label ? COLORS.accent : COLORS.border,
+        background: data.goal === g.label ? `${COLORS.accent}22` : COLORS.card,
+        color: data.goal === g.label ? COLORS.text : COLORS.muted,
+        fontFamily: "'Outfit', sans-serif", fontSize: 15, cursor: "pointer",
+        display: "flex", alignItems: "center", gap: 14, textAlign: "left",
+        transition: "all 0.2s",
+      }}>
+        <span style={{ fontSize: 24 }}>{g.icon}</span>{g.label}
+      </button>
+    ))}
+  </div>
+  <button onClick={() => onDone(data)} disabled={!data.goal} style={btnStyle(!data.goal)}>UniLoop'a Giriş →</button>
+</div>,
+```
+
 ];
-var BOTS=['Harika, anlat bakalım!','Kesinlikle katılıyorum.','Çok ilginç!','Bu hafta müsait misin?','Seninle konuşmak güzel.','Gerçekten mi, nasıl oldu?','Bende de benzer bir deneyim var.'];
 
-/* ── AUTH ── */
-auth.onAuthStateChanged(function(user){
-  if(user){
-    ME=user;
-    db.collection('users').doc(user.uid).get()
-      .then(function(s){
-        if(s.exists){PROF=s.data();PROF.avatar?launch():showS('sSetup');}
-        else{PROF={name:user.displayName||'',email:user.email||''};db.collection('users').doc(user.uid).set({name:PROF.name,email:PROF.email,createdAt:FV.serverTimestamp(),followers:0,following:0,likes:0,matchCount:0},{merge:true});showS('sSetup');}
-      }).catch(function(){PROF={name:user.displayName||'',email:user.email||''};showS('sSetup');});
-  } else {ME=null;PROF=null;showS('sAuth');}
-});
-
-function authTab(t){
-  g('fLogin').style.display=t==='login'?'':'none';
-  g('fReg').style.display=t==='reg'?'':'none';
-  g('tabL').classList.toggle('on',t==='login');
-  g('tabR').classList.toggle('on',t==='reg');
+return (
+<div style={{
+height: “100%”, display: “flex”, flexDirection: “column”,
+opacity: anim ? 1 : 0, transform: anim ? “translateY(0)” : “translateY(20px)”,
+transition: “all 0.2s ease”,
+}}>
+{steps[step]}
+</div>
+);
 }
 
-function doLogin(){
-  var e=gv('lEmail'),p=gv('lPass'),err=g('lErr');
-  if(!e||!p){showErr(err,'E-posta ve şifre gerekli.');return;}
-  btnLoad('btnLogin',true,'Giriş yapılıyor...');
-  auth.signInWithEmailAndPassword(e,p)
-    .catch(function(x){showErr(err,trErr(x.code));})
-    .finally(function(){btnLoad('btnLogin',false,'Giriş Yap');});
+function StepHeader({ icon, title, sub, step, total }) {
+return (
+<div style={{ textAlign: “center”, marginBottom: 28 }}>
+<div style={{ fontSize: 40, marginBottom: 12 }}>{icon}</div>
+<div style={{ fontFamily: “‘Outfit’, sans-serif”, fontWeight: 800, fontSize: 24, color: COLORS.text }}>{title}</div>
+<div style={{ color: COLORS.muted, fontSize: 14, marginTop: 6 }}>{sub}</div>
+<div style={{ display: “flex”, gap: 6, justifyContent: “center”, marginTop: 16 }}>
+{Array.from({ length: total }).map((_, i) => (
+<div key={i} style={{
+height: 4, width: i < step ? 28 : 8, borderRadius: 2,
+background: i < step ? COLORS.accent : COLORS.border,
+transition: “all 0.3s”,
+}} />
+))}
+</div>
+</div>
+);
 }
 
-function doGoogle(){
-  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
-    .catch(function(x){showErr(g('lErr'),trErr(x.code));});
+function formStep() {
+return { display: “flex”, flexDirection: “column”, padding: “32px 24px”, height: “100%”, overflowY: “auto” };
+}
+function labelStyle() { return { color: COLORS.muted, fontSize: 12, fontFamily: “‘Outfit’, sans-serif”, fontWeight: 600, letterSpacing: “1px”, textTransform: “uppercase”, display: “block”, marginBottom: 8 }; }
+function inputStyle() { return { width: “100%”, background: COLORS.card, border: `1.5px solid ${COLORS.border}`, borderRadius: 14, padding: “14px 16px”, color: COLORS.text, fontFamily: “‘Outfit’, sans-serif”, fontSize: 15, outline: “none”, boxSizing: “border-box” }; }
+function btnStyle(disabled = false) {
+return {
+width: “100%”, padding: “16px”, borderRadius: 16, border: “none”,
+background: disabled ? COLORS.border : `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.pink})`,
+color: disabled ? COLORS.muted : “#fff”, fontFamily: “‘Outfit’, sans-serif”,
+fontWeight: 700, fontSize: 16, cursor: disabled ? “not-allowed” : “pointer”,
+boxShadow: disabled ? “none” : `0 8px 32px ${COLORS.accent}44`,
+transition: “all 0.2s”, marginTop: “auto”,
+};
 }
 
-function doRegister(){
-  var name=gv('rName'),email=gv('rEmail'),pass=gv('rPass'),uni=gv('rUni'),dept=gv('rDept'),year=gv('rYear'),err=g('rErr');
-  if(!name||!email||!pass||!uni||!dept||!year){showErr(err,'Tüm alanları doldurun.');return;}
-  if(pass.length<6){showErr(err,'Şifre en az 6 karakter olmalı.');return;}
-  btnLoad('btnReg',true,'Oluşturuluyor...');
-  auth.createUserWithEmailAndPassword(email,pass)
-    .then(function(c){
-      return c.user.updateProfile({displayName:name}).then(function(){
-        return db.collection('users').doc(c.user.uid).set({name,email,uni,dept,year,followers:0,following:0,likes:0,matchCount:0,createdAt:FV.serverTimestamp()});
-      });
-    })
-    .catch(function(x){showErr(err,trErr(x.code));})
-    .finally(function(){btnLoad('btnReg',false,'Hesap Oluştur');});
+function Input({ label, value, onChange, placeholder, type = “text” }) {
+return (
+<div style={{ marginBottom: 16 }}>
+<label style={labelStyle()}>{label}</label>
+<input type={type} value={value} onChange={e => onChange(e.target.value)}
+placeholder={placeholder} style={inputStyle()} />
+</div>
+);
 }
 
-function doLogout(){auth.signOut();toast('Çıkış yapıldı','info');}
+// ─── Discover Screen ──────────────────────────────────────────────────────────
 
-/* ── SETUP ── */
-function pickEm(el){document.querySelectorAll('.em-opt').forEach(function(a){a.classList.remove('on');});el.classList.add('on');selEm=el.dataset.e;}
-function pickInt(el){
-  el.classList.toggle('on');
-  var t=el.textContent.trim();
-  selInts=el.classList.contains('on')?[...selInts,t]:selInts.filter(function(x){return x!==t;});
+function DiscoverScreen() {
+const [idx, setIdx] = useState(0);
+const [swipe, setSwipe] = useState(null);
+const [matched, setMatched] = useState(false);
+const [startX, setStartX] = useState(null);
+const [dragX, setDragX] = useState(0);
+const user = MOCK_USERS[idx % MOCK_USERS.length];
+const nextUser = MOCK_USERS[(idx + 1) % MOCK_USERS.length];
+
+const doSwipe = (dir) => {
+setSwipe(dir);
+if (dir === “right” && Math.random() > 0.4) setTimeout(() => setMatched(true), 600);
+setTimeout(() => { setSwipe(null); setDragX(0); setIdx(i => i + 1); }, 500);
+};
+
+const handleTouchStart = e => setStartX(e.touches[0].clientX);
+const handleTouchMove = e => { if (startX !== null) setDragX(e.touches[0].clientX - startX); };
+const handleTouchEnd = () => {
+if (Math.abs(dragX) > 80) doSwipe(dragX > 0 ? “right” : “left”);
+else setDragX(0);
+setStartX(null);
+};
+
+const rotation = dragX / 12;
+const opacity = Math.max(0, 1 - Math.abs(dragX) / 300);
+
+return (
+<div style={{ height: “100%”, display: “flex”, flexDirection: “column”, overflow: “hidden” }}>
+<TopBar right={
+<div style={{ display: “flex”, gap: 8 }}>
+<IconBtn icon="🔔" />
+<IconBtn icon="⚡" gold />
+</div>
+} />
+
+```
+  {matched && (
+    <div onClick={() => setMatched(false)} style={{
+      position: "absolute", inset: 0, zIndex: 200,
+      background: "rgba(0,0,0,0.85)", display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center", gap: 20,
+      animation: "fadeIn 0.3s ease",
+    }}>
+      <div style={{ fontSize: 64, animation: "bounce 0.6s ease" }}>💜</div>
+      <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 900, fontSize: 32, color: COLORS.text }}>Eşleştin!</div>
+      <div style={{ color: COLORS.muted, fontSize: 15 }}>{user.name} ile artık mesajlaşabilirsin</div>
+      <div style={{ display: "flex", gap: -16 }}>
+        <Avatar initials="SEN" color={COLORS.accent} size={64} style={{ zIndex: 2, border: "3px solid #0A0A0F" }} />
+        <Avatar initials={user.photo} color={user.color} size={64} style={{ marginLeft: -16, border: "3px solid #0A0A0F" }} />
+      </div>
+      <button onClick={() => setMatched(false)} style={{ ...btnStyle(false), width: "auto", padding: "12px 32px", marginTop: 8 }}>Mesaj Gönder 💬</button>
+    </div>
+  )}
+
+  <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "0 16px 100px", position: "relative" }}>
+    {/* Next card (behind) */}
+    <div style={{
+      position: "absolute", width: "calc(100% - 48px)", maxWidth: 380,
+      top: 12, transform: "scale(0.95)", borderRadius: 28,
+      overflow: "hidden", height: 460,
+      background: `linear-gradient(160deg, ${nextUser.color}22, ${COLORS.card})`,
+      border: `1.5px solid ${nextUser.color}44`,
+    }} />
+
+    {/* Main card */}
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      style={{
+        position: "relative", width: "100%", maxWidth: 380, height: 480,
+        borderRadius: 28, overflow: "hidden", cursor: "grab",
+        background: `linear-gradient(160deg, ${user.color}33, ${COLORS.card})`,
+        border: `1.5px solid ${user.color}66`,
+        transform: swipe === "right" ? "translateX(150%) rotate(20deg)"
+          : swipe === "left" ? "translateX(-150%) rotate(-20deg)"
+          : `translateX(${dragX}px) rotate(${rotation}deg)`,
+        transition: swipe ? "transform 0.4s cubic-bezier(0.2,1,0.3,1)" : "none",
+        boxShadow: `0 20px 60px ${user.color}33`,
+        userSelect: "none",
+      }}
+    >
+      {/* Like / Nope overlay */}
+      {dragX > 40 && <div style={{ position: "absolute", top: 24, left: 24, zIndex: 10, border: "3px solid #06D6A0", borderRadius: 10, padding: "6px 16px", color: "#06D6A0", fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 22, transform: "rotate(-15deg)", background: "#06D6A011" }}>BEĞEN</div>}
+      {dragX < -40 && <div style={{ position: "absolute", top: 24, right: 24, zIndex: 10, border: "3px solid #FF4F91", borderRadius: 10, padding: "6px 16px", color: "#FF4F91", fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 22, transform: "rotate(15deg)", background: "#FF4F9111" }}>GEÇME</div>}
+
+      {/* Photo area */}
+      <div style={{
+        height: 300, display: "flex", alignItems: "center", justifyContent: "center",
+        background: `linear-gradient(135deg, ${user.color}55, ${user.color}22)`,
+        position: "relative",
+      }}>
+        <div style={{
+          width: 120, height: 120, borderRadius: "50%",
+          background: `linear-gradient(135deg, ${user.color}, ${user.color}88)`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 42, color: "#fff",
+          boxShadow: `0 0 40px ${user.color}66`,
+        }}>{user.photo}</div>
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%", background: "linear-gradient(to top, #13131A, transparent)" }} />
+      </div>
+
+      {/* Info */}
+      <div style={{ padding: "16px 20px" }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+          <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 22, color: COLORS.text }}>{user.name}</span>
+          <span style={{ color: COLORS.muted, fontSize: 16 }}>{user.age}</span>
+        </div>
+        <div style={{ color: user.color, fontSize: 13, fontFamily: "'Outfit', sans-serif", marginTop: 2 }}>{user.uni}</div>
+        <div style={{ color: COLORS.muted, fontSize: 13, marginTop: 8 }}>{user.bio}</div>
+        <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+          {user.hobbies.map(h => (
+            <span key={h} style={{ background: `${user.color}22`, color: user.color, border: `1px solid ${user.color}44`, borderRadius: 12, padding: "4px 10px", fontSize: 11, fontFamily: "'Outfit', sans-serif" }}>{h}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Action buttons */}
+    <div style={{ display: "flex", gap: 20, marginTop: 20, alignItems: "center" }}>
+      <button onClick={() => doSwipe("left")} style={{ width: 60, height: 60, borderRadius: "50%", background: "#FF4F9122", border: "2px solid #FF4F91", fontSize: 24, cursor: "pointer" }}>✕</button>
+      <button onClick={() => doSwipe("super")} style={{ width: 48, height: 48, borderRadius: "50%", background: `${COLORS.gold}22`, border: `2px solid ${COLORS.gold}`, fontSize: 20, cursor: "pointer" }}>⭐</button>
+      <button onClick={() => doSwipe("right")} style={{ width: 60, height: 60, borderRadius: "50%", background: "#06D6A022", border: "2px solid #06D6A0", fontSize: 24, cursor: "pointer" }}>♥</button>
+    </div>
+  </div>
+</div>
+```
+
+);
 }
 
-function handleSetupPhoto(input){
-  var file=input.files[0];if(!file)return;
-  if(file.size>5*1024*1024){toast('Dosya 5 MB sınırını aşıyor','error');return;}
-  setupPhotoFile=file;
-  var fr=new FileReader();
-  fr.onload=function(e){
-    var wrap=g('photoUpload');
-    var img=wrap.querySelector('img.preview');
-    if(!img){img=document.createElement('img');img.className='preview';wrap.appendChild(img);}
-    img.src=e.target.result;
-    g('uploadIcon').style.display='none';g('uploadText').style.display='none';g('uploadSub').style.display='none';
-  };
-  fr.readAsDataURL(file);
+function IconBtn({ icon, gold }) {
+return (
+<button style={{ width: 38, height: 38, borderRadius: 12, border: `1.5px solid ${gold ? COLORS.gold + "66" : COLORS.border}`, background: gold ? `${COLORS.gold}11` : COLORS.card, fontSize: 18, cursor: “pointer” }}>
+{icon}
+</button>
+);
 }
 
-function saveSetup(){
-  var bio=gv('sBio'),age=parseInt(gv('sAge'));
-  if(!bio){toast('Bio alanını doldurun','error');return;}
-  if(!age||age<18||age>35){toast('Geçerli bir yaş girin','error');return;}
-  if(selInts.length<2){toast('En az 2 ilgi alanı seçin','error');return;}
-  var btn=document.querySelector('#sSetup .btn-main');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Kaydediliyor...';
+// ─── Anonymous Screen ─────────────────────────────────────────────────────────
 
-  function finish(photoURL){
-    var data={avatar:selEm,bio,age,interests:selInts,photoURL:photoURL||null,photos:[],followers:0,following:0,likes:0,matchCount:0,updatedAt:FV.serverTimestamp()};
-    db.collection('users').doc(ME.uid).set(data,{merge:true})
-      .then(function(){PROF=Object.assign({},PROF,data);launch();})
-      .catch(function(){PROF=Object.assign({},PROF,data);launch();})
-      .finally(function(){btn.disabled=false;btn.textContent='Hadi Başlayalım';});
-  }
+function AnonScreen() {
+const [state, setState] = useState(“idle”); // idle | waiting | connected | unmasked
+const [timer, setTimer] = useState(0);
+const timerRef = useRef(null);
 
-  if(setupPhotoFile){
-    var ref=stor.ref('profiles/'+ME.uid+'/main.jpg');
-    var prog=g('uploadProg'),bar=g('uploadBar');
-    prog.classList.add('on');
-    var task=ref.put(setupPhotoFile);
-    task.on('state_changed',
-      function(snap){bar.style.width=Math.round(snap.bytesTransferred/snap.totalBytes*100)+'%';},
-      function(){toast('Fotoğraf yüklenemedi','error');finish(null);},
-      function(){task.snapshot.ref.getDownloadURL().then(function(url){finish(url);});}
-    );
-  } else { finish(null); }
+const connect = () => {
+setState(“waiting”);
+setTimeout(() => { setState(“connected”); startTimer(); }, 2000);
+};
+const startTimer = () => { timerRef.current = setInterval(() => setTimer(t => t + 1), 1000); };
+const skip = () => { clearInterval(timerRef.current); setTimer(0); setState(“waiting”); setTimeout(() => { setState(“connected”); startTimer(); }, 1500); };
+const unmask = () => setState(“unmasked”);
+const end = () => { clearInterval(timerRef.current); setTimer(0); setState(“idle”); };
+
+const fmt = t => `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+
+return (
+<div style={{ height: “100%”, display: “flex”, flexDirection: “column”, overflow: “hidden” }}>
+<TopBar title=“Anonim” right={<IconBtn icon="🔔" />} />
+
+```
+  <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 24px 100px", gap: 24 }}>
+    {state === "idle" && <>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 72, marginBottom: 16, animation: "float 3s ease-in-out infinite" }}>🎭</div>
+        <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: COLORS.text }}>Anonim Sohbet</div>
+        <div style={{ color: COLORS.muted, fontSize: 14, marginTop: 10, lineHeight: 1.7 }}>Kimliğini gizle, sesli konuş.<br />Hazır olduğunda maskeni kaldır.</div>
+      </div>
+      <div style={{ width: "100%", background: COLORS.card, borderRadius: 20, padding: "20px", border: `1px solid ${COLORS.border}` }}>
+        {[["🎭", "Kimliğin gizli kalır"], ["🔊", "Sesli bağlantı"], ["👤", "Maskeni kaldırabilirsin"]].map(([ic, tx]) => (
+          <div key={tx} style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 0", borderBottom: `1px solid ${COLORS.border}20` }}>
+            <span style={{ fontSize: 22 }}>{ic}</span>
+            <span style={{ color: COLORS.muted, fontFamily: "'Outfit', sans-serif", fontSize: 14 }}>{tx}</span>
+          </div>
+        ))}
+      </div>
+      <button onClick={connect} style={btnStyle(false)}>🎭 Anonim Sohbete Katıl</button>
+    </>}
+
+    {state === "waiting" && (
+      <div style={{ textAlign: "center" }}>
+        <div style={{ width: 120, height: 120, borderRadius: "50%", border: `3px solid ${COLORS.accent}`, margin: "0 auto 24px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 52, animation: "spin 3s linear infinite", background: `${COLORS.accent}11` }}>🎭</div>
+        <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 18, color: COLORS.text }}>Bağlanılıyor...</div>
+        <div style={{ color: COLORS.muted, marginTop: 8, fontSize: 14 }}>Seninle konuşmak isteyen birini arıyoruz</div>
+        <button onClick={end} style={{ ...btnStyle(false), background: COLORS.card, boxShadow: "none", marginTop: 32, border: `1px solid ${COLORS.border}`, color: COLORS.muted }}>İptal</button>
+      </div>
+    )}
+
+    {(state === "connected" || state === "unmasked") && (
+      <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+        <div style={{ fontFamily: "'Outfit', sans-serif", color: COLORS.teal, fontSize: 13, fontWeight: 700, letterSpacing: "1px" }}>● BAĞLANDI — {fmt(timer)}</div>
+
+        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ width: 90, height: 90, borderRadius: "50%", background: `${COLORS.accent}22`, border: `3px solid ${COLORS.accent}55`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, margin: "0 auto 8px" }}>{state === "unmasked" ? "SEN" : "🎭"}</div>
+            <span style={{ color: COLORS.muted, fontSize: 12, fontFamily: "'Outfit', sans-serif" }}>Sen</span>
+          </div>
+          <div style={{ color: COLORS.accent, fontSize: 28 }}>⟷</div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ width: 90, height: 90, borderRadius: "50%", background: `${COLORS.pink}22`, border: `3px solid ${COLORS.pink}55`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, margin: "0 auto 8px", animation: "pulse 1.5s infinite" }}>{state === "unmasked" ? "AK" : "🎭"}</div>
+            <span style={{ color: COLORS.muted, fontSize: 12, fontFamily: "'Outfit', sans-serif" }}>{state === "unmasked" ? "Ayşe K." : "???"}</span>
+          </div>
+        </div>
+
+        {state === "unmasked" && (
+          <div style={{ background: `${COLORS.teal}11`, border: `1px solid ${COLORS.teal}44`, borderRadius: 16, padding: "14px 20px", textAlign: "center", width: "100%", boxSizing: "border-box" }}>
+            <div style={{ color: COLORS.teal, fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 14 }}>✓ Maske kaldırıldı!</div>
+            <div style={{ color: COLORS.muted, fontSize: 13, marginTop: 4 }}>Artık birbirinizi görebilirsiniz</div>
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 12, width: "100%" }}>
+          {state !== "unmasked" && <button onClick={unmask} style={{ flex: 1, padding: "14px", borderRadius: 14, border: `1.5px solid ${COLORS.gold}66`, background: `${COLORS.gold}11`, color: COLORS.gold, fontFamily: "'Outfit', sans-serif", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>👤 Maskeni İndir</button>}
+          {state !== "unmasked" && <button onClick={skip} style={{ flex: 1, padding: "14px", borderRadius: 14, border: `1.5px solid ${COLORS.border}`, background: COLORS.card, color: COLORS.muted, fontFamily: "'Outfit', sans-serif", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>⏭ Atla</button>}
+          {state === "unmasked" && <button style={{ flex: 1, padding: "14px", borderRadius: 14, border: "none", background: `linear-gradient(135deg, ${COLORS.teal}, ${COLORS.accent})`, color: "#fff", fontFamily: "'Outfit', sans-serif", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>💬 Arkadaş Ekle</button>}
+          <button onClick={end} style={{ padding: "14px 18px", borderRadius: 14, border: `1.5px solid #FF4F9166`, background: "#FF4F9111", color: "#FF4F91", fontFamily: "'Outfit', sans-serif", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>✕</button>
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+```
+
+);
 }
 
-/* ── LAUNCH ── */
-function launch(){
-  showS('sMain');
-  var name=ME.displayName||PROF.name||'Kullanıcı';
+// ─── Tournament Screen ────────────────────────────────────────────────────────
 
-  // topbar
-  if(PROF.photoURL){
-    var img=document.createElement('img');img.src=PROF.photoURL;img.style.cssText='width:100%;height:100%;object-fit:cover';
-    g('topAvi').innerHTML='';g('topAvi').appendChild(img);
-  } else { g('topAvi').textContent=PROF.avatar||'🌿'; }
+function TournamentScreen() {
+const [view, setView] = useState(“bracket”); // bracket | vote
+const [voted, setVoted] = useState(null);
+const [left, setLeft] = useState(TOURNAMENT_USERS[0]);
+const [right, setRight] = useState(TOURNAMENT_USERS[1]);
+const [voteAnim, setVoteAnim] = useState(null);
 
-  // profile
-  g('pName').textContent=name;
-  g('pAge').textContent=PROF.age?PROF.age+' yaş':'';
-  g('pUni').textContent=(PROF.dept||'')+(PROF.uni?' · '+PROF.uni:'')+(PROF.year?' · '+PROF.year:'');
-  g('pBio').textContent=PROF.bio||'';
-  g('stLikes').textContent=PROF.likes||0;
-  g('stMatches').textContent=PROF.matchCount||0;
-  g('stFollowers').textContent=PROF.followers||0;
-  g('stFollowing').textContent=PROF.following||0;
-  g('pChips').innerHTML=(PROF.interests||[]).map(function(i){return '<span class="pi-chip">'+i+'</span>';}).join('');
+const vote = (user) => {
+setVoteAnim(user.id);
+setVoted(user);
+setTimeout(() => { setVoteAnim(null); }, 600);
+};
 
-  if(PROF.photoURL){
-    g('profAviImg').src=PROF.photoURL;g('profAviImg').style.display='block';g('profAviTxt').style.display='none';
-    g('profCoverImg').src=PROF.photoURL;g('profCoverImg').style.display='block';
-  } else {
-    g('profAviTxt').textContent=PROF.avatar||'🌿';
-  }
+return (
+<div style={{ height: “100%”, display: “flex”, flexDirection: “column”, overflow: “hidden” }}>
+<TopBar title=“Turnuva” right={<div style={{ background: `${COLORS.gold}22`, border: `1px solid ${COLORS.gold}55`, borderRadius: 10, padding: “6px 12px”, color: COLORS.gold, fontSize: 12, fontFamily: “‘Outfit’, sans-serif”, fontWeight: 700 }}>🏆 Haftalık</div>} />
 
-  buildPhotoGrid();
-  try{tvotes=JSON.parse(localStorage.getItem('tv_'+ME.uid)||'{}');}catch(e){}
-  buildSwipe();buildAnon();buildTournament();loadMatches();
-  setInterval(function(){},12000);
+```
+  <div style={{ display: "flex", margin: "0 16px 16px", background: COLORS.card, borderRadius: 14, padding: 4 }}>
+    {[["bracket", "🏅 Turnuva"], ["vote", "⚡ Oy Ver"]].map(([id, label]) => (
+      <button key={id} onClick={() => setView(id)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: view === id ? `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.pink})` : "transparent", color: view === id ? "#fff" : COLORS.muted, fontFamily: "'Outfit', sans-serif", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>{label}</button>
+    ))}
+  </div>
+
+  <div style={{ flex: 1, overflowY: "auto", padding: "0 16px 100px" }}>
+    {view === "bracket" && (
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* Winner Banner */}
+        <div style={{ background: `linear-gradient(135deg, ${COLORS.gold}22, ${COLORS.gold}11)`, border: `1px solid ${COLORS.gold}44`, borderRadius: 20, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ fontSize: 36 }}>👑</div>
+          <div>
+            <div style={{ color: COLORS.gold, fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 13, letterSpacing: "1px" }}>HAFTANIN YILDIZI</div>
+            <div style={{ color: COLORS.text, fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 18, marginTop: 2 }}>Ayşe K.</div>
+            <div style={{ color: COLORS.muted, fontSize: 12, marginTop: 2 }}>847 oy ile kazandı 🎉</div>
+          </div>
+          <Avatar initials="AK" color="#FF4F91" size={56} style={{ marginLeft: "auto" }} />
+        </div>
+
+        {/* Bracket */}
+        <div style={{ color: COLORS.muted, fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: "1px", textTransform: "uppercase", marginTop: 8 }}>Yarı Final</div>
+        <BracketMatch u1={TOURNAMENT_USERS[0]} u2={TOURNAMENT_USERS[1]} winner={0} />
+        <BracketMatch u1={TOURNAMENT_USERS[2]} u2={TOURNAMENT_USERS[3]} winner={0} />
+
+        <div style={{ color: COLORS.muted, fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: "1px", textTransform: "uppercase", marginTop: 8 }}>Final</div>
+        <BracketMatch u1={TOURNAMENT_USERS[0]} u2={TOURNAMENT_USERS[2]} winner={0} isFinal />
+      </div>
+    )}
+
+    {view === "vote" && (
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+        <div style={{ color: COLORS.muted, fontSize: 14, fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>Kim daha karizmatik? Oy ver!</div>
+        <div style={{ display: "flex", gap: 12, width: "100%" }}>
+          {[left, right].map((u, i) => (
+            <button key={u.id} onClick={() => vote(u)} style={{
+              flex: 1, borderRadius: 20, border: `2px solid`,
+              borderColor: voted?.id === u.id ? u.color : COLORS.border,
+              background: voted?.id === u.id ? `${u.color}22` : COLORS.card,
+              cursor: "pointer", padding: "20px 12px",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
+              transform: voteAnim === u.id ? "scale(1.05)" : "scale(1)",
+              transition: "all 0.3s", boxShadow: voted?.id === u.id ? `0 0 30px ${u.color}44` : "none",
+            }}>
+              <Avatar initials={u.photo} color={u.color} size={70} />
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 15, color: COLORS.text }}>{u.name}</div>
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, color: COLORS.muted }}>{u.votes} oy</div>
+              {voted?.id === u.id && <div style={{ color: u.color, fontSize: 20 }}>✓</div>}
+            </button>
+          ))}
+        </div>
+        {voted && (
+          <div style={{ background: `${voted.color}11`, border: `1px solid ${voted.color}44`, borderRadius: 16, padding: "14px 20px", width: "100%", boxSizing: "border-box", textAlign: "center" }}>
+            <span style={{ color: voted.color, fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 14 }}>✓ {voted.name} için oy kullandın!</span>
+          </div>
+        )}
+        <button style={{ ...btnStyle(false), background: COLORS.card, color: COLORS.muted, boxShadow: "none", border: `1px solid ${COLORS.border}` }}>Sıradaki Karşılaşma ⏭</button>
+      </div>
+    )}
+  </div>
+</div>
+```
+
+);
 }
 
-/* ── NAV ── */
-function goPanel(name){
-  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});
-  document.querySelectorAll('.pnav').forEach(function(p){p.classList.remove('on');});
-  document.querySelectorAll('.bnav').forEach(function(b){b.classList.remove('on');});
-  g('p'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('on');
-  var pn=g('pn-'+name),bn=g('bn-'+name);
-  if(pn)pn.classList.add('on');if(bn)bn.classList.add('on');
-  if(name==='messages'){g('msgBadge').classList.remove('on');g('notifDot').classList.remove('on');loadMatches();}
+function BracketMatch({ u1, u2, winner, isFinal }) {
+return (
+<div style={{ background: COLORS.card, borderRadius: 18, border: `1px solid ${isFinal ? COLORS.gold + "44" : COLORS.border}`, overflow: “hidden”, boxShadow: isFinal ? `0 0 20px ${COLORS.gold}22` : “none” }}>
+{[u1, u2].map((u, i) => (
+<div key={u.id} style={{ display: “flex”, alignItems: “center”, gap: 14, padding: “14px 16px”, background: winner === i ? `${u.color}11` : “transparent”, borderBottom: i === 0 ? `1px solid ${COLORS.border}` : “none” }}>
+<Avatar initials={u.photo} color={u.color} size={44} />
+<div style={{ flex: 1 }}>
+<div style={{ fontFamily: “‘Outfit’, sans-serif”, fontWeight: 700, fontSize: 15, color: winner === i ? COLORS.text : COLORS.muted }}>{u.name}</div>
+<div style={{ color: COLORS.muted, fontSize: 12, marginTop: 2 }}>{u.votes} oy</div>
+</div>
+{winner === i && <span style={{ fontSize: 18 }}>{isFinal ? “👑” : “✓”}</span>}
+</div>
+))}
+</div>
+);
 }
 
-/* ── PHOTO GRID ── */
-function buildPhotoGrid(){
-  var grid=g('myGrid');if(!grid)return;
-  var photos=PROF.photos||[];
-  grid.innerHTML=photos.map(function(u){
-    return '<div class="photo-cell"><img src="'+u+'" loading="lazy"></div>';
-  }).join('')+'<div class="photo-cell photo-add" onclick="g(\'addPhotoIn\').click()">+</div>';
+// ─── Messages Screen ──────────────────────────────────────────────────────────
+
+function MessagesScreen() {
+const [active, setActive] = useState(null);
+const [input, setInput] = useState(””);
+const [msgs, setMsgs] = useState([
+{ from: “them”, text: “Merhaba! 👋”, time: “14:30” },
+{ from: “me”, text: “Hey! Nasılsın?”, time: “14:31” },
+{ from: “them”, text: “İyiyim teşekkürler, sen?”, time: “14:31” },
+]);
+
+if (active) {
+const user = MESSAGES.find(m => m.id === active);
+return (
+<div style={{ height: “100%”, display: “flex”, flexDirection: “column” }}>
+<div style={{ display: “flex”, alignItems: “center”, gap: 12, padding: “18px 20px 12px”, background: COLORS.bg, borderBottom: `1px solid ${COLORS.border}` }}>
+<button onClick={() => setActive(null)} style={{ background: “none”, border: “none”, color: COLORS.accent, fontSize: 20, cursor: “pointer” }}>←</button>
+<Avatar initials={user.photo} color={user.color} size={42} />
+<div>
+<div style={{ fontFamily: “‘Outfit’, sans-serif”, fontWeight: 700, fontSize: 16, color: COLORS.text }}>{user.name}</div>
+<div style={{ color: COLORS.teal, fontSize: 12, fontFamily: “‘Outfit’, sans-serif” }}>● çevrimiçi</div>
+</div>
+</div>
+<div style={{ flex: 1, overflowY: “auto”, padding: “16px”, display: “flex”, flexDirection: “column”, gap: 10 }}>
+{msgs.map((m, i) => (
+<div key={i} style={{ display: “flex”, justifyContent: m.from === “me” ? “flex-end” : “flex-start” }}>
+<div style={{ maxWidth: “75%”, background: m.from === “me” ? `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.pink})` : COLORS.card, borderRadius: m.from === “me” ? “18px 18px 4px 18px” : “18px 18px 18px 4px”, padding: “10px 14px”, border: m.from === “me” ? “none” : `1px solid ${COLORS.border}` }}>
+<div style={{ color: COLORS.text, fontFamily: “‘Outfit’, sans-serif”, fontSize: 14 }}>{m.text}</div>
+<div style={{ color: m.from === “me” ? “rgba(255,255,255,0.6)” : COLORS.muted, fontSize: 10, marginTop: 4, textAlign: “right” }}>{m.time}</div>
+</div>
+</div>
+))}
+</div>
+<div style={{ padding: “12px 16px 100px”, display: “flex”, gap: 10, alignItems: “center”, borderTop: `1px solid ${COLORS.border}` }}>
+<input value={input} onChange={e => setInput(e.target.value)} placeholder=“Mesaj yaz…” onKeyDown={e => {
+if (e.key === “Enter” && input.trim()) {
+setMsgs(ms => […ms, { from: “me”, text: input.trim(), time: new Date().toTimeString().slice(0, 5) }]);
+setInput(””);
+}
+}} style={{ flex: 1, background: COLORS.card, border: `1.5px solid ${COLORS.border}`, borderRadius: 20, padding: “12px 16px”, color: COLORS.text, fontFamily: “‘Outfit’, sans-serif”, fontSize: 14, outline: “none” }} />
+<button onClick={() => { if (input.trim()) { setMsgs(ms => […ms, { from: “me”, text: input.trim(), time: new Date().toTimeString().slice(0, 5) }]); setInput(””); } }} style={{ width: 44, height: 44, borderRadius: “50%”, background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.pink})`, border: “none”, fontSize: 18, cursor: “pointer” }}>↑</button>
+</div>
+</div>
+);
 }
 
-function addPhoto(input){
-  var file=input.files[0];if(!file)return;
-  if(file.size>5*1024*1024){toast('Dosya 5 MB sınırını aşıyor','error');return;}
-  toast('Fotoğraf yükleniyor...','info');
-  var ref=stor.ref('profiles/'+ME.uid+'/photos/'+Date.now()+'.jpg');
-  ref.put(file).then(function(){return ref.getDownloadURL();})
-    .then(function(url){
-      var photos=PROF.photos||[];photos.push(url);PROF.photos=photos;
-      db.collection('users').doc(ME.uid).update({photos:FV.arrayUnion(url)}).catch(function(){});
-      buildPhotoGrid();toast('Fotoğraf eklendi','success');
-    }).catch(function(){toast('Yükleme başarısız','error');});
+return (
+<div style={{ height: “100%”, display: “flex”, flexDirection: “column” }}>
+<TopBar title=“Mesajlar” right={<IconBtn icon="✏️" />} />
+<div style={{ flex: 1, overflowY: “auto”, padding: “0 0 100px” }}>
+{MESSAGES.map(m => (
+<div key={m.id} onClick={() => setActive(m.id)} style={{ display: “flex”, alignItems: “center”, gap: 14, padding: “14px 20px”, borderBottom: `1px solid ${COLORS.border}20`, cursor: “pointer”, transition: “background 0.2s” }}
+onMouseEnter={e => e.currentTarget.style.background = COLORS.card}
+onMouseLeave={e => e.currentTarget.style.background = “transparent”}>
+<div style={{ position: “relative” }}>
+<Avatar initials={m.photo} color={m.color} size={52} />
+<div style={{ width: 14, height: 14, borderRadius: “50%”, background: COLORS.teal, border: “2px solid #0A0A0F”, position: “absolute”, bottom: 0, right: 0 }} />
+</div>
+<div style={{ flex: 1, minWidth: 0 }}>
+<div style={{ display: “flex”, justifyContent: “space-between”, marginBottom: 4 }}>
+<span style={{ fontFamily: “‘Outfit’, sans-serif”, fontWeight: 700, fontSize: 15, color: COLORS.text }}>{m.name}</span>
+<span style={{ color: COLORS.muted, fontSize: 12, fontFamily: “‘Outfit’, sans-serif” }}>{m.time}</span>
+</div>
+<div style={{ color: COLORS.muted, fontSize: 13, fontFamily: “‘Outfit’, sans-serif”, overflow: “hidden”, textOverflow: “ellipsis”, whiteSpace: “nowrap” }}>{m.last}</div>
+</div>
+{m.unread > 0 && <div style={{ width: 22, height: 22, borderRadius: “50%”, background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.pink})`, display: “flex”, alignItems: “center”, justifyContent: “center”, fontFamily: “‘Outfit’, sans-serif”, fontWeight: 700, fontSize: 11, color: “#fff”, flexShrink: 0 }}>{m.unread}</div>}
+</div>
+))}
+</div>
+</div>
+);
 }
 
-function uploadProfilePhoto(input){
-  var file=input.files[0];if(!file)return;
-  if(file.size>5*1024*1024){toast('Dosya 5 MB sınırını aşıyor','error');return;}
-  toast('Güncelleniyor...','info');
-  stor.ref('profiles/'+ME.uid+'/main.jpg').put(file)
-    .then(function(s){return s.ref.getDownloadURL();})
-    .then(function(url){
-      PROF.photoURL=url;
-      db.collection('users').doc(ME.uid).update({photoURL:url}).catch(function(){});
-      g('profAviImg').src=url;g('profAviImg').style.display='block';g('profAviTxt').style.display='none';
-      g('profCoverImg').src=url;g('profCoverImg').style.display='block';
-      var img=document.createElement('img');img.src=url;img.style.cssText='width:100%;height:100%;object-fit:cover';
-      g('topAvi').innerHTML='';g('topAvi').appendChild(img);
-      toast('Fotoğraf güncellendi','success');
-    }).catch(function(){toast('Güncelleme başarısız','error');});
+// ─── Profile Screen ───────────────────────────────────────────────────────────
+
+function ProfileScreen({ user }) {
+const [tab, setTab] = useState(“about”);
+return (
+<div style={{ height: “100%”, display: “flex”, flexDirection: “column”, overflowY: “auto” }}>
+{/* Cover */}
+<div style={{ height: 180, background: `linear-gradient(135deg, ${COLORS.accent}66, ${COLORS.pink}44, ${COLORS.card})`, position: “relative”, flexShrink: 0 }}>
+<div style={{ position: “absolute”, inset: 0, backgroundImage: “radial-gradient(circle at 30% 50%, rgba(124,92,252,0.3) 0%, transparent 60%)” }} />
+<div style={{ position: “absolute”, top: 16, left: 16 }}>
+<span style={{ fontFamily: “‘Outfit’, sans-serif”, fontWeight: 800, fontSize: 20, background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.pink})`, WebkitBackgroundClip: “text”, WebkitTextFillColor: “transparent” }}>UniLoop</span>
+</div>
+<div style={{ position: “absolute”, top: 16, right: 16, display: “flex”, gap: 8 }}>
+<IconBtn icon="🔔" />
+<div style={{ background: `${COLORS.gold}22`, border: `1px solid ${COLORS.gold}55`, borderRadius: 10, padding: “6px 10px”, color: COLORS.gold, fontSize: 12, fontFamily: “‘Outfit’, sans-serif”, fontWeight: 700 }}>⚡ PRO</div>
+</div>
+</div>
+
+```
+  {/* Avatar + Info */}
+  <div style={{ padding: "0 20px", flexShrink: 0 }}>
+    <div style={{ marginTop: -48, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+      <div style={{ position: "relative" }}>
+        <Avatar initials={user.username?.slice(0, 2).toUpperCase() || "SEN"} color={COLORS.accent} size={90} style={{ border: "3px solid #0A0A0F" }} />
+        <div style={{ position: "absolute", bottom: 4, right: 4, width: 20, height: 20, borderRadius: "50%", background: COLORS.teal, border: "2px solid #0A0A0F", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>✓</div>
+      </div>
+      <button style={{ background: "none", border: `1.5px solid ${COLORS.border}`, borderRadius: 12, padding: "8px 18px", color: COLORS.text, fontFamily: "'Outfit', sans-serif", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>✏️ Düzenle</button>
+    </div>
+
+    <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 22, color: COLORS.text }}>{user.name} {user.surname}</div>
+    <div style={{ color: COLORS.accent, fontSize: 14, fontFamily: "'Outfit', sans-serif", marginTop: 2 }}>@{user.username || "kullanici"}</div>
+    <div style={{ color: COLORS.muted, fontSize: 13, marginTop: 8, lineHeight: 1.6 }}>{user.bio || "Henüz bir biyografi eklenmedi."}</div>
+
+    {/* Stats */}
+    <div style={{ display: "flex", gap: 0, marginTop: 20, background: COLORS.card, borderRadius: 16, border: `1px solid ${COLORS.border}`, overflow: "hidden" }}>
+      {[["12", "Eşleşme"], ["47", "Arkadaş"], ["3", "Turnuva"]].map(([n, l], i) => (
+        <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: i < 2 ? `1px solid ${COLORS.border}` : "none" }}>
+          <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 20, color: COLORS.text }}>{n}</div>
+          <div style={{ color: COLORS.muted, fontSize: 11, fontFamily: "'Outfit', sans-serif", marginTop: 2 }}>{l}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  {/* Tabs */}
+  <div style={{ display: "flex", margin: "16px 16px 0", background: COLORS.card, borderRadius: 12, padding: 4 }}>
+    {[["about", "Hakkında"], ["hobbies", "Hobiler"]].map(([id, label]) => (
+      <button key={id} onClick={() => setTab(id)} style={{ flex: 1, padding: "8px", borderRadius: 8, border: "none", background: tab === id ? `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.pink})` : "transparent", color: tab === id ? "#fff" : COLORS.muted, fontFamily: "'Outfit', sans-serif", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>{label}</button>
+    ))}
+  </div>
+
+  <div style={{ padding: "16px 20px 120px" }}>
+    {tab === "about" && (
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {[["🎯", "Hedef", user.goal || "Belirtilmedi"], ["📧", "E-posta", user.email || "—"]].map(([ic, k, v]) => (
+          <div key={k} style={{ background: COLORS.card, borderRadius: 14, padding: "14px 16px", border: `1px solid ${COLORS.border}`, display: "flex", gap: 12 }}>
+            <span style={{ fontSize: 20 }}>{ic}</span>
+            <div>
+              <div style={{ color: COLORS.muted, fontSize: 11, fontFamily: "'Outfit', sans-serif", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>{k}</div>
+              <div style={{ color: COLORS.text, fontSize: 14, fontFamily: "'Outfit', sans-serif", marginTop: 4 }}>{v}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+    {tab === "hobbies" && (
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+        {(user.hobbies?.length ? user.hobbies : ["💻 Teknoloji", "📚 Kitap"]).map(h => (
+          <span key={h} style={{ background: `${COLORS.accent}22`, border: `1.5px solid ${COLORS.accent}44`, color: COLORS.accentGlow, borderRadius: 14, padding: "8px 14px", fontFamily: "'Outfit', sans-serif", fontSize: 14 }}>{h}</span>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
+```
+
+);
 }
 
-/* ── SWIPE ── */
-function buildSwipe(){
-  db.collection('users').where('avatar','!=',null).limit(30).get()
-    .then(function(snap){
-      var real=[];snap.forEach(function(d){if(d.id!==ME.uid)real.push(Object.assign({id:d.id},d.data()));});
-      swipePool=real.length>2?real:DEMOS.slice();shuf(swipePool);swipeIdx=0;renderCards();
-    }).catch(function(){swipePool=DEMOS.slice();shuf(swipePool);swipeIdx=0;renderCards();});
+// ─── Main App ─────────────────────────────────────────────────────────────────
+
+export default function UniLoop() {
+const [screen, setScreen] = useState(“onboard”);
+const [tab, setTab] = useState(“discover”);
+const [user, setUser] = useState({});
+
+const finishOnboard = (data) => { setUser(data); setScreen(“app”); };
+
+return (
+<>
+<style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; } body { background: #0A0A0F; } ::-webkit-scrollbar { width: 0; } @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.8; transform:scale(1.04); } } @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-12px); } } @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } } @keyframes fadeIn { from { opacity:0; } to { opacity:1; } } @keyframes bounce { 0%,100% { transform:scale(1); } 40% { transform:scale(1.3); } 70% { transform:scale(0.9); } } @keyframes slideUp { from { transform:translateY(30px); opacity:0; } to { transform:translateY(0); opacity:1; } }`}</style>
+
+```
+  <div style={{
+    width: "100%", maxWidth: 420, margin: "0 auto",
+    height: "100dvh", background: COLORS.bg, position: "relative",
+    overflow: "hidden", fontFamily: "'Outfit', sans-serif",
+    boxShadow: "0 0 80px rgba(124,92,252,0.15)",
+  }}>
+    {screen === "onboard" ? (
+      <Onboarding onDone={finishOnboard} />
+    ) : (
+      <>
+        <div style={{ height: "100%", overflow: "hidden" }}>
+          {tab === "discover" && <DiscoverScreen />}
+          {tab === "anon" && <AnonScreen />}
+          {tab === "tournament" && <TournamentScreen />}
+          {tab === "messages" && <MessagesScreen />}
+          {tab === "profile" && <ProfileScreen user={user} />}
+        </div>
+        <BottomNav active={tab} onNav={setTab} />
+      </>
+    )}
+  </div>
+</>
+```
+
+);
 }
-
-function renderCards(){
-  var stack=g('cardStack');
-  if(!swipePool.length){
-    stack.innerHTML='<div class="no-cards"><h3>Hepsine baktın</h3><p>Yakında yeni kullanıcılar eklenecek.</p></div>';return;
-  }
-  stack.innerHTML='';
-  for(var i=Math.min(2,swipePool.length-1);i>=0;i--){
-    var p=swipePool[(swipeIdx+i)%swipePool.length];
-    stack.appendChild(mkCard(p,i===0?'f':i===1?'b1':'b2'));
-  }
-  setupDrag(stack.querySelector('.scard.f'));
-}
-
-function mkCard(p,cl){
-  var el=document.createElement('div');
-  el.className='scard '+cl;
-
-  var photoHtml='';
-  if(p.photoURL){
-    photoHtml='<div style="width:100%;height:100%;position:relative"><img src="'+p.photoURL+'" style="width:100%;height:100%;object-fit:cover;display:block"><div class="scard-grad"></div></div>';
-  } else {
-    photoHtml='<div class="scard-photo" style="background:'+sBg(p.avatar)+'"><span style="font-size:5rem;position:relative;z-index:1">'+p.avatar+'</span><div class="scard-grad"></div></div>';
-  }
-
-  el.innerHTML=photoHtml
-    +'<div class="stamp lk">Beğen</div><div class="stamp np">Geç</div><div class="stamp sp">Süper</div>'
-    +'<div class="scard-follow-wrap"><button class="scard-follow-btn" data-uid="'+p.id+'" onclick="quickFollow(this,event)">Takip Et</button></div>'
-    +'<div class="scard-body">'
-      +'<div class="scard-name">'+p.name+'<span class="scard-age">'+p.age+'</span></div>'
-      +'<div class="scard-dept">'+(p.dept||'')+(p.uni?' · '+p.uni:'')+(p.year?' · '+p.year:'')+'</div>'
-      +'<div class="scard-bio">'+(p.bio||'')+'</div>'
-      +'<div class="scard-tags">'+((p.interests||[]).map(function(t){return '<span class="scard-tag">'+t+'</span>';}).join(''))+'</div>'
-    +'</div>';
-  return el;
-}
-
-function sBg(av){
-  var p=['135deg,#3d3020,#1a140a','135deg,#20303d,#0a181d','135deg,#2d1a30,#150a18','135deg,#1a2d20,#0a180e','135deg,#302520,#180f0a'];
-  return 'linear-gradient('+p[av.charCodeAt(0)%p.length]+')';
-}
-
-function quickFollow(btn,ev){
-  ev.stopPropagation();
-  var uid=btn.dataset.uid,fl=btn.classList.contains('on');
-  if(fl){
-    btn.classList.remove('on');btn.textContent='Takip Et';
-    db.collection('follows').doc(ME.uid+'_'+uid).delete().catch(function(){});
-    db.collection('users').doc(ME.uid).update({following:FV.increment(-1)}).catch(function(){});
-    db.collection('users').doc(uid).update({followers:FV.increment(-1)}).catch(function(){});
-  } else {
-    btn.classList.add('on');btn.textContent='Takip Ediliyor';
-    db.collection('follows').doc(ME.uid+'_'+uid).set({follower:ME.uid,following:uid,ts:FV.serverTimestamp()}).catch(function(){});
-    db.collection('users').doc(ME.uid).update({following:FV.increment(1)}).catch(function(){});
-    db.collection('users').doc(uid).update({followers:FV.increment(1)}).catch(function(){});
-    var fv=parseInt(g('stFollowing').textContent)||0;g('stFollowing').textContent=fv+1;
-    if(PROF)PROF.following=(PROF.following||0)+1;
-    toast('Takip edildi','success');
-  }
-}
-
-/* drag */
-var D={on:0,sx:0,sy:0,cx:0,cy:0};
-function setupDrag(el){
-  if(!el)return;
-  el.addEventListener('mousedown',function(e){D={on:1,sx:e.clientX,sy:e.clientY,cx:0,cy:0};el.style.transition='none';},{passive:true});
-  el.addEventListener('touchstart',function(e){D={on:1,sx:e.touches[0].clientX,sy:e.touches[0].clientY,cx:0,cy:0};el.style.transition='none';},{passive:true});
-}
-document.addEventListener('mousemove',function(e){onDrag(e.clientX,e.clientY);});
-document.addEventListener('touchmove',function(e){onDrag(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
-document.addEventListener('mouseup',endDrag);
-document.addEventListener('touchend',endDrag);
-
-function onDrag(x,y){
-  if(!D.on)return;D.cx=x-D.sx;D.cy=y-D.sy;
-  var c=document.querySelector('.scard.f');if(!c)return;
-  c.style.transform='translate('+D.cx+'px,'+D.cy+'px) rotate('+(D.cx*.07)+'deg)';
-  var pct=Math.min(Math.abs(D.cx)/80,1);
-  c.querySelector('.stamp.lk').style.opacity=D.cx>15?pct:0;
-  c.querySelector('.stamp.np').style.opacity=D.cx<-15?pct:0;
-  c.querySelector('.stamp.sp').style.opacity=D.cy<-50?Math.min(Math.abs(D.cy)/80,1):0;
-}
-function endDrag(){
-  if(!D.on)return;var dx=D.cx,dy=D.cy;D.on=0;D.cx=0;D.cy=0;
-  var c=document.querySelector('.scard.f');if(!c)return;
-  c.style.transition='transform .42s cubic-bezier(.25,.46,.45,.94)';
-  if(dx>80)swipe('right');else if(dx<-80)swipe('left');else if(dy<-100)swipe('up');
-  else{c.style.transform='';c.querySelectorAll('.stamp').forEach(function(s){s.style.opacity=0;});}
-}
-
-function swipe(dir){
-  var front=document.querySelector('.scard.f');
-  if(!front||front._a)return;front._a=1;
-  var p=swipePool[swipeIdx%swipePool.length];
-  front.style.transition='transform .5s ease,opacity .5s ease';
-  if(dir==='right'){
-    front.querySelector('.stamp.lk').style.opacity=1;
-    front.style.transform='translate(160%,-20px) rotate(20deg)';
-    recSwipe(p,'like');
-    if(p.id.startsWith('d')&&Math.random()<.38)setTimeout(function(){showBlast(p);},420);
-    else toast('Beğenildi','success');
-  } else if(dir==='left'){
-    front.querySelector('.stamp.np').style.opacity=1;
-    front.style.transform='translate(-160%,-20px) rotate(-20deg)';
-    recSwipe(p,'skip');
-  } else {
-    front.querySelector('.stamp.sp').style.opacity=1;
-    front.style.transform='translate(0,-160%)';
-    recSwipe(p,'super');toast('Süper Beğeni gönderildi','success');
-    if(Math.random()<.55)setTimeout(function(){showBlast(p);},520);
-  }
-  setTimeout(function(){swipeIdx++;renderCards();},500);
-}
-
-function recSwipe(p,action){
-  db.collection('swipes').add({from:ME.uid,to:p.id,action:action,ts:FV.serverTimestamp()}).catch(function(){});
-  if(action!=='skip'){
-    db.collection('users').doc(ME.uid).update({likes:FV.increment(1)}).catch(function(){});
-    PROF.likes=(PROF.likes||0)+1;g('stLikes').textContent=PROF.likes;
-  }
-}
-
-function showBlast(p){
-  blastD={id:p.id,name:p.name,avatar:p.avatar||'🌿',photoURL:p.photoURL||null,online:!!p.online};
-  if(PROF&&PROF.photoURL){g('bfMeImg').src=PROF.photoURL;g('bfMeImg').style.display='block';g('bfMeTxt').style.display='none';}
-  else{g('bfMeTxt').textContent=PROF&&PROF.avatar||'🌿';g('bfMeImg').style.display='none';}
-  if(p.photoURL){g('bfThemImg').src=p.photoURL;g('bfThemImg').style.display='block';g('bfThemTxt').style.display='none';}
-  else{g('bfThemTxt').textContent=p.avatar||'🌊';g('bfThemImg').style.display='none';}
-  g('bMsg').textContent=p.name+' ve sen birbirinizi beğendiniz!';
-  g('matchBlast').classList.add('on');saveMatch(p);
-}
-
-function saveMatch(p){
-  var cid=[ME.uid,p.id].sort().join('_');
-  db.collection('matches').doc(cid).set({
-    users:[ME.uid,p.id],
-    user1:{uid:ME.uid,name:ME.displayName||PROF.name,avatar:PROF.avatar,photoURL:PROF.photoURL||null},
-    user2:{uid:p.id,name:p.name,avatar:p.avatar,photoURL:p.photoURL||null},
-    createdAt:FV.serverTimestamp(),lastMsg:null,lastTs:FV.serverTimestamp(),unread:0
-  },{merge:true}).catch(function(){});
-  db.collection('users').doc(ME.uid).update({matchCount:FV.increment(1)}).catch(function(){});
-  PROF.matchCount=(PROF.matchCount||0)+1;g('stMatches').textContent=PROF.matchCount;
-  g('msgBadge').classList.add('on');g('notifDot').classList.add('on');loadMatches();
-}
-
-function closeBlast(){g('matchBlast').classList.remove('on');}
-function startBlastChat(){
-  closeBlast();
-  var cid=[ME.uid,blastD.id].sort().join('_');
-  openChat(cid,blastD.name,blastD.avatar,blastD.photoURL,blastD.online,blastD.id);
-  goPanel('messages');
-}
-
-/* ── ANON ── */
-function buildAnon(){
-  g('anonList').innerHTML=ANONS.map(function(a){
-    return '<div class="anon-card" onclick="connectAnon(\''+a.c+'\')">'
-      +'<div class="anon-avi">🎭</div>'
-      +'<div class="anon-info"><div class="anon-nm">'+a.c+'</div><div class="anon-sub">Bölüm gizli · '+a.y+'</div></div>'
-      +'<button class="connect-btn">Bağlan</button></div>';
-  }).join('');
-}
-
-function joinQueue(){
-  if(inQ)return;inQ=true;
-  var btn=g('queueBtn');
-  g('queueTxt').innerHTML='<span class="spin"></span> Eşleşme aranıyor...';btn.disabled=true;
-  navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){vStream=s;}).catch(function(){toast('Mikrofon erişimi gerekli','error');});
-  setTimeout(function(){
-    inQ=false;btn.disabled=false;g('queueTxt').textContent='Kuyruğa Gir';
-    openVoiceModal(ANONS[Math.floor(Math.random()*ANONS.length)].c);
-  },1800+Math.random()*2500);
-}
-
-function connectAnon(name){
-  navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){vStream=s;}).catch(function(){});
-  openVoiceModal(name);
-}
-
-function openVoiceModal(name){
-  anonName=name;vSec=0;vMuted=false;
-  g('callTimer').textContent='00:00';g('muteBtn').textContent='Sesi Kapat';
-  g('voiceModal').classList.add('on');
-  vTimer=setInterval(function(){vSec++;g('callTimer').textContent=pad(Math.floor(vSec/60))+':'+pad(vSec%60);},1000);
-}
-
-function toggleMute(){
-  vMuted=!vMuted;if(vStream)vStream.getAudioTracks().forEach(function(t){t.enabled=!vMuted;});
-  g('muteBtn').textContent=vMuted?'Sesi Aç':'Sesi Kapat';
-}
-
-function endCall(){
-  clearInterval(vTimer);g('voiceModal').classList.remove('on');
-  if(vStream){vStream.getTracks().forEach(function(t){t.stop();});vStream=null;}
-  toast('Bağlantı kesildi','info');
-}
-
-function revealId(){
-  clearInterval(vTimer);g('voiceModal').classList.remove('on');
-  if(vStream){vStream.getTracks().forEach(function(t){t.stop();});vStream=null;}
-  var r=DEMOS[Math.floor(Math.random()*DEMOS.length)];
-  toast(anonName+' → '+r.name,'success');
-  setTimeout(function(){showBlast(r);},800);
-}
-
-/* ── TOURNAMENT ── */
-function buildTournament(){
-  var now=new Date(),end=new Date();end.setHours(20,0,0,0);
-  if(now>end)end.setDate(end.getDate()+1);
-  var diff=Math.floor((end-now)/60000);
-  g('tSub').textContent='Aktif · '+Math.floor(diff/60)+'sa '+(diff%60)+'dk kaldı';
-  var html=TOURNEY.map(function(m){
-    var v=tvotes[m.id];
-    return '<div class="matchup"><div class="matchup-lbl">'+m.lbl+'</div><div class="contestants">'
-      +'<div class="cont'+(v===m.a.id?' voted':'')+(v&&v!==m.a.id?' lose':'')+'" onclick="castVote(\''+m.id+'\',\''+m.a.id+'\')">'
-        +'<div class="cont-photo">'+m.a.av+'</div>'
-        +'<div class="cont-n">'+m.a.n+'</div><div class="cont-d">'+m.a.d+'</div>'
-        +'<div class="cont-v">'+(m.a.v+(v===m.a.id?1:0))+' oy</div></div>'
-      +'<div class="vs-badge">VS</div>'
-      +'<div class="cont'+(v===m.b.id?' voted':'')+(v&&v!==m.b.id?' lose':'')+'" onclick="castVote(\''+m.id+'\',\''+m.b.id+'\')">'
-        +'<div class="cont-photo">'+m.b.av+'</div>'
-        +'<div class="cont-n">'+m.b.n+'</div><div class="cont-d">'+m.b.d+'</div>'
-        +'<div class="cont-v">'+(m.b.v+(v===m.b.id?1:0))+' oy</div></div>'
-      +'</div></div>';
-  }).join('');
-  html+='<div class="champ-box"><div class="champ-lbl">Geçen Haftanın Şampiyonu</div><div class="champ-name">E. Çelik</div><div class="champ-info">Ekonomi · Koç Üniversitesi · 342 oy</div></div>';
-  g('matchupList').innerHTML=html;
-}
-
-function castVote(mid,wid){
-  if(tvotes[mid]){toast('Bu maç için zaten oy kullandınız','info');return;}
-  tvotes[mid]=wid;try{localStorage.setItem('tv_'+ME.uid,JSON.stringify(tvotes));}catch(e){}
-  db.collection('tournament_votes').doc(ME.uid+'_'+mid).set({uid:ME.uid,matchId:mid,vote:wid,ts:FV.serverTimestamp()}).catch(function(){});
-  toast('Oy kaydedildi','success');buildTournament();
-}
-
-/* ── MESSAGES ── */
-function loadMatches(){
-  db.collection('matches').where('users','array-contains',ME.uid).get()
-    .then(function(snap){
-      allChats=[];
-      snap.forEach(function(d){
-        var data=d.data();
-        var other=data.user1&&data.user1.uid===ME.uid?data.user2:data.user1;
-        if(!other)return;
-        allChats.push({
-          chatId:d.id,matchId:other.uid||'',name:other.name||'Kullanıcı',
-          avatar:other.avatar||'🌿',photoURL:other.photoURL||null,
-          online:Math.random()>.4,lastMsg:data.lastMsg||null,
-          lastTs:data.lastTs&&data.lastTs.toMillis?data.lastTs.toMillis():Date.now(),unread:data.unread||0
-        });
-      });
-      allChats.sort(function(a,b){return b.lastTs-a.lastTs;});
-      renderChats(allChats);g('stMatches').textContent=Math.max(allChats.length,parseInt(g('stMatches').textContent)||0);
-    }).catch(function(){renderChats([]);});
-}
-
-function aviHtml(photoURL,avatar,cls,extraStyle){
-  var style=extraStyle||'';
-  if(photoURL)return '<div class="'+cls+'" style="'+style+'"><img src="'+photoURL+'" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div>';
-  return '<div class="'+cls+'" style="'+style+'">'+avatar+'</div>';
-}
-
-function renderChats(list){
-  var strip=g('bubbleStrip'),cl=g('chatList');
-  if(!list.length){
-    strip.innerHTML='';
-    cl.innerHTML='<div class="empty-list"><h3>Henüz eşleşme yok</h3><p>Keşfet ekranından beğenmeye başla.</p></div>';return;
-  }
-  strip.innerHTML=list.map(function(c){
-    var aviCls='bbl-avi'+(c.unread?' fresh':'');
-    return '<div class="bbl" onclick="openChat(\''+c.chatId+'\',\''+esc(c.name)+'\',\''+c.avatar+'\',\''+esc(c.photoURL||'')+'\','+c.online+',\''+c.matchId+'\')">'
-      +aviHtml(c.photoURL,c.avatar,aviCls)
-      +'<div class="bbl-lbl">'+c.name.split(' ')[0]+'</div></div>';
-  }).join('');
-  cl.innerHTML=list.map(function(c){
-    return '<div class="chat-item" onclick="openChat(\''+c.chatId+'\',\''+esc(c.name)+'\',\''+c.avatar+'\',\''+esc(c.photoURL||'')+'\','+c.online+',\''+c.matchId+'\')">'
-      +(c.photoURL?'<div class="chat-avi"><img src="'+c.photoURL+'" loading="lazy"><div class="o-dot '+(c.online?'on':'off')+'"></div></div>'
-        :'<div class="chat-avi">'+c.avatar+'<div class="o-dot '+(c.online?'on':'off')+'"></div></div>')
-      +'<div class="chat-body"><div class="chat-nm">'+c.name+'<span class="match-tag">Eşleşme</span></div>'
-        +'<div class="chat-prev">'+(c.lastMsg||'Bir şeyler yaz...')+'</div></div>'
-      +'<div class="chat-meta"><div class="chat-time">'+fmtTs(c.lastTs)+'</div>'+(c.unread?'<div class="unread-badge">'+c.unread+'</div>':'')+'</div>'
-      +'</div>';
-  }).join('');
-}
-
-function filterChats(){
-  var q=g('msgSearch').value.toLowerCase();
-  renderChats(allChats.filter(function(c){return c.name.toLowerCase().indexOf(q)!==-1;}));
-}
-
-/* ── CHAT ── */
-function openChat(chatId,name,avatar,photoURL,online,matchId){
-  curChatId=chatId;curMatchId=matchId||null;
-  if(photoURL){g('ctAviImg').src=photoURL;g('ctAviImg').style.display='block';g('ctAviTxt').style.display='none';}
-  else{g('ctAviTxt').textContent=avatar||'🌿';g('ctAviImg').style.display='none';}
-  g('ctName').textContent=name;
-  g('ctStatus').textContent=online?'Çevrimiçi':'Son görülme: 1 saat önce';
-  g('ctStatus').style.color=online?'var(--sage)':'var(--ink3)';
-  g('chatScreen').classList.add('on');
-  listenMsgs(chatId);
-}
-
-function listenMsgs(chatId){
-  if(unsubMsgs)unsubMsgs();
-  var q=db.collection('messages').where('chatId','==',chatId).orderBy('ts','asc');
-  unsubMsgs=q.onSnapshot(function(snap){
-    var msgs=[];snap.forEach(function(d){msgs.push(d.data());});
-    renderMsgs(msgs);
-    try{localStorage.setItem('mc_'+chatId,JSON.stringify(msgs.map(function(m){return{from:m.from,text:m.text,ts:m.ts&&m.ts.toMillis?m.ts.toMillis():Date.now()};})));}catch(e){}
-  },function(){
-    try{renderMsgs(JSON.parse(localStorage.getItem('mc_'+chatId)||'[]'));}catch(e){}
-  });
-}
-
-function renderMsgs(msgs){
-  var c=g('chatMsgs');
-  if(!msgs.length){c.innerHTML='<div style="text-align:center;color:var(--ink4);font-size:.82rem;margin-top:48px;font-weight:600">Konuşmayı sen başlat</div>';return;}
-  c.innerHTML=msgs.map(function(m){
-    var ts=m.ts&&m.ts.toMillis?m.ts.toMillis():(typeof m.ts==='number'?m.ts:Date.now());
-    return '<div class="msg '+(m.from===ME.uid?'me':'them')+'">'
-      +'<div class="msg-txt">'+esc(m.text)+'</div>'
-      +'<div class="msg-ts">'+fmtTs(ts)+'</div></div>';
-  }).join('');
-  c.scrollTop=c.scrollHeight;
-}
-
-function sendMsg(){
-  if(!curChatId)return;
-  var inp=g('chatInp'),txt=inp.value.trim();if(!txt)return;inp.value='';
-  db.collection('messages').add({chatId:curChatId,from:ME.uid,text:txt,ts:FV.serverTimestamp()}).catch(function(){});
-  db.collection('matches').doc(curChatId).update({lastMsg:txt,lastTs:FV.serverTimestamp()}).catch(function(){});
-  if(curMatchId&&curMatchId.startsWith('d')){
-    setTimeout(function(){
-      db.collection('messages').add({chatId:curChatId,from:curMatchId,text:BOTS[Math.floor(Math.random()*BOTS.length)],ts:FV.serverTimestamp()}).catch(function(){});
-    },1200+Math.random()*2000);
-  }
-}
-
-function closeChat(){
-  g('chatScreen').classList.remove('on');
-  if(unsubMsgs){unsubMsgs();unsubMsgs=null;}
-  curChatId=null;loadMatches();
-}
-
-/* ── USER VIEW ── */
-function openViewScreen(data){
-  if(!data&&curMatchId){
-    var found=DEMOS.find(function(d){return d.id===curMatchId;})||null;
-    if(!found){
-      found={id:curMatchId,name:g('ctName').textContent,avatar:g('ctAviTxt').textContent||'🌿',photoURL:g('ctAviImg').style.display!=='none'?g('ctAviImg').src:null,followers:0,following:0,bio:'',interests:[],dept:'',uni:'',age:null};
-    }
-    data=found;
-  }
-  if(!data)return;
-  viewedUserId=data.id;viewedUserData=data;
-  g('viewScreenTitle').textContent=data.name||'Profil';
-
-  // check follow status
-  db.collection('follows').doc(ME.uid+'_'+data.id).get().then(function(s){
-    var btn=g('viewFollowBtn');
-    if(s.exists){btn.textContent='Takip Ediliyor';btn.classList.add('on');}
-    else{btn.textContent='Takip Et';btn.classList.remove('on');}
-  }).catch(function(){});
-
-  var photoBlock=data.photoURL
-    ?'<img src="'+data.photoURL+'" style="width:100%;height:280px;object-fit:cover;display:block">'
-    :'<div style="height:220px;background:'+sBg(data.avatar||'🌿')+';display:flex;align-items:center;justify-content:center;font-size:5rem">'+data.avatar+'</div>';
-
-  g('viewContent').innerHTML=photoBlock
-    +'<div style="padding:18px">'
-      +'<div class="prof-name"><span>'+data.name+'</span>'+(data.age?'<span class="prof-age-lbl">'+data.age+' yaş</span>':'')+'</div>'
-      +'<div class="prof-uni">'+(data.dept||'')+(data.uni?' · '+data.uni:'')+(data.year?' · '+data.year:'')+'</div>'
-      +'<div class="prof-bio-text" style="margin-top:8px">'+(data.bio||'')+'</div>'
-      +'<div class="prof-stats" style="margin-top:14px">'
-        +'<div class="ps"><span class="ps-val">'+(data.followers||0)+'</span><div class="ps-lbl">Takipçi</div></div>'
-        +'<div class="ps"><span class="ps-val">'+(data.following||0)+'</span><div class="ps-lbl">Takip</div></div>'
-      +'</div>'
-      +'<div class="prof-interests" style="margin-top:12px">'+((data.interests||[]).map(function(i){return '<span class="pi-chip">'+i+'</span>';}).join(''))+'</div>'
-    +'</div>';
-
-  g('viewScreen').classList.add('on');
-}
-
-function closeViewScreen(){g('viewScreen').classList.remove('on');viewedUserId=null;viewedUserData=null;}
-
-function toggleFollowViewed(){
-  if(!viewedUserId)return;
-  var btn=g('viewFollowBtn'),isFollowing=btn.classList.contains('on');
-  if(isFollowing){
-    db.collection('follows').doc(ME.uid+'_'+viewedUserId).delete().catch(function(){});
-    db.collection('users').doc(ME.uid).update({following:FV.increment(-1)}).catch(function(){});
-    db.collection('users').doc(viewedUserId).update({followers:FV.increment(-1)}).catch(function(){});
-    btn.textContent='Takip Et';btn.classList.remove('on');
-    var f=parseInt(g('stFollowing').textContent)||0;if(f>0)g('stFollowing').textContent=f-1;
-    if(PROF)PROF.following=Math.max(0,(PROF.following||0)-1);
-    toast('Takipten çıkıldı','info');
-  } else {
-    db.collection('follows').doc(ME.uid+'_'+viewedUserId).set({follower:ME.uid,following:viewedUserId,ts:FV.serverTimestamp()}).catch(function(){});
-    db.collection('users').doc(ME.uid).update({following:FV.increment(1)}).catch(function(){});
-    db.collection('users').doc(viewedUserId).update({followers:FV.increment(1)}).catch(function(){});
-    btn.textContent='Takip Ediliyor';btn.classList.add('on');
-    var f2=parseInt(g('stFollowing').textContent)||0;g('stFollowing').textContent=f2+1;
-    if(PROF)PROF.following=(PROF.following||0)+1;
-    toast('Takip edildi','success');
-  }
-}
-
-/* ── PROFILE ── */
-function editBio(){
-  var nb=prompt('Bio güncelle (maks 100 karakter):',PROF.bio||'');
-  if(nb===null)return;
-  if(nb.length>100){toast('Bio çok uzun','error');return;}
-  PROF.bio=nb;g('pBio').textContent=nb;
-  db.collection('users').doc(ME.uid).update({bio:nb}).catch(function(){});
-  toast('Bio güncellendi','success');
-}
-
-/* ── UTILS ── */
-function showS(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});g(id).classList.add('on');}
-function g(id){return document.getElementById(id);}
-function gv(id){var el=g(id);return el?el.value.trim():'';}
-function showErr(el,msg){if(el){el.textContent=msg;el.classList.add('on');}}
-function btnLoad(id,loading,label){var b=g(id);if(!b)return;b.disabled=loading;b.innerHTML=loading?'<span class="spin"></span> '+label:label;}
-function trErr(code){var m={'auth/email-already-in-use':'Bu e-posta zaten kayıtlı.','auth/wrong-password':'Şifre hatalı.','auth/invalid-credential':'E-posta veya şifre hatalı.','auth/user-not-found':'Kullanıcı bulunamadı.','auth/network-request-failed':'İnternet bağlantısı yok.','auth/too-many-requests':'Çok fazla deneme.','auth/invalid-email':'Geçersiz e-posta.'};return m[code]||'Bir hata oluştu.';}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;');}
-function fmtTs(ts){if(!ts)return'';var d=new Date(ts),now=new Date(),diff=now-d;if(diff<60000)return'Şimdi';if(diff<3600000)return Math.floor(diff/60000)+' dk';if(diff<86400000)return d.getHours()+':'+pad(d.getMinutes());return d.getDate()+'/'+(d.getMonth()+1);}
-function pad(n){return String(n).padStart(2,'0');}
-function shuf(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}}
-function toast(msg,type){
-  var w=g('toastArea'),el=document.createElement('div');
-  el.className='toast'+(type?' '+type:'');
-  el.textContent=msg;w.appendChild(el);
-  setTimeout(function(){el.classList.add('out');setTimeout(function(){try{el.remove();}catch(e){}},240);},3200);
-}
-</script>
-
-</body>
-</html>
