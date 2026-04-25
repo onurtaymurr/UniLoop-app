@@ -16,13 +16,18 @@ body { background-color: #f2f4f8; height: 100vh; overflow: hidden; display: flex
 
 .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 25px; border-radius: 25px; text-align: center; width: 90%; max-width: 380px; z-index: 2; box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
 
-/* TÜM İNPUT, SELECT VE BUTONLAR AYNI BOYUTTA (HEIGHT: 55px) */
-.glass-input { width: 100%; height: 55px; padding: 0 15px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; font-size: 15px; outline: none; appearance: none; display: flex; align-items: center; justify-content: flex-start; }
-select.glass-input option { background: #0f172a; color: white; }
+/* TÜM İNPUT VE SELECT'LER İÇİN STANDART BOYUT */
+.glass-input { width: 100%; height: 55px; padding: 0 15px; margin-bottom: 15px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; font-size: 14px; outline: none; appearance: none; display: flex; align-items: center; justify-content: flex-start; }
+select.select-dark option { background: #0f172a; color: white; }
 .glass-input::placeholder { color: rgba(255,255,255,0.5); }
 .btn-glass { width: 100%; height: 55px; background: #FFD700; color: #0f172a; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; }
 .btn-outline { background: transparent; border: 1px solid white; color: white; }
 .photo-upload { cursor: pointer; color: rgba(255,255,255,0.8); background-size: cover; background-position: center; border: 1px dashed rgba(255,255,255,0.5); }
+
+/* SEÇİLEBİLİR HOBİ BALONCUKLARI */
+.hobbies-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; }
+.hobi-tag { padding: 8px 12px; border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 20px; font-size: 12px; cursor: pointer; transition: 0.3s; user-select: none; }
+.hobi-tag.selected { background: #FFD700; color: #0f172a; border-color: #FFD700; font-weight: bold; transform: scale(1.05); }
 
 /* STEPPER */
 .progress-bar { width: 100%; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 20px; }
@@ -41,7 +46,6 @@ select.glass-input option { background: #0f172a; color: white; }
 .btn-premium { background: linear-gradient(45deg, #FFD700, #F59E0B); border: none; padding: 8px 12px; border-radius: 20px; color: #fff; font-size: 14px; cursor: pointer; }
 .btn-icon { font-size: 22px; color: #1e293b; cursor: pointer; }
 
-/* MESAJ ÜSTTE KALMA HATASI İÇİN PADDING EKLENDİ */
 #app-content { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; background: #f2f4f8; padding-top: 10px; }
 
 #bottom-nav { height: 65px; background: white; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.03); z-index: 100; flex-shrink: 0; border-top-left-radius: 20px; border-top-right-radius: 20px; padding-bottom: 5px; }
@@ -50,12 +54,11 @@ select.glass-input option { background: #0f172a; color: white; }
 .nav-btn.active { color: #4A00E0; }
 .nav-btn.active i { transform: translateY(-3px) scale(1.1); }
 
-/* KEŞFET KARTLARI (DAHA UZUN VE YAVAŞ ANİMASYONLU) */
+/* KEŞFET KARTLARI (UZUNLAMASINA EKRANI KAPLAYAN BOYUT) */
 .tinder-wrapper { display: flex; flex-direction: column; align-items: center; height: 100%; padding: 0 0 15px 0; }
 .tinder-cards-container { position: relative; width: 95%; max-width: 450px; flex: 1; min-height: 60vh; margin-bottom: 15px; perspective: 1000px; }
 .user-card { width: 100%; height: 100%; background: white; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); overflow: hidden; position: absolute; top:0; left:0; cursor: grab; transform-origin: 50% 100%; will-change: transform; }
 .user-card.moving { transition: none; cursor: grabbing; }
-/* Kaydırma hızı yavaşlatıldı (0.6s) */
 .user-card.resetting { transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .user-card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .user-card .info { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.95)); color: white; padding: 40px 20px 20px; pointer-events: none; }
@@ -94,3 +97,12 @@ select.glass-input option { background: #0f172a; color: white; }
 .bubble { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
 .bubble.received { background: white; align-self: flex-start; border-bottom-left-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .bubble.sent { background: #4A00E0; color: white; align-self: flex-end; border-bottom-right-radius: 5px; }
+.chat-input-area { background: white; padding: 10px 15px; display: flex; gap: 10px; align-items: center; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+
+/* BLINDTALK */
+.cool-radar { width: 200px; height: 200px; border-radius: 50%; position: relative; display: flex; justify-content: center; align-items: center; margin: 40px auto; }
+.cool-radar .core { width: 80px; height: 80px; background: #4A00E0; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 30px; z-index: 5; box-shadow: 0 0 20px #4A00E0; }
+.cool-radar .ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid #8E2DE2; animation: radarPing 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+.cool-radar .ring:nth-child(2) { animation-delay: 0.5s; }
+.cool-radar .ring:nth-child(3) { animation-delay: 1s; }
+@keyframes radarPing { 0% { transform: scale(0.4); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
